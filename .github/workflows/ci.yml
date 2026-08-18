@@ -114,7 +114,7 @@ jobs:
           pnpm --filter @mt/e2e exec playwright test
 
   images:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && secrets.REGISTRY_HOST != ''
     needs: [quality, smoke, e2e]
     runs-on: ubuntu-latest
     strategy:
