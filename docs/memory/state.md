@@ -5,9 +5,10 @@
 
 ## 当前状态快照（2026-08-18）
 
-- **项目阶段**：设计已评审通过，待转入实施计划（writing-plans）。
-- **下一步**：产出 Phase 0（工程化基座）实施计划。
-- **仓库状态**：git 已初始化（main 分支），首个提交 1cf1a0b 为平台总体设计文档。
+- **项目阶段**：设计已评审通过；Phase 0（工程化基座）实施计划已完成（13 个任务 + DoD），待选择执行方式。
+- **下一步**：执行 Phase 0 计划（执行方式二选一：subagent-driven / inline）。
+- **仓库状态**：git 已初始化（main 分支）；已提交：设计文档（1cf1a0b）、记忆机制（b96941c）、Phase 0 计划。
+- **关键文档**：docs/superpowers/specs/2026-08-18-magictools-platform-design.md；docs/superpowers/plans/2026-08-18-phase0-foundation.md
 
 ## 关键决策（摘要，详见设计文档）
 
