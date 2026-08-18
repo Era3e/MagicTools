@@ -102,7 +102,12 @@ jobs:
       - run: pnpm exec turbo run build --filter=@mt/applicant-server
       - run: pnpm exec turbo run build --filter=@mt/applicant-web
       - run: pnpm exec turbo run build --filter=@mt/gateway
-      - run: pnpm --filter @mt/e2e exec playwright install --with-deps chromium
+      - name: 缓存 Playwright 浏览器
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+      - run: pnpm --filter @mt/e2e exec playwright install chromium
       - name: 启动全部服务并运行 E2E
         run: |
           node apps/applicant/server/dist/main.js &
