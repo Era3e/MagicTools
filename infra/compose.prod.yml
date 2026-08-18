@@ -1,0 +1,126 @@
+name: magictools
+
+services:
+  gateway:
+    image: ${REGISTRY}/magictools/gateway:${IMAGE_TAG}
+    ports:
+      - "3000:3000"
+    environment:
+      MT_PROD: "1"
+    restart: unless-stopped
+
+  applicant-web:
+    image: ${REGISTRY}/magictools/applicant-web:${IMAGE_TAG}
+    expose: ["4008"]
+    restart: unless-stopped
+  applicant-server:
+    image: ${REGISTRY}/magictools/applicant-server:${IMAGE_TAG}
+    expose: ["5008"]
+    environment:
+      PORT: "5008"
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/magictools
+    depends_on: [postgres]
+    restart: unless-stopped
+
+  gatherer-web:
+    image: ${REGISTRY}/magictools/gatherer-web:${IMAGE_TAG}
+    expose: ["4001"]
+    restart: unless-stopped
+  gatherer-server:
+    image: ${REGISTRY}/magictools/gatherer-server:${IMAGE_TAG}
+    expose: ["5001"]
+    environment:
+      PORT: "5001"
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/magictools
+    depends_on: [postgres]
+    restart: unless-stopped
+
+  investigator-web:
+    image: ${REGISTRY}/magictools/investigator-web:${IMAGE_TAG}
+    expose: ["4002"]
+    restart: unless-stopped
+  investigator-server:
+    image: ${REGISTRY}/magictools/investigator-server:${IMAGE_TAG}
+    expose: ["5002"]
+    environment:
+      PORT: "5002"
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/magictools
+    depends_on: [postgres]
+    restart: unless-stopped
+
+  assessor-web:
+    image: ${REGISTRY}/magictools/assessor-web:${IMAGE_TAG}
+    expose: ["4003"]
+    restart: unless-stopped
+  assessor-server:
+    image: ${REGISTRY}/magictools/assessor-server:${IMAGE_TAG}
+    expose: ["5003"]
+    environment:
+      PORT: "5003"
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/magictools
+    depends_on: [postgres]
+    restart: unless-stopped
+
+  manager-web:
+    image: ${REGISTRY}/magictools/manager-web:${IMAGE_TAG}
+    expose: ["4004"]
+    restart: unless-stopped
+  manager-server:
+    image: ${REGISTRY}/magictools/manager-server:${IMAGE_TAG}
+    expose: ["5004"]
+    environment:
+      PORT: "5004"
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/magictools
+    depends_on: [postgres]
+    restart: unless-stopped
+
+  designer-web:
+    image: ${REGISTRY}/magictools/designer-web:${IMAGE_TAG}
+    expose: ["4005"]
+    restart: unless-stopped
+  designer-server:
+    image: ${REGISTRY}/magictools/designer-server:${IMAGE_TAG}
+    expose: ["5005"]
+    environment:
+      PORT: "5005"
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/magictools
+    depends_on: [postgres]
+    restart: unless-stopped
+
+  scholar-web:
+    image: ${REGISTRY}/magictools/scholar-web:${IMAGE_TAG}
+    expose: ["4006"]
+    restart: unless-stopped
+  scholar-server:
+    image: ${REGISTRY}/magictools/scholar-server:${IMAGE_TAG}
+    expose: ["5006"]
+    environment:
+      PORT: "5006"
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/magictools
+    depends_on: [postgres]
+    restart: unless-stopped
+
+  assistant-web:
+    image: ${REGISTRY}/magictools/assistant-web:${IMAGE_TAG}
+    expose: ["4007"]
+    restart: unless-stopped
+  assistant-server:
+    image: ${REGISTRY}/magictools/assistant-server:${IMAGE_TAG}
+    expose: ["5007"]
+    environment:
+      PORT: "5007"
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/magictools
+    depends_on: [postgres]
+    restart: unless-stopped
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: magictools
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  pgdata:

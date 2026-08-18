@@ -1,0 +1,26 @@
+{
+  "name": "magictools",
+  "private": true,
+  "packageManager": "pnpm@9.12.0",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "test:infra": "node --test infra/scripts/lib/*.test.mjs",
+    "smoke": "node infra/scripts/smoke.mjs",
+    "new:app": "node infra/scripts/new-app.mjs",
+    "docs:lint": "markdownlint-cli2 \"docs/**/*.md\"",
+    "changeset": "changeset",
+    "release": "changeset version",
+    "ws:create": "node infra/scripts/workspace.mjs create",
+    "ws:cleanup": "node infra/scripts/workspace.mjs cleanup"
+  },
+  "devDependencies": {
+    "turbo": "^2.1.0",
+    "typescript": "^5.5.0",
+    "markdownlint-cli2": "^0.14.0",
+    "yaml": "^2.5.0",
+    "@changesets/cli": "^2.27.0"
+  }
+}
