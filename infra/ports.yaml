@@ -1,0 +1,9 @@
+gateway: { web: 3000 }
+gatherer: { web: 4001, server: 5001 }
+investigator: { web: 4002, server: 5002 }
+assessor: { web: 4003, server: 5003 }
+manager: { web: 4004, server: 5004 }
+designer: { web: 4005, server: 5005 }
+scholar: { web: 4006, server: 5006 }
+assistant: { web: 4007, server: 5007 }
+applicant: { web: 4008, server: 5008 }
