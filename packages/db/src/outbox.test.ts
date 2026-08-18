@@ -13,6 +13,8 @@ beforeAll(async () => {
     await pool.query("SELECT 1");
     available = true;
     await runMigrations(pool, process.cwd() + "/migrations");
+    // 测试隔离：清空上轮残留（避免 retry 行被本轮测试 1 一并处理）
+    await pool.query("TRUNCATE outbox");
   } catch {
     available = false;
   }
