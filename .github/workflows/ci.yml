@@ -70,7 +70,7 @@ jobs:
       - name: 启动全部服务并冒烟
         run: |
           node apps/applicant/server/dist/main.js &
-          (cd apps/applicant/web && npx vite preview --port 4008 --strictPort) &
+          (cd apps/applicant/web && node node_modules/vite/bin/vite.js preview --port 4008 --strictPort --host 127.0.0.1) &
           node apps/gateway/dist/index.js &
           sleep 8
           node infra/scripts/smoke.mjs --only applicant
@@ -108,7 +108,7 @@ jobs:
       - name: 启动全部服务并运行 E2E
         run: |
           node apps/applicant/server/dist/main.js &
-          (cd apps/applicant/web && npx vite preview --port 4008 --strictPort) &
+          (cd apps/applicant/web && node node_modules/vite/bin/vite.js preview --port 4008 --strictPort --host 127.0.0.1) &
           node apps/gateway/dist/index.js &
           sleep 8
           pnpm --filter @mt/e2e exec playwright test
