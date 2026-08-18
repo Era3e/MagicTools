@@ -13,6 +13,7 @@ jobs:
         image: pgvector/pgvector:pg16
         env:
           POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: mt_test
         ports:
           - "5432:5432"
         options: >-
@@ -27,10 +28,6 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
-      - name: 创建 outbox 集成测试库
-        run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
-          PGPASSWORD=postgres createdb -h 127.0.0.1 -U postgres mt_test
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm build
@@ -46,6 +43,7 @@ jobs:
         image: pgvector/pgvector:pg16
         env:
           POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: magictools
         ports:
           - "5432:5432"
         options: >-
