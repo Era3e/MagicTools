@@ -12,7 +12,9 @@
     "new:app": "node infra/scripts/new-app.mjs",
     "docs:lint": "markdownlint-cli2 \"docs/**/*.md\"",
     "changeset": "changeset",
-    "release": "changeset version"
+    "release": "changeset version",
+    "ws:create": "node infra/scripts/workspace.mjs create",
+    "ws:cleanup": "node infra/scripts/workspace.mjs cleanup"
   },
   "devDependencies": {
     "turbo": "^2.1.0",

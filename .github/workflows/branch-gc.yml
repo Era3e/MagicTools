@@ -1,0 +1,27 @@
+name: Branch GC
+
+on:
+  schedule:
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+
+jobs:
+  gc:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: 删除已合并或孤儿开发分支
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          git branch -r --merged origin/main | grep -E 'origin/feat/' | sed 's|origin/||' > /tmp/merged.txt || true
+          while read -r branch; do
+            echo "删除已合并分支: $branch"
+            git push origin --delete "$branch" || true
+          done < /tmp/merged.txt
+          echo "Branch GC 完成"
