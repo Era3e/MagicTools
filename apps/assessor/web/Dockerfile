@@ -2,7 +2,7 @@ FROM node:20-alpine AS build
 RUN corepack enable
 WORKDIR /repo
 COPY . .
-RUN pnpm install --frozen-lockfile && pnpm --filter @mt/assessor-web build
+RUN pnpm install --frozen-lockfile && pnpm exec turbo run build --filter=@mt/assessor-web
 
 FROM nginx:1.27-alpine
 COPY --from=build /repo/apps/assessor/web/dist /usr/share/nginx/html

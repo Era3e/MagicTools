@@ -2,7 +2,7 @@ FROM node:20-alpine AS build
 RUN corepack enable
 WORKDIR /repo
 COPY . .
-RUN pnpm install --frozen-lockfile && pnpm --filter @mt/manager-server build
+RUN pnpm install --frozen-lockfile && pnpm exec turbo run build --filter=@mt/manager-server
 
 FROM node:20-alpine
 WORKDIR /app

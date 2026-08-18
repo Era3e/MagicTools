@@ -2,7 +2,7 @@ FROM node:20-alpine AS build
 RUN corepack enable
 WORKDIR /repo
 COPY . .
-RUN pnpm install --frozen-lockfile && pnpm --filter @mt/gateway build
+RUN pnpm install --frozen-lockfile && pnpm exec turbo run build --filter=@mt/gateway
 
 FROM node:20-alpine
 WORKDIR /app
