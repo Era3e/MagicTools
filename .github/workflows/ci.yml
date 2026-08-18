@@ -1,0 +1,173 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, dev]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - name: 创建 outbox 集成测试库
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+          PGPASSWORD=postgres createdb -h 127.0.0.1 -U postgres mt_test
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm build
+      - run: pnpm test
+      - run: pnpm test:infra
+      - run: pnpm docs:lint
+
+  smoke:
+    needs: quality
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @mt/applicant-server build
+      - name: 启动 applicant server
+        run: node apps/applicant/server/dist/main.js &
+        env:
+          PORT: "5008"
+          DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/magictools
+      - run: pnpm --filter @mt/applicant-web build
+      - name: 启动 applicant web 预览
+        run: pnpm --filter @mt/applicant-web exec vite preview --port 4008 --strictPort &
+      - run: pnpm --filter @mt/gateway build
+      - name: 启动 gateway
+        run: node apps/gateway/dist/index.js &
+      - run: sleep 5
+      - run: node infra/scripts/smoke.mjs --only applicant
+
+  e2e:
+    needs: smoke
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @mt/applicant-server build
+      - run: node apps/applicant/server/dist/main.js &
+        env:
+          PORT: "5008"
+          DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/magictools
+      - run: pnpm --filter @mt/applicant-web build
+      - run: pnpm --filter @mt/applicant-web exec vite preview --port 4008 --strictPort &
+      - run: pnpm --filter @mt/gateway build
+      - run: node apps/gateway/dist/index.js &
+      - run: sleep 5
+      - run: pnpm --filter @mt/e2e exec playwright install --with-deps chromium
+      - run: pnpm --filter @mt/e2e exec playwright test
+
+  images:
+    if: github.ref == 'refs/heads/main'
+    needs: [quality, smoke, e2e]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - gateway
+          - applicant-web
+          - applicant-server
+          - gatherer-web
+          - gatherer-server
+          - investigator-web
+          - investigator-server
+          - assessor-web
+          - assessor-server
+          - manager-web
+          - manager-server
+          - designer-web
+          - designer-server
+          - scholar-web
+          - scholar-server
+          - assistant-web
+          - assistant-server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY_HOST }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+      - name: 构建并推送镜像
+        env:
+          SERVICE: ${{ matrix.service }}
+          IMAGE_PREFIX: ${{ secrets.REGISTRY_HOST }}/magictools
+        shell: bash
+        run: |
+          set -e
+          case "$SERVICE" in
+            gateway)
+              docker build -f apps/gateway/Dockerfile -t "$IMAGE_PREFIX/gateway:latest" .
+              ;;
+            *-web)
+              app="${SERVICE%%-web}"
+              docker build -f "apps/$app/web/Dockerfile" -t "$IMAGE_PREFIX/$SERVICE:latest" .
+              ;;
+            *-server)
+              app="${SERVICE%%-server}"
+              docker build -f "apps/$app/server/Dockerfile" -t "$IMAGE_PREFIX/$SERVICE:latest" .
+              ;;
+          esac
+          docker push "$IMAGE_PREFIX/$SERVICE:latest"
