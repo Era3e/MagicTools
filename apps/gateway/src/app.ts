@@ -14,6 +14,16 @@ export function createGateway(ports: PortsConfig, env: NodeJS.ProcessEnv = proce
   });
   const host = serviceHost(env);
   for (const route of buildRoutes(ports, host)) {
+    if (route.path.startsWith("/api/") === false) {
+      // web 应用以 base=/<name>/ 构建，根路径重定向补尾斜杠（仅精确匹配，其余交给代理）
+      app.get(route.path, (req, res, next) => {
+        if (req.path !== route.path) {
+          next();
+          return;
+        }
+        res.redirect(route.path + "/");
+      });
+    }
     app.use(
       createProxyMiddleware({
         target: route.target,

@@ -24,14 +24,21 @@ describe("gateway app", () => {
     expect(res.status).toBe(200);
   });
 
+  it("web 路由根路径重定向补尾斜杠", async () => {
+    const app = createGateway({ applicant: { web: 4008, server: 5008 } }, {});
+    const res = await request(app).get("/applicant");
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toBe("/applicant/");
+  });
+
   it("将请求代理到目标服务", async () => {
     const dummy = express();
-    dummy.get("/dummy", (_req, res) => res.json({ ok: true }));
+    dummy.get("/dummy/", (_req, res) => res.json({ ok: true }));
     const server = dummy.listen(0);
     const port = (server.address() as AddressInfo).port;
     try {
       const app = createGateway({ dummy: { web: port } }, {});
-      const res = await request(app).get("/dummy");
+      const res = await request(app).get("/dummy/");
       expect(res.status).toBe(200);
       expect(res.body.ok).toBe(true);
     } finally {
