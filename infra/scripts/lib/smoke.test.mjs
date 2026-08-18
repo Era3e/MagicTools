@@ -5,12 +5,12 @@ import { buildChecks, runChecks } from "../smoke.mjs";
 
 test("buildChecks 为每个 web/server 与 gateway 生成检查项", () => {
   const checks = buildChecks({ applicant: { web: 4008, server: 5008 }, gateway: { web: 3000 } });
-  // applicant-web + applicant-server + gateway-web + gateway（gateway 无 server）
-  assert.equal(checks.length, 4);
+  // applicant-server + applicant-web + gateway（gateway 条目不生成 web/server 检查）
+  assert.equal(checks.length, 3);
   assert.equal(checks.at(-1).name, "gateway");
   assert.deepEqual(
     checks.map((c) => c.name),
-    ["applicant-server", "applicant-web", "gateway-web", "gateway"]
+    ["applicant-server", "applicant-web", "gateway"]
   );
 });
 

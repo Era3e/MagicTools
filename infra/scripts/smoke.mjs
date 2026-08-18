@@ -6,6 +6,7 @@ import { parse } from "yaml";
 export function buildChecks(ports) {
   const checks = [];
   for (const [name, p] of Object.entries(ports)) {
+    if (name === "gateway") continue; // gateway 由末尾独立健康检查覆盖
     if (p.server) checks.push({ name: name + "-server", url: "http://127.0.0.1:" + p.server + "/api/" + name + "/health" });
     if (p.web) checks.push({ name: name + "-web", url: "http://127.0.0.1:" + p.web + "/" + name + "/" });
   }

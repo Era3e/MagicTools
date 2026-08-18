@@ -14,6 +14,7 @@ export interface ProxyRoute {
 export function buildRoutes(ports: PortsConfig, host: (serviceName: string) => string): ProxyRoute[] {
   const routes: ProxyRoute[] = [];
   for (const [name, port] of Object.entries(ports)) {
+    if (name === "gateway") continue; // gateway 自身不生成代理路由
     if (port.web) {
       routes.push({ name: name + "-web", path: "/" + name, target: "http://" + host(name + "-web") + ":" + port.web });
     }
