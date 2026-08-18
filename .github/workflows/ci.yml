@@ -65,16 +65,16 @@ jobs:
           node-version: 20
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @mt/applicant-server build
+      - run: pnpm exec turbo run build --filter=@mt/applicant-server
       - name: 启动 applicant server
         run: node apps/applicant/server/dist/main.js &
         env:
           PORT: "5008"
           DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/magictools
-      - run: pnpm --filter @mt/applicant-web build
+      - run: pnpm exec turbo run build --filter=@mt/applicant-web
       - name: 启动 applicant web 预览
         run: pnpm --filter @mt/applicant-web exec vite preview --port 4008 --strictPort &
-      - run: pnpm --filter @mt/gateway build
+      - run: pnpm exec turbo run build --filter=@mt/gateway
       - name: 启动 gateway
         run: node apps/gateway/dist/index.js &
       - run: sleep 5
@@ -105,14 +105,14 @@ jobs:
           node-version: 20
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @mt/applicant-server build
+      - run: pnpm exec turbo run build --filter=@mt/applicant-server
       - run: node apps/applicant/server/dist/main.js &
         env:
           PORT: "5008"
           DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/magictools
-      - run: pnpm --filter @mt/applicant-web build
+      - run: pnpm exec turbo run build --filter=@mt/applicant-web
       - run: pnpm --filter @mt/applicant-web exec vite preview --port 4008 --strictPort &
-      - run: pnpm --filter @mt/gateway build
+      - run: pnpm exec turbo run build --filter=@mt/gateway
       - run: node apps/gateway/dist/index.js &
       - run: sleep 5
       - run: pnpm --filter @mt/e2e exec playwright install --with-deps chromium
