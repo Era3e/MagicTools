@@ -1,0 +1,11 @@
+{
+  // 中文文档常用紧凑排版，关闭行宽与空行类规则
+  "MD013": false,
+  "MD022": false,
+  "MD032": false,
+  "MD024": false,
+  "MD033": false,
+  "MD034": false,
+  "MD040": false,
+  "MD041": false
+}
