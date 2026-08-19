@@ -1,16 +1,17 @@
-import { useEffect, useState } from "react";
-import { Card, Typography } from "antd";
+import { Navigate, Route, BrowserRouter, Routes } from "react-router-dom";
+import RequirementList from "./pages/RequirementList";
+import RequirementDetail from "./pages/RequirementDetail";
+import IterationList from "./pages/IterationList";
 
 export default function App() {
-  const [status, setStatus] = useState("checking");
-  useEffect(() => {
-    fetch("/api/manager/health")
-      .then((res) => (res.ok ? setStatus("up") : setStatus("down")))
-      .catch(() => setStatus("down"));
-  }, []);
   return (
-    <Card title="manager">
-      <Typography.Text>服务状态: {status}</Typography.Text>
-    </Card>
+    <BrowserRouter basename="/manager">
+      <Routes>
+        <Route path="/" element={<Navigate to="/requirements" replace />} />
+        <Route path="/requirements" element={<RequirementList />} />
+        <Route path="/requirements/:id" element={<RequirementDetail />} />
+        <Route path="/iterations" element={<IterationList />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
