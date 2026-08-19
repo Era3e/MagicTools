@@ -4,7 +4,9 @@ loadRootEnv();
 import "reflect-metadata";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
+import { CollectService } from "./collect.service";
 import { ensureDatabase, migrate } from "./db";
+import { startScheduler } from "./scheduler";
 
 const PORT = Number(process.env.PORT ?? 5001);
 
@@ -19,6 +21,7 @@ async function bootstrap() {
     await ensureDatabase();
     await migrate();
     console.log("migrations applied");
+    await startScheduler(new CollectService());
   } catch (err) {
     console.warn("db unavailable, continuing: " + String(err));
   }

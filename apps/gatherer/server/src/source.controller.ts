@@ -1,5 +1,6 @@
 import { BadRequestException, Body, Controller, Get, Inject, Param, Patch, Post, Query } from "@nestjs/common";
 import { CollectService } from "./collect.service";
+import { schedulerStatus } from "./scheduler";
 import { SourceService } from "./source.service";
 
 @Controller()
@@ -50,5 +51,10 @@ export class SourceController {
       throw new BadRequestException("ids 不能为空");
     }
     return this.collectService.push(body.ids);
+  }
+
+  @Get("meta/scheduler-status")
+  schedulerStatus() {
+    return schedulerStatus();
   }
 }
