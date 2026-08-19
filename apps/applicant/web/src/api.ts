@@ -38,4 +38,10 @@ export const api = {
   createPosition: (input: unknown) => request<Position>("/positions", { method: "POST", body: JSON.stringify(input) }),
   updatePosition: (id: string, patch: unknown) =>
     request<Position>("/positions/" + id, { method: "PATCH", body: JSON.stringify(patch) }),
+  parseJd: (text: string) =>
+    request<{ company: string; title: string; city: string; salary: string; requirements: string[]; duties: string[]; keywords: string[] }>(
+      "/positions/parse-jd",
+      { method: "POST", body: JSON.stringify({ text }) }
+    ),
+  generateGreeting: (id: string) => request<{ greeting: string }>("/positions/" + id + "/greeting", { method: "POST" }),
 };

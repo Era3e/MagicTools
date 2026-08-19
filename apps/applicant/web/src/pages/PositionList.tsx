@@ -1,14 +1,16 @@
-import { Button, Card, Select, Space, Table } from "antd";
+import { Button, Card, Select, Space, Table, Tabs } from "antd";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api, type Position } from "../api";
 import { StatusTag } from "../components/StatusTag";
 import { PositionForm, type PositionFormValues } from "../components/PositionForm";
+import { JdParsePanel } from "../components/JdParsePanel";
 
 export default function PositionList() {
   const [items, setItems] = useState<Position[]>([]);
   const [status, setStatus] = useState<string | undefined>();
   const [creating, setCreating] = useState(false);
+  const [prefill, setPrefill] = useState<PositionFormValues | undefined>();
 
   useEffect(() => {
     api.listPositions(status).then(setItems).catch((err) => console.error(err));
@@ -53,13 +55,41 @@ export default function PositionList() {
         ]}
       />
       <PositionForm
+        key={JSON.stringify(prefill ?? {})}
         open={creating}
-        onCancel={() => setCreating(false)}
+        initialValues={prefill}
+        onCancel={() => {
+          setCreating(false);
+          setPrefill(undefined);
+        }}
         onSubmit={async (values: PositionFormValues) => {
           await api.createPosition(values);
           setCreating(false);
+          setPrefill(undefined);
           api.listPositions(status).then(setItems);
         }}
+        extraPanel={
+          <Tabs
+            items={[
+              {
+                key: "manual",
+                label: "手动录入",
+                children: null,
+              },
+              {
+                key: "jd",
+                label: "JD 解析",
+                children: (
+                  <JdParsePanel
+                    onParsed={(values) => {
+                      setPrefill(values);
+                    }}
+                  />
+                ),
+              },
+            ]}
+          />
+        }
       />
     </Card>
   );

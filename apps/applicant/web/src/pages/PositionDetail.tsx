@@ -1,4 +1,4 @@
-import { Button, Card, Descriptions, Input, Select, Space, message } from "antd";
+import { Alert, Button, Card, Descriptions, Input, Select, Space, message } from "antd";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api, type Position } from "../api";
@@ -18,6 +18,8 @@ export default function PositionDetail() {
   const navigate = useNavigate();
   const [item, setItem] = useState<Position | null>(null);
   const [notes, setNotes] = useState("");
+  const [greeting, setGreeting] = useState("");
+  const [greetingLoading, setGreetingLoading] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -55,10 +57,31 @@ export default function PositionDetail() {
         <Descriptions.Item label="薪资">{item.salary || "-"}</Descriptions.Item>
         <Descriptions.Item label="来源">{item.source}</Descriptions.Item>
       </Descriptions>
-      {item.appliedUrl ? (
-        <Button type="primary" href={item.appliedUrl} target="_blank" style={{ marginBottom: 16 }}>
-          去投递
+      <Space style={{ marginBottom: 16 }}>
+        {item.appliedUrl ? (
+          <Button type="primary" href={item.appliedUrl} target="_blank">
+            去投递
+          </Button>
+        ) : null}
+        <Button
+          loading={greetingLoading}
+          onClick={async () => {
+            setGreetingLoading(true);
+            try {
+              const out = await api.generateGreeting(item.id);
+              setGreeting(out.greeting);
+            } catch (err) {
+              message.error(String(err));
+            } finally {
+              setGreetingLoading(false);
+            }
+          }}
+        >
+          生成打招呼话术
         </Button>
+      </Space>
+      {greeting ? (
+        <Alert type="success" message={greeting} showIcon style={{ marginBottom: 16 }} />
       ) : null}
       <Input.TextArea rows={6} value={notes} onChange={(e) => setNotes(e.target.value)} onBlur={saveNotes} placeholder="备注" />
     </Card>

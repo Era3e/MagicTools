@@ -60,4 +60,37 @@ describe("positions", () => {
       .send({ status: "not-a-status" });
     expect(res.status).toBe(400);
   });
+
+  it("JD 文本解析返回结构化字段（stub）", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    process.env.MT_LLM_STUB = "1";
+    const res = await request(app.getHttpServer())
+      .post("/api/applicant/positions/parse-jd")
+      .send({ text: "某公司招聘后端工程师 JD 内容，要求熟悉 Java 微服务" });
+    delete process.env.MT_LLM_STUB;
+    expect(res.status).toBe(201);
+    expect(res.body.company).toBeTruthy();
+    expect(Array.isArray(res.body.requirements)).toBe(true);
+  });
+
+  it("JD 文本过短返回 400", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    const res = await request(app.getHttpServer())
+      .post("/api/applicant/positions/parse-jd")
+      .send({ text: "太短" });
+    expect(res.status).toBe(400);
+  });
+
+  it("生成打招呼话术（stub）", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    const list = await request(app.getHttpServer()).get("/api/applicant/positions");
+    const target = list.body.find((p: { company: string }) => p.company === "E2E测试公司");
+    process.env.MT_LLM_STUB = "1";
+    const res = await request(app.getHttpServer())
+      .post("/api/applicant/positions/" + target.id + "/greeting");
+    delete process.env.MT_LLM_STUB;
+    expect(res.status).toBe(201);
+    expect(typeof res.body.greeting).toBe("string");
+    expect(res.body.greeting.length).toBeGreaterThan(0);
+  });
 });

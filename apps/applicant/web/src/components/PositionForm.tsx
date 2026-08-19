@@ -1,5 +1,5 @@
 import { Form, Input, Modal, Select, message } from "antd";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
 export interface PositionFormValues {
   company: string;
@@ -16,6 +16,7 @@ export function PositionForm(props: {
   initialValues?: PositionFormValues;
   onCancel: () => void;
   onSubmit: (values: PositionFormValues) => Promise<void>;
+  extraPanel?: ReactNode;
 }) {
   const [form] = Form.useForm<PositionFormValues>();
   const [saving, setSaving] = useState(false);
@@ -39,6 +40,7 @@ export function PositionForm(props: {
         }
       }}
     >
+      {props.extraPanel}
       <Form form={form} layout="vertical" initialValues={props.initialValues}>
         <Form.Item name="company" label="公司" rules={[{ required: true }]}>
           <Input placeholder="公司名" />
