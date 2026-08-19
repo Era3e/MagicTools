@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException, NotFoundException } from "@nestjs/common";
 import { llmChat } from "./llm";
-import { parseJdSchema } from "./schemas";
+import { parseJdSchema, parsePositionImageSchema } from "./schemas";
 import { POSITION_STATUSES, createPosition, getPosition, listPositions, updatePosition, type PositionInput } from "./position.repo";
 
 const JD_PROMPT =
@@ -12,6 +12,23 @@ export async function parseJd(text: string) {
     { role: "user", content: JD_PROMPT + text },
   ]);
   return parseJdSchema.parse(JSON.parse(raw));
+}
+
+export async function parsePositionImage(dataUrl: string) {
+  const raw = await llmChat(
+    [
+      { role: "system", content: "你是岗位信息提取助手，从截图提取结构化字段，只输出 JSON（字段同 JD 解析：company/title/city/salary/requirements/duties/keywords）。" },
+      {
+        role: "user",
+        content: [
+          { type: "text", text: "提取这张截图中的岗位信息" },
+          { type: "image_url", image_url: { url: dataUrl } },
+        ],
+      },
+    ],
+    { vision: true }
+  );
+  return parsePositionImageSchema.parse(JSON.parse(raw));
 }
 
 export async function generateGreeting(positionId: string) {

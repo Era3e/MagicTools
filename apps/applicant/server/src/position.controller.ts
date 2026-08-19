@@ -1,5 +1,7 @@
-import { Body, Controller, Get, Inject, Param, Patch, Post, Query, BadRequestException } from "@nestjs/common";
-import { PositionService, generateGreeting, parseJd } from "./position.service";
+import { Body, Controller, Get, Inject, Param, Patch, Post, Query, BadRequestException, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { memoryStorage } from "multer";
+import { PositionService, generateGreeting, parseJd, parsePositionImage } from "./position.service";
 import type { PositionInput } from "./position.repo";
 
 @Controller("positions")
@@ -17,6 +19,15 @@ export class PositionController {
   @Post(":id/greeting")
   greeting(@Param("id") id: string) {
     return generateGreeting(id);
+  }
+
+  @Post("parse-image")
+  @UseInterceptors(FileInterceptor("file", { storage: memoryStorage(), limits: { fileSize: 8 * 1024 * 1024 } }))
+  parseImage(@UploadedFile() file?: Express.Multer.File) {
+    if (!file) throw new BadRequestException("缺少图片文件");
+    const ext = (file.originalname.split(".").pop() || "png").toLowerCase();
+    const dataUrl = "data:image/" + (ext === "jpg" ? "jpeg" : ext) + ";base64," + file.buffer.toString("base64");
+    return parsePositionImage(dataUrl);
   }
 
   @Get()

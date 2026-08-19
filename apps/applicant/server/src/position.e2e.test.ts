@@ -93,4 +93,21 @@ describe("positions", () => {
     expect(typeof res.body.greeting).toBe("string");
     expect(res.body.greeting.length).toBeGreaterThan(0);
   });
+
+  it("截图识别返回结构化字段（stub）", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    process.env.MT_LLM_STUB = "1";
+    const res = await request(app.getHttpServer())
+      .post("/api/applicant/positions/parse-image")
+      .attach("file", Buffer.from("fake-image-bytes"), "jd.png");
+    delete process.env.MT_LLM_STUB;
+    expect(res.status).toBe(201);
+    expect(res.body.title).toBeTruthy();
+  });
+
+  it("截图识别缺文件返回 400", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    const res = await request(app.getHttpServer()).post("/api/applicant/positions/parse-image");
+    expect(res.status).toBe(400);
+  });
 });

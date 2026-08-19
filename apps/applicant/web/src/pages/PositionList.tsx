@@ -5,6 +5,7 @@ import { api, type Position } from "../api";
 import { StatusTag } from "../components/StatusTag";
 import { PositionForm, type PositionFormValues } from "../components/PositionForm";
 import { JdParsePanel } from "../components/JdParsePanel";
+import { ImageUploadPanel } from "../components/ImageUploadPanel";
 
 export default function PositionList() {
   const [items, setItems] = useState<Position[]>([]);
@@ -81,6 +82,17 @@ export default function PositionList() {
                 label: "JD 解析",
                 children: (
                   <JdParsePanel
+                    onParsed={(values) => {
+                      setPrefill(values);
+                    }}
+                  />
+                ),
+              },
+              {
+                key: "image",
+                label: "截图识别",
+                children: (
+                  <ImageUploadPanel
                     onParsed={(values) => {
                       setPrefill(values);
                     }}

@@ -44,4 +44,9 @@ export const api = {
       { method: "POST", body: JSON.stringify({ text }) }
     ),
   generateGreeting: (id: string) => request<{ greeting: string }>("/positions/" + id + "/greeting", { method: "POST" }),
+  parseImage: (form: FormData) =>
+    request<{ company: string; title: string; city: string; salary: string; requirements: string[]; duties: string[]; keywords: string[] }>(
+      "/positions/parse-image",
+      { method: "POST", body: form }
+    ),
 };
