@@ -49,4 +49,26 @@ export const api = {
       "/positions/parse-image",
       { method: "POST", body: form }
     ),
+  listInterviews: (positionId: string) => request<Interview[]>("/positions/" + positionId + "/interviews"),
+  createInterview: (positionId: string, input: { round: number; qaNotes: string; reflection: string }) =>
+    request<Interview>("/positions/" + positionId + "/interviews", { method: "POST", body: JSON.stringify(input) }),
+  analyzeInterview: (id: string) => request<Interview>("/interviews/" + id + "/analyze", { method: "POST" }),
+  exportInterviewUrl: (id: string) => BASE + "/interviews/" + id + "/export.md",
 };
+
+export interface Interview {
+  id: string;
+  positionId: string;
+  round: number;
+  happenedAt: string;
+  qaNotes: string;
+  reflection: string;
+  analysis: InterviewAnalysis | null;
+}
+
+export interface InterviewAnalysis {
+  questions?: Array<{ category: string; question: string; comment: string }>;
+  quality?: string;
+  suggestions?: string[];
+  actionItems?: string[];
+}
