@@ -1,3 +1,6 @@
+import { loadRootEnv } from "@mt/config";
+loadRootEnv();
+
 import "reflect-metadata";
 import { NestFactory } from "@nestjs/core";
 import { migrate } from "./db";
