@@ -18,7 +18,7 @@ services:
     expose: ["5008"]
     environment:
       PORT: "5008"
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/magictools
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/applicant
     depends_on: [postgres]
     restart: unless-stopped
 
@@ -120,6 +120,7 @@ services:
       POSTGRES_DB: magictools
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./infra/postgres-init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     restart: unless-stopped
 
 volumes:

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { createModelClient, chatStream } from "./client";
-import { DEEPSEEK } from "./providers";
+import { DEEPSEEK, ZHIPU } from "./providers";
 
 const okResponse = {
   choices: [{ message: { content: "你好" } }],
@@ -64,5 +64,39 @@ describe("model-client", () => {
       parts.push(part);
     }
     expect(parts.join("")).toBe("你好");
+  });
+
+  it("vision 消息以数组形式透传并路由到视觉模型", async () => {
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify(okResponse), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const client = createModelClient(ZHIPU, () => {});
+    await client.chat(
+      [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "提取这个 JD 的岗位信息" },
+            { type: "image_url", image_url: { url: "data:image/png;base64,AAAA" } },
+          ],
+        },
+      ],
+      { vision: true }
+    );
+    const [, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    const body = JSON.parse(String(init.body));
+    expect(body.model).toBe("glm-4v-flash");
+    expect(body.messages[0].content).toHaveLength(2);
+    expect(body.messages[0].content[1].type).toBe("image_url");
+  });
+
+  it("未指定 visionModel 的供应商回退默认模型", async () => {
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify(okResponse), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const client = createModelClient(DEEPSEEK, () => {});
+    const result = await client.chat([{ role: "user", content: "hi" }], { vision: true });
+    expect(result.content).toBe("你好");
+    const [, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    const body = JSON.parse(String(init.body));
+    expect(body.model).toBe("deepseek-chat");
   });
 });
