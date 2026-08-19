@@ -5,8 +5,9 @@
 
 ## 当前状态快照（2026-08-18 晚）
 
-- **项目阶段**：Phase 1 · 四子项目全部实现完成，待 Manager PR 合并后即整体收官（本地验证：qa-gate 绿、四栈 E2E 9/9——三环全链路一次跑通、server 12 测试 + web 2 测试全绿）。
-- **下一步**：Manager PR 合并 → Phase 1 目标完成标记 → 更新平台级迭代日志 → 下一阶段规划（Phase 2 知识主线 Gatherer→Scholar 或按用户新优先级调整）。
+- **项目阶段**：✅ **Phase 1 全部完成**（四子项目全部合并 main：Applicant PR #3、Investigator PR #5、Assessor PR #7、Manager PR #8；每次 CI 三检查全绿；三环全链路 E2E 9/9 一次跑通）。
+- **下一步**：下一阶段规划（Roadmap 候选：Phase 2 知识主线 Gatherer→Scholar；或按用户新优先级调整——等待用户指示）。
+- **Phase 1 交付清单**：Applicant 求职管理（含 ClawCV）；Investigator 调研（飞书 Bitable）；Assessor 需求分析设计（GitHub 上下文）；Manager 项目管理（Phantom GitHub 同步）。主线三环事件链：researcher.response.push → requirement.created → 需求落地。
 - **关键事件契约**：① researcher.response.push（investigator → assessor）② requirement.created（assessor → manager，payload 含 analysisMd/designMd/repoUrl/reviewComment）。
 - **Applicant 能力清单**：岗位 CRUD/六状态看板/JD 文本解析/截图视觉识别（glm-4v）/投递话术/面试复盘分析/复盘→简历改写闭环/ClawCV 集成+无 Key 降级。
 - **仓库就绪度（2026-08-19 核实）**：main 分支保护已启用（required checks: quality/smoke/e2e；0 审批；禁止强推/删除）；GitHub Secrets 尚未配置（ClawCV/镜像仓库均未配，降级路径与 images 跳过守卫已覆盖）；main 最近 CI 全部 success。
