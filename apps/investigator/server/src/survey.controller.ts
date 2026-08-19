@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Inject, Param, Patch, Post, Query } from "@nestjs/common";
+import { Body, Controller, Get, Inject, Param, Patch, Post, Query, BadRequestException } from "@nestjs/common";
 import { SurveyService } from "./survey.service";
 
 @Controller()
@@ -38,5 +38,18 @@ export class SurveyController {
   @Get("surveys/:id/responses")
   responses(@Param("id") id: string, @Query("sentiment") sentiment?: string, @Query("priority") priority?: string) {
     return this.service.responses(id, { sentiment, priority });
+  }
+
+  @Post("surveys/:id/summarize")
+  summarize(@Param("id") id: string) {
+    return this.service.summarize(id);
+  }
+
+  @Post("surveys/:id/push")
+  push(@Param("id") id: string, @Body() body: { recordIds: string[] }) {
+    if (!Array.isArray(body.recordIds) || body.recordIds.length === 0) {
+      throw new BadRequestException("recordIds 不能为空");
+    }
+    return this.service.push(id, body.recordIds);
   }
 }

@@ -1,9 +1,12 @@
 import { Injectable, BadGatewayException, BadRequestException, NotFoundException } from "@nestjs/common";
+import { appendOutbox } from "@mt/db";
+import { idempotencyKey } from "@mt/utils";
 import { FeishuClient } from "./feishu/client";
+import { pool } from "./db";
 import { llmChat } from "./llm";
 import { responseStructuredSchema } from "./schemas";
-import { finishSyncRun, listResponses, startSyncRun, touchSurveySyncedAt, upsertResponse } from "./response.repo";
-import { createSurvey, getSurvey, listSurveys, updateSurvey } from "./survey.repo";
+import { finishSyncRun, listResponses, markPushed, startSyncRun, touchSurveySyncedAt, upsertResponse } from "./response.repo";
+import { createSurvey, getSurvey, listSurveys, setSurveySummary, updateSurvey } from "./survey.repo";
 
 const STRUCTURE_PROMPT =
   "你是需求调研分析助手。将受访者的回答结构化为 JSON：requirements（需求点数组）、painPoints（痛点数组）、expectations（期望数组）、sentiment（positive/neutral/negative）、priority（P0/P1/P2）、summary（一句话摘要）。只输出 JSON。回答：";
@@ -90,5 +93,48 @@ export class SurveyService {
     await touchSurveySyncedAt(surveyId);
     await finishSyncRun(runId, { fetchedCount: fetched.length, processedCount: processed });
     return { fetchedCount: fetched.length, processedCount: processed };
+  }
+
+  async summarize(surveyId: string) {
+    const survey = await getSurvey(surveyId);
+    if (!survey) throw new NotFoundException("调研主题不存在");
+    const responses = await listResponses(surveyId);
+    const raw = await llmChat([
+      { role: "system", content: "你是调研分析师。根据以下结构化调研结果写一段 150 字内的主题总结（覆盖主要需求、痛点与建议）。只输出 JSON：{summary: 字符串}。结果：" },
+      { role: "user", content: JSON.stringify(responses.map((r) => r.structured).slice(0, 50)) },
+    ]);
+    const parsed = JSON.parse(raw) as { summary?: string };
+    const summary = parsed.summary ?? "";
+    await setSurveySummary(surveyId, summary);
+    return { summary };
+  }
+
+  async push(surveyId: string, recordIds: string[]) {
+    const survey = await getSurvey(surveyId);
+    if (!survey) throw new NotFoundException("调研主题不存在");
+    const responses = await listResponses(surveyId);
+    const targets = responses.filter((r) => recordIds.includes(r.id));
+    const eventIds: string[] = [];
+    for (const r of targets) {
+      const eventId = idempotencyKey("researcher-response-push");
+      await appendOutbox(pool, {
+        id: eventId,
+        event: "researcher.response.push",
+        source: "investigator",
+        payload: {
+          surveyId,
+          surveyName: survey.name,
+          responseId: r.id,
+          recordId: r.recordId,
+          structured: r.structured,
+          sentiment: r.sentiment,
+          priority: r.priority,
+        },
+        occurredAt: new Date().toISOString(),
+      });
+      await markPushed(r.id);
+      eventIds.push(eventId);
+    }
+    return { pushedCount: targets.length, eventIds };
   }
 }
