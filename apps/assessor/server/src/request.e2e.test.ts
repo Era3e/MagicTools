@@ -58,4 +58,65 @@ describe("inbox", () => {
     const res2 = await request(app.getHttpServer()).post("/api/assessor/inbox/poll");
     expect(res2.body.created).toBe(0);
   });
+
+  it("更新仓库地址自动拉取上下文（桩模式）", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    process.env.GITHUB_STUB = "1";
+    const list = await request(app.getHttpServer()).get("/api/assessor/requests");
+    const target = list.body[0];
+    const res = await request(app.getHttpServer())
+      .patch("/api/assessor/requests/" + target.id)
+      .send({ repoUrl: "Era3e/MagicTools" });
+    delete process.env.GITHUB_STUB;
+    expect(res.status).toBe(200);
+    expect(res.body.repoUrl).toBe("Era3e/MagicTools");
+    expect(res.body.repoContext).toHaveProperty("readme");
+  });
+
+  it("generate 生成分析方案并置 draft（桩）", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    process.env.MT_LLM_STUB = "1";
+    const list = await request(app.getHttpServer()).get("/api/assessor/requests");
+    const target = list.body[0];
+    const res = await request(app.getHttpServer()).post("/api/assessor/requests/" + target.id + "/generate");
+    delete process.env.MT_LLM_STUB;
+    expect(res.status).toBe(201);
+    expect(res.body.analysisMd).toContain("需求分析");
+    expect(res.body.designMd).toContain("设计方案");
+    expect(res.body.status).toBe("draft");
+  });
+
+  it("review 通过后 push 落 requirement.created", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    const list = await request(app.getHttpServer()).get("/api/assessor/requests");
+    const target = list.body[0];
+    const approved = await request(app.getHttpServer())
+      .post("/api/assessor/requests/" + target.id + "/review")
+      .send({ approve: true, comment: "方案可行" });
+    expect(approved.status).toBe(201);
+    expect(approved.body.status).toBe("approved");
+
+    const pushed = await request(app.getHttpServer()).post("/api/assessor/requests/" + target.id + "/push");
+    expect(pushed.status).toBe(201);
+    expect(pushed.body.pushed).toBe(true);
+    const rows = await pool.query("SELECT * FROM outbox WHERE event = 'requirement.created'");
+    expect(rows.rowCount).toBeGreaterThanOrEqual(1);
+  });
+
+  it("驳回必须带意见", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    const created = await request(app.getHttpServer()).post("/api/assessor/inbox/poll");
+    expect(created.status).toBe(201);
+    const res = await request(app.getHttpServer())
+      .post("/api/assessor/inbox/poll")
+      .send({});
+    expect(res.status).toBe(201);
+    // 取一个请求尝试无意见驳回
+    const list = await request(app.getHttpServer()).get("/api/assessor/requests");
+    const target = list.body[0];
+    const rejected = await request(app.getHttpServer())
+      .post("/api/assessor/requests/" + target.id + "/review")
+      .send({ approve: false, comment: "" });
+    expect(rejected.status).toBe(400);
+  });
 });

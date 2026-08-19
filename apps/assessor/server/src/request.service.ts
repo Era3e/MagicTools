@@ -121,12 +121,12 @@ export class RequestService {
       repoContext: row.repoContext,
     };
     const analysisRaw = await llmChat([
-      { role: "system", content: "只输出 JSON。" },
+      { role: "system", content: "你是需求分析师。只输出 JSON：{analysis: 字符串}" },
       { role: "user", content: ANALYSIS_PROMPT + JSON.stringify(context).slice(0, 12000) },
     ]);
     const analysis = JSON.parse(analysisRaw) as { analysis?: string };
     const designRaw = await llmChat([
-      { role: "system", content: "只输出 JSON。" },
+      { role: "system", content: "你是系统设计师。只输出 JSON：{design: 字符串}" },
       { role: "user", content: DESIGN_PROMPT + JSON.stringify({ analysis: analysis.analysis ?? "", repoContext: row.repoContext }).slice(0, 12000) },
     ]);
     const design = JSON.parse(designRaw) as { design?: string };
