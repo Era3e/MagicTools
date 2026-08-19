@@ -10,11 +10,29 @@
 3. 免费额度（按月）：**10 次 PDF / 20 次改写 / 20 次分析**；月/年度会员各 50 次，终身会员各 100 次；
 4. 把 Key 写入本机 .env（已加键位）与 GitHub Secrets（CLAWCV_API_KEY）。
 
-## 二、后端信息
+## 二、后端信息（已逆向官方 npm 包 clawcv@1.1.0 确认）
 
 - 后端地址：https://api.wondercv.com
-- 鉴权：API Key（官方示例环境变量 SKILL_BACKEND_API_KEY）
-- 官方分发形态：OpenClaw/Claude 的 MCP skill（npm 包 clawcv，仓库 https://github.com/WonderClaw/clawcv）；我们不走该形态，由 @mt/model-client 之外的专用 adapter 直连后端 HTTP（端点以官方包实现为准，Phase 1 实现时抓包/读包确认）
+- 鉴权：HTTP Header `Authorization: Bearer <API Key>`，部分接口附带 `X-API-Version: v1`
+- 响应信封（mcp 接口）：`{ code, message, data }`，code < 2000 为成功，>= 2000 为业务错误；PDF 接口为 `{ success, pdf_url, download_url, pages }`
+- 官方分发形态：OpenClaw/Claude 的 MCP skill（npm 包 clawcv，仓库 https://github.com/WonderClaw/clawcv）；我们不走该形态，由 Applicant 的专用 adapter 直连后端 HTTP
+
+### 端点契约（v1.1.0 源码提取）
+
+| 端点 | 方法 | 请求体 | 返回 |
+|---|---|---|---|
+| /cv/v1/mcp/session/create | POST | { session_id } | data（会话） |
+| /cv/v1/mcp/session?session_id= | GET | - | data（会话信息） |
+| /cv/v1/mcp/session/usage | POST | { session_id, type } | 用量记录 |
+| /cv/v1/mcp/analyze | POST | { resume_text, structured_resume, target_job_title, job_description, language, session_id } | data（打分+问题+建议） |
+| /cv/v1/mcp/rewrite | POST | { section_type, original_text, target_job_title, profession_id, language, session_id } | { rewrites, editing_notes } |
+| /cv/v1/mcp/match | POST | { resume_text, structured_resume, target_job_title, job_description, session_id } | 归一化：{ match_score, strengths, gaps[], missing_keywords, recommended_changes[] } |
+| /cv/v1/mcp/ai-mentor | POST | { module, ... }（module ∈ overall_assessment/optimization_suggestions/job_matching/interview_questions/career_planning/salary_negotiation/multi_version/human_mentor） | { advice, structured_data, next_steps } |
+| /cv/v1/mcp/pdf/generate | POST | { resume_content, template, session_id, result_json } | { pdf_url, download_url, pages } |
+| /cv/v1/skill/auth/quota | GET | - | 剩余额度 |
+| /health | GET | - | 健康检查 |
+
+> 调用约定：先 create session 再调业务接口（session_id 透传，服务端按 session 记用量）；30s 超时 + 2 次指数退避重试（照抄官方实现）。
 
 ## 三、可用能力（6 个 AI 技能）
 
