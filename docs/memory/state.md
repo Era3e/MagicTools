@@ -5,8 +5,9 @@
 
 ## 当前状态快照（2026-08-18 晚）
 
-- **项目阶段**：Phase 0（工程化基座）**全部完成**，已合并 main（PR #1，合并提交 0dfdd8d）。CI 全绿（quality/smoke/e2e），全栈冒烟 17/17，E2E 2/2，本地镜像构建验证通过。
-- **下一步**：Phase 1 计划（Applicant 试点 + Investigator→Assessor→Manager 需求主线），按流程先出 spec 再出 plan。
+- **项目阶段**：Phase 1 启动（目标已建立）。Appellant 试点为第一棒，正在澄清需求（待用户确认：岗位收集图片识别场景等 4 个问题）。
+- **下一步**：Applicant 澄清完成 → spec → plan → 实现 → CI 全绿 → 合并 main；随后需求主线（Investigator→Assessor→Manager）。
+- **ClawCV 调研结论**：后端 api.wondercv.com + API Key 鉴权；免费额度 10 PDF/20 改写/20 分析每月；能力 analyze_resume / rewrite_resume_section / match_resume_to_job 与 Applicant 直接联动；手册见 docs/integrations/clawcv-setup.md。
 - **仓库状态**：GitHub 远端 https://github.com/Era3e/MagicTools（main 为默认分支）；本地 main 已同步 origin/main；dev 分支与 worktree 已按流程清理。
 - **关键文档**：docs/superpowers/specs/2026-08-18-magictools-platform-design.md；docs/superpowers/plans/2026-08-18-phase0-foundation.md
 - **外部集成手册**：docs/git-workflow.md（GitHub 仓库设置操作步骤）；docs/integrations/feishu-setup.md（飞书开放平台接入步骤）
