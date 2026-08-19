@@ -43,7 +43,7 @@ jobs:
         image: pgvector/pgvector:pg16
         env:
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: magictools
+          POSTGRES_DB: applicant
         ports:
           - "5432:5432"
         options: >-
@@ -53,7 +53,8 @@ jobs:
           --health-retries 10
     env:
       PORT: "5008"
-      DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/magictools
+      DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/applicant
+      MT_LLM_STUB: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -81,6 +82,7 @@ jobs:
         image: pgvector/pgvector:pg16
         env:
           POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: applicant
         ports:
           - "5432:5432"
         options: >-
@@ -90,7 +92,8 @@ jobs:
           --health-retries 10
     env:
       PORT: "5008"
-      DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/magictools
+      DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/applicant
+      MT_LLM_STUB: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

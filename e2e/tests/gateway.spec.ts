@@ -1,9 +1,8 @@
 import { test, expect } from "@playwright/test";
 
 test("网关将 /applicant 代理到 applicant web", async ({ page }) => {
-  await page.goto("/applicant");
-  await expect(page.getByText("applicant").first()).toBeVisible();
-  await expect(page.getByText(/服务状态: up/)).toBeVisible();
+  await page.goto("/applicant/positions");
+  await expect(page.getByText("岗位列表")).toBeVisible();
 });
 
 test("网关健康检查返回 up", async ({ request }) => {
