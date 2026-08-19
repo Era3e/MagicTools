@@ -5,10 +5,10 @@ import App from "./App";
 describe("App", () => {
   afterEach(() => vi.unstubAllGlobals());
 
-  it("渲染标题并显示服务状态 up", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => new Response("{}", { status: 200 })));
+  it("默认路由渲染需求管理页", async () => {
+    window.history.pushState({}, "", "/manager/requirements");
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("[]", { status: 200 })));
     render(<App />);
-    expect(screen.getByText("manager")).toBeTruthy();
-    expect(await screen.findByText(/服务状态: up/)).toBeTruthy();
+    expect(await screen.findByText("需求管理")).toBeTruthy();
   });
 });

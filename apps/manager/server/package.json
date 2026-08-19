@@ -15,7 +15,11 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "@mt/config": "workspace:*",
-    "@mt/types": "workspace:*"
+    "@mt/types": "workspace:*",
+    "@mt/db": "workspace:*",
+    "@mt/utils": "workspace:*",
+    "zod": "^3.23.0",
+    "pg": "^8.12.0"
   },
   "devDependencies": {
     "typescript": "^5.5.0",
@@ -24,6 +28,7 @@
     "@types/node": "^20.14.0",
     "@nestjs/testing": "^10.4.0",
     "supertest": "^7.0.0",
-    "@types/supertest": "^6.0.2"
+    "@types/supertest": "^6.0.2",
+    "@types/pg": "^8.11.0"
   }
 }

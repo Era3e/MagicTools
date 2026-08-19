@@ -70,6 +70,8 @@ jobs:
       - run: pnpm exec turbo run build --filter=@mt/investigator-web
       - run: pnpm exec turbo run build --filter=@mt/assessor-server
       - run: pnpm exec turbo run build --filter=@mt/assessor-web
+      - run: pnpm exec turbo run build --filter=@mt/manager-server
+      - run: pnpm exec turbo run build --filter=@mt/manager-web
       - name: 启动全部服务并冒烟
         run: |
           node apps/applicant/server/dist/main.js &
@@ -79,10 +81,13 @@ jobs:
           (cd apps/investigator/web && node node_modules/vite/bin/vite.js preview --port 4002 --strictPort --host 127.0.0.1) &
           PORT=5003 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/assessor INVESTIGATOR_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/investigator MT_LLM_STUB=1 GITHUB_STUB=1 node apps/assessor/server/dist/main.js &
           (cd apps/assessor/web && node node_modules/vite/bin/vite.js preview --port 4003 --strictPort --host 127.0.0.1) &
+          PORT=5004 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/manager ASSESSOR_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/assessor GITHUB_STUB=1 node apps/manager/server/dist/main.js &
+          (cd apps/manager/web && node node_modules/vite/bin/vite.js preview --port 4004 --strictPort --host 127.0.0.1) &
           sleep 10
           node infra/scripts/smoke.mjs --only applicant
           node infra/scripts/smoke.mjs --only investigator
           node infra/scripts/smoke.mjs --only assessor
+          node infra/scripts/smoke.mjs --only manager
 
   e2e:
     needs: smoke
@@ -119,6 +124,8 @@ jobs:
       - run: pnpm exec turbo run build --filter=@mt/investigator-web
       - run: pnpm exec turbo run build --filter=@mt/assessor-server
       - run: pnpm exec turbo run build --filter=@mt/assessor-web
+      - run: pnpm exec turbo run build --filter=@mt/manager-server
+      - run: pnpm exec turbo run build --filter=@mt/manager-web
       - name: 缓存 Playwright 浏览器
         uses: actions/cache@v4
         with:
@@ -134,6 +141,8 @@ jobs:
           (cd apps/investigator/web && node node_modules/vite/bin/vite.js preview --port 4002 --strictPort --host 127.0.0.1) &
           PORT=5003 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/assessor INVESTIGATOR_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/investigator MT_LLM_STUB=1 GITHUB_STUB=1 node apps/assessor/server/dist/main.js &
           (cd apps/assessor/web && node node_modules/vite/bin/vite.js preview --port 4003 --strictPort --host 127.0.0.1) &
+          PORT=5004 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/manager ASSESSOR_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/assessor GITHUB_STUB=1 node apps/manager/server/dist/main.js &
+          (cd apps/manager/web && node node_modules/vite/bin/vite.js preview --port 4004 --strictPort --host 127.0.0.1) &
           sleep 10
           pnpm --filter @mt/e2e exec playwright test
 
