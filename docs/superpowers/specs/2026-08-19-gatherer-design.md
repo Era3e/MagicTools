@@ -2,7 +2,7 @@
 
 - 文档类型：子项目设计文档（spec）
 - 创建日期：2026-08-19
-- 状态：🟡 草案（待确认默认假设 G1~G4，见第 6 节）
+- 状态：✅ 已确认（2026-08-19 用户确认 G1~G4 四项默认值）
 - 上游：docs/superpowers/specs/2026-08-18-magictools-platform-design.md（5.1 节）
 
 ## 1. 定位
@@ -64,12 +64,12 @@
 5. **端口**：gatherer web 4001 / server 5001（已登记）；独立库 gatherer；loadRootEnv 就位
 6. **CI**：smoke/e2e 的 gatherer 服务加 MT_LLM_STUB=1 + RSS_STUB（内置测试 RSS 桩：rss-parser 对本地 fixture 或内置 HTTP 桩）；E2E 全流程（建源→试采→采集→去重→推送）
 
-## 6. 待确认的默认假设（回复确认或修正即可）
+## 6. 已确认的决策（2026-08-19 用户确认）
 
 - **G1**：MVP 支持三种源类型（RSS / JSON API / 静态网页 HTML+CSS 选择器），各做基础版
-- **G2**：调度 = 每源可配 cron + 手动触发；node-cron 进程内调度（分布式/持久队列留 Backlog）
-- **G3**：推送 Scholar 用 outbox 事件 knowledge.item.collected（Scholar 建成前仅标记已推送）；每源可选 auto_push 自动推送
-- **G4**：LLM 结构化（摘要/分类/关键词）为每源可选开关（默认开启），关闭时仅存基础字段
+- **G2**：调度 = 每源可配 cron + 手动触发；node-cron 进程内调度
+- **G3**：推送 Scholar 用 outbox 事件 knowledge.item.collected；每源可选 auto_push
+- **G4**：LLM 结构化（摘要/分类/关键词）每源可开关，默认开启
 
 ## 7. 验收标准（DoD）
 
