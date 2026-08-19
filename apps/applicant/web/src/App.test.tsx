@@ -5,10 +5,11 @@ import App from "./App";
 describe("App", () => {
   afterEach(() => vi.unstubAllGlobals());
 
-  it("渲染标题并显示服务状态 up", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => new Response("{}", { status: 200 })));
+  it("默认路由渲染岗位列表页", async () => {
+    // BrowserRouter basename 为 /applicant，jsdom 默认 URL 是 /，需先推到匹配路径
+    window.history.pushState({}, "", "/applicant/positions");
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("[]", { status: 200 })));
     render(<App />);
-    expect(screen.getByText("applicant")).toBeTruthy();
-    expect(await screen.findByText(/服务状态: up/)).toBeTruthy();
+    expect(await screen.findByText("岗位列表")).toBeTruthy();
   });
 });

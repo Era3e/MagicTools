@@ -1,16 +1,15 @@
-import { useEffect, useState } from "react";
-import { Card, Typography } from "antd";
+import { Navigate, Route, BrowserRouter, Routes } from "react-router-dom";
+import PositionList from "./pages/PositionList";
+import PositionDetail from "./pages/PositionDetail";
 
 export default function App() {
-  const [status, setStatus] = useState("checking");
-  useEffect(() => {
-    fetch("/api/applicant/health")
-      .then((res) => (res.ok ? setStatus("up") : setStatus("down")))
-      .catch(() => setStatus("down"));
-  }, []);
   return (
-    <Card title="applicant">
-      <Typography.Text>服务状态: {status}</Typography.Text>
-    </Card>
+    <BrowserRouter basename="/applicant">
+      <Routes>
+        <Route path="/" element={<Navigate to="/positions" replace />} />
+        <Route path="/positions" element={<PositionList />} />
+        <Route path="/positions/:id" element={<PositionDetail />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
