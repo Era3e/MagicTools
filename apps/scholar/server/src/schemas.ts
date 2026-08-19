@@ -26,3 +26,10 @@ export const searchQuerySchema = z.object({
 export const settingsInputSchema = z.object({
   vaultPath: z.string().default(""),
 });
+
+export const graphSchema = z.object({
+  entities: z.array(z.object({ name: z.string().min(1), type: z.string().default("") })).default([]),
+  relations: z
+    .array(z.object({ from: z.string().min(1), to: z.string().min(1), label: z.string().default("") }))
+    .default([]),
+});
