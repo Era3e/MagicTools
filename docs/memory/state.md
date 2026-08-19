@@ -9,6 +9,7 @@
 - **下一步**：Phase 1 计划（Applicant 试点 + Investigator→Assessor→Manager 需求主线），按流程先出 spec 再出 plan。
 - **仓库状态**：GitHub 远端 https://github.com/Era3e/MagicTools（main 为默认分支）；本地 main 已同步 origin/main；dev 分支与 worktree 已按流程清理。
 - **关键文档**：docs/superpowers/specs/2026-08-18-magictools-platform-design.md；docs/superpowers/plans/2026-08-18-phase0-foundation.md
+- **外部集成手册**：docs/git-workflow.md（GitHub 仓库设置操作步骤）；docs/integrations/feishu-setup.md（飞书开放平台接入步骤）
 
 ## 关键决策（摘要，详见设计文档）
 
