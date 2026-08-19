@@ -1007,10 +1007,12 @@ test("investigator 主题列表页面渲染", async ({ page, request }) => {
 - [ ] **Step 2: ci.yml 适配**
 
 - smoke 与 e2e job 的 postgres service env `POSTGRES_DB` 由单一库改为不依赖（用 init 方式不行，CI 服务容器支持多库？不支持）→ 方案：CI 的 postgres 保持 `POSTGRES_DB: applicant`（applicant 冒烟需要），investigator 服务连接的库改为同一服务里的 applicant 库？不行——investigator 服务用 `investigator` 库。**方案：CI postgres service 增加 init 挂载不可用，改为 job 步骤中创建库**：在「启动全部服务」步骤前加：
-  ```bash
-  PGPASSWORD=postgres psql -h 127.0.0.1 -U postgres -c "CREATE DATABASE investigator" || true
-  ```
-  需要安装 postgresql-client（quality job 已有先例：apt-get install postgresql-client）→ smoke/e2e 也加同一安装步骤。
+
+~~~bash
+PGPASSWORD=postgres psql -h 127.0.0.1 -U postgres -c "CREATE DATABASE investigator" || true
+~~~
+
+需要安装 postgresql-client（quality job 已有先例：apt-get install postgresql-client）→ smoke/e2e 也加同一安装步骤。
 - smoke：启动 investigator-server（node apps/investigator/server/dist/main.js &，env PORT 5002、DATABASE_URL .../investigator、FEISHU_STUB=1、MT_LLM_STUB=1）→ `node infra/scripts/smoke.mjs --only investigator`
 - e2e：同样启动 investigator-server（双桩 env）→ playwright
 
