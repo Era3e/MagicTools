@@ -1,16 +1,15 @@
-import { useEffect, useState } from "react";
-import { Card, Typography } from "antd";
+import { Navigate, Route, BrowserRouter, Routes } from "react-router-dom";
+import SurveyList from "./pages/SurveyList";
+import SurveyDetail from "./pages/SurveyDetail";
 
 export default function App() {
-  const [status, setStatus] = useState("checking");
-  useEffect(() => {
-    fetch("/api/investigator/health")
-      .then((res) => (res.ok ? setStatus("up") : setStatus("down")))
-      .catch(() => setStatus("down"));
-  }, []);
   return (
-    <Card title="investigator">
-      <Typography.Text>服务状态: {status}</Typography.Text>
-    </Card>
+    <BrowserRouter basename="/investigator">
+      <Routes>
+        <Route path="/" element={<Navigate to="/surveys" replace />} />
+        <Route path="/surveys" element={<SurveyList />} />
+        <Route path="/surveys/:id" element={<SurveyDetail />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
