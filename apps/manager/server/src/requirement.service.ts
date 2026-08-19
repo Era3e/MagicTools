@@ -6,6 +6,7 @@ import {
   REQUIREMENT_STATUSES,
   createRequirement,
   findRequirementByEventId,
+  findRequirementByRef,
   getRequirement,
   listRequirements,
   setStatusWithTimeline,
@@ -86,5 +87,27 @@ export class RequirementService {
     }
     if (targetStatus === current.status) return current;
     return setStatusWithTimeline(id, targetStatus, current.status, "PR 状态联动（" + pr.state + (pr.merged ? "/merged" : "") + "）");
+  }
+
+  async syncGithub(repo: string) {
+    const issues = await new GitHubClient().listIssues(repo);
+    let created = 0;
+    let skipped = 0;
+    for (const issue of issues) {
+      const ref = repo + "#" + issue.number;
+      if (await findRequirementByRef("github", ref)) {
+        skipped += 1;
+        continue;
+      }
+      await createRequirement({
+        title: issue.title,
+        description: issue.body.slice(0, 2000),
+        source: "github",
+        sourceRef: ref,
+        labels: issue.labels,
+      });
+      created += 1;
+    }
+    return { created, skipped };
   }
 }

@@ -96,4 +96,20 @@ describe("inbox", () => {
     const res = await request(app.getHttpServer()).post("/api/manager/requirements/" + target.id + "/refresh-pr");
     expect(res.status).toBe(400);
   });
+
+  it("同步 GitHub Issues 为需求（桩模式，幂等）", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    process.env.GITHUB_STUB = "1";
+    const res = await request(app.getHttpServer())
+      .post("/api/manager/sync/github")
+      .send({ repo: "Era3e/MagicTools" });
+    expect(res.status).toBe(201);
+    expect(res.body.created).toBeGreaterThan(0);
+
+    const res2 = await request(app.getHttpServer())
+      .post("/api/manager/sync/github")
+      .send({ repo: "Era3e/MagicTools" });
+    delete process.env.GITHUB_STUB;
+    expect(res2.body.created).toBe(0);
+  });
 });

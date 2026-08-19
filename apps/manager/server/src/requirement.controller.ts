@@ -34,4 +34,12 @@ export class RequirementController {
   refreshPr(@Param("id") id: string) {
     return this.service.refreshPr(id);
   }
+
+  @Post("sync/github")
+  syncGithub(@Body() body: { repo: string }) {
+    if (!body.repo?.trim()) {
+      throw new BadRequestException("repo 必填");
+    }
+    return this.service.syncGithub(body.repo);
+  }
 }
