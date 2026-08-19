@@ -1,9 +1,13 @@
-import { Body, Controller, Get, Inject, Param, Patch, Post } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Inject, Param, Patch, Post, Query } from "@nestjs/common";
+import { CollectService } from "./collect.service";
 import { SourceService } from "./source.service";
 
 @Controller()
 export class SourceController {
-  constructor(@Inject(SourceService) private readonly service: SourceService) {}
+  constructor(
+    @Inject(SourceService) private readonly service: SourceService,
+    @Inject(CollectService) private readonly collectService: CollectService
+  ) {}
 
   @Get("sources")
   list() {
@@ -28,5 +32,23 @@ export class SourceController {
   @Post("sources/:id/test")
   test(@Param("id") id: string) {
     return this.service.test(id);
+  }
+
+  @Post("sources/:id/collect")
+  collect(@Param("id") id: string) {
+    return this.collectService.collect(id);
+  }
+
+  @Get("items")
+  items(@Query("sourceId") sourceId?: string, @Query("pushed") pushed?: string) {
+    return this.collectService.items({ sourceId, pushed });
+  }
+
+  @Post("items/push")
+  push(@Body() body: { ids: string[] }) {
+    if (!Array.isArray(body.ids) || body.ids.length === 0) {
+      throw new BadRequestException("ids 不能为空");
+    }
+    return this.collectService.push(body.ids);
   }
 }

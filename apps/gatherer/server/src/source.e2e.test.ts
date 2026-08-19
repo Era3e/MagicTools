@@ -54,4 +54,37 @@ describe("sources", () => {
     const res = await request(app.getHttpServer()).post("/api/gatherer/sources").send({ name: "坏源", type: "ftp" });
     expect(res.status).toBe(400);
   });
+
+  it("采集入库并去重（双桩模式）", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    process.env.FEED_STUB = "1";
+    process.env.MT_LLM_STUB = "1";
+    const list = await request(app.getHttpServer()).get("/api/gatherer/sources");
+    const target = list.body.find((s: { name: string }) => s.name === "E2E源");
+    const res = await request(app.getHttpServer()).post("/api/gatherer/sources/" + target.id + "/collect");
+    expect(res.status).toBe(201);
+    expect(res.body.new).toBeGreaterThan(0);
+
+    const res2 = await request(app.getHttpServer()).post("/api/gatherer/sources/" + target.id + "/collect");
+    delete process.env.FEED_STUB;
+    delete process.env.MT_LLM_STUB;
+    expect(res2.body.new).toBe(0);
+
+    const items = await request(app.getHttpServer()).get("/api/gatherer/items?sourceId=" + target.id);
+    expect(items.body.length).toBeGreaterThan(0);
+    expect(items.body[0].llmEnriched).toBe(true);
+  });
+
+  it("推送条目写 outbox 事件并标记", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    const list = await request(app.getHttpServer()).get("/api/gatherer/sources");
+    const target = list.body.find((s: { name: string }) => s.name === "E2E源");
+    const items = await request(app.getHttpServer()).get("/api/gatherer/items?sourceId=" + target.id);
+    const ids = items.body.map((i: { id: string }) => i.id).slice(0, 2);
+    const res = await request(app.getHttpServer()).post("/api/gatherer/items/push").send({ ids });
+    expect(res.status).toBe(201);
+    expect(res.body.pushedCount).toBe(ids.length);
+    const rows = await pool.query("SELECT * FROM outbox WHERE event = 'knowledge.item.collected'");
+    expect(rows.rowCount).toBeGreaterThanOrEqual(ids.length);
+  });
 });
