@@ -15,6 +15,7 @@
 
 - Node.js >= 20；pnpm.cmd 9（本机执行策略）；TS strict；TDD（先失败测试再实现）；禁止 TODO/TBD
 - 本地 dev 模式前置：fresh checkout 无 workspace 依赖的 dist（gitignore 未提交），启动 dev 前必须先 `pnpm.cmd exec turbo run build --filter=@mt/<服务名>`（CI 已用 turbo 构建，无此问题）
+- **Nest 构造注入必须显式 @Inject**：tsx/esbuild 不产出装饰器参数元数据（design:paramtypes），隐式注入会得到 undefined（position/interview/resume controller 均按此约定）
 - 端口：applicant web 4008 / server 5008（infra/ports.yaml 已登记，不改动）
 - applicant 使用独立数据库 applicant（PG 单实例多库）；迁移用 @mt/db runMigrations
 - LLM 供应商：DeepSeek（无视觉）+ 智谱（含视觉 visionModel）；所有 LLM 调用必须支持 MT_LLM_STUB=1 桩模式（CI/E2E 用）
@@ -290,7 +291,8 @@ export const pool = createPool(
 );
 
 export async function migrate(): Promise<void> {
-  await runMigrations(pool, process.cwd() + "/migrations");
+  // 按源码/编译产物位置解析，而非 cwd（CI 从仓库根启动，本地 dev 从包目录启动，两处都需正确）
+  await runMigrations(pool, join(__dirname, "..", "migrations"));
 }
 ~~~
 
@@ -402,7 +404,6 @@ git commit -m "feat(applicant): 建立独立数据库与核心表迁移，接入
 ~~~ts
 import { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
-import { Pool } from "pg";
 import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { AppModule } from "./app.module";
@@ -412,12 +413,10 @@ let app: INestApplication;
 let available = false;
 
 beforeAll(async () => {
-  const probe = new Pool({ connectionString: "postgres://postgres:postgres@127.0.0.1:5432/applicant", connectionTimeoutMillis: 2000 });
+  // 探测方式：直接跑迁移（DB 不可达时抛错 → 跳过用例）；pg 非直接依赖，不 import
   try {
-    await probe.query("SELECT 1");
-    available = true;
-    await probe.end();
     await migrate();
+    available = true;
     await pool.query("DELETE FROM positions WHERE company = 'E2E测试公司'");
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
     app = moduleRef.createNestApplication();
