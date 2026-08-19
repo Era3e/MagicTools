@@ -8,13 +8,19 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function resolveModel(provider: ModelProviderConfig, options: ChatOptions): string {
+  if (options.model) return options.model;
+  if (options.vision && provider.visionModel) return provider.visionModel;
+  return provider.defaultModel;
+}
+
 function buildRequest(
   provider: ModelProviderConfig,
   messages: ChatMessage[],
   options: ChatOptions,
   stream: boolean
 ): RequestInit {
-  const model = options.model ?? provider.defaultModel;
+  const model = resolveModel(provider, options);
   return {
     method: "POST",
     headers: {
@@ -100,7 +106,7 @@ export function createModelClient(
         return { content, usage };
       }
       const started = Date.now();
-      const model = options.model ?? provider.defaultModel;
+      const model = resolveModel(provider, options);
       let lastError: unknown;
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
