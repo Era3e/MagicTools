@@ -13,6 +13,7 @@ export const ZHIPU: ModelProviderConfig = {
   apiKeyEnv: "ZHIPU_API_KEY",
   defaultModel: "glm-4-flash",
   visionModel: "glm-4v-flash",
+  embeddingModel: "embedding-2",
 };
 
 export const BUILTIN_PROVIDERS: ModelProviderConfig[] = [DEEPSEEK, ZHIPU];

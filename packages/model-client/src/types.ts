@@ -29,4 +29,5 @@ export interface ModelProviderConfig {
   apiKeyEnv: string;
   defaultModel: string;
   visionModel?: string;
+  embeddingModel?: string;
 }
