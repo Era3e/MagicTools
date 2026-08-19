@@ -1,0 +1,32 @@
+import { Body, Controller, Get, Inject, Param, Patch, Post } from "@nestjs/common";
+import { SurveyService } from "./survey.service";
+
+@Controller()
+export class SurveyController {
+  constructor(@Inject(SurveyService) private readonly service: SurveyService) {}
+
+  @Get("surveys")
+  list() {
+    return this.service.list();
+  }
+
+  @Get("surveys/:id")
+  get(@Param("id") id: string) {
+    return this.service.get(id);
+  }
+
+  @Post("surveys")
+  create(@Body() body: { name: string; description?: string; appToken?: string; tableId?: string; answerFields?: string[] }) {
+    return this.service.create(body);
+  }
+
+  @Patch("surveys/:id")
+  update(@Param("id") id: string, @Body() patch: Record<string, unknown>) {
+    return this.service.update(id, patch as never);
+  }
+
+  @Get("meta/feishu-status")
+  feishuStatus() {
+    return this.service.feishuStatus();
+  }
+}
