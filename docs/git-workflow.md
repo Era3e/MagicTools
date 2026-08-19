@@ -56,7 +56,7 @@ pnpm ws:cleanup <项目> <任务ID>
 
 | Name | 值 | 用途 |
 |---|---|---|
-| REGISTRY_HOST | 如 cr.aliyuncs.com/magictools（不含 https://） | 镜像仓库域名 |
+| REGISTRY_HOST | 如 registry.cn-hangzhou.aliyuncs.com（不含 https://，不含命名空间） | 镜像仓库域名，最终镜像路径 = <域名>/magictools/<服务名>:latest（magictools 为 ACR 命名空间） |
 | REGISTRY_USERNAME | 阿里云 ACR 用户名 | images job 登录 |
 | REGISTRY_PASSWORD | ACR 密码/访问凭证 | images job 登录 |
 | DEPLOY_SSH_KEY | ECS 私钥 | 部署脚本（Phase 1 用） |
@@ -64,3 +64,5 @@ pnpm ws:cleanup <项目> <任务ID>
 | DEEPSEEK_API_KEY / ZHIPU_API_KEY | 大模型密钥 | 各子项目 LLM |
 
 > 未配置 REGISTRY_HOST 时 images job 自动跳过（已内置守卫）；配置后 main 合并即自动构建推送镜像。
+>
+> 镜像仓库推荐用阿里云容器镜像服务 ACR（个人版免费）：控制台 → 容器镜像服务 → 个人版实例 → 命名空间 → 创建名为 **magictools** 的命名空间（类型选公开或私有均可，个人使用选私有即可），REGISTRY_HOST 填个人版固定域名 registry.cn-hangzhou.aliyuncs.com；ECS 上 docker login 该域名后即可拉取。

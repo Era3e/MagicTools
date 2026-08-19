@@ -2611,7 +2611,7 @@ deploy.ps1：
 ~~~powershell
 param(
   [Parameter(Mandatory = $true)][string]$HostName,
-  [string]$Registry = "cr.aliyuncs.com/magictools",
+  [string]$Registry = "registry.cn-hangzhou.aliyuncs.com",
   [string]$ImageTag = "latest"
 )
 
