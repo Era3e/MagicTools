@@ -72,4 +72,28 @@ describe("inbox", () => {
       .send({ status: "not-a-status" });
     expect(res.status).toBe(400);
   });
+
+  it("refresh-pr 联动更新需求状态（桩模式）", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    process.env.GITHUB_STUB = "1";
+    const list = await request(app.getHttpServer()).get("/api/manager/requirements");
+    const target = list.body[0];
+    const patched = await request(app.getHttpServer())
+      .patch("/api/manager/requirements/" + target.id)
+      .send({ prUrl: "https://github.com/Era3e/MagicTools/pull/1" });
+    expect(patched.status).toBe(200);
+    const res = await request(app.getHttpServer()).post("/api/manager/requirements/" + target.id + "/refresh-pr");
+    delete process.env.GITHUB_STUB;
+    expect(res.status).toBe(201);
+    expect(res.body.status).toBe("developing");
+  });
+
+  it("refresh-pr 未关联 PR 返回 400", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    const list = await request(app.getHttpServer()).get("/api/manager/requirements");
+    const target = list.body[0];
+    await request(app.getHttpServer()).patch("/api/manager/requirements/" + target.id).send({ prUrl: "" });
+    const res = await request(app.getHttpServer()).post("/api/manager/requirements/" + target.id + "/refresh-pr");
+    expect(res.status).toBe(400);
+  });
 });

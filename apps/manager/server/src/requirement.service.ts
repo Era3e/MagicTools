@@ -1,5 +1,6 @@
 import { Injectable, BadRequestException, NotFoundException } from "@nestjs/common";
 import { processOutbox } from "@mt/db";
+import { GitHubClient } from "./github/client";
 import { assessorPool } from "./db";
 import {
   REQUIREMENT_STATUSES,
@@ -68,5 +69,22 @@ export class RequirementService {
       created += 1;
     }
     return { consumed, created, skipped };
+  }
+
+  async refreshPr(id: string) {
+    const current = await getRequirement(id);
+    if (!current) throw new NotFoundException("需求不存在");
+    if (!current.prUrl) throw new BadRequestException("未关联 PR");
+    const match = current.prUrl.match(/github\.com\/([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+)\/pull\/(\d+)/);
+    if (!match) throw new BadRequestException("PR 链接格式不正确");
+    const pr = await new GitHubClient().getPr(match[1], Number(match[2]));
+    const map: Record<string, RequirementStatus> = { open: "developing", merged: "accepting", closed: "todo" };
+    const targetStatus: RequirementStatus = pr.merged ? "accepting" : map[pr.state] ?? current.status;
+    // 不可回退 accepting/done
+    if (["accepting", "done"].includes(current.status) && targetStatus !== current.status) {
+      return current;
+    }
+    if (targetStatus === current.status) return current;
+    return setStatusWithTimeline(id, targetStatus, current.status, "PR 状态联动（" + pr.state + (pr.merged ? "/merged" : "") + "）");
   }
 }

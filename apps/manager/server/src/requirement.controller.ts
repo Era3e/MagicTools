@@ -29,4 +29,9 @@ export class RequirementController {
   patch(@Param("id") id: string, @Body() body: Record<string, unknown>) {
     return this.service.patch(id, body as never);
   }
+
+  @Post("requirements/:id/refresh-pr")
+  refreshPr(@Param("id") id: string) {
+    return this.service.refreshPr(id);
+  }
 }
