@@ -66,6 +66,27 @@ export interface Interview {
   analysis: InterviewAnalysis | null;
 }
 
+export interface Resume {
+  id: string;
+  name: string;
+  version: number;
+  source: string;
+  contentText: string;
+  clawcvSessionId: string | null;
+  lastAnalysis: Record<string, unknown> | null;
+  createdAt: string;
+}
+
+export const apiResume = {
+  list: () => request<Resume[]>("/resumes"),
+  create: (input: { name: string; contentText: string }) => request<Resume>("/resumes", { method: "POST", body: JSON.stringify(input) }),
+  analyze: (id: string) => request<Record<string, unknown>>("/resumes/" + id + "/analyze", { method: "POST" }),
+  rewrite: (id: string, input: { sectionType: string; originalText: string; positionId?: string }) =>
+    request<Record<string, unknown>>("/resumes/" + id + "/rewrite", { method: "POST", body: JSON.stringify(input) }),
+  match: (id: string, positionId: string) => request<Record<string, unknown>>("/resumes/" + id + "/match/" + positionId, { method: "POST" }),
+  quota: () => request<{ configured: boolean; quota: unknown; error?: string }>("/meta/quota"),
+};
+
 export interface InterviewAnalysis {
   questions?: Array<{ category: string; question: string; comment: string }>;
   quality?: string;
