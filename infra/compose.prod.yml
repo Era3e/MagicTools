@@ -57,7 +57,7 @@ services:
     expose: ["5003"]
     environment:
       PORT: "5003"
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/magictools
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/assessor
     depends_on: [postgres]
     restart: unless-stopped
 
