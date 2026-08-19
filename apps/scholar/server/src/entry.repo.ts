@@ -14,9 +14,9 @@ export interface EntryRow {
   updatedAt: string;
 }
 
-const COLUMNS = "id, source, source_ref, title, content, summary, category, tags, assistant_scope, created_at, updated_at";
+export const COLUMNS = "id, source, source_ref, title, content, summary, category, tags, assistant_scope, created_at, updated_at";
 
-function mapRow(r: Record<string, unknown>): EntryRow {
+export function mapRow(r: Record<string, unknown>): EntryRow {
   return {
     id: r.id as string,
     source: r.source as EntryRow["source"],

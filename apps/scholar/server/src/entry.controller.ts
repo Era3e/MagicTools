@@ -1,9 +1,18 @@
 import { Body, Controller, Get, Inject, Param, Patch, Post, Query } from "@nestjs/common";
 import { EntryService } from "./entry.service";
+import { SearchService } from "./search.service";
 
 @Controller()
 export class EntryController {
-  constructor(@Inject(EntryService) private readonly service: EntryService) {}
+  constructor(
+    @Inject(EntryService) private readonly service: EntryService,
+    @Inject(SearchService) private readonly searchService: SearchService
+  ) {}
+
+  @Get("entries/search")
+  search(@Query("q") q?: string, @Query("mode") mode?: string, @Query("limit") limit?: string) {
+    return this.searchService.search({ q, mode, limit });
+  }
 
   @Get("entries")
   list(@Query("source") source?: string, @Query("category") category?: string, @Query("tag") tag?: string) {

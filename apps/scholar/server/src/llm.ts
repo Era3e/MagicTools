@@ -39,18 +39,19 @@ export async function embed(texts: string[]): Promise<number[][]> {
   return client.embed(texts);
 }
 
-/** 桩模式确定性伪向量：文本 hash 作为 LCG 种子展开到指定维度（取值 [-1, 1)） */
+/** 桩模式确定性伪向量：字符 bigram 哈希打点后单位化（1024 维），共享 bigram 的文本在桩模式下仍具检索相似性 */
 export function pseudoVector(text: string, dims = EMBEDDING_DIMS): number[] {
-  let h = 2166136261;
-  for (let i = 0; i < text.length; i++) {
-    h ^= text.charCodeAt(i);
-    h = Math.imul(h, 16777619);
+  const vec = new Array<number>(dims).fill(0);
+  const t = text.toLowerCase();
+  for (let i = 0; i < t.length - 1; i++) {
+    const bigram = t.slice(i, i + 2);
+    let h = 2166136261;
+    for (let j = 0; j < bigram.length; j++) {
+      h ^= bigram.charCodeAt(j);
+      h = Math.imul(h, 16777619);
+    }
+    vec[(h >>> 0) % dims] = 1;
   }
-  const vec = new Array<number>(dims);
-  let state = h >>> 0;
-  for (let i = 0; i < dims; i++) {
-    state = (Math.imul(state, 1103515245) + 12345) >>> 0;
-    vec[i] = (state / 4294967296) * 2 - 1;
-  }
-  return vec;
+  const norm = Math.sqrt(vec.reduce((s, v) => s + v * v, 0)) || 1;
+  return vec.map((v) => v / norm);
 }
