@@ -5,8 +5,9 @@
 
 ## 当前状态快照（2026-08-18 晚）
 
-- **项目阶段**：Phase 1 · Applicant 实现完成（T1~T9 全部提交 dev，本地验证：qa-gate 绿、applicant 冒烟 PASS、E2E 4/4、server 21 测试 + web 3 测试全绿）。待 PR dev→main 合并。
-- **下一步**：推送 dev → PR → CI 三检查全绿 → 合并 main → 删除 dev → 更新迭代日志；随后进入需求主线（Investigator→Assessor→Manager）。
+- **项目阶段**：Phase 1 · **Applicant 已交付并合并 main（PR #3，941fc95，CI 全绿）**。接下来进入需求主线（Investigator→Assessor→Manager）。
+- **下一步**：Investigator 脑暴（飞书对接细节）→ spec → plan → 实现 → PR 合并 main；随后 Assessor、Manager。
+- **Applicant 能力清单**：岗位 CRUD/六状态看板/JD 文本解析/截图视觉识别（glm-4v）/投递话术/面试复盘分析/复盘→简历改写闭环/ClawCV 集成+无 Key 降级。
 - **仓库就绪度（2026-08-19 核实）**：main 分支保护已启用（required checks: quality/smoke/e2e；0 审批；禁止强推/删除）；GitHub Secrets 尚未配置（ClawCV/镜像仓库均未配，降级路径与 images 跳过守卫已覆盖）；main 最近 CI 全部 success。
 - **ClawCV 调研结论**：后端 api.wondercv.com + Bearer API Key；免费额度 10 PDF/20 改写/20 分析每月；已从 npm 包 clawcv@1.1.0 源码逆向出全部端点与请求体契约（/cv/v1/mcp/{session,analyze,rewrite,match,ai-mentor,pdf}，详见 docs/integrations/clawcv-setup.md），adapter 实现无风险。
 - **仓库状态**：GitHub 远端 https://github.com/Era3e/MagicTools（main 为默认分支）；本地 main 已同步 origin/main；dev 分支与 worktree 已按流程清理。
