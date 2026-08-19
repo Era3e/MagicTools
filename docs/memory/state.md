@@ -5,9 +5,9 @@
 
 ## 当前状态快照（2026-08-18 晚）
 
-- **项目阶段**：Phase 1 · 需求主线第一棒 Investigator 实现完成（T1~T9 提交 dev，本地验证：qa-gate 绿、双栈冒烟 PASS、E2E 6/6、server 16 测试 + web 2 测试全绿），待 PR dev→main 合并。
-- **下一步**：Investigator PR 合并 → Assessor（消费 researcher.response.push 事件）→ Manager。
-- **关键事件契约**：researcher.response.push（source=investigator，payload 含 surveyId/responseId/structured/sentiment/priority），Assessor 消费。
+- **项目阶段**：Phase 1 · 需求主线前两环交付（Investigator 已合并 PR #5；Assessor 实现完成待合并——本地验证：qa-gate 绿、三栈冒烟 PASS、E2E 7/7、server 11 测试 + web 2 测试全绿）。
+- **下一步**：Assessor PR 合并 → Manager（消费 requirement.created → 需求全生命周期 + GitHub Issues/cybercloud 对接）。
+- **关键事件契约**：① researcher.response.push（investigator → assessor）② requirement.created（assessor → manager，payload 含 analysisMd/designMd/repoUrl/reviewComment）。
 - **Applicant 能力清单**：岗位 CRUD/六状态看板/JD 文本解析/截图视觉识别（glm-4v）/投递话术/面试复盘分析/复盘→简历改写闭环/ClawCV 集成+无 Key 降级。
 - **仓库就绪度（2026-08-19 核实）**：main 分支保护已启用（required checks: quality/smoke/e2e；0 审批；禁止强推/删除）；GitHub Secrets 尚未配置（ClawCV/镜像仓库均未配，降级路径与 images 跳过守卫已覆盖）；main 最近 CI 全部 success。
 - **ClawCV 调研结论**：后端 api.wondercv.com + Bearer API Key；免费额度 10 PDF/20 改写/20 分析每月；已从 npm 包 clawcv@1.1.0 源码逆向出全部端点与请求体契约（/cv/v1/mcp/{session,analyze,rewrite,match,ai-mentor,pdf}，详见 docs/integrations/clawcv-setup.md），adapter 实现无风险。
