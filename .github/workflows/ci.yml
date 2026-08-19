@@ -67,12 +67,14 @@ jobs:
       - run: pnpm exec turbo run build --filter=@mt/applicant-web
       - run: pnpm exec turbo run build --filter=@mt/gateway
       - run: pnpm exec turbo run build --filter=@mt/investigator-server
+      - run: pnpm exec turbo run build --filter=@mt/investigator-web
       - name: 启动全部服务并冒烟
         run: |
           node apps/applicant/server/dist/main.js &
           (cd apps/applicant/web && node node_modules/vite/bin/vite.js preview --port 4008 --strictPort --host 127.0.0.1) &
           node apps/gateway/dist/index.js &
           PORT=5002 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/investigator FEISHU_STUB=1 MT_LLM_STUB=1 node apps/investigator/server/dist/main.js &
+          (cd apps/investigator/web && node node_modules/vite/bin/vite.js preview --port 4002 --strictPort --host 127.0.0.1) &
           sleep 10
           node infra/scripts/smoke.mjs --only applicant
           node infra/scripts/smoke.mjs --only investigator
@@ -120,6 +122,7 @@ jobs:
           (cd apps/applicant/web && node node_modules/vite/bin/vite.js preview --port 4008 --strictPort --host 127.0.0.1) &
           node apps/gateway/dist/index.js &
           PORT=5002 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/investigator FEISHU_STUB=1 MT_LLM_STUB=1 node apps/investigator/server/dist/main.js &
+          (cd apps/investigator/web && node node_modules/vite/bin/vite.js preview --port 4002 --strictPort --host 127.0.0.1) &
           sleep 10
           pnpm --filter @mt/e2e exec playwright test
 
