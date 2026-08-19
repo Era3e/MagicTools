@@ -2,6 +2,7 @@ import type { ChatMessage, ChatOptions, ModelProviderConfig, UsageLog } from "./
 
 export interface ModelClient {
   chat(messages: ChatMessage[], options?: ChatOptions): Promise<{ content: string; usage: UsageLog }>;
+  embed(texts: string[]): Promise<number[][]>;
 }
 
 function sleep(ms: number): Promise<void> {
@@ -87,6 +88,20 @@ export function createModelClient(
   logUsage: (usage: UsageLog) => void = () => {}
 ): ModelClient {
   return {
+    async embed(texts: string[]) {
+      const model = provider.embeddingModel ?? provider.defaultModel;
+      const res = await fetch(provider.baseUrl + "/embeddings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + process.env[provider.apiKeyEnv],
+        },
+        body: JSON.stringify({ model, input: texts.length === 1 ? texts[0] : texts }),
+      });
+      if (!res.ok) throw new Error("embedding 调用失败: " + res.status + " " + (await res.text()).slice(0, 200));
+      const data = (await res.json()) as { data?: Array<{ embedding?: number[] }> };
+      return (data.data ?? []).map((d) => d.embedding ?? []);
+    },
     async chat(messages, options = {}) {
       if (options.stream) {
         let content = "";

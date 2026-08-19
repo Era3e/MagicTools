@@ -99,4 +99,20 @@ describe("model-client", () => {
     const body = JSON.parse(String(init.body));
     expect(body.model).toBe("deepseek-chat");
   });
+
+  it("embed 调用 embedding 模型并返回向量数组", async () => {
+    const fetchMock = vi.fn(async () =>
+      new Response(JSON.stringify({ data: [{ embedding: [0.1, 0.2, 0.3] }] }), { status: 200 })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    const client = createModelClient(ZHIPU, () => {});
+    const vectors = await client.embed(["测试文本"]);
+    expect(vectors).toHaveLength(1);
+    expect(vectors[0]).toEqual([0.1, 0.2, 0.3]);
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toContain("/embeddings");
+    const body = JSON.parse(String(init.body));
+    expect(body.model).toBe("embedding-2");
+    expect(body.input).toBe("测试文本");
+  });
 });
