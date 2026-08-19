@@ -58,6 +58,7 @@ services:
     environment:
       PORT: "5003"
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/assessor
+      INVESTIGATOR_DATABASE_URL: postgres://postgres:postgres@postgres:5432/investigator
     depends_on: [postgres]
     restart: unless-stopped
 
@@ -71,6 +72,7 @@ services:
     environment:
       PORT: "5004"
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/manager
+      ASSESSOR_DATABASE_URL: postgres://postgres:postgres@postgres:5432/assessor
     depends_on: [postgres]
     restart: unless-stopped
 
@@ -96,7 +98,8 @@ services:
     expose: ["5006"]
     environment:
       PORT: "5006"
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/magictools
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/scholar
+      GATHERER_DATABASE_URL: postgres://postgres:postgres@postgres:5432/gatherer
     depends_on: [postgres]
     restart: unless-stopped
 

@@ -74,6 +74,8 @@ jobs:
       - run: pnpm exec turbo run build --filter=@mt/manager-web
       - run: pnpm exec turbo run build --filter=@mt/gatherer-server
       - run: pnpm exec turbo run build --filter=@mt/gatherer-web
+      - run: pnpm exec turbo run build --filter=@mt/scholar-server
+      - run: pnpm exec turbo run build --filter=@mt/scholar-web
       - name: 启动全部服务并冒烟
         run: |
           node apps/applicant/server/dist/main.js &
@@ -87,12 +89,15 @@ jobs:
           (cd apps/manager/web && node node_modules/vite/bin/vite.js preview --port 4004 --strictPort --host 127.0.0.1) &
           PORT=5001 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/gatherer FEED_STUB=1 MT_LLM_STUB=1 node apps/gatherer/server/dist/main.js &
           (cd apps/gatherer/web && node node_modules/vite/bin/vite.js preview --port 4001 --strictPort --host 127.0.0.1) &
+          PORT=5006 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/scholar GATHERER_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/gatherer MT_LLM_STUB=1 node apps/scholar/server/dist/main.js &
+          (cd apps/scholar/web && node node_modules/vite/bin/vite.js preview --port 4006 --strictPort --host 127.0.0.1) &
           sleep 10
           node infra/scripts/smoke.mjs --only applicant
           node infra/scripts/smoke.mjs --only investigator
           node infra/scripts/smoke.mjs --only assessor
           node infra/scripts/smoke.mjs --only manager
           node infra/scripts/smoke.mjs --only gatherer
+          node infra/scripts/smoke.mjs --only scholar
 
   e2e:
     needs: smoke
@@ -133,6 +138,8 @@ jobs:
       - run: pnpm exec turbo run build --filter=@mt/manager-web
       - run: pnpm exec turbo run build --filter=@mt/gatherer-server
       - run: pnpm exec turbo run build --filter=@mt/gatherer-web
+      - run: pnpm exec turbo run build --filter=@mt/scholar-server
+      - run: pnpm exec turbo run build --filter=@mt/scholar-web
       - name: 缓存 Playwright 浏览器
         uses: actions/cache@v4
         with:
@@ -152,6 +159,8 @@ jobs:
           (cd apps/manager/web && node node_modules/vite/bin/vite.js preview --port 4004 --strictPort --host 127.0.0.1) &
           PORT=5001 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/gatherer FEED_STUB=1 MT_LLM_STUB=1 node apps/gatherer/server/dist/main.js &
           (cd apps/gatherer/web && node node_modules/vite/bin/vite.js preview --port 4001 --strictPort --host 127.0.0.1) &
+          PORT=5006 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/scholar GATHERER_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/gatherer MT_LLM_STUB=1 node apps/scholar/server/dist/main.js &
+          (cd apps/scholar/web && node node_modules/vite/bin/vite.js preview --port 4006 --strictPort --host 127.0.0.1) &
           sleep 10
           pnpm --filter @mt/e2e exec playwright test
 

@@ -58,7 +58,7 @@
 | POST /inbox/poll | 消费 gatherer 事件（幂等） |
 | GET/POST /entries | 列表（筛选）/ 手动录入 |
 | GET/PATCH /entries/:id | 详情 / 更新（标签/圈定） |
-| GET /entries/search?q=&mode=fts|vector&limit= | 双通道检索 |
+| GET /entries/search?q=&mode=fts\|vector&limit= | 双通道检索 |
 | POST /graph/generate | LLM 抽取实体关系（重建图谱） |
 | GET /graph | 图谱数据（nodes + edges + 关联条目计数） |
 | POST /sync/obsidian | 扫描 vault 目录导入 |
