@@ -1,2 +1,3 @@
 CREATE DATABASE applicant;
 CREATE DATABASE investigator;
+CREATE DATABASE assessor;
