@@ -14,6 +14,7 @@
 ## Global Constraints
 
 - Node.js >= 20；pnpm.cmd 9（本机执行策略）；TS strict；TDD（先失败测试再实现）；禁止 TODO/TBD
+- 本地 dev 模式前置：fresh checkout 无 workspace 依赖的 dist（gitignore 未提交），启动 dev 前必须先 `pnpm.cmd exec turbo run build --filter=@mt/<服务名>`（CI 已用 turbo 构建，无此问题）
 - 端口：applicant web 4008 / server 5008（infra/ports.yaml 已登记，不改动）
 - applicant 使用独立数据库 applicant（PG 单实例多库）；迁移用 @mt/db runMigrations
 - LLM 供应商：DeepSeek（无视觉）+ 智谱（含视觉 visionModel）；所有 LLM 调用必须支持 MT_LLM_STUB=1 桩模式（CI/E2E 用）
