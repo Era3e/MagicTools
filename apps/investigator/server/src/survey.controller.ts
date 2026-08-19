@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Inject, Param, Patch, Post } from "@nestjs/common";
+import { Body, Controller, Get, Inject, Param, Patch, Post, Query } from "@nestjs/common";
 import { SurveyService } from "./survey.service";
 
 @Controller()
@@ -28,5 +28,15 @@ export class SurveyController {
   @Get("meta/feishu-status")
   feishuStatus() {
     return this.service.feishuStatus();
+  }
+
+  @Post("surveys/:id/sync")
+  sync(@Param("id") id: string) {
+    return this.service.sync(id);
+  }
+
+  @Get("surveys/:id/responses")
+  responses(@Param("id") id: string, @Query("sentiment") sentiment?: string, @Query("priority") priority?: string) {
+    return this.service.responses(id, { sentiment, priority });
   }
 }

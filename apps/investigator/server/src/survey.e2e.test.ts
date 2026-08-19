@@ -59,4 +59,38 @@ describe("surveys", () => {
     expect(res.status).toBe(200);
     expect(res.body.configured).toBe(false);
   });
+
+  it("同步拉取并结构化（双桩模式）", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    process.env.FEISHU_STUB = "1";
+    process.env.MT_LLM_STUB = "1";
+    const list = await request(app.getHttpServer()).get("/api/investigator/surveys");
+    const target = list.body.find((s: { name: string }) => s.name === "E2E调研");
+    const res = await request(app.getHttpServer()).post("/api/investigator/surveys/" + target.id + "/sync");
+    delete process.env.FEISHU_STUB;
+    delete process.env.MT_LLM_STUB;
+    expect(res.status).toBe(201);
+    expect(res.body.fetchedCount).toBeGreaterThan(0);
+    expect(res.body.processedCount).toBe(res.body.fetchedCount);
+
+    const responses = await request(app.getHttpServer()).get("/api/investigator/surveys/" + target.id + "/responses");
+    expect(responses.status).toBe(200);
+    expect(responses.body.length).toBeGreaterThan(0);
+    expect(responses.body[0].structured).toHaveProperty("requirements");
+  });
+
+  it("重复同步幂等（不产生重复记录）", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    process.env.FEISHU_STUB = "1";
+    process.env.MT_LLM_STUB = "1";
+    const list = await request(app.getHttpServer()).get("/api/investigator/surveys");
+    const target = list.body.find((s: { name: string }) => s.name === "E2E调研");
+    await request(app.getHttpServer()).post("/api/investigator/surveys/" + target.id + "/sync");
+    const count = await pool.query("SELECT count(*)::int AS c FROM responses WHERE survey_id = $1", [target.id]);
+    await request(app.getHttpServer()).post("/api/investigator/surveys/" + target.id + "/sync");
+    const count2 = await pool.query("SELECT count(*)::int AS c FROM responses WHERE survey_id = $1", [target.id]);
+    delete process.env.FEISHU_STUB;
+    delete process.env.MT_LLM_STUB;
+    expect(count2.rows[0].c).toBe(count.rows[0].c);
+  });
 });
