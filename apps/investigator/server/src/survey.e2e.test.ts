@@ -120,4 +120,13 @@ describe("surveys", () => {
     const outboxRows = await pool.query("SELECT * FROM outbox WHERE event = 'researcher.response.push' ORDER BY occurred_at DESC LIMIT 2");
     expect(outboxRows.rowCount).toBeGreaterThanOrEqual(ids.length);
   });
+
+  it("未配置 webhook 时发送链接返回 409", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    delete process.env.FEISHU_BOT_WEBHOOK;
+    const list = await request(app.getHttpServer()).get("/api/investigator/surveys");
+    const target = list.body.find((s: { name: string }) => s.name === "E2E调研");
+    const res = await request(app.getHttpServer()).post("/api/investigator/surveys/" + target.id + "/send-link");
+    expect(res.status).toBe(409);
+  });
 });

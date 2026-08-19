@@ -52,4 +52,9 @@ export class SurveyController {
     }
     return this.service.push(id, body.recordIds);
   }
+
+  @Post("surveys/:id/send-link")
+  sendLink(@Param("id") id: string) {
+    return this.service.sendLink(id);
+  }
 }

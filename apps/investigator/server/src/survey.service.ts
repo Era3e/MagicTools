@@ -1,4 +1,4 @@
-import { Injectable, BadGatewayException, BadRequestException, NotFoundException } from "@nestjs/common";
+import { Injectable, BadGatewayException, BadRequestException, ConflictException, NotFoundException } from "@nestjs/common";
 import { appendOutbox } from "@mt/db";
 import { idempotencyKey } from "@mt/utils";
 import { FeishuClient } from "./feishu/client";
@@ -136,5 +136,28 @@ export class SurveyService {
       eventIds.push(eventId);
     }
     return { pushedCount: targets.length, eventIds };
+  }
+
+  async sendLink(surveyId: string) {
+    const survey = await getSurvey(surveyId);
+    if (!survey) throw new NotFoundException("调研主题不存在");
+    const webhook = process.env.FEISHU_BOT_WEBHOOK;
+    if (!webhook) throw new ConflictException("未配置 FEISHU_BOT_WEBHOOK，无法发送到群");
+    const response = await fetch(webhook, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        msg_type: "text",
+        content: {
+          text:
+            "调研主题「" + survey.name + "」问卷：请在飞书中填写（多维表格 " + survey.appToken + "，数据表 " + survey.tableId + "）。",
+        },
+      }),
+    });
+    const body = (await response.json().catch(() => ({}))) as { code?: number };
+    if (!response.ok || (body.code !== undefined && body.code !== 0)) {
+      throw new BadGatewayException("飞书 webhook 发送失败");
+    }
+    return { sent: true };
   }
 }
