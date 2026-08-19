@@ -1,3 +1,6 @@
+import { loadRootEnv } from "@mt/config";
+loadRootEnv();
+
 import { loadYamlFile } from "@mt/config";
 import { createGateway } from "./app";
 import { findPortsFile } from "./ports-file";
