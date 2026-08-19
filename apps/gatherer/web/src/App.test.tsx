@@ -5,10 +5,10 @@ import App from "./App";
 describe("App", () => {
   afterEach(() => vi.unstubAllGlobals());
 
-  it("渲染标题并显示服务状态 up", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => new Response("{}", { status: 200 })));
+  it("默认路由渲染信息源页", async () => {
+    window.history.pushState({}, "", "/gatherer/sources");
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("[]", { status: 200 })));
     render(<App />);
-    expect(screen.getByText("gatherer")).toBeTruthy();
-    expect(await screen.findByText(/服务状态: up/)).toBeTruthy();
+    expect(await screen.findByText("信息源")).toBeTruthy();
   });
 });

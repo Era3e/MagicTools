@@ -16,3 +16,4 @@
 - **Investigator MVP 完成并合并（PR #5）**：调研主题管理（飞书 Bitable 源 + 字段映射）、同步链路（FeishuClient 令牌缓存/分页/归一化 + LLM 结构化 + 幂等入库）、结果筛选与主题总结、按记录推送 outbox 事件（researcher.response.push）、群机器人分发、数据库自举（免手工建库）。
 - **Assessor MVP 完成并合并（PR #7）**：跨库消费 investigator 事件并批次聚合幂等入库、GitHub 仓库上下文（README/目录树/语言）、LLM 需求分析+设计方案、五状态审核流、推送 requirement.created 事件（主线第二环打通）。
 - **Manager MVP 完成并合并（PR #8）**：跨库消费 requirement.created、需求 7 态生命周期与三来源标签、PR 状态联动刷新、Phantom GitHub Issues 同步、迭代管理；三环全链路 E2E 打通。**Phase 1 全部完成**：四子项目（Applicant/Investigator/Assessor/Manager）交付，主线三环（调研→分析设计→开发管理）事件链全线贯通。
+- **Gatherer MVP 完成（待合并 PR）**：三类信息源（RSS/JSON/网页选择器）、采集管道（解析→去重→LLM 富化→入库）、试采与 cron 调度、推送 knowledge.item.collected 事件（知识主线第一环）。
