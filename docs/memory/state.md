@@ -30,6 +30,7 @@
 ## 已知问题
 
 1. 本机 PowerShell 执行策略限制：pnpm/npx 一律用 pnpm.cmd；
-2. Docker Desktop 需手动启动（引擎就绪后 compose 正常）；
-3. 镜像推送需先在 GitHub 配置 Secrets（REGISTRY_HOST/USERNAME/PASSWORD），未配置时 images job 自动跳过；
-4. 子智能体委托（subagent/subagent_fork）在本环境不可用，多智能体协作需外部 CLI 环境（见 executing-plans 技能说明）。
+2. 沙箱会向 git 注入 HTTP_PROXY=127.0.0.1 等代理环境变量，代理软件未运行时 git 无法联网（报 "over proxy 127.0.0.1"）；**推送前需清空**：`$env:HTTP_PROXY=''; $env:HTTPS_PROXY=''; $env:ALL_PROXY=''; $env:NO_PROXY='*'`（gh CLI 不受影响，可直接用）；
+3. Docker Desktop 需手动启动（引擎就绪后 compose 正常）；
+4. 镜像推送需先在 GitHub 配置 Secrets（REGISTRY_HOST/USERNAME/PASSWORD），未配置时 images job 自动跳过；
+5. 子智能体委托（subagent/subagent_fork）在本环境不可用，多智能体协作需外部 CLI 环境（见 executing-plans 技能说明）。
