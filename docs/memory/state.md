@@ -5,7 +5,7 @@
 
 ## 当前状态快照（2026-08-19 深夜）
 
-- **项目阶段**：Phase 2 知识主线 · Scholar 实现完成待合并（本地验证：server 22 测试 + web 8 测试全绿、冒烟 PASS、Playwright E2E 2/2 通过、lint 29/29 + infra 测试绿）。
+- **项目阶段**：Phase 2 知识主线 · Scholar 实现完成，PR #12 已创建待 CI（本地验证：server 22 测试 + web 8 测试全绿、冒烟 PASS、Playwright E2E 2/2 通过、lint 29/29 + infra 测试绿）。
 - **Scholar 能力清单**：知识收件箱（跨库消费 gatherer 的 knowledge.item.collected，幂等）、条目 CRUD + 三来源标签（gatherer/manual/obsidian）、双通道检索（pg_trgm 全文 + pgvector 向量，embedding-2 1024 维，桩模式 bigram 哈希伪向量）、LLM 图谱抽取（entities/relations/entry_entities，重建=全量重抽）、obsidian vault 目录扫描同步（跳过 .obsidian/templates/attachments/assets 等目录，路径去重）、条目级 assistantScope 圈定 + 分类级圈定、设置表存 vault 路径。
 - **下一步**：Scholar PR 合并 → Assistant（消费圈定范围，3 意图）→ Designer（降级版）→ Phase 2 目标完成。
 - **Phase 2 事件契约**：knowledge.item.collected（source=gatherer，payload 含 itemId/url/title/content/summary/category/keywords/publishedAt），Scholar 经 GATHERER_DATABASE_URL 只读连接消费。
