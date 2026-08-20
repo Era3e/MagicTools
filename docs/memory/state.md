@@ -3,9 +3,10 @@
 > 机制说明：本目录是 AI 会话的持久记忆。会话启动协议：先读 AGENTS.md → 本目录 → 相关子项目文档。
 > 即时更新：每完成一个功能 / 关键决策 / 迭代结束，即刻追加条目，禁止事后批量补记。
 
-## 当前状态快照（2026-08-20，Phase 3 完成）
+## 当前状态快照（2026-08-20，Phase 4 进行中）
 
-- **项目阶段**：**Phase 3 智能助手全部完成**。Assistant（PR #15，637f1df）已合并 main，CI 全绿（quality/smoke/e2e）；worktree 与分支已清理。
+- **项目阶段**：**Phase 3 完成，Phase 4 设计师开发完成**。Designer PR #17 已创建待 CI（本地验证：server 20 测试 + web 6 测试全绿、冒烟 PASS、Playwright E2E 2/2、全量门禁 turbo 69/69 + infra + docs 通过）。
+- **Designer 能力清单**：自然语言 + 可选设计稿图片（glm-4v-flash 视觉路由）→ LLM 生成基于 @mt/ui 令牌的 React 组件源码（结构化 JSON + 桩模式固定示例组件）；服务端 esbuild 打包沙箱预览（React/antd/@mt/ui 内联单文件，resolveDir 固定包目录适配 CI，产物内存缓存，编译错误友好返回）；下载 .tsx；人工审核沉淀组件库（designer 库 components 表 + 重名幂等）；生成历史（含失败落库）；Web 三页（生成/组件库/历史）。
 - **Assistant 能力清单**：LLM 三意图路由（product_inquiry/data_query/chitchat_reject，桩模式关键词判别 + 非法输出回退）；product_inquiry 跨库只读检索 scholar 圈定条目（assistant_scope=true，向量 top-k + FTS 兜底）生成带引用回答（标题/来源/相似度）；data_query 对接 cybercloud 可配置 REST（LLM 生成查询参数 → 请求 → 格式化，CYBERCLOUD_STUB 桩模式，未配置优雅降级）；多轮对话持久化（conversations/messages，最近 10 轮上下文，检索带最近用户消息做指代消解）；网页聊天（会话侧栏/气泡/引用卡片跳转 Scholar）+ HTTP API 双入口；assistant 库自举（SCHOLAR_DATABASE_URL 惰性跨库池，e2e 用独立测试库避免与 scholar 测试互扰）。
 - **下一步**：Assistant PR #15 CI 全绿后合并 main → Phase 3 目标完成 → Phase 4 候选：Designer（降级版）。
 - **Phase 2 事件契约**：knowledge.item.collected（source=gatherer，payload 含 itemId/url/title/content/summary/category/keywords/publishedAt），Scholar 经 GATHERER_DATABASE_URL 只读连接消费。
