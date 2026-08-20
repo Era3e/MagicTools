@@ -6,10 +6,16 @@ const DEFAULT_URL = "postgres://postgres:postgres@127.0.0.1:5432/scholar";
 
 export const pool = createPool(process.env.DATABASE_URL ?? DEFAULT_URL);
 
-// 跨库只读连接（消费 gatherer 的 outbox）
-export const gathererPool = createPool(
-  process.env.GATHERER_DATABASE_URL ?? "postgres://postgres:postgres@127.0.0.1:5432/gatherer"
-);
+// 跨库只读连接（消费 gatherer 的 outbox）；惰性创建以便测试注入独立测试库
+let gatherer: Pool | null = null;
+export function gathererPool(): Pool {
+  if (!gatherer) {
+    gatherer = createPool(
+      process.env.GATHERER_DATABASE_URL ?? "postgres://postgres:postgres@127.0.0.1:5432/gatherer"
+    );
+  }
+  return gatherer;
+}
 
 export async function ensureDatabase(url = process.env.DATABASE_URL ?? DEFAULT_URL): Promise<void> {
   const target = new Pool({ connectionString: url, connectionTimeoutMillis: 5000 });

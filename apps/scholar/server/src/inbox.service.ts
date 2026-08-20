@@ -17,8 +17,8 @@ interface GathererItemPayload {
 @Injectable()
 export class InboxService {
   async poll() {
-    const consumed = await processOutbox(gathererPool, async () => {});
-    const events = await gathererPool.query(
+    const consumed = await processOutbox(gathererPool(), async () => {});
+    const events = await gathererPool().query(
       "SELECT * FROM outbox WHERE event = 'knowledge.item.collected' AND status = 'done' ORDER BY occurred_at ASC"
     );
     let created = 0;
