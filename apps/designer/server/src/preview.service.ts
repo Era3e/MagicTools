@@ -1,6 +1,10 @@
+import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 import { build, type Plugin } from "esbuild";
 import { Injectable, NotFoundException } from "@nestjs/common";
+
+// 解析基准目录固定为包目录（src 或 dist 的上一级），避免 CI 下 cwd=仓库根解析不到依赖
+const RESOLVE_DIR = join(__dirname, "..");
 
 const cache = new Map<string, string>();
 
@@ -9,7 +13,7 @@ function componentPlugin(code: string): Plugin {
     name: "virtual-component",
     setup(b) {
       b.onResolve({ filter: /^virtual-component$/ }, () => ({ path: "virtual-component.tsx", namespace: "virtual" }));
-      b.onLoad({ filter: /.*/, namespace: "virtual" }, () => ({ contents: code, loader: "tsx", resolveDir: process.cwd() }));
+      b.onLoad({ filter: /.*/, namespace: "virtual" }, () => ({ contents: code, loader: "tsx", resolveDir: RESOLVE_DIR }));
     },
   };
 }
@@ -22,7 +26,7 @@ import Component from "virtual-component";
 createRoot(document.getElementById("root")).render(React.createElement(Component));
 `;
   const result = await build({
-    stdin: { contents: entry, loader: "tsx", resolveDir: process.cwd(), sourcefile: "preview-entry.tsx" },
+    stdin: { contents: entry, loader: "tsx", resolveDir: RESOLVE_DIR, sourcefile: "preview-entry.tsx" },
     bundle: true,
     write: false,
     format: "iife",
