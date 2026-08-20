@@ -112,7 +112,8 @@ services:
     expose: ["5007"]
     environment:
       PORT: "5007"
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/magictools
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/assistant
+      SCHOLAR_DATABASE_URL: postgres://postgres:postgres@postgres:5432/scholar
     depends_on: [postgres]
     restart: unless-stopped
 
