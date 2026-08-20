@@ -73,6 +73,16 @@ export async function insertMessage(input: {
   return mapMessage(rows.rows[0]);
 }
 
+export async function listConversations(): Promise<ConversationRow[]> {
+  const rows = await pool.query("SELECT id, title, created_at, updated_at FROM conversations ORDER BY updated_at DESC LIMIT 100");
+  return rows.rows.map(mapConversation);
+}
+
+export async function deleteConversation(id: string): Promise<boolean> {
+  const rows = await pool.query("DELETE FROM conversations WHERE id = $1", [id]);
+  return (rows.rowCount ?? 0) > 0;
+}
+
 export async function listMessages(conversationId: string, limit = 20): Promise<MessageRow[]> {
   const rows = await pool.query(
     "SELECT id, conversation_id, role, content, intent, citations, created_at FROM messages WHERE conversation_id = $1 ORDER BY created_at ASC, id ASC LIMIT $2",

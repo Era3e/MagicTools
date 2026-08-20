@@ -1,5 +1,14 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
-import { type Citation, createConversation, getConversation, insertMessage, listMessages, touchConversation } from "./conversation.repo";
+import {
+  type Citation,
+  createConversation,
+  deleteConversation,
+  getConversation,
+  insertMessage,
+  listConversations,
+  listMessages,
+  touchConversation,
+} from "./conversation.repo";
 import { CybercloudService } from "./cybercloud.service";
 import { IntentService } from "./intent.service";
 import { KnowledgeService } from "./knowledge.service";
@@ -40,7 +49,12 @@ export class ChatService {
     let reply = "";
     let citations: Citation[] = [];
     if (intent === "product_inquiry") {
-      const result = await this.knowledge.answer(message);
+      // 检索时带上最近用户消息，帮助指代消解（如「那它的供应链呢」）
+      const searchQuery = [
+        ...history.filter((h) => h.role === "user").map((h) => h.content).slice(-2),
+        message,
+      ].join("；");
+      const result = await this.knowledge.answer(searchQuery);
       reply = result.reply;
       citations = result.citations;
     } else if (intent === "data_query") {
@@ -57,5 +71,19 @@ export class ChatService {
     await insertMessage({ conversationId, role: "assistant", content: reply, intent, citations });
     await touchConversation(conversationId);
     return { sessionId: conversationId, reply, intent, citations };
+  }
+
+  listConversations() {
+    return listConversations();
+  }
+
+  async getMessages(id: string) {
+    if (!(await getConversation(id))) throw new NotFoundException("会话不存在");
+    return listMessages(id, 200);
+  }
+
+  async remove(id: string) {
+    if (!(await deleteConversation(id))) throw new NotFoundException("会话不存在");
+    return { deleted: true };
   }
 }
