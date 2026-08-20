@@ -2,7 +2,7 @@
 
 - 文档类型：子项目设计文档（spec）
 - 创建日期：2026-08-20
-- 状态：🟡 待确认（A1~A4 设计假设待用户确认后改为 ✅）
+- 状态：✅ 已确认（2026-08-20 用户确认 A1~A4 四项默认值）
 - 上游：docs/superpowers/specs/2026-08-18-magictools-platform-design.md（5.7 节）；Scholar 圈定机制（entries.assistant_scope）
 
 ## 1. 定位
@@ -63,12 +63,12 @@ Phase 3 智能助手：LLM 三意图路由（product_inquiry / data_query / chit
 4. **端口**：assistant web 4007 / server 5007（已登记 ports.yaml）；独立库 assistant；loadRootEnv 就位
 5. **CI**：smoke/e2e 的 assistant 服务加 MT_LLM_STUB=1 + CYBERCLOUD_STUB=1 + SCHOLAR_DATABASE_URL；E2E 三意图 + 多轮上下文各一个用例
 
-## 6. 待确认设计假设（用户确认后本节改为 ✅）
+## 6. 已确认的决策（2026-08-20 用户确认）
 
-- **A1（检索方式）**：product_inquiry = 跨库只读连 scholar 库（SCHOLAR_DATABASE_URL）+ pgvector 向量 top-k + FTS 兜底（推荐）｜备选：通过 Scholar REST 检索接口调用
-- **A2（data_query 对接）**：cybercloud = 可配置 REST（环境变量 BASE_URL/API Key）+ LLM 生成查询参数，未配置优雅降级，CI 桩模式（推荐）｜备选：MVP 先砍掉 data_query，只交付两意图
-- **A3（多轮持久化）**：conversations/messages 入库持久化，每轮携带最近 10 轮上下文，支持会话列表/删除（推荐）｜备选：仅进程内存（重启丢失）
-- **A4（引用交互）**：回答附引用条目（标题/来源/相似度），Web 聊天点击引用跳转 Scholar 条目页（推荐）｜备选：引用仅文本展示不跳转
+- **A1**：product_inquiry = 跨库只读连 scholar 库（SCHOLAR_DATABASE_URL）+ pgvector 向量 top-k + FTS 兜底
+- **A2**：data_query = 可配置 REST（CYBERCLOUD_BASE_URL / CYBERCLOUD_API_KEY）+ LLM 生成查询参数，未配置优雅降级；CI 用 CYBERCLOUD_STUB=1 桩模式
+- **A3**：多轮 = conversations/messages 入库持久化，每轮携带最近 10 轮上下文，支持会话列表/历史/删除
+- **A4**：引用 = citations 数组（条目标题/来源/相似度分数），Web 聊天页引用卡片点击跳转 Scholar 条目页
 
 ## 7. 验收标准（DoD）
 
