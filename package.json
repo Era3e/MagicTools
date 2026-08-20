@@ -9,6 +9,7 @@
     "lint": "turbo run lint",
     "test:infra": "node --test infra/scripts/lib/*.test.mjs",
     "smoke": "node infra/scripts/smoke.mjs",
+    "qa:gate": "turbo run lint build test && pnpm test:infra && pnpm docs:lint",
     "new:app": "node infra/scripts/new-app.mjs",
     "docs:lint": "markdownlint-cli2 \"docs/**/*.md\"",
     "changeset": "changeset",
