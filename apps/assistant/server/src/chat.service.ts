@@ -1,4 +1,5 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { ActionService } from "./action.service";
 import {
   type Citation,
   createConversation,
@@ -23,7 +24,8 @@ export class ChatService {
   constructor(
     @Inject(IntentService) private readonly intentService: IntentService,
     @Inject(KnowledgeService) private readonly knowledge: KnowledgeService,
-    @Inject(CybercloudService) private readonly cybercloud: CybercloudService
+    @Inject(CybercloudService) private readonly cybercloud: CybercloudService,
+    @Inject(ActionService) private readonly actions: ActionService
   ) {}
 
   async chat(input: unknown) {
@@ -48,6 +50,7 @@ export class ChatService {
 
     let reply = "";
     let citations: Citation[] = [];
+    let actionResult: Record<string, unknown> = {};
     if (intent === "product_inquiry") {
       // 检索时带上最近用户消息，帮助指代消解（如「那它的供应链呢」）
       const searchQuery = [
@@ -64,13 +67,17 @@ export class ChatService {
       } else {
         reply = DATA_QUERY_DEGRADE;
       }
+    } else if (intent === "process_execution") {
+      const result = await this.actions.execute(message);
+      reply = result.reply;
+      actionResult = result.actionResult;
     } else {
       reply = CHITCHAT_REPLY;
     }
 
     await insertMessage({ conversationId, role: "assistant", content: reply, intent, citations });
     await touchConversation(conversationId);
-    return { sessionId: conversationId, reply, intent, citations };
+    return { sessionId: conversationId, reply, intent, citations, actionResult };
   }
 
   listConversations() {

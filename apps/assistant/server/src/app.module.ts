@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { ActionService } from "./action.service";
 import { ChatController } from "./chat.controller";
 import { ChatService } from "./chat.service";
 import { CybercloudService } from "./cybercloud.service";
@@ -9,6 +10,6 @@ import { MetaController } from "./meta.controller";
 
 @Module({
   controllers: [HealthController, ChatController, MetaController],
-  providers: [ChatService, IntentService, KnowledgeService, CybercloudService],
+  providers: [ChatService, IntentService, KnowledgeService, CybercloudService, ActionService],
 })
 export class AppModule {}
