@@ -3,9 +3,12 @@
 > 机制说明：本目录是 AI 会话的持久记忆。会话启动协议：先读 AGENTS.md → 本目录 → 相关子项目文档。
 > 即时更新：每完成一个功能 / 关键决策 / 迭代结束，即刻追加条目，禁止事后批量补记。
 
-## 当前状态快照（2026-08-19 深夜，Phase 2 完成）
+## 当前状态快照（2026-08-20，Phase 3 进行中）
 
-- **项目阶段**：**Phase 2 知识主线全部完成**。Gatherer（PR #11，a3de6fe）+ Scholar（PR #12，ced8fef）均已合并 main，CI 全绿（quality/smoke/e2e）；worktree 与 dev 分支已清理。
+- **项目阶段**：**Phase 3 智能助手开发完成**，PR #15 已创建待 CI（本地验证：server 26 测试 + web 4 测试全绿、冒烟 PASS、Playwright E2E 2/2、qa:gate 新脚本实测）。
+- **Assistant 能力清单**：LLM 三意图路由（product_inquiry/data_query/chitchat_reject，桩模式关键词判别 + 非法输出回退）；product_inquiry 跨库只读检索 scholar 圈定条目（assistant_scope=true，向量 top-k + FTS 兜底）生成带引用回答（标题/来源/相似度）；data_query 对接 cybercloud 可配置 REST（LLM 生成查询参数 → 请求 → 格式化，CYBERCLOUD_STUB 桩模式，未配置优雅降级）；多轮对话持久化（conversations/messages，最近 10 轮上下文，检索带最近用户消息做指代消解）；网页聊天（会话侧栏/气泡/引用卡片跳转 Scholar）+ HTTP API 双入口；assistant 库自举（SCHOLAR_DATABASE_URL 惰性跨库池，e2e 用独立测试库避免与 scholar 测试互扰）。
+- **下一步**：Assistant PR #15 CI 全绿后合并 main → Phase 3 目标完成 → Phase 4 候选：Designer（降级版）。
+- **Phase 2 事件契约**：knowledge.item.collected（source=gatherer，payload 含 itemId/url/title/content/summary/category/keywords/publishedAt），Scholar 经 GATHERER_DATABASE_URL 只读连接消费。
 - **Scholar 能力清单**：知识收件箱（跨库消费 gatherer 的 knowledge.item.collected，幂等）、条目 CRUD + 三来源标签（gatherer/manual/obsidian）、双通道检索（pg_trgm 全文 + pgvector 向量，embedding-2 1024 维，桩模式 bigram 哈希伪向量）、LLM 图谱抽取（entities/relations/entry_entities，重建=全量重抽）、obsidian vault 目录扫描同步（跳过 .obsidian/templates/attachments/assets 等目录，路径去重）、条目级 assistantScope 圈定 + 分类级圈定、设置表存 vault 路径。
 - **下一步**：Phase 3 剩余交付 —— Assistant（MVP 3 意图，检索 scholar 圈定范围 assistant_scope 内容）→ Designer（降级版）；每个子项目照旧 spec→plan→实现→测试→CI 全绿→PR 合并。
 - **Phase 2 事件契约**：knowledge.item.collected（source=gatherer，payload 含 itemId/url/title/content/summary/category/keywords/publishedAt），Scholar 经 GATHERER_DATABASE_URL 只读连接消费。
