@@ -29,8 +29,16 @@ export interface Conversation {
 export interface ChatResponse {
   sessionId: string;
   reply: string;
-  intent: "product_inquiry" | "data_query" | "chitchat_reject";
+  intent: "product_inquiry" | "data_query" | "chitchat_reject" | "process_execution" | "trouble_shooting" | "complaint_feedback";
   citations: Citation[];
+  actionResult?: Record<string, unknown>;
+}
+
+export interface Feedback {
+  id: string;
+  content: string;
+  contact: string;
+  createdAt: string;
 }
 
 export interface Message {
@@ -40,6 +48,7 @@ export interface Message {
   content: string;
   intent: string;
   citations: Citation[];
+  actionResult?: Record<string, unknown>;
   createdAt: string;
 }
 
@@ -49,4 +58,6 @@ export const api = {
   listConversations: () => request<Conversation[]>("/conversations"),
   getMessages: (id: string) => request<Message[]>("/conversations/" + id + "/messages"),
   deleteConversation: (id: string) => request<{ deleted: boolean }>("/conversations/" + id, { method: "DELETE" }),
+  listFeedback: () => request<Feedback[]>("/feedback"),
+  deleteFeedback: (id: string) => request<{ deleted: boolean }>("/feedback/" + id, { method: "DELETE" }),
 };
