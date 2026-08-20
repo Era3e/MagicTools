@@ -6,10 +6,16 @@ const DEFAULT_URL = "postgres://postgres:postgres@127.0.0.1:5432/assistant";
 
 export const pool = createPool(process.env.DATABASE_URL ?? DEFAULT_URL);
 
-// 跨库只读连接（检索 scholar 圈定条目）
-export const scholarPool = createPool(
-  process.env.SCHOLAR_DATABASE_URL ?? "postgres://postgres:postgres@127.0.0.1:5432/scholar"
-);
+// 跨库只读连接（检索 scholar 圈定条目）；惰性创建以便测试注入独立测试库
+let scholar: Pool | null = null;
+export function scholarPool(): Pool {
+  if (!scholar) {
+    scholar = createPool(
+      process.env.SCHOLAR_DATABASE_URL ?? "postgres://postgres:postgres@127.0.0.1:5432/scholar"
+    );
+  }
+  return scholar;
+}
 
 export async function ensureDatabase(url = process.env.DATABASE_URL ?? DEFAULT_URL): Promise<void> {
   const target = new Pool({ connectionString: url, connectionTimeoutMillis: 5000 });

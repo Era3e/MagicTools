@@ -25,6 +25,9 @@ function stubPayloadFor(messages: ChatMessage[]): Record<string, unknown> {
       .join("\n");
     return { intent: classifyIntent(userText) };
   }
+  if (sysText.includes("{answer")) {
+    return { answer: "桩回答：基于圈定知识的回答。" };
+  }
   return {};
 }
 

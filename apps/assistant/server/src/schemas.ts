@@ -8,3 +8,7 @@ export const chatInputSchema = z.object({
 export const intentSchema = z.object({
   intent: z.enum(["product_inquiry", "data_query", "chitchat_reject"]),
 });
+
+export const answerSchema = z.object({
+  answer: z.string(),
+});
