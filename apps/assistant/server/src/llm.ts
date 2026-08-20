@@ -28,6 +28,12 @@ function stubPayloadFor(messages: ChatMessage[]): Record<string, unknown> {
   if (sysText.includes("{answer")) {
     return { answer: "桩回答：基于圈定知识的回答。" };
   }
+  if (sysText.includes("{params")) {
+    return { endpoint: "/api/v1/data/query", params: { metric: "sales" } };
+  }
+  if (sysText.includes("{format")) {
+    return { answer: "桩数据查询结果：本月销售额 12345 元（CYBERCLOUD_STUB 桩模式）" };
+  }
   return {};
 }
 

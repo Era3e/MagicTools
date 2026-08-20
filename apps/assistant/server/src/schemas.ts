@@ -12,3 +12,8 @@ export const intentSchema = z.object({
 export const answerSchema = z.object({
   answer: z.string(),
 });
+
+export const queryParamsSchema = z.object({
+  endpoint: z.string().min(1).startsWith("/"),
+  params: z.record(z.unknown()).default({}),
+});

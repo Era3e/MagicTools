@@ -1,5 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { type Citation, createConversation, getConversation, insertMessage, listMessages, touchConversation } from "./conversation.repo";
+import { CybercloudService } from "./cybercloud.service";
 import { IntentService } from "./intent.service";
 import { KnowledgeService } from "./knowledge.service";
 import { chatInputSchema } from "./schemas";
@@ -12,7 +13,8 @@ const DATA_QUERY_DEGRADE = "数据查询暂未配置（CYBERCLOUD 未配置）�
 export class ChatService {
   constructor(
     @Inject(IntentService) private readonly intentService: IntentService,
-    @Inject(KnowledgeService) private readonly knowledge: KnowledgeService
+    @Inject(KnowledgeService) private readonly knowledge: KnowledgeService,
+    @Inject(CybercloudService) private readonly cybercloud: CybercloudService
   ) {}
 
   async chat(input: unknown) {
@@ -42,7 +44,12 @@ export class ChatService {
       reply = result.reply;
       citations = result.citations;
     } else if (intent === "data_query") {
-      reply = DATA_QUERY_DEGRADE;
+      const ds = this.cybercloud.status();
+      if (ds.stub || ds.configured) {
+        reply = (await this.cybercloud.query(message)).reply;
+      } else {
+        reply = DATA_QUERY_DEGRADE;
+      }
     } else {
       reply = CHITCHAT_REPLY;
     }
