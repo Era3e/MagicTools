@@ -14,6 +14,7 @@ import { CybercloudService } from "./cybercloud.service";
 import { IntentService } from "./intent.service";
 import { KnowledgeService } from "./knowledge.service";
 import { chatInputSchema } from "./schemas";
+import { TroubleService } from "./trouble.service";
 
 const CHITCHAT_REPLY =
   "我是智能助手，目前可以：1）回答产品/知识问题（基于 Scholar 圈定内容）；2）查询数据指标（需配置数据源）。试试问我产品功能或数据问题吧。";
@@ -25,7 +26,8 @@ export class ChatService {
     @Inject(IntentService) private readonly intentService: IntentService,
     @Inject(KnowledgeService) private readonly knowledge: KnowledgeService,
     @Inject(CybercloudService) private readonly cybercloud: CybercloudService,
-    @Inject(ActionService) private readonly actions: ActionService
+    @Inject(ActionService) private readonly actions: ActionService,
+    @Inject(TroubleService) private readonly trouble: TroubleService
   ) {}
 
   async chat(input: unknown) {
@@ -71,6 +73,8 @@ export class ChatService {
       const result = await this.actions.execute(message);
       reply = result.reply;
       actionResult = result.actionResult;
+    } else if (intent === "trouble_shooting") {
+      reply = (await this.trouble.diagnose(message)).reply;
     } else {
       reply = CHITCHAT_REPLY;
     }

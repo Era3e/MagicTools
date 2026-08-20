@@ -31,6 +31,9 @@ function stubPayloadFor(messages: ChatMessage[]): Record<string, unknown> {
       .join("\n");
     return { intent: classifyIntent(userText) };
   }
+  if (sysText.includes("{troubleshoot")) {
+    return { answer: "排查建议：1) 检查异常服务的日志（.run-logs）与数据库连接；2) 确认 Postgres 容器健康；3) 重启对应服务后观察 /health 状态。" };
+  }
   if (sysText.includes("{answer")) {
     return { answer: "桩回答：基于圈定知识的回答。" };
   }

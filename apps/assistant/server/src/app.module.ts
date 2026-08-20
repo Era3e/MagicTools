@@ -7,9 +7,10 @@ import { HealthController } from "./health.controller";
 import { IntentService } from "./intent.service";
 import { KnowledgeService } from "./knowledge.service";
 import { MetaController } from "./meta.controller";
+import { TroubleService } from "./trouble.service";
 
 @Module({
   controllers: [HealthController, ChatController, MetaController],
-  providers: [ChatService, IntentService, KnowledgeService, CybercloudService, ActionService],
+  providers: [ChatService, IntentService, KnowledgeService, CybercloudService, ActionService, TroubleService],
 })
 export class AppModule {}
