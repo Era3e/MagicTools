@@ -6,7 +6,14 @@ export const chatInputSchema = z.object({
 });
 
 export const intentSchema = z.object({
-  intent: z.enum(["product_inquiry", "data_query", "chitchat_reject"]),
+  intent: z.enum([
+    "product_inquiry",
+    "data_query",
+    "chitchat_reject",
+    "process_execution",
+    "trouble_shooting",
+    "complaint_feedback",
+  ]),
 });
 
 export const answerSchema = z.object({
@@ -16,4 +23,15 @@ export const answerSchema = z.object({
 export const queryParamsSchema = z.object({
   endpoint: z.string().min(1).startsWith("/"),
   params: z.record(z.unknown()).default({}),
+});
+
+export const actionSchema = z.object({
+  action: z.enum(["create_requirement", "trigger_collect"]),
+  params: z
+    .object({
+      title: z.string().optional(),
+      description: z.string().optional(),
+      sourceId: z.string().optional(),
+    })
+    .default({}),
 });
