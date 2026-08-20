@@ -3,10 +3,12 @@
 > 机制说明：本目录是 AI 会话的持久记忆。会话启动协议：先读 AGENTS.md → 本目录 → 相关子项目文档。
 > 即时更新：每完成一个功能 / 关键决策 / 迭代结束，即刻追加条目，禁止事后批量补记。
 
-## 当前状态快照（2026-08-20，Phase 4 完成 · 平台 MVP 全部交付）
+## 当前状态快照（2026-08-21，Assistant 增强进行中）
 
-- **项目阶段**：**Phase 4 设计师完成并合并 main（PR #17，f062c9f），CI 全绿；8 子项目全部交付**（Applicant/Investigator/Assessor/Manager/Gatherer/Scholar/Assistant/Designer + gateway）。worktree 与分支已清理。
-- **下一步**：平台收尾候选 —— 部署上线（compose.prod + 镜像 + ECS，需先配 GitHub Secrets：REGISTRY_* / DEPLOY_SSH_KEY）、Assistant 意图扩展（剩余 4 类）、Designer 可视化编辑器、按需优化。
+- **项目阶段**：Phase 4 已收尾（8 子项目全交付）；**Assistant 增强开发完成**，PR #19 已创建待 CI（本地验证：server 43 测试 + web 7 测试全绿、三新意图直连/经网关实测、cybercloud 契约单测、全量门禁 turbo 69/69 + infra + docs 通过）。
+- **Assistant 增强清单**：意图路由扩 6 类（process_execution：创建需求/触发采集经网关执行，ACTION_STUB 桩；trouble_shooting：读 ports.yaml 并发生成健康探测 + LLM 排查建议；complaint_feedback：feedback 落库 + API + Web 页）；cybercloud 真实契约适配（payload 头认证 = URL 编码 UserDto JSON；apiKey → /api/auth/setup/user/access/token/userByApiKey 换 payload 缓存 30 分钟；/api/setup/agent/chat/agents + session/create + block 对话，SSE 四类型；CYBERCLOUD_BASE_URL/API_KEY/AGENT_ID 配置，未配置优雅降级，CYBERCLOUD_STUB 桩）。契约手册 docs/integrations/cybercloud-setup.md。
+- **已知问题**：① 本机 .env 的 ZHIPU_API_KEY 已过期（401 令牌已过期），真实 LLM 功能全部受影响，待用户更新 Key 后重启服务恢复真实模式（当前本地服务以桩模式运行）；② gh CLI 的 GraphQL 轮询（pr checks --watch）常被网络代理瞬断，改用 REST 轮询。
+- **下一步**：PR #19 CI 全绿后合并 main → 清理 → 目标完成；候选：部署上线（需 GitHub Secrets）、Designer 可视化编辑器。
 - **Designer 能力清单**：自然语言 + 可选设计稿图片（glm-4v-flash 视觉路由）→ LLM 生成基于 @mt/ui 令牌的 React 组件源码（结构化 JSON + 桩模式固定示例组件）；服务端 esbuild 打包沙箱预览（React/antd/@mt/ui 内联单文件，resolveDir 固定包目录适配 CI，产物内存缓存，编译错误友好返回）；下载 .tsx；人工审核沉淀组件库（designer 库 components 表 + 重名幂等）；生成历史（含失败落库）；Web 三页（生成/组件库/历史）。
 - **Assistant 能力清单**：LLM 三意图路由（product_inquiry/data_query/chitchat_reject，桩模式关键词判别 + 非法输出回退）；product_inquiry 跨库只读检索 scholar 圈定条目（assistant_scope=true，向量 top-k + FTS 兜底）生成带引用回答（标题/来源/相似度）；data_query 对接 cybercloud 可配置 REST（LLM 生成查询参数 → 请求 → 格式化，CYBERCLOUD_STUB 桩模式，未配置优雅降级）；多轮对话持久化（conversations/messages，最近 10 轮上下文，检索带最近用户消息做指代消解）；网页聊天（会话侧栏/气泡/引用卡片跳转 Scholar）+ HTTP API 双入口；assistant 库自举（SCHOLAR_DATABASE_URL 惰性跨库池，e2e 用独立测试库避免与 scholar 测试互扰）。
 - **下一步**：Assistant PR #15 CI 全绿后合并 main → Phase 3 目标完成 → Phase 4 候选：Designer（降级版）。
