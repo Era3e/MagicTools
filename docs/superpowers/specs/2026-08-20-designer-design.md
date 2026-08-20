@@ -2,7 +2,7 @@
 
 - 文档类型：子项目设计文档（spec）
 - 创建日期：2026-08-20
-- 状态：🟡 待确认（D1~D4 设计假设待用户确认后改为 ✅）
+- 状态：✅ 已确认（2026-08-20 用户确认 D1~D4 四项默认值）
 - 上游：docs/superpowers/specs/2026-08-18-magictools-platform-design.md（5.5 节）；@mt/ui 设计令牌
 
 ## 1. 定位
@@ -59,9 +59,9 @@ Phase 4 设计师（降级版）：自然语言描述/设计稿图片 → LLM �
 4. **端口**：designer web 4005 / server 5005（已登记）；compose 中 DATABASE_URL 改为 designer 库
 5. **CI**：smoke/e2e 接入 designer（MT_LLM_STUB=1）；E2E 全流程（生成→预览→沉淀→列表→删除）
 
-## 6. 待确认设计假设（用户确认后本节改为 ✅）
+## 6. 已确认的决策（2026-08-20 用户确认）
 
-- **D1（输入形态）**：自然语言 + 可选图片（视觉识别设计稿）都做（推荐）｜备选：MVP 只做自然语言
-- **D2（预览方案）**：服务端 esbuild 打包（React+antd+tokens 一并编译成单文件，iframe sandbox 渲染，离线稳定）（推荐）｜备选：iframe 内 CDN React + Babel 浏览器端转译（实现更简但依赖外网）
-- **D3（沉淀范围）**：存 designer 库组件表 + 列表页管理，不自动写 @mt/ui 包（推荐）｜备选：直接生成到 @mt/ui 包源码目录
-- **D4（生成历史）**：generations 表记录每次生成可回看（推荐）｜备选：不落历史，只保留沉淀组件
+- **D1**：输入 = 自然语言描述 + 可选设计稿图片（有图走 glm-4v-flash 视觉识别）
+- **D2**：预览 = 服务端 esbuild 打包（React/antd/@mt/ui 一并编译单文件）+ iframe sandbox 渲染
+- **D3**：沉淀 = designer 库 components 表 + 组件列表页管理（不自动写 @mt/ui 共享包）
+- **D4**：generations 表记录每次生成（含失败），可回看
