@@ -11,6 +11,7 @@ import {
   touchConversation,
 } from "./conversation.repo";
 import { CybercloudService } from "./cybercloud.service";
+import { FeedbackService } from "./feedback.service";
 import { IntentService } from "./intent.service";
 import { KnowledgeService } from "./knowledge.service";
 import { chatInputSchema } from "./schemas";
@@ -27,7 +28,8 @@ export class ChatService {
     @Inject(KnowledgeService) private readonly knowledge: KnowledgeService,
     @Inject(CybercloudService) private readonly cybercloud: CybercloudService,
     @Inject(ActionService) private readonly actions: ActionService,
-    @Inject(TroubleService) private readonly trouble: TroubleService
+    @Inject(TroubleService) private readonly trouble: TroubleService,
+    @Inject(FeedbackService) private readonly feedback: FeedbackService
   ) {}
 
   async chat(input: unknown) {
@@ -75,6 +77,8 @@ export class ChatService {
       actionResult = result.actionResult;
     } else if (intent === "trouble_shooting") {
       reply = (await this.trouble.diagnose(message)).reply;
+    } else if (intent === "complaint_feedback") {
+      reply = (await this.feedback.collect(message)).reply;
     } else {
       reply = CHITCHAT_REPLY;
     }
