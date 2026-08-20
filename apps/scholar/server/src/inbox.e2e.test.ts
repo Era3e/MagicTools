@@ -37,9 +37,11 @@ let available = false;
 beforeAll(async () => {
   try {
     process.env.MT_LLM_STUB = "1";
+    process.env.GATHERER_DATABASE_URL = "postgres://postgres:postgres@127.0.0.1:5432/gatherer_scholar_e2e";
+    await ensureDatabase("postgres://postgres:postgres@127.0.0.1:5432/gatherer_scholar_e2e");
     await ensureDatabase();
     await migrate();
-    await gathererPool.query(OUTBOX_DDL);
+    await gathererPool().query(OUTBOX_DDL);
     available = true;
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
     app = moduleRef.createNestApplication();
@@ -56,14 +58,14 @@ afterAll(async () => {
 
 beforeEach(async () => {
   if (!available) return;
-  await gathererPool.query("DELETE FROM outbox WHERE event = 'knowledge.item.collected'");
+  await gathererPool().query("DELETE FROM outbox WHERE event = 'knowledge.item.collected'");
   await pool.query("TRUNCATE entry_entities, relations, entities, entries CASCADE");
 });
 
 describe("inbox", () => {
   it("POST /api/scholar/inbox/poll 消费 gatherer 事件入库", async (ctx) => {
     if (!available) { ctx.skip(); return; }
-    await appendOutbox(gathererPool, {
+    await appendOutbox(gathererPool(), {
       id: "inbox-test-1",
       event: "knowledge.item.collected",
       source: "gatherer",
@@ -83,7 +85,7 @@ describe("inbox", () => {
 
   it("重复 poll 幂等不重复入库", async (ctx) => {
     if (!available) { ctx.skip(); return; }
-    await appendOutbox(gathererPool, {
+    await appendOutbox(gathererPool(), {
       id: "inbox-test-2",
       event: "knowledge.item.collected",
       source: "gatherer",

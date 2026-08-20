@@ -5,10 +5,14 @@ import App from "./App";
 describe("App", () => {
   afterEach(() => vi.unstubAllGlobals());
 
-  it("渲染标题并显示服务状态 up", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => new Response("{}", { status: 200 })));
+  it("导航到聊天页并渲染助手界面", async () => {
+    window.history.pushState({}, "", "/assistant/chat");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify([]), { status: 200 }))
+    );
     render(<App />);
-    expect(screen.getByText("assistant")).toBeTruthy();
-    expect(await screen.findByText(/服务状态: up/)).toBeTruthy();
+    expect(await screen.findByText("智能助手")).toBeTruthy();
+    expect(screen.getByPlaceholderText("输入消息")).toBeTruthy();
   });
 });
