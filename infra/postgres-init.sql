@@ -4,3 +4,4 @@ CREATE DATABASE assessor;
 CREATE DATABASE manager;
 CREATE DATABASE gatherer;
 CREATE DATABASE scholar;
+CREATE DATABASE assistant;
