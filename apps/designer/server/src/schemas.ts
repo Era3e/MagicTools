@@ -10,3 +10,9 @@ export const componentGenSchema = z.object({
   description: z.string().default(""),
   code: z.string().min(1),
 });
+
+export const componentInputSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().default(""),
+  code: z.string().min(1),
+});
