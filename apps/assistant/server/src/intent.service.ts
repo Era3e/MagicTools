@@ -5,7 +5,7 @@ import { llmChat, type Intent } from "./llm";
 import { intentSchema } from "./schemas";
 
 const INTENT_PROMPT =
-  "你是意图分类助手。把用户消息分类为三类：product_inquiry（产品/知识问答）、data_query（数据/指标/报表查询）、chitchat_reject（问候闲聊等与能力无关）。只输出 JSON：{intent: \"...\"}。{intent}";
+  "你是意图分类助手。把用户消息分类为六类：product_inquiry（产品/知识问答）、data_query（数据/指标/报表查询）、process_execution（要求创建需求、触发采集等平台流程动作）、trouble_shooting（报错、失败、请求排查故障）、complaint_feedback（投诉、提反馈）、chitchat_reject（问候闲聊等与能力无关）。只输出 JSON：{intent: \"...\"}。{intent}";
 
 @Injectable()
 export class IntentService {

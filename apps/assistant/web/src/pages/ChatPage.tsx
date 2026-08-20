@@ -6,6 +6,9 @@ const INTENT_LABEL: Record<string, { label: string; color: string }> = {
   product_inquiry: { label: "知识问答", color: "blue" },
   data_query: { label: "数据查询", color: "green" },
   chitchat_reject: { label: "闲聊", color: "default" },
+  process_execution: { label: "流程执行", color: "purple" },
+  trouble_shooting: { label: "故障排查", color: "orange" },
+  complaint_feedback: { label: "反馈", color: "cyan" },
 };
 
 export default function ChatPage() {
@@ -41,7 +44,7 @@ export default function ChatPage() {
       setMessages((prev) => [
         ...prev,
         { id: "local-u" + Date.now(), conversationId: res.sessionId, role: "user", content: text, intent: "", citations: [], createdAt: new Date().toISOString() },
-        { id: "local-a" + Date.now(), conversationId: res.sessionId, role: "assistant", content: res.reply, intent: res.intent, citations: res.citations, createdAt: new Date().toISOString() },
+        { id: "local-a" + Date.now(), conversationId: res.sessionId, role: "assistant", content: res.reply, intent: res.intent, citations: res.citations, actionResult: res.actionResult, createdAt: new Date().toISOString() },
       ]);
       refreshConversations();
     } catch (err) {
@@ -110,6 +113,9 @@ export default function ChatPage() {
                     <Typography.Paragraph style={{ marginBottom: 4 }}>{m.content}</Typography.Paragraph>
                     {m.role === "assistant" && m.intent ? (
                       <Tag color={INTENT_LABEL[m.intent]?.color}>{INTENT_LABEL[m.intent]?.label ?? m.intent}</Tag>
+                    ) : null}
+                    {m.role === "assistant" && m.actionResult?.ok ? (
+                      <Tag color="green">动作已执行：{String(m.actionResult.action ?? "")}</Tag>
                     ) : null}
                     {(m.citations ?? []).length > 0 ? (
                       <Space direction="vertical" size={2} style={{ marginTop: 6 }}>
