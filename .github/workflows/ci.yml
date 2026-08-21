@@ -95,7 +95,7 @@ jobs:
           (cd apps/gatherer/web && node node_modules/vite/bin/vite.js preview --port 4001 --strictPort --host 127.0.0.1) &
           PORT=5006 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/scholar GATHERER_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/gatherer MT_LLM_STUB=1 node apps/scholar/server/dist/main.js &
           (cd apps/scholar/web && node node_modules/vite/bin/vite.js preview --port 4006 --strictPort --host 127.0.0.1) &
-          PORT=5007 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/assistant SCHOLAR_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/scholar MT_LLM_STUB=1 CYBERCLOUD_STUB=1 ACTION_STUB=1 node apps/assistant/server/dist/main.js &
+          PORT=5007 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/assistant SCHOLAR_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/scholar MT_LLM_STUB=1 CYBERCLOUD_STUB=1 ACTION_STUB=1 CLARIFY_STUB_CONFIDENCE=0.9 node apps/assistant/server/dist/main.js &
           (cd apps/assistant/web && node node_modules/vite/bin/vite.js preview --port 4007 --strictPort --host 127.0.0.1) &
           PORT=5005 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/designer MT_LLM_STUB=1 node apps/designer/server/dist/main.js &
           (cd apps/designer/web && node node_modules/vite/bin/vite.js preview --port 4005 --strictPort --host 127.0.0.1) &
@@ -175,7 +175,7 @@ jobs:
           (cd apps/gatherer/web && node node_modules/vite/bin/vite.js preview --port 4001 --strictPort --host 127.0.0.1) &
           PORT=5006 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/scholar GATHERER_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/gatherer MT_LLM_STUB=1 node apps/scholar/server/dist/main.js &
           (cd apps/scholar/web && node node_modules/vite/bin/vite.js preview --port 4006 --strictPort --host 127.0.0.1) &
-          PORT=5007 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/assistant SCHOLAR_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/scholar MT_LLM_STUB=1 CYBERCLOUD_STUB=1 ACTION_STUB=1 node apps/assistant/server/dist/main.js &
+          PORT=5007 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/assistant SCHOLAR_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/scholar MT_LLM_STUB=1 CYBERCLOUD_STUB=1 ACTION_STUB=1 CLARIFY_STUB_CONFIDENCE=0.9 node apps/assistant/server/dist/main.js &
           (cd apps/assistant/web && node node_modules/vite/bin/vite.js preview --port 4007 --strictPort --host 127.0.0.1) &
           PORT=5005 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/designer MT_LLM_STUB=1 node apps/designer/server/dist/main.js &
           (cd apps/designer/web && node node_modules/vite/bin/vite.js preview --port 4005 --strictPort --host 127.0.0.1) &
