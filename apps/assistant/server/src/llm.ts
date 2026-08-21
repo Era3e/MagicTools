@@ -54,9 +54,11 @@ function stubPayloadFor(messages: ChatMessage[]): Record<string, unknown> {
   return {};
 }
 
-/** 桩模式意图判别：数据 → 动作 → 排查 → 反馈 → 问候，其余产品问答 */
+/** 桩模式意图判别：数据 → cybercloud 域 → 动作 → 排查 → 反馈 → 问候，其余产品问答 */
 export function classifyIntent(text: string): Intent {
   if (/(数据|查询|统计|报表|指标)/.test(text)) return "data_query";
+  // 方案 A：cybercloud 域操作（插件/对象/字段/智能体）优先于 MagicTools 动作词，交给 cybercloud 智能体
+  if (/(插件|业务对象|数据对象|智能体|cybercloud|字段|对象关系|对象索引)/.test(text)) return "data_query";
   if (/(创建|新建|建一个|建个|触发|采集|跑一次|执行)(.{0,12}需求|.{0,8}采集)|需求.{0,6}创建/.test(text)) return "process_execution";
   if (/(报错|失败|异常|排查|挂了|起不来|出问题|错误)/.test(text)) return "trouble_shooting";
   if (/(投诉|反馈|不满意|吐槽)/.test(text)) return "complaint_feedback";
