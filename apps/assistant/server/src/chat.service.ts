@@ -12,6 +12,7 @@ import {
 } from "./conversation.repo";
 import { CybercloudService } from "./cybercloud.service";
 import { FeedbackService } from "./feedback.service";
+import { insertIntentLog } from "./intent-log.repo";
 import { IntentService } from "./intent.service";
 import { KnowledgeService } from "./knowledge.service";
 import { chatInputSchema } from "./schemas";
@@ -47,10 +48,12 @@ export class ChatService {
     const history = await listMessages(conversationId, 20);
     await insertMessage({ conversationId, role: "user", content: message, intent: "", citations: [] });
 
-    const intent = await this.intentService.classify(
+    const route = await this.intentService.classify(
       message,
       history.map((m) => ({ role: m.role, content: m.content }))
     );
+    const intent = route.intent;
+    await insertIntentLog({ message, domain: route.domain, intent: route.intent, confidence: route.confidence });
 
     let reply = "";
     let citations: Citation[] = [];
@@ -85,7 +88,7 @@ export class ChatService {
 
     await insertMessage({ conversationId, role: "assistant", content: reply, intent, citations });
     await touchConversation(conversationId);
-    return { sessionId: conversationId, reply, intent, citations, actionResult };
+    return { sessionId: conversationId, reply, intent, domain: route.domain, confidence: route.confidence, citations, actionResult };
   }
 
   listConversations() {
