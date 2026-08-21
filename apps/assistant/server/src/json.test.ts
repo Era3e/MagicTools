@@ -19,6 +19,14 @@ describe("parseJson", () => {
     expect(parsed.confidence).toBe(0.95);
   });
 
+  it("无引号键的模型输出（DeepSeek 实测格式）", () => {
+    const raw = '{domain: "chitchat", intent: "chitchat_reject", confidence: 0.98}';
+    const parsed = parseJson(raw) as Record<string, unknown>;
+    expect(parsed.domain).toBe("chitchat");
+    expect(parsed.intent).toBe("chitchat_reject");
+    expect(parsed.confidence).toBe(0.98);
+  });
+
   it("完全无法解析时抛错", () => {
     expect(() => parseJson("这不是 JSON")).toThrow();
   });
