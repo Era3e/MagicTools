@@ -63,19 +63,21 @@ SSE 类型：
 
 ## 3. MagicTools 配置（.env）
 
+```dotenv
 CYBERCLOUD_BASE_URL=https://cyber.example.com   # cybercloud 部署地址（末尾斜杠可省略）
 CYBERCLOUD_API_KEY=xxx                          # 控制台创建的用户 API Key
 CYBERCLOUD_AGENT_ID=                            # 可选：指定智能体 ID；缺省自动选择第一个可用智能体
 CYBERCLOUD_USERNAME=                            # 网关 JWT 登录账号（方案 B）
 CYBERCLOUD_PASSWORD=                            # 网关 JWT 登录密码（方案 B）
 # CYBERCLOUD_JWT=                               # 可选：直接填现成 JWT（方案 A），则跳过账号密码登录
+```
 
 - 未配置时 Assistant 的 data_query 优雅降级为提示文案；
 - 本地/CI 用 CYBERCLOUD_STUB=1 桩模式（返回固定销售额数据），不发起真实请求。
 
 ## 4. 客户端调用时序（Assistant 实现）
 
-query(message) → apiKey 换 payload（缓存 30 分钟）→ 列智能体取 agentId（CYBERCLOUD_AGENT_ID 优先）→ 建会话取 sessionCode（按 agentId 缓存）→ block 对话 → 按 type 格式化回答。
+query(message) → 登录取 JWT（缓存 100 分钟，401 自动重登）→ apiKey 换 payload（缓存 30 分钟）→ 列智能体取 agentId（CYBERCLOUD_AGENT_ID 优先）→ 建会话取 sessionCode（按 agentId 缓存）→ block 对话 → 按 type 格式化回答。
 
 ## 5. 与平台 Agent 工具的关系
 
