@@ -16,6 +16,30 @@ export const intentSchema = z.object({
   ]),
 });
 
+export const routingSchema = z.object({
+  domain: z.enum(["magictools", "cybercloud", "chitchat"]),
+  intent: z.enum([
+    "product_inquiry",
+    "data_query",
+    "chitchat_reject",
+    "process_execution",
+    "trouble_shooting",
+    "complaint_feedback",
+  ]),
+  confidence: z.coerce.number().min(0).max(1).default(1),
+});
+
+export const intentCorrectionSchema = z.object({
+  correctedIntent: z.enum([
+    "product_inquiry",
+    "data_query",
+    "chitchat_reject",
+    "process_execution",
+    "trouble_shooting",
+    "complaint_feedback",
+  ]),
+});
+
 export const answerSchema = z.object({
   answer: z.string(),
 });

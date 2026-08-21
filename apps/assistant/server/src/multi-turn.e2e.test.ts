@@ -91,6 +91,16 @@ describe("multi-turn", () => {
     expect(titles.some((t: string) => t.includes("香蕉"))).toBe(false);
   });
 
+  it("指代消解依赖历史注入检索词（回归）", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    await seedEntry("苹果公司发布新手机", "苹果秋季发布会内容", true);
+    const first = await request(app.getHttpServer()).post("/api/assistant/chat").send({ message: "苹果公司有什么新动态" });
+    const second = await request(app.getHttpServer()).post("/api/assistant/chat").send({ sessionId: first.body.sessionId, message: "那它有什么动作呢" });
+    expect(second.status).toBe(201);
+    const titles = second.body.citations.map((c: { title: string }) => c.title);
+    expect(titles.some((t: string) => t.includes("苹果公司发布新手机"))).toBe(true);
+  });
+
   it("data_query 意图随历史延续", async (ctx) => {
     if (!available) { ctx.skip(); return; }
     process.env.CYBERCLOUD_STUB = "1";

@@ -3,9 +3,11 @@
 > 机制说明：本目录是 AI 会话的持久记忆。会话启动协议：先读 AGENTS.md → 本目录 → 相关子项目文档。
 > 即时更新：每完成一个功能 / 关键决策 / 迭代结束，即刻追加条目，禁止事后批量补记。
 
-## 当前状态快照（2026-08-21，Assistant 增强完成）
+## 当前状态快照（2026-08-21，意图路由迭代进行中）
 
-- **项目阶段**：**Assistant 增强已合并 main（PR #19，077ee28），CI 全绿**；8 子项目 + 意图扩展 + cybercloud 对接全部交付，worktree 与分支已清理。
+- **项目阶段**：Assistant 增强（PR #19）已合并；**多系统意图路由迭代开发完成**，PR #22 已创建待 CI（本地验证：server 55 测试 + web 10 测试全绿、Playwright 路由规格 2/2、全量门禁 turbo 69/69 + infra + docs 通过）。
+- **意图路由迭代清单**：intent_logs 表（message/domain/intent/confidence/corrected_intent）每次 chat 落库；分层路由输出 {domain, intent, confidence}（桩规则 confidence=1，真实模式 LLM 输出三字段、解析失败回退规则 confidence=0）；低置信度（CLARIFY_THRESHOLD 默认 0.6，桩注入 CLARIFY_STUB_CONFIDENCE）澄清反问 + clarifyOptions 候选 + 序号/意图名确认执行 + corrected_intent 回填；GET /intent-logs + POST /intent-logs/:id/correct；Web 意图日志页（筛选/纠错）与聊天页澄清选项按钮。
+- **已知问题**：① .env 的 ZHIPU_API_KEY 过期（401），本地服务桩模式运行；② cybercloud 真实联调待用户提供凭证（账号/密码/API Key，另有 6 项前置条件见会话记录与 docs/integrations/cybercloud-setup.md）；③ gh GraphQL 轮询易被网络瞬断，用 REST 轮询。
 - **Assistant 增强清单**：意图路由扩 6 类（process_execution：创建需求/触发采集经网关执行，ACTION_STUB 桩；trouble_shooting：读 ports.yaml 并发生成健康探测 + LLM 排查建议；complaint_feedback：feedback 落库 + API + Web 页）；cybercloud 真实契约适配（payload 头认证 = URL 编码 UserDto JSON；apiKey → /api/auth/setup/user/access/token/userByApiKey 换 payload 缓存 30 分钟；/api/setup/agent/chat/agents + session/create + block 对话，SSE 四类型；CYBERCLOUD_BASE_URL/API_KEY/AGENT_ID 配置，未配置优雅降级，CYBERCLOUD_STUB 桩）。契约手册 docs/integrations/cybercloud-setup.md。
 - **已知问题**：① 本机 .env 的 ZHIPU_API_KEY 已过期（401 令牌已过期），真实 LLM 功能全部受影响，待用户更新 Key 后重启服务恢复真实模式（当前本地服务以桩模式运行）；② gh CLI 的 GraphQL 轮询（pr checks --watch）常被网络代理瞬断，改用 REST 轮询。
 - **下一步**：PR #19 CI 全绿后合并 main → 清理 → 目标完成；候选：部署上线（需 GitHub Secrets）、Designer 可视化编辑器。

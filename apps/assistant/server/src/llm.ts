@@ -11,6 +11,8 @@ export type Intent =
   | "trouble_shooting"
   | "complaint_feedback";
 
+export type Domain = "magictools" | "cybercloud" | "chitchat";
+
 const client = createModelClient(ZHIPU, (u) => console.log("[llm]", u.model, u.ms + "ms"));
 
 export async function llmChat(messages: ChatMessage[], options?: ChatOptions): Promise<string> {
@@ -29,7 +31,12 @@ function stubPayloadFor(messages: ChatMessage[]): Record<string, unknown> {
       .filter((m) => m.role === "user")
       .map((m) => (typeof m.content === "string" ? m.content : ""))
       .join("\n");
-    return { intent: classifyIntent(userText) };
+    const stubConfidence = process.env.CLARIFY_STUB_CONFIDENCE;
+    return {
+      domain: classifyDomain(userText),
+      intent: classifyIntent(userText),
+      confidence: stubConfidence ? Number(stubConfidence) : 1,
+    };
   }
   if (sysText.includes("{troubleshoot")) {
     return { answer: "排查建议：1) 检查异常服务的日志（.run-logs）与数据库连接；2) 确认 Postgres 容器健康；3) 重启对应服务后观察 /health 状态。" };
@@ -52,6 +59,13 @@ function stubPayloadFor(messages: ChatMessage[]): Record<string, unknown> {
     return { action: "create_requirement", params: { title: "桩需求：自动创建", description: "" } };
   }
   return {};
+}
+
+/** 桩模式系统归属判别：问候 → cybercloud 域词 → MagicTools 内部 */
+export function classifyDomain(text: string): Domain {
+  if (/^(你好|您好|hi|hello|谢谢|再见|拜拜)/i.test(text.trim())) return "chitchat";
+  if (/(插件|业务对象|数据对象|智能体|cybercloud|字段|对象关系|对象索引|数据|查询|统计|报表|指标)/.test(text)) return "cybercloud";
+  return "magictools";
 }
 
 /** 桩模式意图判别：数据 → cybercloud 域 → 动作 → 排查 → 反馈 → 问候，其余产品问答 */
