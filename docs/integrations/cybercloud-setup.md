@@ -5,11 +5,12 @@
 
 ## 1. 认证机制总览
 
-- 所有管理类接口通过 payload 请求头认证：值为 URL 编码（UTF-8）的 UserDto JSON（含 tenantCode/userId/userName/console 等字段）。
-- 外部集成用「API Key」换取 payload，全程无需账号密码：
-  1. 在 cybercloud 控制台创建用户 API Key（用户管理 → 访问密钥，记录 apiKey 与过期时间）；
-  2. 调用匿名接口用 apiKey 换 payload（见 2.1）。
-- 替代路径（Sa-Token）：POST /api/auth/login/by/access-token {accessToken} → {token}，再由前端会话体系换成 payload；外部集成建议直接用 2.1。
+cybercloud 有**两层认证**，缺一不可：
+
+1. **网关层（APISIX jwt-auth）**：所有 /api/** 请求必须携带 jwt 请求头（缺省返回 401 "Missing JWT token in request"）。JWT 获取方式（二选一）：
+   - **A. 现成 JWT**：浏览器 F12 任意请求头复制 jwt 值 → 配 CYBERCLOUD_JWT；
+   - **B. 账号密码登录（推荐）**：POST /api/auth/login/key → {rsaPublicKey（DER base64，非 PEM）, loginKey（32 位，1 小时有效）} → RSA PKCS1 加密 loginKey+password（base64）→ POST /api/auth/login {account, password（密文）, loginUrl} → data.accessToken（JWT）。
+2. **应用层（payload 头）**：值为 URL 编码（UTF-8）的 UserDto JSON。外部集成用 API Key 换取：控制台创建用户 API Key（用户管理 → 访问密钥）→ 调用匿名接口（见 2.1，仍需带 jwt 头过网关）。
 
 ## 2. 接口契约（基础路径 = 部署域名，如 https://cyber.example.com）
 
@@ -62,9 +63,12 @@ SSE 类型：
 
 ## 3. MagicTools 配置（.env）
 
-CYBERCLOUD_BASE_URL=https://cyber.example.com   # cybercloud 部署地址
+CYBERCLOUD_BASE_URL=https://cyber.example.com   # cybercloud 部署地址（末尾斜杠可省略）
 CYBERCLOUD_API_KEY=xxx                          # 控制台创建的用户 API Key
 CYBERCLOUD_AGENT_ID=                            # 可选：指定智能体 ID；缺省自动选择第一个可用智能体
+CYBERCLOUD_USERNAME=                            # 网关 JWT 登录账号（方案 B）
+CYBERCLOUD_PASSWORD=                            # 网关 JWT 登录密码（方案 B）
+# CYBERCLOUD_JWT=                               # 可选：直接填现成 JWT（方案 A），则跳过账号密码登录
 
 - 未配置时 Assistant 的 data_query 优雅降级为提示文案；
 - 本地/CI 用 CYBERCLOUD_STUB=1 桩模式（返回固定销售额数据），不发起真实请求。

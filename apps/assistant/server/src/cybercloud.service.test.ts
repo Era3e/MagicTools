@@ -15,6 +15,15 @@ function mockCybercloudFlow() {
   const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
     urls.push(String(url));
     headers.push((init?.headers as Record<string, string>) ?? {});
+    if (String(url).includes("/api/auth/login/key")) {
+      return new Response(
+        JSON.stringify({ code: "0", data: { rsaPublicKey: "pem", loginKey: "k" } }),
+        { status: 200 }
+      );
+    }
+    if (String(url).includes("/api/auth/login")) {
+      return new Response(JSON.stringify({ code: "0", data: { accessToken: "jwt-1" } }), { status: 200 });
+    }
     if (String(url).includes("/userByApiKey")) {
       payloadCalls += 1;
       return new Response(JSON.stringify({ code: "0", data: { payload: PAYLOAD_JSON } }), { status: 200 });
@@ -51,6 +60,9 @@ describe("CybercloudService（真实契约）", () => {
   it("真实模式按契约全流程：apiKey 换 payload → 列智能体 → 建会话 → block 对话", async () => {
     vi.stubEnv("CYBERCLOUD_BASE_URL", "https://cyber.example");
     vi.stubEnv("CYBERCLOUD_API_KEY", "key-123");
+    vi.stubEnv("CYBERCLOUD_JWT", "jwt-1");
+    vi.stubEnv("CYBERCLOUD_USERNAME", "admin");
+    vi.stubEnv("CYBERCLOUD_PASSWORD", "p@ss");
     const { fetchMock, urls, headers, getPayloadCalls } = mockCybercloudFlow();
     vi.stubGlobal("fetch", fetchMock);
     const svc = new CybercloudService();
@@ -70,6 +82,7 @@ describe("CybercloudService（真实契约）", () => {
   it("payload 与会话复用缓存（第二次查询不再换 payload/建会话）", async () => {
     vi.stubEnv("CYBERCLOUD_BASE_URL", "https://cyber.example");
     vi.stubEnv("CYBERCLOUD_API_KEY", "key-123");
+    vi.stubEnv("CYBERCLOUD_JWT", "jwt-1");
     const { fetchMock, getPayloadCalls } = mockCybercloudFlow();
     vi.stubGlobal("fetch", fetchMock);
     const svc = new CybercloudService();
@@ -81,6 +94,7 @@ describe("CybercloudService（真实契约）", () => {
   it("METRIC_CHART 类型返回图表数据 JSON", async () => {
     vi.stubEnv("CYBERCLOUD_BASE_URL", "https://cyber.example");
     vi.stubEnv("CYBERCLOUD_API_KEY", "key-123");
+    vi.stubEnv("CYBERCLOUD_JWT", "jwt-1");
     const fetchMock = vi.fn(async (url: string) => {
       if (String(url).includes("/userByApiKey")) {
         return new Response(JSON.stringify({ code: "0", data: { payload: PAYLOAD_JSON } }), { status: 200 });
@@ -106,6 +120,7 @@ describe("CybercloudService（真实契约）", () => {
   it("cybercloud 返回业务错误时透出错误信息", async () => {
     vi.stubEnv("CYBERCLOUD_BASE_URL", "https://cyber.example");
     vi.stubEnv("CYBERCLOUD_API_KEY", "key-123");
+    vi.stubEnv("CYBERCLOUD_JWT", "jwt-1");
     const fetchMock = vi.fn(async () =>
       new Response(JSON.stringify({ code: "1", message: "无效 ApiKey ！" }), { status: 200 })
     );
