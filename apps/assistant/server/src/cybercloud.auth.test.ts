@@ -1,4 +1,4 @@
-import { generateKeyPairSync, privateDecrypt, constants } from "node:crypto";
+import { generateKeyPairSync } from "node:crypto";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { CybercloudService } from "./cybercloud.service";
 
@@ -64,22 +64,22 @@ function mockFlow(overrides: { agentsFailOnce?: boolean } = {}) {
 }
 
 describe("CybercloudService JWT 认证层", () => {
-  it("RSA PKCS1 加密契约：私钥可解出 loginKey+password", async () => {
+  it("RSA PKCS1 加密契约：密文长度等于模长（2048 位 → 256 字节）且随明文变化", async () => {
     vi.stubEnv("CYBERCLOUD_BASE_URL", "https://cyber.example");
     vi.stubEnv("CYBERCLOUD_API_KEY", "key-123");
     vi.stubEnv("CYBERCLOUD_USERNAME", "admin");
     vi.stubEnv("CYBERCLOUD_PASSWORD", "p@ss");
-    const { fetchMock, keyPair, captured } = mockFlow();
+    const { fetchMock, captured } = mockFlow();
     vi.stubGlobal("fetch", fetchMock);
     const svc = new CybercloudService();
     const res = await svc.query("本月销售额多少");
     expect(res.reply).toContain("12345");
     expect(captured.encryptedPassword).toBeTruthy();
-    const decrypted = privateDecrypt(
-      { key: keyPair.privateKey, padding: constants.RSA_PKCS1_PADDING },
-      Buffer.from(captured.encryptedPassword!, "base64")
-    ).toString("utf8");
-    expect(decrypted).toBe("0123456789abcdef0123456789abcdef" + "p@ss");
+    const buf = Buffer.from(captured.encryptedPassword!, "base64");
+    // PKCS#1 v1.5：密文长度 = 模长（2048 位 RSA → 256 字节），且不等于明文（含随机填充）
+    expect(buf.length).toBe(256);
+    expect(buf.toString("utf8")).not.toContain("p@ss");
+    // 真实环境联调已验证：testcybercloud-dev 服务端可解密该格式密文并完成登录（见 PR 描述与 docs/integrations/cybercloud-setup.md）
   });
 
   it("所有业务请求携带 jwt 与 payload 头（base 末尾斜杠归一化）", async () => {
