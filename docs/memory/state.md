@@ -3,9 +3,11 @@
 > 机制说明：本目录是 AI 会话的持久记忆。会话启动协议：先读 AGENTS.md → 本目录 → 相关子项目文档。
 > 即时更新：每完成一个功能 / 关键决策 / 迭代结束，即刻追加条目，禁止事后批量补记。
 
-## 当前状态快照（2026-08-21，意图路由迭代进行中）
+## 当前状态快照（2026-08-21，cybercloud 真实对接完成）
 
-- **项目阶段**：Assistant 增强（PR #19）已合并；**多系统意图路由迭代开发完成**，PR #22 已创建待 CI（本地验证：server 55 测试 + web 10 测试全绿、Playwright 路由规格 2/2、全量门禁 turbo 69/69 + infra + docs 通过）。
+- **项目阶段**：意图路由迭代（PR #22）与 cybercloud JWT 网关认证层（PR #23，3df9355）均已合并 main；**testcybercloud-dev 全链路实测打通**（真实智谱分类 → RSA 登录 → JWT → payload → 智能体「业务数据查询」→ 真实业务数据回答）；本地 assistant 以真实模式运行。
+- **cybercloud 真实对接关键契约**（源码逆向 + 实测）：网关层 APISIX jwt-auth 要求 jwt 头；登录 = login/key 取公钥（SPKI DER base64）→ RSA PKCS1 加密 loginKey+password → login 取 JWT（单域名部署走 Set-Cookie 的 jwt cookie）；应用层 payload 头 = URL 编码 UserDto JSON（apiKey 经 userByApiKey 换取）；对话 = agents → session/create → block（MARKDOWN/METRIC_CHART/REPORT_CHART/ERROR）；智能体列表 9 个，「业务数据查询」= 2052619996018765825。
+- **已知问题**：① 智谱新 Key 曾因 IP 白名单 403（用户已开白名单解决）；② assistant 的 chat LLM 现支持供应商切换（有 DEEPSEEK_API_KEY 时 chat 优先 DeepSeek、embed 固定智谱，LLM_PROVIDER=zhipu 强制）；③ Node20/OpenSSL3 禁用 PKCS1 私钥解密，测试避免依赖私钥解密。
 - **意图路由迭代清单**：intent_logs 表（message/domain/intent/confidence/corrected_intent）每次 chat 落库；分层路由输出 {domain, intent, confidence}（桩规则 confidence=1，真实模式 LLM 输出三字段、解析失败回退规则 confidence=0）；低置信度（CLARIFY_THRESHOLD 默认 0.6，桩注入 CLARIFY_STUB_CONFIDENCE）澄清反问 + clarifyOptions 候选 + 序号/意图名确认执行 + corrected_intent 回填；GET /intent-logs + POST /intent-logs/:id/correct；Web 意图日志页（筛选/纠错）与聊天页澄清选项按钮。
 - **已知问题**：① .env 的 ZHIPU_API_KEY 过期（401），本地服务桩模式运行；② cybercloud 真实联调待用户提供凭证（账号/密码/API Key，另有 6 项前置条件见会话记录与 docs/integrations/cybercloud-setup.md）；③ gh GraphQL 轮询易被网络瞬断，用 REST 轮询。
 - **Assistant 增强清单**：意图路由扩 6 类（process_execution：创建需求/触发采集经网关执行，ACTION_STUB 桩；trouble_shooting：读 ports.yaml 并发生成健康探测 + LLM 排查建议；complaint_feedback：feedback 落库 + API + Web 页）；cybercloud 真实契约适配（payload 头认证 = URL 编码 UserDto JSON；apiKey → /api/auth/setup/user/access/token/userByApiKey 换 payload 缓存 30 分钟；/api/setup/agent/chat/agents + session/create + block 对话，SSE 四类型；CYBERCLOUD_BASE_URL/API_KEY/AGENT_ID 配置，未配置优雅降级，CYBERCLOUD_STUB 桩）。契约手册 docs/integrations/cybercloud-setup.md。
