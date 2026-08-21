@@ -39,6 +39,43 @@ describe("llmChat", () => {
   });
 });
 
+describe("llmChat 供应商选择", () => {
+  it("配置 DEEPSEEK_API_KEY 时 chat 优先走 DeepSeek", async () => {
+    vi.stubEnv("DEEPSEEK_API_KEY", "ds-key");
+    const fetchMock = vi.fn(async () =>
+      new Response(JSON.stringify({ choices: [{ message: { content: "{}" } }] }), { status: 200 })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    await llmChat([{ role: "user", content: "你好" }]);
+    const [url] = fetchMock.mock.calls[0] as unknown as [string];
+    expect(url).toContain("api.deepseek.com");
+  });
+
+  it("LLM_PROVIDER=zhipu 强制 chat 走智谱", async () => {
+    vi.stubEnv("DEEPSEEK_API_KEY", "ds-key");
+    vi.stubEnv("LLM_PROVIDER", "zhipu");
+    const fetchMock = vi.fn(async () =>
+      new Response(JSON.stringify({ choices: [{ message: { content: "{}" } }] }), { status: 200 })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    await llmChat([{ role: "user", content: "你好" }]);
+    const [url] = fetchMock.mock.calls[0] as unknown as [string];
+    expect(url).toContain("bigmodel.cn");
+  });
+
+  it("embed 始终走智谱 embedding-2（不受 chat 供应商影响）", async () => {
+    vi.stubEnv("DEEPSEEK_API_KEY", "ds-key");
+    const fetchMock = vi.fn(async () =>
+      new Response(JSON.stringify({ data: [{ embedding: [0.1] }] }), { status: 200 })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    await embed(["测试"]);
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toContain("bigmodel.cn");
+    expect(JSON.parse(String(init.body)).model).toBe("embedding-2");
+  });
+});
+
 describe("embed", () => {
   it("桩模式返回确定性 1024 维向量", async () => {
     vi.stubEnv("MT_LLM_STUB", "1");

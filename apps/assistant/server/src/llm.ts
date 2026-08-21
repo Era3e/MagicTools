@@ -1,5 +1,5 @@
 import { createModelClient, type ChatMessage, type ChatOptions } from "@mt/model-client";
-import { ZHIPU } from "@mt/model-client";
+import { DEEPSEEK, ZHIPU } from "@mt/model-client";
 
 export const EMBEDDING_DIMS = 1024;
 
@@ -13,13 +13,26 @@ export type Intent =
 
 export type Domain = "magictools" | "cybercloud" | "chitchat";
 
-const client = createModelClient(ZHIPU, (u) => console.log("[llm]", u.model, u.ms + "ms"));
+// chat 供应商：LLM_PROVIDER=zhipu 强制智谱；否则有 DeepSeek Key 用 DeepSeek（智谱 IP 白名单限制时可用）
+// 懒加载：运行时读取环境变量，供应商变化时自动重建客户端
+let chatClientCache: ReturnType<typeof createModelClient> | null = null;
+let chatClientProvider = "";
+function getChatClient(): ReturnType<typeof createModelClient> {
+  const provider = process.env.LLM_PROVIDER === "zhipu" || !process.env.DEEPSEEK_API_KEY ? ZHIPU : DEEPSEEK;
+  if (!chatClientCache || chatClientProvider !== provider.name) {
+    chatClientCache = createModelClient(provider, (u) => console.log("[llm]", u.model, u.ms + "ms"));
+    chatClientProvider = provider.name;
+  }
+  return chatClientCache;
+}
+// 向量化固定走智谱 embedding-2（DeepSeek 无 embedding 端点）
+const embedClient = createModelClient(ZHIPU, () => {});
 
 export async function llmChat(messages: ChatMessage[], options?: ChatOptions): Promise<string> {
   if (process.env.MT_LLM_STUB === "1") {
     return JSON.stringify(stubPayloadFor(messages));
   }
-  const result = await client.chat(messages, options);
+  const result = await getChatClient().chat(messages, options);
   return result.content;
 }
 
@@ -84,7 +97,7 @@ export async function embed(texts: string[]): Promise<number[][]> {
   if (process.env.MT_LLM_STUB === "1") {
     return texts.map((t) => pseudoVector(t, EMBEDDING_DIMS));
   }
-  return client.embed(texts);
+  return embedClient.embed(texts);
 }
 
 /** 桩模式确定性伪向量：字符 bigram 哈希打点后单位化（与 scholar 桩向量算法一致，保证检索相似性） */
