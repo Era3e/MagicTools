@@ -26,12 +26,31 @@ export interface Conversation {
   updatedAt: string;
 }
 
+export interface ClarifyOption {
+  label: string;
+  intent: string;
+}
+
 export interface ChatResponse {
   sessionId: string;
   reply: string;
   intent: "product_inquiry" | "data_query" | "chitchat_reject" | "process_execution" | "trouble_shooting" | "complaint_feedback";
+  domain?: "magictools" | "cybercloud" | "chitchat";
+  confidence?: number;
+  clarifying?: boolean;
+  clarifyOptions?: ClarifyOption[];
   citations: Citation[];
   actionResult?: Record<string, unknown>;
+}
+
+export interface IntentLog {
+  id: string;
+  message: string;
+  domain: string;
+  intent: string;
+  confidence: number;
+  correctedIntent: string | null;
+  createdAt: string;
 }
 
 export interface Feedback {
@@ -49,6 +68,8 @@ export interface Message {
   intent: string;
   citations: Citation[];
   actionResult?: Record<string, unknown>;
+  clarifying?: boolean;
+  clarifyOptions?: ClarifyOption[];
   createdAt: string;
 }
 
@@ -60,4 +81,13 @@ export const api = {
   deleteConversation: (id: string) => request<{ deleted: boolean }>("/conversations/" + id, { method: "DELETE" }),
   listFeedback: () => request<Feedback[]>("/feedback"),
   deleteFeedback: (id: string) => request<{ deleted: boolean }>("/feedback/" + id, { method: "DELETE" }),
+  listIntentLogs: (filters: { domain?: string; intent?: string } = {}) => {
+    const qs = new URLSearchParams();
+    if (filters.domain) qs.set("domain", filters.domain);
+    if (filters.intent) qs.set("intent", filters.intent);
+    const s = qs.toString();
+    return request<IntentLog[]>("/intent-logs" + (s ? "?" + s : ""));
+  },
+  correctIntentLog: (id: string, correctedIntent: string) =>
+    request<IntentLog>("/intent-logs/" + id + "/correct", { method: "POST", body: JSON.stringify({ correctedIntent }) }),
 };

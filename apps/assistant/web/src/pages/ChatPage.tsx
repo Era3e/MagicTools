@@ -33,18 +33,16 @@ export default function ChatPage() {
     }));
   };
 
-  const send = async () => {
-    const text = draft.trim();
+  const sendText = async (text: string) => {
     if (!text || sending) return;
     setSending(true);
-    setDraft("");
     try {
       const res = await api.chat({ sessionId: activeId ?? undefined, message: text });
       setActiveId(res.sessionId);
       setMessages((prev) => [
         ...prev,
         { id: "local-u" + Date.now(), conversationId: res.sessionId, role: "user", content: text, intent: "", citations: [], createdAt: new Date().toISOString() },
-        { id: "local-a" + Date.now(), conversationId: res.sessionId, role: "assistant", content: res.reply, intent: res.intent, citations: res.citations, actionResult: res.actionResult, createdAt: new Date().toISOString() },
+        { id: "local-a" + Date.now(), conversationId: res.sessionId, role: "assistant", content: res.reply, intent: res.intent, citations: res.citations, actionResult: res.actionResult, clarifying: res.clarifying, clarifyOptions: res.clarifyOptions, createdAt: new Date().toISOString() },
       ]);
       refreshConversations();
     } catch (err) {
@@ -52,6 +50,13 @@ export default function ChatPage() {
     } finally {
       setSending(false);
     }
+  };
+
+  const send = async () => {
+    const text = draft.trim();
+    if (!text) return;
+    setDraft("");
+    await sendText(text);
   };
 
   const remove = async (id: string) => {
@@ -116,6 +121,15 @@ export default function ChatPage() {
                     ) : null}
                     {m.role === "assistant" && m.actionResult?.ok ? (
                       <Tag color="green">动作已执行：{String(m.actionResult.action ?? "")}</Tag>
+                    ) : null}
+                    {m.role === "assistant" && m.clarifying && m.clarifyOptions ? (
+                      <Space direction="vertical" size={4} style={{ marginTop: 6 }}>
+                        {m.clarifyOptions.map((o) => (
+                          <Button key={o.intent} size="small" onClick={() => sendText(o.intent)}>
+                            {o.label}
+                          </Button>
+                        ))}
+                      </Space>
                     ) : null}
                     {(m.citations ?? []).length > 0 ? (
                       <Space direction="vertical" size={2} style={{ marginTop: 6 }}>
