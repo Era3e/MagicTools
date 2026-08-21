@@ -26,11 +26,16 @@ interface SseResult {
   toolCalls?: unknown[];
 }
 
-/** 服务端返回 DER base64 公钥（非 PEM），Node 加密前包一层 PKCS#1 PEM 头 */
-function toPemPublicKey(key: string): string {
-  if (key.includes("BEGIN")) return key;
-  const body = (key.replace(/\s/g, "").match(/.{1,64}/g) ?? [key]).join("\n");
-  return "-----BEGIN RSA PUBLIC KEY-----\n" + body + "\n-----END RSA PUBLIC KEY-----";
+/** 服务端返回 SPKI DER base64 公钥（非 PEM）；Node 直接按 der+spki 解析加密 */
+function encryptWithPublicKey(key: string, plaintext: string): string {
+  const padding = constants.RSA_PKCS1_PADDING;
+  if (key.includes("BEGIN")) {
+    return publicEncrypt({ key, padding }, Buffer.from(plaintext, "utf8")).toString("base64");
+  }
+  return publicEncrypt(
+    { key: Buffer.from(key, "base64"), format: "der", type: "spki", padding } as never,
+    Buffer.from(plaintext, "utf8")
+  ).toString("base64");
 }
 
 /**
@@ -106,18 +111,23 @@ export class CybercloudService {
     if (!rsaPublicKey || !loginKey) {
       throw new BadGatewayException("cybercloud 登录公钥获取失败: " + (keyRes.message ?? keyRes.code));
     }
-    const encrypted = publicEncrypt(
-      { key: toPemPublicKey(rsaPublicKey), padding: constants.RSA_PKCS1_PADDING },
-      Buffer.from(loginKey + password, "utf8")
-    ).toString("base64");
-    const loginRes = await this.postRaw<{ accessToken?: string }>(
-      "/api/auth/login",
-      { account: username, password: encrypted, loginUrl: this.base() },
-      { jwt: false, payload: false }
-    );
-    const token = loginRes.data?.accessToken;
-    if (!token) throw new BadGatewayException("cybercloud 登录失败: " + (loginRes.message ?? loginRes.code));
-    return token;
+    const encrypted = encryptWithPublicKey(rsaPublicKey, loginKey + password);
+    const res = await fetch(this.base() + "/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ account: username, password: encrypted, loginUrl: this.base() }),
+    });
+    const loginRes = (await res.json()) as CyberResponse<{ accessToken?: string }>;
+    if (loginRes.code !== "0" && loginRes.code !== undefined) {
+      throw new BadGatewayException("cybercloud 登录失败: " + (loginRes.message ?? loginRes.code));
+    }
+    const bodyToken = loginRes.data?.accessToken;
+    if (bodyToken) return bodyToken;
+    // 单域名部署（config.singleDomain=true）：JWT 通过 Set-Cookie 下发（cookie 名 jwt）
+    const setCookies = res.headers.getSetCookie?.() ?? [];
+    const jwtCookie = setCookies.map((c) => c.split(";")[0]).find((c) => c.startsWith("jwt="));
+    if (jwtCookie) return jwtCookie.slice(4);
+    throw new BadGatewayException("cybercloud 登录失败：未获取到 JWT（响应体与 Set-Cookie 均无 jwt）");
   }
 
   private async ensurePayload(): Promise<string> {

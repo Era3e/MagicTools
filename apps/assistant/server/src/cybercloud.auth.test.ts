@@ -12,7 +12,7 @@ const PAYLOAD_JSON = '{"code":"t1","userId":1,"userName":"job"}';
 /** 生成真实 RSA 密钥对；公钥以 DER base64 返回（与真实服务一致，非 PEM） */
 function makeKeyPair() {
   const { publicKey, privateKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
-  return { publicKey: publicKey.export({ type: "pkcs1", format: "der" }).toString("base64"), privateKey };
+  return { publicKey: publicKey.export({ type: "spki", format: "der" }).toString("base64"), privateKey };
 }
 
 function mockFlow(overrides: { agentsFailOnce?: boolean } = {}) {

@@ -22,7 +22,10 @@ function mockCybercloudFlow() {
       );
     }
     if (String(url).includes("/api/auth/login")) {
-      return new Response(JSON.stringify({ code: "0", data: { accessToken: "jwt-1" } }), { status: 200 });
+      return new Response(JSON.stringify({ code: "0", data: { accessToken: "" } }), {
+        status: 200,
+        headers: { "Set-Cookie": "jwt=jwt-1; Path=/; HttpOnly" },
+      });
     }
     if (String(url).includes("/userByApiKey")) {
       payloadCalls += 1;
