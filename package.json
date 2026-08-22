@@ -8,6 +8,7 @@
   "scripts": {
     "build": "turbo run build",
     "test": "turbo run test",
+    "test:affected": "turbo run test --affected",
     "coverage": "turbo run coverage",
     "lint": "eslint .",
     "test:infra": "node --test infra/scripts/lib/*.test.mjs",

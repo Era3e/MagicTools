@@ -146,7 +146,7 @@ MagicTools/
 
 ### 4.7 测试与 0 bug loop
 
-- **四层测试**：单元（Vitest，公共包与核心逻辑）→ 冒烟（服务启动 + 核心接口探活）→ 回归（变更影响面自动筛选执行）→ E2E（Playwright，前端页面真实操作）；
+- **四层测试**：单元（Vitest，公共包与核心逻辑）→ 冒烟（服务启动 + 核心接口探活）→ 回归（`pnpm test:affected`，即 `turbo run test --affected`，变更影响面自动筛选执行）→ E2E（Playwright，前端页面真实操作）；
 - **对抗性测试流程**：开发 agent 完成 → 测试 agent 独立验收（依据 spec 与验收标准）→ 发现 bug 回环给开发 agent → 循环直至 0 bug → 人工终审；
 - **0 bug 定义**：CI 全绿 + 测试 agent 报告无未解决缺陷 + 人工确认。
 
