@@ -7,6 +7,8 @@ export const tokens = {
     text: "#1f1f1f",
     textSecondary: "#666666",
     bgLayout: "#f5f6f8",
+    bgContainer: "#ffffff",
+    border: "#f0f0f0",
   },
   spacing: { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 },
   fontSize: { sm: 12, md: 14, lg: 16, xl: 20 },
