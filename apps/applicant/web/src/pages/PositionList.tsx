@@ -6,6 +6,7 @@ import { StatusTag } from "../components/StatusTag";
 import { PositionForm, type PositionFormValues } from "../components/PositionForm";
 import { JdParsePanel } from "../components/JdParsePanel";
 import { ImageUploadPanel } from "../components/ImageUploadPanel";
+import { POSITION_STATUS_OPTIONS } from "../status";
 
 export default function PositionList() {
   const [items, setItems] = useState<Position[]>([]);
@@ -34,14 +35,7 @@ export default function PositionList() {
             style={{ width: 140 }}
             value={status}
             onChange={(v) => setStatus(v)}
-            options={[
-              { value: "waiting", label: "待投递" },
-              { value: "applied", label: "已投递" },
-              { value: "written", label: "笔试" },
-              { value: "interview", label: "面试" },
-              { value: "offer", label: "offer" },
-              { value: "rejected", label: "拒绝" },
-            ]}
+            options={POSITION_STATUS_OPTIONS}
           />
           <Button type="primary" onClick={() => setCreating(true)}>
             新建岗位

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button, Card, Empty, Input, List, Space, Tag, Typography, message } from "antd";
 import { api, type Conversation, type Message } from "../api";
+import { tokens } from "@mt/ui";
 
 const INTENT_LABEL: Record<string, { label: string; color: string }> = {
   product_inquiry: { label: "知识问答", color: "blue" },
@@ -76,7 +77,7 @@ export default function ChatPage() {
   return (
     <Card title="智能助手" style={{ height: "calc(100vh - 48px)" }}>
       <div style={{ display: "flex", gap: 16, height: "calc(100vh - 160px)" }}>
-        <div style={{ width: 240, borderRight: "1px solid #eee", paddingRight: 8, overflow: "auto" }}>
+        <div style={{ width: 240, borderRight: "1px solid " + tokens.color.border, paddingRight: 8, overflow: "auto" }}>
           <Button block type="primary" style={{ marginBottom: 12 }} onClick={() => { setActiveId(null); setMessages([]); }}>
             新对话
           </Button>
@@ -84,7 +85,7 @@ export default function ChatPage() {
             dataSource={conversations}
             renderItem={(c) => (
               <List.Item
-                style={{ cursor: "pointer", background: c.id === activeId ? "#f0f5ff" : undefined }}
+                style={{ cursor: "pointer", background: c.id === activeId ? tokens.color.bgActive : undefined }}
                 onClick={() => open(c.id)}
                 actions={[
                   <Button key="del" size="small" type="text" onClick={(e) => { e.stopPropagation(); remove(c.id); }}>
@@ -110,7 +111,7 @@ export default function ChatPage() {
                       maxWidth: "75%",
                       padding: "8px 12px",
                       borderRadius: 8,
-                      background: m.role === "user" ? "#e6f4ff" : "#f6f6f6",
+                      background: m.role === "user" ? tokens.color.bgUser : tokens.color.bgNeutral,
                       whiteSpace: "pre-wrap",
                       textAlign: "left",
                     }}

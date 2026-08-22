@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button, Card, Input, Space, Tag, Typography, message } from "antd";
 import { api, downloadText, type GenerateResult } from "../api";
+import { tokens } from "@mt/ui";
 
 export default function GeneratePage() {
   const [prompt, setPrompt] = useState("");
@@ -73,7 +74,7 @@ export default function GeneratePage() {
               ) : null}
             </Space>
             {result.code ? (
-              <pre style={{ maxHeight: 260, overflow: "auto", background: "#f6f6f6", padding: 12, borderRadius: 6 }}>
+              <pre style={{ maxHeight: 260, overflow: "auto", background: tokens.color.bgNeutral, padding: 12, borderRadius: 6 }}>
                 {result.code}
               </pre>
             ) : null}
@@ -82,7 +83,7 @@ export default function GeneratePage() {
                 title="preview"
                 src={api.previewUrl(previewId)}
                 sandbox="allow-scripts"
-                style={{ width: "100%", height: 360, border: "1px solid #eee", borderRadius: 6 }}
+                style={{ width: "100%", height: 360, border: "1px solid " + tokens.color.border, borderRadius: 6 }}
               />
             ) : null}
           </>

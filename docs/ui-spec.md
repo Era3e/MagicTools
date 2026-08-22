@@ -10,6 +10,9 @@
 | 错误 | color.error | #ff4d4f |
 | 文本 | color.text / color.textSecondary | #1f1f1f / #666666 |
 | 布局底色 | color.bgLayout | #f5f6f8 |
+| 容器 / 中性 / 高亮 / 气泡底 | color.bgContainer / bgNeutral / bgActive / bgUser | #ffffff / #f6f6f6 / #f0f5ff / #e6f4ff |
+| 边框 | color.border | #f0f0f0 |
+| 强调色 | color.purple / color.cyan | #722ed1 / #13c2c2 |
 | 间距 | spacing.xs/sm/md/lg/xl | 4/8/16/24/32 |
 | 字号 | fontSize.sm/md/lg/xl | 12/14/16/20 |
 | 圆角 | radius | 6 |

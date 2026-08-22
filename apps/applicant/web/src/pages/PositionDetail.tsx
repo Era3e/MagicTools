@@ -3,15 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api, type Position } from "../api";
 import { StatusTag } from "../components/StatusTag";
-
-const STATUS_OPTIONS = [
-  { value: "waiting", label: "待投递" },
-  { value: "applied", label: "已投递" },
-  { value: "written", label: "笔试" },
-  { value: "interview", label: "面试" },
-  { value: "offer", label: "offer" },
-  { value: "rejected", label: "拒绝" },
-];
+import { POSITION_STATUS_OPTIONS } from "../status";
 
 export default function PositionDetail() {
   const { id } = useParams();
@@ -50,7 +42,7 @@ export default function PositionDetail() {
         <Descriptions.Item label="状态">
           <Space>
             <StatusTag status={item.status} />
-            <Select value={item.status} style={{ width: 120 }} options={STATUS_OPTIONS} onChange={changeStatus} />
+            <Select value={item.status} style={{ width: 120 }} options={POSITION_STATUS_OPTIONS} onChange={changeStatus} />
           </Space>
         </Descriptions.Item>
         <Descriptions.Item label="城市">{item.city || "-"}</Descriptions.Item>
