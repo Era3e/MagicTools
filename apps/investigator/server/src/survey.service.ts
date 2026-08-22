@@ -1,6 +1,7 @@
 import { Injectable, BadGatewayException, BadRequestException, ConflictException, NotFoundException } from "@nestjs/common";
 import { appendOutbox } from "@mt/db";
 import { idempotencyKey } from "@mt/utils";
+import { parseJson } from "@mt/model-client";
 import { FeishuClient } from "./feishu/client";
 import { pool } from "./db";
 import { llmChat } from "./llm";
@@ -75,7 +76,7 @@ export class SurveyService {
           { role: "system", content: "只输出 JSON。" },
           { role: "user", content: STRUCTURE_PROMPT + answerText.slice(0, 3000) },
         ]);
-        const structured = responseStructuredSchema.parse(JSON.parse(raw));
+        const structured = responseStructuredSchema.parse(parseJson(raw));
         await upsertResponse({
           surveyId,
           recordId: record.recordId,
@@ -103,7 +104,7 @@ export class SurveyService {
       { role: "system", content: "你是调研分析师。根据以下结构化调研结果写一段 150 字内的主题总结（覆盖主要需求、痛点与建议）。只输出 JSON：{summary: 字符串}。结果：" },
       { role: "user", content: JSON.stringify(responses.map((r) => r.structured).slice(0, 50)) },
     ]);
-    const parsed = JSON.parse(raw) as { summary?: string };
+    const parsed = parseJson(raw) as { summary?: string };
     const summary = parsed.summary ?? "";
     await setSurveySummary(surveyId, summary);
     return { summary };

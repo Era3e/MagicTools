@@ -1,4 +1,5 @@
 import { Injectable, BadRequestException, NotFoundException } from "@nestjs/common";
+import { parseJson } from "@mt/model-client";
 import { llmChat } from "./llm";
 import { parseJdSchema, parsePositionImageSchema } from "./schemas";
 import { POSITION_STATUSES, createPosition, getPosition, listPositions, updatePosition, type PositionInput } from "./position.repo";
@@ -11,7 +12,7 @@ export async function parseJd(text: string) {
     { role: "system", content: "只输出 JSON，不要任何解释。" },
     { role: "user", content: JD_PROMPT + text },
   ]);
-  return parseJdSchema.parse(JSON.parse(raw));
+  return parseJdSchema.parse(parseJson(raw));
 }
 
 export async function parsePositionImage(dataUrl: string) {
@@ -28,7 +29,7 @@ export async function parsePositionImage(dataUrl: string) {
     ],
     { vision: true }
   );
-  return parsePositionImageSchema.parse(JSON.parse(raw));
+  return parsePositionImageSchema.parse(parseJson(raw));
 }
 
 export async function generateGreeting(positionId: string) {
