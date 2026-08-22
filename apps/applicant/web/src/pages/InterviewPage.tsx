@@ -1,5 +1,5 @@
 import { Button, Card, Divider, Space, message } from "antd";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api, type Interview, type Position } from "../api";
 import { AnalysisView } from "../components/AnalysisView";
@@ -11,16 +11,17 @@ export default function InterviewPage() {
   const [position, setPosition] = useState<Position | null>(null);
   const [items, setItems] = useState<Interview[]>([]);
 
-  const refresh = () => {
-    if (id) api.listInterviews(id).then(setItems).catch((err) => console.error(err));
-  };
+  const refresh = useCallback(() => {
+    if (!id) return;
+    api.listInterviews(id).then(setItems).catch((err) => message.error(String(err)));
+  }, [id]);
 
   useEffect(() => {
     if (id) {
-      api.getPosition(id).then(setPosition);
+      api.getPosition(id).then(setPosition).catch((err) => message.error(String(err)));
       refresh();
     }
-  }, [id]);
+  }, [id, refresh]);
 
   const analyze = async (interviewId: string) => {
     try {

@@ -1,5 +1,5 @@
 import { Button, Card, Select, Space, Table, Tag, message } from "antd";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api, type AnalysisRequest } from "../api";
 
@@ -15,12 +15,16 @@ export default function RequestList() {
   const [items, setItems] = useState<AnalysisRequest[]>([]);
   const [status, setStatus] = useState<string | undefined>();
   const [polling, setPolling] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const refresh = () => api.listRequests(status).then(setItems).catch((err) => console.error(err));
+  const refresh = useCallback(() => {
+    setLoading(true);
+    api.listRequests(status).then(setItems).catch((err) => message.error(String(err))).finally(() => setLoading(false));
+  }, [status]);
 
   useEffect(() => {
     refresh();
-  }, [status]);
+  }, [refresh]);
 
   const poll = async () => {
     setPolling(true);
@@ -57,6 +61,7 @@ export default function RequestList() {
       <Table<AnalysisRequest>
         rowKey="id"
         dataSource={items}
+        loading={loading}
         pagination={{ pageSize: 10 }}
         columns={[
           { title: "调研来源", dataIndex: "surveyName", render: (v: string, row) => <Link to={"/requests/" + row.id}>{v || "未命名"}</Link> },

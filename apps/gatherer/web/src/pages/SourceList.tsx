@@ -1,5 +1,5 @@
-import { Button, Card, Form, Input, Modal, Select, Space, Table, Tag, message } from "antd";
-import { useEffect, useState } from "react";
+import { Button, Card, Form, Input, Modal, Select, Table, Tag, message } from "antd";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api, type Source } from "../api";
 
@@ -12,12 +12,16 @@ const TYPE_MAP: Record<string, { label: string; color: string }> = {
 export default function SourceList() {
   const [items, setItems] = useState<Source[]>([]);
   const [creating, setCreating] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const refresh = () => api.listSources().then(setItems).catch((err) => console.error(err));
+  const refresh = useCallback(() => {
+    setLoading(true);
+    api.listSources().then(setItems).catch((err) => message.error(String(err))).finally(() => setLoading(false));
+  }, []);
 
   useEffect(() => {
     refresh();
-  }, []);
+  }, [refresh]);
 
   return (
     <Card
@@ -31,6 +35,7 @@ export default function SourceList() {
       <Table<Source>
         rowKey="id"
         dataSource={items}
+        loading={loading}
         pagination={{ pageSize: 10 }}
         columns={[
           { title: "名称", dataIndex: "name", render: (v: string, row) => <Link to={"/sources/" + row.id}>{v}</Link> },

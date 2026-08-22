@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button, Card, Form, Input, Modal, Select, Space, Switch, Table, Tag, message } from "antd";
 import { api, type Entry } from "../api";
 
@@ -14,13 +14,16 @@ export default function EntryList() {
   const [category, setCategory] = useState<string | undefined>();
   const [scopeCategory, setScopeCategory] = useState("");
   const [creating, setCreating] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const refresh = () =>
-    api.listEntries({ source, category }).then(setEntries).catch((err) => message.error(String(err)));
+  const refresh = useCallback(() => {
+    setLoading(true);
+    api.listEntries({ source, category }).then(setEntries).catch((err) => message.error(String(err))).finally(() => setLoading(false));
+  }, [source, category]);
 
   useEffect(() => {
     refresh();
-  }, [source, category]);
+  }, [refresh]);
 
   const onScope = async (id: string, assistantScope: boolean) => {
     await api.patchEntry(id, { assistantScope });
@@ -79,6 +82,7 @@ export default function EntryList() {
       <Table<Entry>
         rowKey="id"
         dataSource={entries}
+        loading={loading}
         pagination={{ pageSize: 10 }}
         columns={[
           { title: "标题", dataIndex: "title" },

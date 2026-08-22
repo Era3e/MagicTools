@@ -1,5 +1,6 @@
 import { Button, Card, Form, Input, List, Select, Space, Tag, Typography, message } from "antd";
 import { useEffect, useState } from "react";
+import { tokens } from "@mt/ui";
 import { api, apiResume, type Position, type Resume } from "../api";
 
 interface QuotaInfo {
@@ -15,14 +16,20 @@ export default function ResumeCenter() {
   const [matchPositionId, setMatchPositionId] = useState<string | undefined>();
   const [rewriteInput, setRewriteInput] = useState({ sectionType: "work_experience", originalText: "" });
   const [result, setResult] = useState<Record<string, unknown> | null>(null);
+  const [selectedResumeId, setSelectedResumeId] = useState<string | undefined>();
 
   const refresh = () => {
-    apiResume.list().then(setResumes);
+    apiResume.list().then((list) => {
+      setResumes(list);
+      setSelectedResumeId((prev) => (prev && list.some((r) => r.id === prev) ? prev : list[0]?.id));
+    });
     api.listPositions().then(setPositions);
     apiResume.quota().then(setQuota).catch(() => setQuota(null));
   };
 
   useEffect(refresh, []);
+
+  const selectedResume = resumes.find((r) => r.id === selectedResumeId) ?? resumes[0];
 
   const analyze = async (id: string) => {
     try {
@@ -91,21 +98,45 @@ export default function ResumeCenter() {
       <List
         dataSource={resumes}
         rowKey="id"
-        renderItem={(r) => (
-          <List.Item
-            actions={[
-              <Button key="a" size="small" onClick={() => analyze(r.id)}>
-                分析
-              </Button>,
-              <Button key="m" size="small" onClick={() => match(r.id)}>
-                岗位匹配
-              </Button>,
-            ]}
-          >
-            <List.Item.Meta title={r.name} description={"版本 " + r.version + " · 来源 " + r.source} />
-            {r.lastAnalysis ? <Tag>上次分析 via {(r.lastAnalysis as { via?: string }).via ?? "?"}</Tag> : null}
-          </List.Item>
-        )}
+        renderItem={(r) => {
+          const selected = r.id === selectedResumeId;
+          return (
+            <List.Item
+              onClick={() => setSelectedResumeId(r.id)}
+              style={{
+                cursor: "pointer",
+                paddingLeft: 12,
+                borderLeft: "3px solid " + (selected ? tokens.color.primary : "transparent"),
+              }}
+              actions={[
+                <Button
+                  key="a"
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    void analyze(r.id);
+                  }}
+                >
+                  分析
+                </Button>,
+                <Button
+                  key="m"
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    void match(r.id);
+                  }}
+                >
+                  岗位匹配
+                </Button>,
+              ]}
+            >
+              <List.Item.Meta title={r.name} description={"版本 " + r.version + " · 来源 " + r.source} />
+              {selected ? <Tag color={tokens.color.primary}>改写中</Tag> : null}
+              {r.lastAnalysis ? <Tag>上次分析 via {(r.lastAnalysis as { via?: string }).via ?? "?"}</Tag> : null}
+            </List.Item>
+          );
+        }}
       />
       <Space direction="vertical" style={{ width: "100%", marginTop: 16 }}>
         <Select
@@ -115,6 +146,9 @@ export default function ResumeCenter() {
           onChange={setMatchPositionId}
           options={positions.map((p) => ({ value: p.id, label: p.company + " · " + p.title }))}
         />
+        <Typography.Text type="secondary">
+          {selectedResume ? "改写目标：" + selectedResume.name : "请先选择一份简历"}
+        </Typography.Text>
         <Space.Compact style={{ width: "100%" }}>
           <Select
             style={{ width: 200 }}
@@ -134,10 +168,9 @@ export default function ResumeCenter() {
           />
           <Button
             onClick={() => {
-              const target = resumes[0];
-              if (target) void rewrite(target.id);
+              if (selectedResume) void rewrite(selectedResume.id);
             }}
-            disabled={!rewriteInput.originalText || resumes.length === 0}
+            disabled={!rewriteInput.originalText || !selectedResume}
           >
             改写
           </Button>

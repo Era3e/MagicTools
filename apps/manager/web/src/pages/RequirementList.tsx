@@ -1,5 +1,5 @@
 import { Button, Card, Form, Input, Modal, Select, Space, Table, Tag, message } from "antd";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api, type Requirement } from "../api";
 
@@ -26,12 +26,16 @@ export default function RequirementList() {
   const [source, setSource] = useState<string | undefined>();
   const [creating, setCreating] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const refresh = () => api.listRequirements({ status, source }).then(setItems).catch((err) => console.error(err));
+  const refresh = useCallback(() => {
+    setLoading(true);
+    api.listRequirements({ status, source }).then(setItems).catch((err) => message.error(String(err))).finally(() => setLoading(false));
+  }, [status, source]);
 
   useEffect(() => {
     refresh();
-  }, [status, source]);
+  }, [refresh]);
 
   const poll = async () => {
     try {
@@ -74,6 +78,7 @@ export default function RequirementList() {
       <Table<Requirement>
         rowKey="id"
         dataSource={items}
+        loading={loading}
         pagination={{ pageSize: 10 }}
         columns={[
           { title: "标题", dataIndex: "title", render: (v: string, row) => <Link to={"/requirements/" + row.id}>{v}</Link> },

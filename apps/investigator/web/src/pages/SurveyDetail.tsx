@@ -1,5 +1,5 @@
 import { Alert, Button, Card, Descriptions, Select, Space, Table, Tag, message } from "antd";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api, type ResponseItem, type Survey } from "../api";
 
@@ -19,16 +19,18 @@ export default function SurveyDetail() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [syncing, setSyncing] = useState(false);
   const [summary, setSummary] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const refresh = () => {
+  const refresh = useCallback(() => {
     if (!id) return;
-    api.getSurvey(id).then(setSurvey);
-    api.listResponses(id, { sentiment, priority }).then(setResponses);
-  };
+    api.getSurvey(id).then(setSurvey).catch((err) => message.error(String(err)));
+    setLoading(true);
+    api.listResponses(id, { sentiment, priority }).then(setResponses).catch((err) => message.error(String(err))).finally(() => setLoading(false));
+  }, [id, sentiment, priority]);
 
   useEffect(() => {
     refresh();
-  }, [id, sentiment, priority]);
+  }, [refresh]);
 
   if (!survey) return <Card loading />;
 
@@ -129,6 +131,7 @@ export default function SurveyDetail() {
       <Table<ResponseItem>
         rowKey="id"
         dataSource={responses}
+        loading={loading}
         rowSelection={{ selectedRowKeys: selectedIds, onChange: (keys) => setSelectedIds(keys as string[]) }}
         pagination={{ pageSize: 10 }}
         columns={[
