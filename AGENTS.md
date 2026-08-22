@@ -4,7 +4,7 @@
 
 1. 读本文件；
 2. 读 docs/memory/ 下全部记忆文件（当前状态、关键决策、进行中任务、已知问题）；
-3. 读任务涉及子项目的 docs 五类文档（architecture / prd / dev / test / changelog）；
+3. 读任务涉及子项目的相关文档：docs/superpowers/specs/（设计）、docs/superpowers/plans/（实施计划）、docs/CHANGELOG.md（迭代日志）；
 4. 之后才能开始任何开发动作。
 
 ## 项目速览
@@ -26,7 +26,7 @@
 
 ## 常用命令
 
-- pnpm install / pnpm build / pnpm test / pnpm lint / pnpm test:infra
+- pnpm install / pnpm build / pnpm test / pnpm test:affected / pnpm lint / pnpm coverage / pnpm test:infra
 - pnpm new:app <name>（新子项目）
 - pnpm smoke [--only <服务>]（冒烟）
 - pnpm qa:gate（本地门禁）

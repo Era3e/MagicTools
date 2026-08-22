@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Inject, NotFoundException, Param, Post, Query } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, NotFoundException, Param, Post, Query } from "@nestjs/common";
 import { correctIntentLog, listIntentLogs } from "./intent-log.repo";
 import { intentCorrectionSchema } from "./schemas";
 

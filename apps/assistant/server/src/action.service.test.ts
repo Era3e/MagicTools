@@ -27,7 +27,7 @@ describe("ActionService", () => {
 
   it("真实模式创建需求经网关落 Manager", async () => {
     const urls: string[] = [];
-    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+    const fetchMock = vi.fn(async (url: string, _init?: RequestInit) => {
       urls.push(String(url));
       if (String(url).includes("chat/completions")) {
         return new Response(

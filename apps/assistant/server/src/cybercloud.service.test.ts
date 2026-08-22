@@ -66,7 +66,7 @@ describe("CybercloudService（真实契约）", () => {
     vi.stubEnv("CYBERCLOUD_JWT", "jwt-1");
     vi.stubEnv("CYBERCLOUD_USERNAME", "admin");
     vi.stubEnv("CYBERCLOUD_PASSWORD", "p@ss");
-    const { fetchMock, urls, headers, getPayloadCalls } = mockCybercloudFlow();
+    const { fetchMock, urls, headers } = mockCybercloudFlow();
     vi.stubGlobal("fetch", fetchMock);
     const svc = new CybercloudService();
     const res = await svc.query("本月销售额多少");

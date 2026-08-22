@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
+    "coverage": "vitest run --coverage",
     "lint": "tsc --noEmit -p tsconfig.json"
   },
   "devDependencies": { "typescript": "^5.5.0", "vitest": "^2.0.0", "@types/node": "^20.14.0" }

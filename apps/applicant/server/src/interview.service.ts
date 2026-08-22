@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
+import { parseJson } from "@mt/model-client";
 import { llmChat } from "./llm";
 import { interviewAnalysisSchema } from "./schemas";
 import { createInterview, getInterview, listInterviews, setAnalysis } from "./interview.repo";
@@ -23,7 +24,7 @@ export class InterviewService {
       { role: "system", content: "只输出 JSON。" },
       { role: "user", content: ANALYSIS_PROMPT + JSON.stringify({ round: row.round, qaNotes: row.qaNotes, reflection: row.reflection }) },
     ]);
-    const analysis = interviewAnalysisSchema.parse(JSON.parse(raw));
+    const analysis = interviewAnalysisSchema.parse(parseJson(raw));
     return setAnalysis(id, analysis);
   }
 

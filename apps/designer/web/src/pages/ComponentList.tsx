@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button, Card, Modal, Space, Table, Tag, Typography, message } from "antd";
 import { api, downloadText, type ComponentItem } from "../api";
+import { tokens } from "@mt/ui";
 
 export default function ComponentList() {
   const [items, setItems] = useState<ComponentItem[]>([]);
@@ -54,7 +55,7 @@ export default function ComponentList() {
         {viewing ? (
           <>
             <Tag>{viewing.description || "无描述"}</Tag>
-            <pre style={{ maxHeight: 420, overflow: "auto", background: "#f6f6f6", padding: 12, borderRadius: 6 }}>
+            <pre style={{ maxHeight: 420, overflow: "auto", background: tokens.color.bgNeutral, padding: 12, borderRadius: 6 }}>
               {viewing.code}
             </pre>
           </>

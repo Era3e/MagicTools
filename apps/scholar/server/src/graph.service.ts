@@ -10,18 +10,9 @@ import {
 } from "./graph.repo";
 import { llmChat } from "./llm";
 import { graphSchema } from "./schemas";
+import { parseJson } from "@mt/model-client";
 
 const ENTRIES_LIMIT = 100;
-
-function parseJson(raw: string): unknown {
-  try {
-    return JSON.parse(raw);
-  } catch {
-    const m = raw.match(/\{[\s\S]*\}/);
-    if (!m) throw new Error("LLM 输出无法解析为 JSON");
-    return JSON.parse(m[0]);
-  }
-}
 
 @Injectable()
 export class GraphService {

@@ -78,7 +78,7 @@ export default function GraphPage() {
       <div style={{ marginBottom: 16 }}>
         实体 {data?.nodes.length ?? 0} · 关系 {data?.edges.length ?? 0}
       </div>
-      <div ref={containerRef} style={{ width: "100%", height: 420, border: "1px solid #eee" }} />
+      <div ref={containerRef} style={{ width: "100%", height: 420, border: "1px solid " + tokens.color.border }} />
       <List<GraphNode>
         style={{ marginTop: 16 }}
         header={<div>实体列表（点击查看关联条目）</div>}

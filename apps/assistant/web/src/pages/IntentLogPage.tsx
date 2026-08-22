@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button, Card, Modal, Select, Space, Table, Tag, message } from "antd";
 import { api, type IntentLog } from "../api";
 
@@ -25,13 +25,16 @@ export default function IntentLogPage() {
   const [intent, setIntent] = useState<string | undefined>();
   const [correcting, setCorrecting] = useState<IntentLog | null>(null);
   const [corrected, setCorrected] = useState<string | undefined>();
+  const [loading, setLoading] = useState(false);
 
-  const refresh = () =>
-    api.listIntentLogs({ domain, intent }).then(setItems).catch((err) => message.error(String(err)));
+  const refresh = useCallback(() => {
+    setLoading(true);
+    api.listIntentLogs({ domain, intent }).then(setItems).catch((err) => message.error(String(err))).finally(() => setLoading(false));
+  }, [domain, intent]);
 
   useEffect(() => {
     refresh();
-  }, [domain, intent]);
+  }, [refresh]);
 
   const submitCorrect = async () => {
     if (!correcting || !corrected) return;
@@ -69,6 +72,7 @@ export default function IntentLogPage() {
       <Table<IntentLog>
         rowKey="id"
         dataSource={items}
+        loading={loading}
         pagination={{ pageSize: 10 }}
         columns={[
           { title: "消息", dataIndex: "message", ellipsis: true },

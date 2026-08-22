@@ -28,6 +28,13 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
+      - name: 缓存 turbo 构建
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ runner.os }}-
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm build
@@ -62,24 +69,15 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
+      - name: 缓存 turbo 构建
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ runner.os }}-
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec turbo run build --filter=@mt/applicant-server
-      - run: pnpm exec turbo run build --filter=@mt/applicant-web
-      - run: pnpm exec turbo run build --filter=@mt/gateway
-      - run: pnpm exec turbo run build --filter=@mt/investigator-server
-      - run: pnpm exec turbo run build --filter=@mt/investigator-web
-      - run: pnpm exec turbo run build --filter=@mt/assessor-server
-      - run: pnpm exec turbo run build --filter=@mt/assessor-web
-      - run: pnpm exec turbo run build --filter=@mt/manager-server
-      - run: pnpm exec turbo run build --filter=@mt/manager-web
-      - run: pnpm exec turbo run build --filter=@mt/gatherer-server
-      - run: pnpm exec turbo run build --filter=@mt/gatherer-web
-      - run: pnpm exec turbo run build --filter=@mt/scholar-server
-      - run: pnpm exec turbo run build --filter=@mt/scholar-web
-      - run: pnpm exec turbo run build --filter=@mt/assistant-server
-      - run: pnpm exec turbo run build --filter=@mt/assistant-web
-      - run: pnpm exec turbo run build --filter=@mt/designer-server
-      - run: pnpm exec turbo run build --filter=@mt/designer-web
+      - run: pnpm build
       - name: 启动全部服务并冒烟
         run: |
           node apps/applicant/server/dist/main.js &
@@ -136,24 +134,15 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
+      - name: 缓存 turbo 构建
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ runner.os }}-
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec turbo run build --filter=@mt/applicant-server
-      - run: pnpm exec turbo run build --filter=@mt/applicant-web
-      - run: pnpm exec turbo run build --filter=@mt/gateway
-      - run: pnpm exec turbo run build --filter=@mt/investigator-server
-      - run: pnpm exec turbo run build --filter=@mt/investigator-web
-      - run: pnpm exec turbo run build --filter=@mt/assessor-server
-      - run: pnpm exec turbo run build --filter=@mt/assessor-web
-      - run: pnpm exec turbo run build --filter=@mt/manager-server
-      - run: pnpm exec turbo run build --filter=@mt/manager-web
-      - run: pnpm exec turbo run build --filter=@mt/gatherer-server
-      - run: pnpm exec turbo run build --filter=@mt/gatherer-web
-      - run: pnpm exec turbo run build --filter=@mt/scholar-server
-      - run: pnpm exec turbo run build --filter=@mt/scholar-web
-      - run: pnpm exec turbo run build --filter=@mt/assistant-server
-      - run: pnpm exec turbo run build --filter=@mt/assistant-web
-      - run: pnpm exec turbo run build --filter=@mt/designer-server
-      - run: pnpm exec turbo run build --filter=@mt/designer-web
+      - run: pnpm build
       - name: 缓存 Playwright 浏览器
         uses: actions/cache@v4
         with:

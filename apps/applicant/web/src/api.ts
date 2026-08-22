@@ -54,6 +54,13 @@ export const api = {
     request<Interview>("/positions/" + positionId + "/interviews", { method: "POST", body: JSON.stringify(input) }),
   analyzeInterview: (id: string) => request<Interview>("/interviews/" + id + "/analyze", { method: "POST" }),
   exportInterviewUrl: (id: string) => BASE + "/interviews/" + id + "/export.md",
+  listResumes: () => request<Resume[]>("/resumes"),
+  createResume: (input: { name: string; contentText: string }) => request<Resume>("/resumes", { method: "POST", body: JSON.stringify(input) }),
+  analyzeResume: (id: string) => request<Record<string, unknown>>("/resumes/" + id + "/analyze", { method: "POST" }),
+  rewriteResume: (id: string, input: { sectionType: string; originalText: string; positionId?: string }) =>
+    request<Record<string, unknown>>("/resumes/" + id + "/rewrite", { method: "POST", body: JSON.stringify(input) }),
+  matchResume: (id: string, positionId: string) => request<Record<string, unknown>>("/resumes/" + id + "/match/" + positionId, { method: "POST" }),
+  resumeQuota: () => request<{ configured: boolean; quota: unknown; error?: string }>("/meta/quota"),
 };
 
 export interface Interview {
@@ -76,16 +83,6 @@ export interface Resume {
   lastAnalysis: Record<string, unknown> | null;
   createdAt: string;
 }
-
-export const apiResume = {
-  list: () => request<Resume[]>("/resumes"),
-  create: (input: { name: string; contentText: string }) => request<Resume>("/resumes", { method: "POST", body: JSON.stringify(input) }),
-  analyze: (id: string) => request<Record<string, unknown>>("/resumes/" + id + "/analyze", { method: "POST" }),
-  rewrite: (id: string, input: { sectionType: string; originalText: string; positionId?: string }) =>
-    request<Record<string, unknown>>("/resumes/" + id + "/rewrite", { method: "POST", body: JSON.stringify(input) }),
-  match: (id: string, positionId: string) => request<Record<string, unknown>>("/resumes/" + id + "/match/" + positionId, { method: "POST" }),
-  quota: () => request<{ configured: boolean; quota: unknown; error?: string }>("/meta/quota"),
-};
 
 export interface InterviewAnalysis {
   questions?: Array<{ category: string; question: string; comment: string }>;

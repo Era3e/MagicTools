@@ -1,6 +1,7 @@
 import { Injectable, BadGatewayException, BadRequestException, NotFoundException } from "@nestjs/common";
 import { appendOutbox, processOutbox } from "@mt/db";
 import { idempotencyKey } from "@mt/utils";
+import { parseJson } from "@mt/model-client";
 import { GitHubClient } from "./github/client";
 import { investigatorPool, pool } from "./db";
 import { llmChat } from "./llm";
@@ -124,12 +125,12 @@ export class RequestService {
       { role: "system", content: "你是需求分析师。只输出 JSON：{analysis: 字符串}" },
       { role: "user", content: ANALYSIS_PROMPT + JSON.stringify(context).slice(0, 12000) },
     ]);
-    const analysis = JSON.parse(analysisRaw) as { analysis?: string };
+    const analysis = parseJson(analysisRaw) as { analysis?: string };
     const designRaw = await llmChat([
       { role: "system", content: "你是系统设计师。只输出 JSON：{design: 字符串}" },
       { role: "user", content: DESIGN_PROMPT + JSON.stringify({ analysis: analysis.analysis ?? "", repoContext: row.repoContext }).slice(0, 12000) },
     ]);
-    const design = JSON.parse(designRaw) as { design?: string };
+    const design = parseJson(designRaw) as { design?: string };
     return setDocuments(id, { analysisMd: analysis.analysis ?? "", designMd: design.design ?? "", status: "draft" });
   }
 

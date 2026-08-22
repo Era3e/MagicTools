@@ -9,6 +9,6 @@ describe("App", () => {
     window.history.pushState({}, "", "/gatherer/sources");
     vi.stubGlobal("fetch", vi.fn(async () => new Response("[]", { status: 200 })));
     render(<App />);
-    expect(await screen.findByText("信息源")).toBeTruthy();
+    expect(await screen.findByText("新建源")).toBeTruthy();
   });
 });

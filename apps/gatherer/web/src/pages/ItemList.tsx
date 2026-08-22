@@ -1,5 +1,5 @@
 import { Button, Card, Space, Table, Tag, message } from "antd";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api, type Item } from "../api";
 
@@ -8,10 +8,17 @@ export default function ItemList() {
   const navigate = useNavigate();
   const [items, setItems] = useState<Item[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const refresh = useCallback(() => {
+    if (!sourceId) return;
+    setLoading(true);
+    api.listItems(sourceId).then(setItems).catch((err) => message.error(String(err))).finally(() => setLoading(false));
+  }, [sourceId]);
 
   useEffect(() => {
-    if (sourceId) api.listItems(sourceId).then(setItems).catch((err) => console.error(err));
-  }, [sourceId]);
+    refresh();
+  }, [refresh]);
 
   const push = async () => {
     if (selected.length === 0) {
@@ -22,7 +29,7 @@ export default function ItemList() {
       const out = await api.pushItems(selected);
       message.success("已推送 " + out.pushedCount + " 条（待 Scholar 接收）");
       setSelected([]);
-      if (sourceId) api.listItems(sourceId).then(setItems);
+      refresh();
     } catch (err) {
       message.error(String(err));
     }
@@ -41,6 +48,7 @@ export default function ItemList() {
       <Table<Item>
         rowKey="id"
         dataSource={items}
+        loading={loading}
         rowSelection={{ selectedRowKeys: selected, onChange: (keys) => setSelected(keys as string[]) }}
         pagination={{ pageSize: 10 }}
         columns={[

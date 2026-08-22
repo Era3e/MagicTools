@@ -1,6 +1,7 @@
 import { BadGatewayException, Injectable, NotFoundException } from "@nestjs/common";
 import { appendOutbox } from "@mt/db";
 import { contentFingerprint, idempotencyKey } from "@mt/utils";
+import { parseJson } from "@mt/model-client";
 import { pool } from "./db";
 import { parseFeed, type ParsedItem } from "./feed/parser";
 import { finishRun, listItems, markPushed, startRun, upsertItem } from "./item.repo";
@@ -36,7 +37,7 @@ export class CollectService {
             { role: "system", content: "输出 JSON：{summary: 字符串, category: 字符串, keywords: 数组}" },
             { role: "user", content: ENRICH_PROMPT + (item.title + "\n" + item.content).slice(0, 3000) },
           ]);
-          enriched = enrichSchema.parse(JSON.parse(raw));
+          enriched = enrichSchema.parse(parseJson(raw));
         } catch (err) {
           console.warn("[collect] 富化失败: " + String(err));
         }
