@@ -37,9 +37,12 @@ export async function processOutbox(
       await handler(event);
       await pool.query("UPDATE outbox SET status = 'done', processed_at = now() WHERE id = $1", [row.id]);
     } catch (err) {
+      // 达到最大重试次数后进入 dead 终态，避免永久停在 retry
+      const attempts = Number(row.attempts) + 1;
+      const status = attempts >= maxAttempts ? "dead" : "retry";
       await pool.query(
-        "UPDATE outbox SET status = 'retry', attempts = attempts + 1, last_error = $2 WHERE id = $1",
-        [row.id, String(err).slice(0, 500)]
+        "UPDATE outbox SET status = $2, attempts = $3, last_error = $4 WHERE id = $1",
+        [row.id, status, attempts, String(err).slice(0, 500)]
       );
     }
     handled += 1;

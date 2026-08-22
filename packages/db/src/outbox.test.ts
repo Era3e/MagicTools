@@ -68,4 +68,27 @@ describe("outbox", () => {
     expect(row.rows[0].status).toBe("retry");
     expect(row.rows[0].attempts).toBe(1);
   });
+
+  it("连续失败达到上限后置为 dead 终态", async (ctx) => {
+    if (!available) {
+      ctx.skip();
+      return;
+    }
+    await pool.query("DELETE FROM outbox WHERE id = $1", ["t-3"]);
+    await appendOutbox(pool, {
+      id: "t-3",
+      event: "test.dead",
+      source: "applicant",
+      payload: {},
+      occurredAt: new Date().toISOString(),
+    });
+    const fail = async () => {
+      throw new Error("boom");
+    };
+    await processOutbox(pool, fail, { maxAttempts: 2 });
+    await processOutbox(pool, fail, { maxAttempts: 2 });
+    const row = await pool.query("SELECT status, attempts FROM outbox WHERE id = $1", ["t-3"]);
+    expect(row.rows[0].status).toBe("dead");
+    expect(row.rows[0].attempts).toBe(2);
+  });
 });
