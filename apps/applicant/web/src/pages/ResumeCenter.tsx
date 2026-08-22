@@ -1,7 +1,7 @@
 import { Button, Card, Form, Input, List, Select, Space, Tag, Typography, message } from "antd";
 import { useEffect, useState } from "react";
 import { tokens } from "@mt/ui";
-import { api, apiResume, type Position, type Resume } from "../api";
+import { api, type Position, type Resume } from "../api";
 
 interface QuotaInfo {
   configured: boolean;
@@ -19,12 +19,12 @@ export default function ResumeCenter() {
   const [selectedResumeId, setSelectedResumeId] = useState<string | undefined>();
 
   const refresh = () => {
-    apiResume.list().then((list) => {
+    api.listResumes().then((list) => {
       setResumes(list);
       setSelectedResumeId((prev) => (prev && list.some((r) => r.id === prev) ? prev : list[0]?.id));
     });
     api.listPositions().then(setPositions);
-    apiResume.quota().then(setQuota).catch(() => setQuota(null));
+    api.resumeQuota().then(setQuota).catch(() => setQuota(null));
   };
 
   useEffect(refresh, []);
@@ -33,7 +33,7 @@ export default function ResumeCenter() {
 
   const analyze = async (id: string) => {
     try {
-      const out = await apiResume.analyze(id);
+      const out = await api.analyzeResume(id);
       setResult(out);
       message.success("分析完成（" + (out.via === "clawcv" ? "ClawCV" : "本地降级") + "）");
       refresh();
@@ -44,7 +44,7 @@ export default function ResumeCenter() {
 
   const rewrite = async (id: string) => {
     try {
-      const out = await apiResume.rewrite(id, rewriteInput);
+      const out = await api.rewriteResume(id, rewriteInput);
       setResult(out);
       message.success("改写完成（" + (out.via === "clawcv" ? "ClawCV" : "本地降级") + "）");
     } catch (err) {
@@ -58,7 +58,7 @@ export default function ResumeCenter() {
       return;
     }
     try {
-      const out = await apiResume.match(id, matchPositionId);
+      const out = await api.matchResume(id, matchPositionId);
       setResult(out);
       message.success("匹配完成（" + (out.via === "clawcv" ? "ClawCV" : "本地降级") + "）");
     } catch (err) {
@@ -77,7 +77,7 @@ export default function ResumeCenter() {
           <Form
             layout="inline"
             onFinish={async (values: { name: string; contentText: string }) => {
-              await apiResume.create(values);
+              await api.createResume(values);
               message.success("已创建");
               refresh();
             }}

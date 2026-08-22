@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import { Button, Card, Empty, Input, List, Space, Tag, Typography, message } from "antd";
+import { useEffect, useRef, useState } from "react";
+import { Button, Card, Input, List, Space, Tag, Typography, message } from "antd";
 import { api, type Conversation, type Message } from "../api";
-import { tokens } from "@mt/ui";
+import { tokens, MtEmptyState } from "@mt/ui";
 
 const INTENT_LABEL: Record<string, { label: string; color: string }> = {
   product_inquiry: { label: "知识问答", color: "blue" },
@@ -18,6 +18,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
+  const listRef = useRef<HTMLDivElement>(null);
 
   const refreshConversations = () =>
     api.listConversations().then(setConversations).catch((err) => message.error(String(err)));
@@ -25,6 +26,11 @@ export default function ChatPage() {
   useEffect(() => {
     refreshConversations();
   }, []);
+
+  useEffect(() => {
+    const el = listRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [messages]);
 
   const open = async (id: string) => {
     setActiveId(id);
@@ -99,9 +105,9 @@ export default function ChatPage() {
           />
         </div>
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-          <div style={{ flex: 1, overflow: "auto", paddingBottom: 12 }}>
+          <div ref={listRef} style={{ flex: 1, overflow: "auto", paddingBottom: 12 }}>
             {messages.length === 0 ? (
-              <Empty description="开始对话吧" style={{ marginTop: 80 }} />
+              <MtEmptyState title="开始对话吧" />
             ) : (
               messages.map((m) => (
                 <div key={m.id} style={{ marginBottom: 16, textAlign: m.role === "user" ? "right" : "left" }}>
