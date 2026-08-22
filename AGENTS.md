@@ -26,7 +26,7 @@
 
 ## 常用命令
 
-- pnpm install / pnpm build / pnpm test / pnpm lint / pnpm coverage / pnpm test:infra
+- pnpm install / pnpm build / pnpm test / pnpm test:affected / pnpm lint / pnpm coverage / pnpm test:infra
 - pnpm new:app <name>（新子项目）
 - pnpm smoke [--only <服务>]（冒烟）
 - pnpm qa:gate（本地门禁）

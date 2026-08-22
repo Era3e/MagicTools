@@ -8,11 +8,13 @@
 
 - **交付状态**：8 子项目全部交付。需求主线三环（Investigator → Assessor → Manager）、知识主线（Gatherer → Scholar → Assistant）、Designer（降级版）均完成；Assistant 意图路由扩至 6 类并完成 cybercloud 真实对接（testcybercloud-dev 实测打通）。
 - **工程化基座**：Monorepo（pnpm + turbo）+ 网关 + outbox + 幂等 + CI/CD + Docker 部署链路；main 分支保护（required checks: quality/smoke/e2e）。
-- **本轮改造（2026-08-22，尚未合并）**：
+- **本轮改造（2026-08-22，PR #26，尚未合并）**：
   - 前端统一外壳 `@mt/ui` 的 `AppShell`（侧边导航 + 顶栏 + 跨应用切换），8 子项目全部接入，替换原先 3 处重复的深色 Menu 外壳与 5 处裸 Card；
-  - 接入 ESLint（typescript-eslint + react-hooks），根 `lint` = `eslint .`；
-  - 接入覆盖率门槛（`@vitest/coverage-v8`，5 个 DB 无关公共包 70/70/70/50），纳入 `pnpm qa:gate`；
-  - 统一 scholar-server 四个 e2e 套件的 skip 守卫（与其它服务一致），本地无 DB 也能稳定绿灯。
+  - 前端交互补全：9 页 loading/空态/错误态，合并 applicant 冗余 api 层，ChatPage 自动滚动，清理硬编码色值，修复简历改写误作用首份简历与 gatherer/scholar e2e 文案撞车；
+  - 测试可信度：接入 ESLint（typescript-eslint + react-hooks）、覆盖率门槛（`@vitest/coverage-v8`，5 个 DB 无关公共包 70/70/70/50）、统一 scholar e2e skip 守卫；
+  - 后端健壮性：`@mt/model-client` 新增健壮 `parseJson`（容错无引号键/代码围栏/夹杂文字），5 服务替换裸 `JSON.parse`；`@mt/db` outbox 失败达上限进入 dead 终态；
+  - 工程化：CI 合并重复 build 步骤并缓存 turbo 构建（`.turbo`）；新增 `pnpm test:affected`（`turbo run test --affected`）补齐「回归层」；
+  - 文档：README 重写、memory 去重、AGENTS.md 对齐。
 
 ## 关键决策
 
@@ -21,7 +23,11 @@
 - LLM 统一入口 @mt/model-client（DeepSeek + 智谱，OpenAI 兼容协议）；
 - 数据交互：网关 + 同步 REST + outbox + 幂等键；
 - 部署：单台阿里云 ECS + Docker Compose；
-- 分支绑任务不绑对话，四层清理机制。
+- 分支绑任务不绑对话，四层清理机制；
+- LLM 解析统一走 `@mt/model-client` 的 `parseJson`（逐级降级容错），禁止服务内裸 `JSON.parse`；
+- outbox 失败达 `maxAttempts` 进入 `dead` 终态（status 为无约束文本列，无需迁移）；
+- 四层测试的「回归层」由 `turbo run test --affected` 实现，不另造轮子；
+- CI 用 `actions/cache` 缓存 `.turbo`，smoke/e2e 的 16 条 build 合并为 `pnpm build`。
 
 ## 关键事件契约
 
@@ -31,8 +37,8 @@
 
 ## 进行中任务
 
-- 前端交互补全：各列表页 loading / 空态（MtEmptyState）/ 错误态，去掉裸 console.error；
-- 文档落地：README 已重写、本快照已整理；子项目五类文档暂以 docs/superpowers/specs+plans 与 CHANGELOG 承载；
+- 已完成（PR #26）：统一外壳、测试可信度、前端交互补全、后端 LLM JSON/outbox 加固、CI 去重、回归层、文档落地；
+- 待办：PR #26 合并后执行 worktree 清理与 `pnpm smoke`（需 PostgreSQL，本地无 DB）；
 - 候选：部署上线（需 GitHub Secrets）、Designer 可视化编辑器。
 
 ## 已知问题
@@ -44,4 +50,5 @@
 5. 镜像推送需先在 GitHub 配置 Secrets（REGISTRY_HOST/USERNAME/PASSWORD），未配置时 images job 自动跳过；
 6. 智谱 ZHIPU_API_KEY 过期（401）时真实 LLM 功能受影响，本地以桩模式（MT_LLM_STUB）运行，待更新 Key 后恢复；
 7. Node20/OpenSSL3 禁用 PKCS1 私钥解密，测试避免依赖私钥解密；
-8. 子智能体委托（subagent/subagent_fork）在本环境不可用，多智能体协作需外部 CLI 环境。
+8. 子智能体委托（subagent/subagent_fork）在本环境不可用，多智能体协作需外部 CLI 环境；
+9. 「0 bug loop」机制目前无落地产物：开发/测试分拆不同智能体的对抗性测试流程尚未留下验收记录（流程纪律问题，非代码可修）。
