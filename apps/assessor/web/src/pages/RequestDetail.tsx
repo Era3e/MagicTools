@@ -1,4 +1,4 @@
-import { Button, Card, Descriptions, Form, Input, Space, Table, Tag, message } from "antd";
+import { Button, Card, Descriptions, Form, Input, Space, Tag, message } from "antd";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api, type AnalysisRequest } from "../api";

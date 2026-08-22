@@ -3,6 +3,7 @@
   "tasks": {
     "build": { "dependsOn": ["^build"], "outputs": ["dist/**"] },
     "test": { "dependsOn": ["build"] },
+    "coverage": { "dependsOn": ["^build"], "outputs": ["coverage/**"] },
     "lint": { "dependsOn": ["^build"] },
     "dev": { "cache": false, "persistent": true }
   }

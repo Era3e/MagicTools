@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { llmChat, STUB_COMPONENT_CODE, STUB_COMPONENT_NAME } from "./llm";
+import { llmChat, STUB_COMPONENT_NAME } from "./llm";
 
 afterEach(() => {
   vi.unstubAllEnvs();

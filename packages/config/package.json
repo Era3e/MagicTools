@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
+    "coverage": "vitest run --coverage",
     "lint": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": { "yaml": "^2.5.0", "zod": "^3.23.0", "dotenv": "^16.4.5" },
