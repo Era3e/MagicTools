@@ -39,6 +39,6 @@ test("Phase 1 三环全链路（investigator→assessor→manager）", async ({ 
 
 test("manager 需求列表页面渲染", async ({ page, request }) => {
   await request.post("/api/manager/requirements", { data: { title: "E2E页面需求" + Date.now() } });
-  await page.goto("/manager/requirements");
+  await page.goto("/manager/admin/requirements");
   await expect(page.getByText("需求管理")).toBeVisible();
 });

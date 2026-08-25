@@ -27,6 +27,6 @@ test("gatherer 全流程（建源→试采→采集→去重→推送，双桩�
 
 test("gatherer 源列表页面渲染", async ({ page, request }) => {
   await request.post("/api/gatherer/sources", { data: { name: "E2E页面源" + Date.now(), type: "rss" } });
-  await page.goto("/gatherer/sources");
+  await page.goto("/gatherer/admin/sources");
   await expect(page.getByRole("main").getByText("信息源")).toBeVisible();
 });
