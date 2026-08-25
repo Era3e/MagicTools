@@ -43,3 +43,13 @@ test("applicant 岗位列表页面渲染与详情跳转", async ({ page, request
   await page.getByText(company).first().click();
   await expect(page.getByText("前端工程师")).toBeVisible();
 });
+
+test("applicant 前后台双外壳路由拆分", async ({ page }) => {
+  await page.goto("/applicant/positions");
+  await expect(page.getByText("每一次投递，都值得被认真对待")).toBeVisible();
+  await expect(page.getByText("ADMIN CONSOLE")).toHaveCount(0);
+
+  await page.goto("/applicant/admin/positions");
+  await expect(page.getByText("ADMIN CONSOLE")).toBeVisible();
+  await expect(page.getByText("岗位列表")).toBeVisible();
+});
