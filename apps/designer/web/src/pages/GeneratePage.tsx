@@ -1,7 +1,15 @@
 import { useState } from "react";
-import { Button, Card, Input, Space, Tag, Typography, message } from "antd";
+import { Button, Input, Tag, message } from "antd";
 import { api, downloadText, type GenerateResult } from "../api";
-import { tokens } from "@mt/ui";
+
+const GALLERY = {
+  ink: "#111111",
+  accent: "#dc2626",
+  muted: "#9ca3af",
+  paper: "#fafafa",
+  border: "#e5e5e5",
+  sans: '"Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif',
+};
 
 export default function GeneratePage() {
   const [prompt, setPrompt] = useState("");
@@ -44,51 +52,89 @@ export default function GeneratePage() {
   };
 
   return (
-    <Card title="组件生成">
-      <Space direction="vertical" style={{ width: "100%" }} size="middle">
+    <div style={{ fontFamily: GALLERY.sans, color: GALLERY.ink }}>
+      <div style={{ textAlign: "center", letterSpacing: 10, fontSize: 11, color: GALLERY.muted, marginBottom: 20 }}>
+        C O M M I S S I O N · 定 制 生 成
+      </div>
+
+      <div style={{ border: "1px solid " + GALLERY.ink, padding: "20px 24px 16px", marginBottom: 24 }}>
         <Input.TextArea
           placeholder="描述你要生成的组件，例如：一个带统计数字的卡片"
-          rows={3}
+          variant="borderless"
+          rows={2}
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
+          style={{ fontSize: 16, marginBottom: 8 }}
         />
-        <Input
-          placeholder="设计稿图片 URL（可选）"
-          value={imageUrl}
-          onChange={(e) => setImageUrl(e.target.value)}
-        />
-        <Button type="primary" loading={loading} onClick={generate}>
-          生成
-        </Button>
-        {result ? (
-          <>
-            <Space>
-              <Typography.Text strong>{result.componentName}</Typography.Text>
-              {result.status === "ok" ? <Tag color="green">生成成功</Tag> : <Tag color="red">生成失败</Tag>}
-              {result.description ? <Typography.Text type="secondary">{result.description}</Typography.Text> : null}
-              {result.status === "ok" ? (
-                <>
-                  <Button onClick={() => downloadText(result.componentName + ".tsx", result.code)}>下载</Button>
-                  <Button type="primary" onClick={save}>沉淀</Button>
-                </>
-              ) : null}
-            </Space>
-            {result.code ? (
-              <pre style={{ maxHeight: 260, overflow: "auto", background: tokens.color.bgNeutral, padding: 12, borderRadius: 6 }}>
-                {result.code}
-              </pre>
-            ) : null}
-            {previewId ? (
-              <iframe
-                title="preview"
-                src={api.previewUrl(previewId)}
-                sandbox="allow-scripts"
-                style={{ width: "100%", height: 360, border: "1px solid " + tokens.color.border, borderRadius: 6 }}
-              />
-            ) : null}
-          </>
-        ) : null}
-      </Space>
-    </Card>
+        <div style={{ display: "flex", gap: 12, alignItems: "center", borderTop: "1px solid " + GALLERY.border, paddingTop: 12 }}>
+          <Input
+            placeholder="设计稿图片 URL（可选）"
+            variant="borderless"
+            value={imageUrl}
+            onChange={(e) => setImageUrl(e.target.value)}
+            style={{ color: GALLERY.muted }}
+          />
+          <Button
+            type="text"
+            loading={loading}
+            onClick={generate}
+            style={{ border: "1px solid " + GALLERY.ink, borderRadius: 0, letterSpacing: 4, fontWeight: 600, paddingInline: 20 }}
+          >
+            生 成
+          </Button>
+        </div>
+      </div>
+
+      {loading ? (
+        <div style={{ height: 360, display: "flex", alignItems: "center", justifyContent: "center", color: GALLERY.muted, border: "1px dashed " + GALLERY.border }}>
+          正在为你调色……
+        </div>
+      ) : null}
+
+      {result && !loading ? (
+        result.status === "ok" ? (
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(280px, 5fr) minmax(300px, 7fr)", gap: 20, alignItems: "stretch" }}>
+            <section style={{ border: "1px solid " + GALLERY.ink, padding: 16, display: "flex", flexDirection: "column" }}>
+              <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 4 }}>{result.componentName}</div>
+              <div style={{ color: GALLERY.muted, fontSize: 12, marginBottom: 12, flex: 1 }}>{result.description}</div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <Button
+                  size="small"
+                  onClick={() => downloadText(result.componentName + ".tsx", result.code)}
+                  style={{ borderRadius: 0 }}
+                >
+                  下载源码
+                </Button>
+                <Button
+                  size="small"
+                  type="primary"
+                  onClick={save}
+                  style={{ borderRadius: 0, background: GALLERY.ink }}
+                >
+                  收入馆藏
+                </Button>
+              </div>
+            </section>
+            <section style={{ border: "1px solid " + GALLERY.border, background: GALLERY.paper, minHeight: 320, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {previewId ? (
+                <iframe
+                  title="preview"
+                  src={api.previewUrl(previewId)}
+                  sandbox="allow-scripts"
+                  style={{ width: "100%", height: 360, border: "none" }}
+                />
+              ) : (
+                <span style={{ color: GALLERY.muted, fontSize: 12 }}>展品编译中……</span>
+              )}
+            </section>
+          </div>
+        ) : (
+          <div style={{ border: "1px dashed " + GALLERY.accent, padding: 24, textAlign: "center", color: GALLERY.accent }}>
+            <Tag color="red">生成失败</Tag>
+            <div style={{ marginTop: 8, fontSize: 13 }}>{result.error ?? "未知错误"}</div>
+          </div>
+        )
+      ) : null}
+    </div>
   );
 }

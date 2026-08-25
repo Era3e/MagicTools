@@ -15,7 +15,7 @@ describe("App", () => {
       vi.fn(async () => new Response(JSON.stringify([]), { status: 200 }))
     );
     render(<App />);
-    expect(await screen.findByText("组件生成")).toBeTruthy();
+    expect(await screen.findByText(/定制生成/)).toBeTruthy();
     expect(screen.getByText("描述你的想象，取走你的组件")).toBeTruthy();
     expect(screen.queryByText("ADMIN CONSOLE")).toBeNull();
   });

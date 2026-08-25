@@ -41,8 +41,8 @@
 
 ## 进行中任务
 
-- 已完成（PR #29，668c8e9）：双外壳铺开全部 8 应用（scholar 图书馆风/assistant 对话极简/gatherer 报刊风/investigator 档案风/assessor 文书风/manager 驾驶舱风/designer 画廊风）；管理页统一 /admin/*，旧路径 redirect；gatherer/investigator/assessor 默认路由直跳后台；e2e 全绿合并；
-- 候选：部署上线（需 GitHub Secrets）、Designer 可视化编辑器、各应用前台内容页深度设计（当前前台多为既有页面套新壳）。
+- 进行中（分支 feat-frontend-content-pages）：前台内容页深度设计——scholar 书目检索（图书馆目录卡片）、assistant ChatPage（极简双栏气泡）、manager 前台需求台（FLIGHT DECK 七泳道看板 RequirementBoard，表格留后台）、designer 定制生成（画廊委托单+展品展位）；4 应用单测/build 全绿，待提交 PR；
+- 候选：部署上线（需 GitHub Secrets）、Designer 可视化编辑器、其余前台页（scholar 图谱/EntryList、manager RequirementDetail）主题化。
 
 ## 已知问题
 
