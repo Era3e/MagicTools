@@ -34,12 +34,13 @@ export interface UserShellProps {
   onNavigate: (key: string) => void;
   adminPath?: string;
   adminLabel?: string;
+  footerNote?: string;
   theme?: UserShellTheme;
   children: ReactNode;
 }
 
 export function UserShell(props: UserShellProps) {
-  const { title, subtitle, navItems, selectedKey, onNavigate, adminPath, adminLabel = "管理后台", theme = MAGAZINE_THEME, children } = props;
+  const { title, subtitle, navItems, selectedKey, onNavigate, adminPath, adminLabel = "管理后台", footerNote = "MagicTools", theme = MAGAZINE_THEME, children } = props;
 
   const switcherItems: MenuProps["items"] = APPS.map((app) => ({
     key: app.key,
@@ -121,7 +122,7 @@ export function UserShell(props: UserShellProps) {
           fontSize: 12,
         }}
       >
-        <span>求职 · Position &amp; Resume Atelier</span>
+        <span>{footerNote}</span>
         <span style={{ display: "flex", gap: 16, alignItems: "center" }}>
           {adminPath ? (
             <a href={adminPath} onClick={(e) => { e.preventDefault(); onNavigate(adminPath); }} style={{ color: theme.muted }}>
