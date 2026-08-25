@@ -17,6 +17,7 @@
   - 文档：README 重写、memory 去重、AGENTS.md 对齐。
 - **网关首页导航（2026-08-25，PR #27，已合并 main 5e65a36）**：根路径新增 landingPage()，8 应用卡片（名称+简介），替代裸反代的 Cannot GET /。
 - **前后台双外壳打样（2026-08-25，PR #28，已合并 main d12386d）**：`@mt/ui` 新增 UserShell（前台，杂志风默认主题 MAGAZINE_THEME，主题可按应用定制）与 AdminShell（后台，统一控制台风 ADMIN_TOKENS）；applicant 前台改杂志风岗位墙 PositionWall，表格管理挪至 /admin/positions；e2e 补前后台路由拆分覆盖；ui-spec 增补双外壳规范。方向已确认：前台各异、后台统一。
+- **双外壳铺开（2026-08-25，PR #29，已合并 main 668c8e9）**：其余 7 应用全部接入双外壳（主题见 ui-spec 对照表）；管理页统一 /admin/* 路由，旧路径 redirect 兼容；gatherer/investigator/assessor 无前台形态默认直跳后台；UserShell 新增 footerNote；8 应用信息架构「前台各异、后台统一」全部落地。
 
 ## 关键决策
 
@@ -40,8 +41,8 @@
 
 ## 进行中任务
 
-- 进行中（分支 feat-all-apps-dual-shell）：双外壳铺开全部 8 应用——scholar 图书馆风/assistant 对话极简/gatherer 报刊风/investigator 档案风/assessor 文书风/manager 驾驶舱风/designer 画廊风（各 App.tsx 内主题常量）；gatherer/investigator/assessor 无前台形态，默认路由直跳后台；UserShell 新增 footerNote；e2e scholar/manager/gatherer 页面用例改走 /admin 路径；单测 7 应用全绿、build/lint 绿，待提交 PR；
-- 候选：部署上线（需 GitHub Secrets）、Designer 可视化编辑器。
+- 已完成（PR #29，668c8e9）：双外壳铺开全部 8 应用（scholar 图书馆风/assistant 对话极简/gatherer 报刊风/investigator 档案风/assessor 文书风/manager 驾驶舱风/designer 画廊风）；管理页统一 /admin/*，旧路径 redirect；gatherer/investigator/assessor 默认路由直跳后台；e2e 全绿合并；
+- 候选：部署上线（需 GitHub Secrets）、Designer 可视化编辑器、各应用前台内容页深度设计（当前前台多为既有页面套新壳）。
 
 ## 已知问题
 
