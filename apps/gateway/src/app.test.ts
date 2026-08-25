@@ -31,6 +31,20 @@ describe("gateway app", () => {
     expect(res.headers.location).toBe("/applicant/");
   });
 
+  it("根路径返回首页导航且包含全部应用卡片", async () => {
+    const app = createGateway(
+      { applicant: { web: 4008, server: 5008 }, scholar: { web: 4006, server: 5006 } },
+      {}
+    );
+    const res = await request(app).get("/");
+    expect(res.status).toBe(200);
+    expect(res.headers["content-type"]).toContain("text/html");
+    expect(res.text).toContain('href="/applicant/"');
+    expect(res.text).toContain('href="/scholar/"');
+    expect(res.text).toContain("求职助手");
+    expect(res.text).toContain("知识库");
+  });
+
   it("将请求代理到目标服务", async () => {
     const dummy = express();
     dummy.get("/dummy/", (_req, res) => res.json({ ok: true }));
