@@ -11,3 +11,7 @@ export const POSITION_STATUSES = [
 ] as const;
 
 export const POSITION_STATUS_OPTIONS = POSITION_STATUSES.map((s) => ({ value: s.value, label: s.label }));
+
+export const POSITION_STATUS_LABELS: Record<string, string> = Object.fromEntries(
+  POSITION_STATUSES.map((s) => [s.value, s.label])
+);
