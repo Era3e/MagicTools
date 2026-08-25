@@ -1,15 +1,24 @@
 import { useEffect, useRef, useState } from "react";
-import { Button, Card, Input, List, Space, Tag, Typography, message } from "antd";
+import { Button, Input, Tag, message } from "antd";
 import { api, type Conversation, type Message } from "../api";
-import { tokens, MtEmptyState } from "@mt/ui";
 
-const INTENT_LABEL: Record<string, { label: string; color: string }> = {
-  product_inquiry: { label: "知识问答", color: "blue" },
-  data_query: { label: "数据查询", color: "green" },
-  chitchat_reject: { label: "闲聊", color: "default" },
-  process_execution: { label: "流程执行", color: "purple" },
-  trouble_shooting: { label: "故障排查", color: "orange" },
-  complaint_feedback: { label: "反馈", color: "cyan" },
+const QUIET = {
+  ink: "#27272a",
+  accent: "#c2410c",
+  muted: "#a1a1aa",
+  bubbleUser: "#f5f5f4",
+  bubbleBot: "#ffffff",
+  border: "#e7e5e4",
+  sans: '"Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif',
+};
+
+const INTENT_LABEL: Record<string, string> = {
+  product_inquiry: "知识问答",
+  data_query: "数据查询",
+  chitchat_reject: "闲聊",
+  process_execution: "流程执行",
+  trouble_shooting: "故障排查",
+  complaint_feedback: "反馈",
 };
 
 export default function ChatPage() {
@@ -81,93 +90,144 @@ export default function ChatPage() {
   };
 
   return (
-    <Card title="智能助手" style={{ height: "calc(100vh - 48px)" }}>
-      <div style={{ display: "flex", gap: 16, height: "calc(100vh - 160px)" }}>
-        <div style={{ width: 240, borderRight: "1px solid " + tokens.color.border, paddingRight: 8, overflow: "auto" }}>
-          <Button block type="primary" style={{ marginBottom: 12 }} onClick={() => { setActiveId(null); setMessages([]); }}>
-            新对话
-          </Button>
-          <List<Conversation>
-            dataSource={conversations}
-            renderItem={(c) => (
-              <List.Item
-                style={{ cursor: "pointer", background: c.id === activeId ? tokens.color.bgActive : undefined }}
-                onClick={() => open(c.id)}
-                actions={[
-                  <Button key="del" size="small" type="text" onClick={(e) => { e.stopPropagation(); remove(c.id); }}>
-                    删除
-                  </Button>,
-                ]}
-              >
-                <Typography.Text ellipsis>{c.title || "未命名会话"}</Typography.Text>
-              </List.Item>
-            )}
-          />
-        </div>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-          <div ref={listRef} style={{ flex: 1, overflow: "auto", paddingBottom: 12 }}>
-            {messages.length === 0 ? (
-              <MtEmptyState title="开始对话吧" />
-            ) : (
-              messages.map((m) => (
-                <div key={m.id} style={{ marginBottom: 16, textAlign: m.role === "user" ? "right" : "left" }}>
-                  <div
-                    style={{
-                      display: "inline-block",
-                      maxWidth: "75%",
-                      padding: "8px 12px",
-                      borderRadius: 8,
-                      background: m.role === "user" ? tokens.color.bgUser : tokens.color.bgNeutral,
-                      whiteSpace: "pre-wrap",
-                      textAlign: "left",
-                    }}
-                  >
-                    <Typography.Paragraph style={{ marginBottom: 4 }}>{m.content}</Typography.Paragraph>
-                    {m.role === "assistant" && m.intent ? (
-                      <Tag color={INTENT_LABEL[m.intent]?.color}>{INTENT_LABEL[m.intent]?.label ?? m.intent}</Tag>
-                    ) : null}
-                    {m.role === "assistant" && m.actionResult?.ok ? (
-                      <Tag color="green">动作已执行：{String(m.actionResult.action ?? "")}</Tag>
-                    ) : null}
-                    {m.role === "assistant" && m.clarifying && m.clarifyOptions ? (
-                      <Space direction="vertical" size={4} style={{ marginTop: 6 }}>
-                        {m.clarifyOptions.map((o) => (
-                          <Button key={o.intent} size="small" onClick={() => sendText(o.intent)}>
-                            {o.label}
-                          </Button>
-                        ))}
-                      </Space>
-                    ) : null}
-                    {(m.citations ?? []).length > 0 ? (
-                      <Space direction="vertical" size={2} style={{ marginTop: 6 }}>
-                        {(m.citations ?? []).map((c) => (
-                          <a key={c.id} href="/scholar/entries" target="_blank" rel="noreferrer">
-                            📖 <span>{c.title}</span>
-                            <Tag style={{ marginLeft: 6 }}>{c.source}</Tag>
-                            <Tag color="blue">相似度 {c.score.toFixed(2)}</Tag>
-                          </a>
-                        ))}
-                      </Space>
-                    ) : null}
-                  </div>
-                </div>
-              ))
-            )}
+    <div style={{ display: "flex", gap: 0, height: "calc(100vh - 300px)", minHeight: 420, fontFamily: QUIET.sans }}>
+      <aside
+        style={{
+          width: 220,
+          borderRight: "1px solid " + QUIET.border,
+          paddingRight: 12,
+          overflow: "auto",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <Button
+          block
+          onClick={() => { setActiveId(null); setMessages([]); }}
+          style={{
+            border: "none",
+            boxShadow: "none",
+            fontWeight: 600,
+            color: QUIET.accent,
+            textAlign: "left",
+            marginBottom: 8,
+          }}
+        >
+          ＋ 新对话
+        </Button>
+        {conversations.map((c) => (
+          <div
+            key={c.id}
+            onClick={() => open(c.id)}
+            style={{
+              cursor: "pointer",
+              padding: "8px 10px",
+              borderRadius: 4,
+              background: c.id === activeId ? QUIET.bubbleUser : "transparent",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 4,
+              fontSize: 13,
+              color: c.id === activeId ? QUIET.ink : QUIET.muted,
+            }}
+          >
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+              {c.title || "未命名会话"}
+            </span>
+            <span
+              role="button"
+              aria-label="删除"
+              tabIndex={0}
+              onClick={(e) => { e.stopPropagation(); remove(c.id); }}
+              style={{ color: QUIET.muted, fontSize: 11, flexShrink: 0, cursor: "pointer" }}
+            >
+              ✕
+            </span>
           </div>
-          <Space.Compact style={{ width: "100%" }}>
-            <Input
-              placeholder="输入消息"
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onPressEnter={send}
-              disabled={sending}
-            />
-            <Button type="primary" loading={sending} onClick={send}>
-              发送
-            </Button>
-          </Space.Compact>
+        ))}
+      </aside>
+
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", paddingLeft: 24, minWidth: 0 }}>
+        <div ref={listRef} style={{ flex: 1, overflow: "auto", paddingBottom: 16 }}>
+          {messages.length === 0 ? (
+            <div style={{ textAlign: "center", marginTop: 80, color: QUIET.muted }}>
+              <div style={{ fontSize: 40, marginBottom: 8 }}>◇</div>
+              开始对话吧
+              <div style={{ fontSize: 12, marginTop: 4 }}>知识问答 · 数据查询 · 故障排查</div>
+            </div>
+          ) : (
+            messages.map((m) => (
+              <div key={m.id} style={{ marginBottom: 20, display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
+                <div
+                  style={{
+                    maxWidth: "72%",
+                    padding: "10px 14px",
+                    borderRadius: m.role === "user" ? "14px 14px 2px 14px" : "14px 14px 14px 2px",
+                    background: m.role === "user" ? QUIET.bubbleUser : QUIET.bubbleBot,
+                    border: m.role === "user" ? "none" : "1px solid " + QUIET.border,
+                    whiteSpace: "pre-wrap",
+                    fontSize: 14,
+                    lineHeight: 1.7,
+                    color: QUIET.ink,
+                  }}
+                >
+                  {m.content}
+                  {m.role === "assistant" && m.intent ? (
+                    <div style={{ marginTop: 6 }}>
+                      <span style={{ fontSize: 11, color: QUIET.accent }}>— {INTENT_LABEL[m.intent] ?? m.intent}</span>
+                    </div>
+                  ) : null}
+                  {m.role === "assistant" && m.actionResult?.ok ? (
+                    <div style={{ marginTop: 4, fontSize: 11, color: QUIET.muted }}>
+                      动作已执行：{String(m.actionResult.action ?? "")}
+                    </div>
+                  ) : null}
+                  {m.role === "assistant" && m.clarifying && m.clarifyOptions ? (
+                    <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      {m.clarifyOptions.map((o) => (
+                        <Button key={o.intent} size="small" onClick={() => sendText(o.intent)}>
+                          {o.label}
+                        </Button>
+                      ))}
+                    </div>
+                  ) : null}
+                  {(m.citations ?? []).length > 0 ? (
+                    <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px dashed " + QUIET.border }}>
+                      {(m.citations ?? []).map((c) => (
+                        <a key={c.id} href="/scholar/entries" target="_blank" rel="noreferrer" style={{ display: "block", fontSize: 12, color: QUIET.muted, marginBottom: 2 }}>
+                          📖 <span>{c.title}</span>
+                          <Tag style={{ marginLeft: 6, fontSize: 11 }}>{c.source} · {c.score.toFixed(2)}</Tag>
+                        </a>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        <div style={{ display: "flex", gap: 10, paddingTop: 12, borderTop: "1px solid " + QUIET.border }}>
+          <Input
+            placeholder="输入消息"
+            variant="borderless"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onPressEnter={send}
+            disabled={sending}
+            style={{ fontSize: 15 }}
+          />
+          <Button
+            type="text"
+            loading={sending}
+            onClick={send}
+            style={{ color: QUIET.accent, fontWeight: 600, letterSpacing: 2 }}
+          >
+            发 送
+          </Button>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }
