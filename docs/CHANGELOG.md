@@ -33,3 +33,4 @@
 - **网关首页导航（PR #27，5e65a36，补记）**：根路径新增应用导航首页（8 应用卡片，名称+简介），替代纯反代的 Cannot GET /。
 - **前后台双外壳打样 applicant（PR #28，d12386d）**：确立「前台各异、后台统一」信息架构——`@mt/ui` 新增 UserShell（杂志风前台外壳，UserShellTheme 按应用定制主题）与 AdminShell（全平台统一控制台后台外壳）；applicant 前台改杂志风岗位博览墙（检索/分页/空态引导），表格管理挪至 /admin/positions；e2e 补前后台路由拆分覆盖；ui-spec 增补双外壳规范。后续按同模式铺开其余 7 应用。
 - **双外壳铺开全部 8 应用（PR #29，668c8e9）**：scholar 图书馆风（知识书院）、assistant 对话极简、gatherer 报刊风（知识采集部）、investigator 档案风（调研档案馆）、assessor 文书风（评审文书房）、manager 驾驶舱风（交付驾驶舱）、designer 画廊风（组件画廊）；管理页统一迁入 /admin/* 控制台路由（旧路径 redirect 兼容），无前台形态的应用默认路由直跳后台；UserShell 新增 footerNote 个性化页脚；e2e 页面用例同步迁移；ui-spec 落地 8 主题对照表。
+- **前台内容页深度设计（PR #30，ee8239d）**：scholar 书目检索改图书馆目录卡片（编号书签/馆藏来源标签/双通道切换）；assistant 对话改极简双栏（异形圆角气泡/意图署名/虚线引用区/无框输入）；manager 前台需求台改 FLIGHT DECK 七泳道看板（优先级色条/PR 标记，表格留后台）；designer 定制生成改画廊委托单（展品卡+预览展位）。四页均从「既有页面套新壳」升级为主题化深度设计，e2e 断言同步。

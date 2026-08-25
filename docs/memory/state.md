@@ -18,6 +18,7 @@
 - **网关首页导航（2026-08-25，PR #27，已合并 main 5e65a36）**：根路径新增 landingPage()，8 应用卡片（名称+简介），替代裸反代的 Cannot GET /。
 - **前后台双外壳打样（2026-08-25，PR #28，已合并 main d12386d）**：`@mt/ui` 新增 UserShell（前台，杂志风默认主题 MAGAZINE_THEME，主题可按应用定制）与 AdminShell（后台，统一控制台风 ADMIN_TOKENS）；applicant 前台改杂志风岗位墙 PositionWall，表格管理挪至 /admin/positions；e2e 补前后台路由拆分覆盖；ui-spec 增补双外壳规范。方向已确认：前台各异、后台统一。
 - **双外壳铺开（2026-08-25，PR #29，已合并 main 668c8e9）**：其余 7 应用全部接入双外壳（主题见 ui-spec 对照表）；管理页统一 /admin/* 路由，旧路径 redirect 兼容；gatherer/investigator/assessor 无前台形态默认直跳后台；UserShell 新增 footerNote；8 应用信息架构「前台各异、后台统一」全部落地。
+- **前台内容页深度设计（2026-08-25，PR #30，已合并 main ee8239d）**：scholar 书目检索（图书馆目录卡片）、assistant ChatPage（极简双栏气泡）、manager 前台需求台（FLIGHT DECK 七泳道看板）、designer 定制生成（画廊委托单+展品展位）；四页主题化深度设计落地。
 
 ## 关键决策
 
@@ -41,13 +42,13 @@
 
 ## 进行中任务
 
-- 进行中（分支 feat-frontend-content-pages）：前台内容页深度设计——scholar 书目检索（图书馆目录卡片）、assistant ChatPage（极简双栏气泡）、manager 前台需求台（FLIGHT DECK 七泳道看板 RequirementBoard，表格留后台）、designer 定制生成（画廊委托单+展品展位）；4 应用单测/build 全绿，待提交 PR；
-- 候选：部署上线（需 GitHub Secrets）、Designer 可视化编辑器、其余前台页（scholar 图谱/EntryList、manager RequirementDetail）主题化。
+- 已完成（PR #30，ee8239d）：前台内容页深度设计四页（scholar 检索/assistant 对话/manager 看板/designer 生成）；
+- 候选：部署上线（需 GitHub Secrets）、Designer 可视化编辑器、其余前台页（scholar 图谱/EntryList、manager RequirementDetail、applicant 详情/简历）主题化。
 
 ## 已知问题
 
 1. 本机 PowerShell 执行策略限制：pnpm/npx 一律用 pnpm.cmd；
-2. 网络代理不稳定：沙箱代理与直连两种模式都可能失效，git 推送失败时两种都试；git 需同时配置 http.proxy 与 https.proxy（只配 http 会卡死推送）；gh CLI 未安装，CI 状态查 GitHub App 的 pull_request_read(get_check_runs)，Actions 日志经 REST API（git credential fill 取 token）下载；
+2. 网络代理不稳定：沙箱代理与直连两种模式都可能失效，git 推送失败时两种都试；git 需同时配置 http.proxy 与 https.proxy（只配 http 会卡死推送）；本地网络完全中断时改走 GitHub API（MCP push_files）分批推送，内容以本地 git 提交为准；gh CLI 未安装，CI 状态查 GitHub App 的 pull_request_read(get_check_runs)，Actions 日志经 REST API 下载；
 3. 本地 .env 在仓库根（从 .env.template 复制，gitignore 忽略），各服务经 @mt/config 的 loadRootEnv 自动加载，无需 export；
 4. Docker Desktop 需手动启动（引擎就绪后 compose 正常）；本地已有 pgvector/pgvector:pg16 容器（9 库：8 业务 + mt_test），本地可跑全量测试与 smoke，不再是无 DB 环境；
 5. 镜像推送需先在 GitHub 配置 Secrets（REGISTRY_HOST/USERNAME/PASSWORD），未配置时 images job 自动跳过；
