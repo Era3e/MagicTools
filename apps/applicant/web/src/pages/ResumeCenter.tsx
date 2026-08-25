@@ -1,7 +1,16 @@
-import { Button, Card, Form, Input, List, Select, Space, Tag, Typography, message } from "antd";
+import { Button, Form, Input, Select, Tag, Typography, message } from "antd";
 import { useEffect, useState } from "react";
-import { tokens } from "@mt/ui";
 import { api, type Position, type Resume } from "../api";
+
+const MAG = {
+  ink: "#2b2620",
+  brick: "#b4532a",
+  paper: "#f8f5ef",
+  muted: "#8a8175",
+  rule: "#ddd5c7",
+  display: 'Georgia, "Times New Roman", "Noto Serif SC", "Songti SC", serif',
+  body: '"Noto Serif SC", Georgia, serif',
+};
 
 interface QuotaInfo {
   configured: boolean;
@@ -17,6 +26,7 @@ export default function ResumeCenter() {
   const [rewriteInput, setRewriteInput] = useState({ sectionType: "work_experience", originalText: "" });
   const [result, setResult] = useState<Record<string, unknown> | null>(null);
   const [selectedResumeId, setSelectedResumeId] = useState<string | undefined>();
+  const [creating, setCreating] = useState(false);
 
   const refresh = () => {
     api.listResumes().then((list) => {
@@ -67,89 +77,89 @@ export default function ResumeCenter() {
   };
 
   return (
-    <Card
-      title="简历中心"
-      extra={
-        <Space>
-          <Typography.Text type={quota?.configured ? "secondary" : "warning"}>
-            {quota?.configured ? "ClawCV 已配置" : "ClawCV 未配置（本地降级模式）"}
-          </Typography.Text>
-          <Form
-            layout="inline"
-            onFinish={async (values: { name: string; contentText: string }) => {
-              await api.createResume(values);
-              message.success("已创建");
-              refresh();
+    <div style={{ fontFamily: MAG.body, color: MAG.ink }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderBottom: "3px double " + MAG.ink, paddingBottom: 12, marginBottom: 6 }}>
+        <span style={{ fontFamily: MAG.display, letterSpacing: 4, fontSize: 12, color: MAG.brick }}>
+          WORKSHOP · 简历工坊
+        </span>
+        <span style={{ fontFamily: MAG.display, fontSize: 12, fontStyle: "italic", color: MAG.muted }}>
+          {quota?.configured ? "ClawCV 已配置" : "ClawCV 未配置（本地降级模式）"}
+        </span>
+      </div>
+
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 0", borderBottom: "1px solid " + MAG.ink, marginBottom: 16 }}>
+        <span style={{ fontFamily: MAG.display, fontSize: 20 }}>我的简历</span>
+        <Button size="small" style={{ borderRadius: 0, border: "1px solid " + MAG.ink }} onClick={() => setCreating(true)}>
+          ＋ 新建简历
+        </Button>
+      </div>
+
+      {resumes.map((r) => {
+        const selected = r.id === selectedResumeId;
+        return (
+          <div
+            key={r.id}
+            onClick={() => setSelectedResumeId(r.id)}
+            style={{
+              cursor: "pointer",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 12,
+              padding: "12px 4px 12px 12px",
+              marginBottom: 8,
+              borderLeft: "3px solid " + (selected ? MAG.brick : "transparent"),
+              borderBottom: "1px solid " + MAG.rule,
+              background: selected ? MAG.paper : "transparent",
             }}
           >
-            <Form.Item name="name" rules={[{ required: true }]}>
-              <Input placeholder="简历名称" />
-            </Form.Item>
-            <Form.Item name="contentText" rules={[{ required: true }]}>
-              <Input.TextArea placeholder="简历内容（ClawCV 读取或手动粘贴）" rows={3} style={{ width: 360 }} />
-            </Form.Item>
-            <Button type="primary" htmlType="submit">
-              新建简历
-            </Button>
-          </Form>
-        </Space>
-      }
-    >
-      <List
-        dataSource={resumes}
-        rowKey="id"
-        renderItem={(r) => {
-          const selected = r.id === selectedResumeId;
-          return (
-            <List.Item
-              onClick={() => setSelectedResumeId(r.id)}
-              style={{
-                cursor: "pointer",
-                paddingLeft: 12,
-                borderLeft: "3px solid " + (selected ? tokens.color.primary : "transparent"),
-              }}
-              actions={[
-                <Button
-                  key="a"
-                  size="small"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    void analyze(r.id);
-                  }}
-                >
-                  分析
-                </Button>,
-                <Button
-                  key="m"
-                  size="small"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    void match(r.id);
-                  }}
-                >
-                  岗位匹配
-                </Button>,
-              ]}
-            >
-              <List.Item.Meta title={r.name} description={"版本 " + r.version + " · 来源 " + r.source} />
-              {selected ? <Tag color={tokens.color.primary}>改写中</Tag> : null}
-              {r.lastAnalysis ? <Tag>上次分析 via {(r.lastAnalysis as { via?: string }).via ?? "?"}</Tag> : null}
-            </List.Item>
-          );
+            <div>
+              <span style={{ fontFamily: MAG.display, fontSize: 16 }}>{r.name}</span>
+              <span style={{ color: MAG.muted, fontSize: 12, marginLeft: 10 }}>
+                版本 {r.version} · 来源 {r.source}
+              </span>
+              {r.lastAnalysis ? (
+                <Tag style={{ marginLeft: 10, borderRadius: 0, fontSize: 11 }}>
+                  上次分析 via {(r.lastAnalysis as { via?: string }).via ?? "?"}
+                </Tag>
+              ) : null}
+            </div>
+            <div style={{ display: "flex", gap: 8, flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
+              <Button size="small" style={{ borderRadius: 0 }} onClick={() => void analyze(r.id)}>
+                分析
+              </Button>
+              <Button size="small" style={{ borderRadius: 0 }} onClick={() => void match(r.id)}>
+                岗位匹配
+              </Button>
+            </div>
+          </div>
+        );
+      })}
+
+      <div
+        style={{
+          marginTop: 20,
+          border: "1px solid " + MAG.rule,
+          background: MAG.paper,
+          padding: 16,
         }}
-      />
-      <Space direction="vertical" style={{ width: "100%", marginTop: 16 }}>
-        <Select
-          style={{ width: 320 }}
-          placeholder="选择目标岗位做匹配"
-          value={matchPositionId}
-          onChange={setMatchPositionId}
-          options={positions.map((p) => ({ value: p.id, label: p.company + " · " + p.title }))}
-        />
-        <Typography.Text type="secondary">
-          {selectedResume ? "改写目标：" + selectedResume.name : "请先选择一份简历"}
-        </Typography.Text>
-        <Space.Compact style={{ width: "100%" }}>
+      >
+        <div style={{ fontFamily: MAG.display, letterSpacing: 3, fontSize: 12, color: MAG.muted, marginBottom: 12 }}>
+          REWRITE DESK · 改写台
+        </div>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+          <Select
+            style={{ width: 320 }}
+            placeholder="选择目标岗位做匹配"
+            value={matchPositionId}
+            onChange={setMatchPositionId}
+            options={positions.map((p) => ({ value: p.id, label: p.company + " · " + p.title }))}
+          />
+          <Typography.Text style={{ color: MAG.muted, fontSize: 13 }}>
+            {selectedResume ? "改写目标：" + selectedResume.name : "请先选择一份简历"}
+          </Typography.Text>
+        </div>
+        <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
           <Select
             style={{ width: 200 }}
             value={rewriteInput.sectionType}
@@ -167,6 +177,7 @@ export default function ResumeCenter() {
             onChange={(e) => setRewriteInput((s) => ({ ...s, originalText: e.target.value }))}
           />
           <Button
+            style={{ borderRadius: 0, border: "1px solid " + MAG.ink }}
             onClick={() => {
               if (selectedResume) void rewrite(selectedResume.id);
             }}
@@ -174,13 +185,42 @@ export default function ResumeCenter() {
           >
             改写
           </Button>
-        </Space.Compact>
+        </div>
         {result ? (
-          <Card size="small" title="结果">
-            <pre style={{ whiteSpace: "pre-wrap" }}>{JSON.stringify(result, null, 2)}</pre>
-          </Card>
+          <div style={{ marginTop: 12, borderTop: "1px dashed " + MAG.rule, paddingTop: 12 }}>
+            <div style={{ fontFamily: MAG.display, fontSize: 11, letterSpacing: 2, color: MAG.brick, marginBottom: 6 }}>
+              RESULT · 结果
+            </div>
+            <pre style={{ whiteSpace: "pre-wrap", margin: 0, fontSize: 12, fontFamily: MAG.body }}>
+              {JSON.stringify(result, null, 2)}
+            </pre>
+          </div>
         ) : null}
-      </Space>
-    </Card>
+      </div>
+
+      <Form
+        layout="vertical"
+        style={{ display: creating ? "block" : "none", marginTop: 16, border: "1px solid " + MAG.rule, padding: 16, background: MAG.paper }}
+        onFinish={async (values: { name: string; contentText: string }) => {
+          await api.createResume(values);
+          message.success("已创建");
+          setCreating(false);
+          refresh();
+        }}
+      >
+        <div style={{ fontFamily: MAG.display, letterSpacing: 3, fontSize: 12, color: MAG.muted, marginBottom: 12 }}>
+          NEW DRAFT · 新稿
+        </div>
+        <Form.Item name="name" rules={[{ required: true }]}>
+          <Input placeholder="简历名称" style={{ borderRadius: 0 }} />
+        </Form.Item>
+        <Form.Item name="contentText" rules={[{ required: true }]}>
+          <Input.TextArea placeholder="简历内容（ClawCV 读取或手动粘贴）" rows={4} style={{ borderRadius: 0 }} />
+        </Form.Item>
+        <Button type="primary" htmlType="submit" style={{ background: MAG.brick, borderRadius: 0 }}>
+          保存新稿
+        </Button>
+      </Form>
+    </div>
   );
 }

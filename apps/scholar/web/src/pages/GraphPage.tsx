@@ -1,8 +1,16 @@
 import { useEffect, useRef, useState } from "react";
-import { Button, Card, List, Space, Tag, message } from "antd";
+import { Button, message } from "antd";
 import { Graph } from "@antv/g6";
-import { tokens } from "@mt/ui";
 import { api, type GraphEdge, type GraphNode } from "../api";
+
+const CATALOG = {
+  ink: "#23301f",
+  green: "#0e5a3a",
+  muted: "#7c8577",
+  rule: "#c8c0ab",
+  display: '"Palatino Linotype", "Book Antiqua", "Noto Serif SC", "Songti SC", serif',
+  body: '"Noto Serif SC", "Palatino Linotype", serif',
+};
 
 interface GraphData {
   nodes: GraphNode[];
@@ -39,13 +47,21 @@ export default function GraphPage() {
       },
       node: {
         style: {
-          fill: tokens.color.primary,
+          fill: CATALOG.green,
+          fillOpacity: 0.85,
+          stroke: CATALOG.ink,
           labelText: (d: unknown) => (d as { data: { label: string } }).data.label,
+          labelFill: CATALOG.ink,
+          labelFontFamily: CATALOG.body,
         },
       },
       edge: {
         style: {
+          stroke: CATALOG.rule,
           labelText: (d: unknown) => (d as { data: { label: string } }).data.label,
+          labelFill: CATALOG.muted,
+          labelFontSize: 10,
+          labelFontFamily: CATALOG.body,
         },
       },
     });
@@ -67,32 +83,54 @@ export default function GraphPage() {
   };
 
   return (
-    <Card
-      title="知识图谱"
-      extra={
-        <Button type="primary" loading={loading} onClick={generate}>
+    <div style={{ fontFamily: CATALOG.body, color: CATALOG.ink }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderBottom: "2px solid " + CATALOG.ink, paddingBottom: 10, marginBottom: 14 }}>
+        <span style={{ fontFamily: CATALOG.display, letterSpacing: 4, fontSize: 13 }}>
+          知 识 图 谱 · CLASSIFICATION
+        </span>
+        <Button
+          type="text"
+          loading={loading}
+          onClick={generate}
+          style={{ color: CATALOG.green, border: "1px solid " + CATALOG.green, borderRadius: 0, letterSpacing: 2 }}
+        >
           生成图谱
         </Button>
-      }
-    >
-      <div style={{ marginBottom: 16 }}>
-        实体 {data?.nodes.length ?? 0} · 关系 {data?.edges.length ?? 0}
       </div>
-      <div ref={containerRef} style={{ width: "100%", height: 420, border: "1px solid " + tokens.color.border }} />
-      <List<GraphNode>
-        style={{ marginTop: 16 }}
-        header={<div>实体列表（点击查看关联条目）</div>}
-        dataSource={data?.nodes ?? []}
-        renderItem={(n) => (
-          <List.Item>
-            <Space>
-              <span>{n.name}</span>
-              <Tag>{n.type || "未分类"}</Tag>
-              <Tag color="blue">关联条目 {n.entryCount}</Tag>
-            </Space>
-          </List.Item>
-        )}
+
+      <div style={{ color: CATALOG.muted, fontSize: 12, marginBottom: 10 }}>
+        实体 {data?.nodes.length ?? 0} · 关系 {data?.edges.length ?? 0} —— 知识之间的亲缘脉络
+      </div>
+      <div
+        ref={containerRef}
+        style={{ width: "100%", height: 420, border: "1px solid " + CATALOG.rule, background: "#faf8f2", padding: 8 }}
       />
-    </Card>
+
+      {data && data.nodes.length > 0 ? (
+        <div style={{ marginTop: 16 }}>
+          <div style={{ fontFamily: CATALOG.display, fontSize: 13, letterSpacing: 2, marginBottom: 8 }}>
+            类目卡片
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 10 }}>
+            {data.nodes.map((n) => (
+              <div
+                key={n.id}
+                style={{
+                  border: "1px solid " + CATALOG.rule,
+                  borderLeft: "3px solid " + CATALOG.green,
+                  padding: "10px 12px",
+                  background: "#faf8f2",
+                }}
+              >
+                <div style={{ fontFamily: CATALOG.display, fontSize: 15, marginBottom: 4 }}>{n.name}</div>
+                <div style={{ color: CATALOG.muted, fontSize: 12 }}>
+                  {n.type || "未分类"} · 藏书 {n.entryCount} 卷
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </div>
   );
 }

@@ -18,7 +18,7 @@
 - **网关首页导航（2026-08-25，PR #27，已合并 main 5e65a36）**：根路径新增 landingPage()，8 应用卡片（名称+简介），替代裸反代的 Cannot GET /。
 - **前后台双外壳打样（2026-08-25，PR #28，已合并 main d12386d）**：`@mt/ui` 新增 UserShell（前台，杂志风默认主题 MAGAZINE_THEME，主题可按应用定制）与 AdminShell（后台，统一控制台风 ADMIN_TOKENS）；applicant 前台改杂志风岗位墙 PositionWall，表格管理挪至 /admin/positions；e2e 补前后台路由拆分覆盖；ui-spec 增补双外壳规范。方向已确认：前台各异、后台统一。
 - **双外壳铺开（2026-08-25，PR #29，已合并 main 668c8e9）**：其余 7 应用全部接入双外壳（主题见 ui-spec 对照表）；管理页统一 /admin/* 路由，旧路径 redirect 兼容；gatherer/investigator/assessor 无前台形态默认直跳后台；UserShell 新增 footerNote；8 应用信息架构「前台各异、后台统一」全部落地。
-- **前台内容页深度设计（2026-08-25，PR #30，已合并 main ee8239d）**：scholar 书目检索（图书馆目录卡片）、assistant ChatPage（极简双栏气泡）、manager 前台需求台（FLIGHT DECK 七泳道看板）、designer 定制生成（画廊委托单+展品展位）；四页主题化深度设计落地。
+- **前台内容页深度设计（2026-08-25，PR #30，已合并 main ee8239d）**：scholar 书目检索改图书馆目录卡片（编号书签/馆藏来源标签/双通道切换）；assistant 对话改极简双栏（异形圆角气泡/意图署名/虚线引用区/无框输入）；manager 前台需求台改 FLIGHT DECK 七泳道看板（优先级色条/PR 标记，表格留后台）；designer 定制生成改画廊委托单（展品卡+预览展位）。四页均从「既有页面套新壳」升级为主题化深度设计，e2e 断言同步。
 
 ## 关键决策
 
@@ -42,8 +42,8 @@
 
 ## 进行中任务
 
-- 已完成（PR #30，ee8239d）：前台内容页深度设计四页（scholar 检索/assistant 对话/manager 看板/designer 生成）；
-- 候选：部署上线（需 GitHub Secrets）、Designer 可视化编辑器、其余前台页（scholar 图谱/EntryList、manager RequirementDetail、applicant 详情/简历）主题化。
+- 进行中（分支 feat-remaining-front-pages）：剩余前台页主题化——scholar EntryList 馆藏目录/GraphPage 类目卡片墙、manager RequirementDetail 飞行日志、applicant PositionDetail 特稿版式/InterviewPage 对开复盘/ResumeCenter 工坊；三应用单测/build/lint 全绿，待提交 PR；
+- 候选：部署上线（需 GitHub Secrets）、Designer 可视化编辑器。
 
 ## 已知问题
 
