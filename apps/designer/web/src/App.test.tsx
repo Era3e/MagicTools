@@ -1,11 +1,14 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import App from "./App";
 
 describe("App", () => {
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+  });
 
-  it("导航到生成页并渲染表单", async () => {
+  it("前台路由渲染画廊外壳与定制生成", async () => {
     window.history.pushState({}, "", "/designer/generate");
     vi.stubGlobal(
       "fetch",
@@ -13,6 +16,17 @@ describe("App", () => {
     );
     render(<App />);
     expect(await screen.findByText("组件生成")).toBeTruthy();
-    expect(screen.getByPlaceholderText("描述你要生成的组件，例如：一个带统计数字的卡片")).toBeTruthy();
+    expect(screen.getByText("描述你的想象，取走你的组件")).toBeTruthy();
+    expect(screen.queryByText("ADMIN CONSOLE")).toBeNull();
+  });
+
+  it("后台路由渲染控制台外壳与组件馆藏", async () => {
+    window.history.pushState({}, "", "/designer/admin/components");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify([]), { status: 200 }))
+    );
+    render(<App />);
+    expect(screen.getByText("ADMIN CONSOLE")).toBeTruthy();
   });
 });

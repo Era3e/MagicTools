@@ -39,6 +39,19 @@
 
 1. **路由划分**：后台路由统一挂 `/admin` 前缀（如 `/applicant/admin/positions`），App 入口按 `location.pathname.startsWith("/admin")` 切换外壳；
 2. **互跳入口**：前台 UserShell 页脚带「后台管理」入口（`adminPath`），后台 AdminShell 侧栏底部带「返回前台」（`frontPath`）；
-3. **前台主题定制**：传 `theme: UserShellTheme`（primary/background/ink/muted/displayFont/bodyFont），每个应用一个主题（applicant=杂志风、scholar=图书馆风、assistant=对话极简、gatherer=报刊风…），主题常量沉淀在各自 App 中；
+3. **前台主题定制**：传 `theme: UserShellTheme`（primary/background/ink/muted/displayFont/bodyFont），每个应用一个主题，主题常量沉淀在各自 App 中。已落地主题：
+
+   | 应用 | 主题名 | 前台报头 | 设计语言 |
+   |---|---|---|---|
+   | applicant | MAGAZINE_THEME | 求职 | 杂志风（衬线/暖纸/砖红） |
+   | scholar | LIBRARY_THEME | 知识书院 | 图书馆风（Palatino/羊皮纸绿） |
+   | assistant | QUIET_THEME | 智能助手 | 对话极简（无衬线/瓷白/砖橙） |
+   | gatherer | PRESS_THEME | 知识采集部 | 报刊风（Impact 报头/藏青） |
+   | investigator | ARCHIVE_THEME | 调研档案馆 | 档案风（Courier/牛皮纸/铜金） |
+   | assessor | BRIEF_THEME | 评审文书房 | 文书风（Georgia/暖白/深赭） |
+   | manager | COCKPIT_THEME | 交付驾驶舱 | 驾驶舱风（Consolas/冷灰蓝/天蓝） |
+   | designer | GALLERY_THEME | 组件画廊 | 画廊风（Helvetica/纯白/墨黑） |
+
+   无前台形态的应用（gatherer/investigator/assessor）前台仅作报头展示，默认路由直接重定向到后台；
 4. **后台禁止个性化**：AdminShell 全平台一套，不接收主题参数，保证运维心智一致；
 5. 外壳均为受控组件（`onNavigate` 回调），不依赖 react-router，保持 @mt/ui 零 router 依赖。
