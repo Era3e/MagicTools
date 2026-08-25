@@ -8,7 +8,6 @@ test("assistant 三意图全流程（圈定→检索→引用→闲聊→数据�
   expect(created.ok()).toBeTruthy();
   const entry = await created.json();
   const scoped = await request.patch("/api/scholar/entries/" + entry.id, { data: { assistantScope: true } });
-  expect(scoped.ok).toBeFalsy();
   expect(scoped.ok()).toBeTruthy();
 
   // product_inquiry：检索圈定条目并带引用
