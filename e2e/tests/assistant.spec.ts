@@ -45,6 +45,6 @@ test("assistant 三意图全流程（圈定→检索→引用→闲聊→数据�
 
 test("assistant 聊天页面渲染", async ({ page }) => {
   await page.goto("/assistant/chat");
-  await expect(page.getByRole("main").getByText("智能助手")).toBeVisible();
+  await expect(page.getByText("有问题，就直接问")).toBeVisible();
   await expect(page.getByPlaceholder("输入消息")).toBeVisible();
 });

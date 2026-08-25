@@ -1,6 +1,7 @@
 import { Navigate, Route, BrowserRouter, Routes, useLocation, useNavigate } from "react-router-dom";
 import { AdminShell, UserShell } from "@mt/ui";
 import RequirementList from "./pages/RequirementList";
+import RequirementBoard from "./pages/RequirementBoard";
 import RequirementDetail from "./pages/RequirementDetail";
 import IterationList from "./pages/IterationList";
 
@@ -24,7 +25,7 @@ function UserRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/requirements" replace />} />
-      <Route path="/requirements" element={<RequirementList />} />
+      <Route path="/requirements" element={<RequirementBoard />} />
       <Route path="/requirements/:id" element={<RequirementDetail />} />
       <Route path="/iterations" element={<Navigate to="/admin/iterations" replace />} />
       <Route path="/admin/*" element={<Navigate to="/admin/requirements" replace />} />

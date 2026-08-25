@@ -27,17 +27,16 @@ describe("GeneratePage", () => {
 
   afterEach(() => vi.unstubAllGlobals());
 
-  it("生成组件并展示代码与 iframe 预览", async () => {
+  it("生成组件并展示展品与 iframe 预览", async () => {
     render(<GeneratePage />);
     fireEvent.change(screen.getByPlaceholderText("描述你要生成的组件，例如：一个带统计数字的卡片"), { target: { value: "问候卡片" } });
     fireEvent.click(screen.getByRole("button", { name: /生\s*成/ }));
     expect(await screen.findByText("GreetingCard")).toBeTruthy();
     await waitFor(() => {
-      const pre = document.querySelector("pre");
-      expect(pre?.textContent).toContain("export default function GreetingCard");
+      const iframe = document.querySelector("iframe");
+      expect(iframe).toBeTruthy();
     });
     const iframe = document.querySelector("iframe");
-    expect(iframe).toBeTruthy();
     expect(iframe!.getAttribute("src")).toContain("/api/designer/preview/p1");
     expect(screen.getByRole("button", { name: /下\s*载/ })).toBeTruthy();
   });
@@ -46,7 +45,7 @@ describe("GeneratePage", () => {
     render(<GeneratePage />);
     fireEvent.change(screen.getByPlaceholderText("描述你要生成的组件，例如：一个带统计数字的卡片"), { target: { value: "问候卡片" } });
     fireEvent.click(screen.getByRole("button", { name: /生\s*成/ }));
-    fireEvent.click(await screen.findByRole("button", { name: /沉\s*淀/ }));
+    fireEvent.click(await screen.findByRole("button", { name: /收\s*入\s*馆\s*藏/ }));
     await waitFor(() => {
       const post = fetchMock.mock.calls.find((c) => (c[1] as RequestInit | undefined)?.method === "POST" && String(c[0]).includes("/api/designer/components"));
       expect(post).toBeTruthy();

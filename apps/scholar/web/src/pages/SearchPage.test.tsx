@@ -38,7 +38,7 @@ describe("SearchPage", () => {
   it("按关键词检索并展示结果与相似度", async () => {
     render(<SearchPage />);
     fireEvent.change(screen.getByPlaceholderText("输入关键词"), { target: { value: "苹果" } });
-    fireEvent.click(screen.getByRole("button", { name: /搜\s*索/ }));
+    fireEvent.click(screen.getByRole("button", { name: /检\s*索/ }));
     expect(await screen.findByText("苹果公司发布新手机")).toBeTruthy();
     expect(screen.getByText(/0\.95/)).toBeTruthy();
     const called = fetchMock.mock.calls.map((c) => String(c[0])).find((u) => u.includes("/entries/search"));
