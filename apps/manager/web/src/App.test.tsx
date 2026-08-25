@@ -22,6 +22,6 @@ describe("App", () => {
     vi.stubGlobal("fetch", vi.fn(async () => new Response("[]", { status: 200 })));
     render(<App />);
     expect(screen.getByText("ADMIN CONSOLE")).toBeTruthy();
-    expect(await screen.findByRole("heading", { name: "迭代管理" })).toBeTruthy();
+    expect(await screen.findByText("新建迭代")).toBeTruthy();
   });
 });
