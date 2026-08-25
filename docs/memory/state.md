@@ -16,7 +16,7 @@
   - 工程化：CI 合并重复 build 步骤并缓存 turbo 构建（`.turbo`）；新增 `pnpm test:affected`（`turbo run test --affected`）补齐「回归层」；
   - 文档：README 重写、memory 去重、AGENTS.md 对齐。
 - **网关首页导航（2026-08-25，PR #27，已合并 main 5e65a36）**：根路径新增 landingPage()，8 应用卡片（名称+简介），替代裸反代的 Cannot GET /。
-- **前后台双外壳打样（2026-08-25，PR #28，进行中）**：`@mt/ui` 新增 UserShell（前台，杂志风默认主题 MAGAZINE_THEME，主题可按应用定制）与 AdminShell（后台，统一控制台风 ADMIN_TOKENS）；applicant 前台改杂志风岗位墙 PositionWall，表格管理挪至 /admin/positions；e2e 补前后台路由拆分覆盖。方向已确认：前台各异、后台统一，打样验收后铺开其余 7 应用。
+- **前后台双外壳打样（2026-08-25，PR #28，已合并 main d12386d）**：`@mt/ui` 新增 UserShell（前台，杂志风默认主题 MAGAZINE_THEME，主题可按应用定制）与 AdminShell（后台，统一控制台风 ADMIN_TOKENS）；applicant 前台改杂志风岗位墙 PositionWall，表格管理挪至 /admin/positions；e2e 补前后台路由拆分覆盖；ui-spec 增补双外壳规范。方向已确认：前台各异、后台统一。
 
 ## 关键决策
 
@@ -40,8 +40,8 @@
 
 ## 进行中任务
 
-- 进行中（PR #28）：applicant 前后台双外壳打样，待 CI 全绿合并；同步补记平台级 CHANGELOG（PR #26/#27 两条，机制为「合入 main 时追加」，此前两次合并漏执行）；
-- 待办：PR #28 合并后按同模式铺开其余 7 应用双外壳（scholar 图书馆风 / assistant 对话极简 / gatherer 报刊风等，每应用独立前台主题）；
+- 已完成（PR #28，d12386d）：applicant 前后台双外壳打样；平台级 CHANGELOG 补齐 PR #26/#27/#28 三条（机制为「合入 main 时追加」，前两次漏执行已补记）；
+- 待办：按同模式铺开其余 7 应用双外壳（scholar 图书馆风 / assistant 对话极简 / gatherer 报刊风等，每应用独立前台主题，参考 docs/ui-spec.md 双外壳规范）；
 - 候选：部署上线（需 GitHub Secrets）、Designer 可视化编辑器。
 
 ## 已知问题

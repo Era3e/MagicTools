@@ -28,6 +28,7 @@
 
 - **统一前端外壳与工程化加固（PR #26，8c4c045）**：`@mt/ui` AppShell 统一 8 子项目外壳（侧导航+顶栏+跨应用切换）；9 页交互补全（loading/空态/错误态）与硬编码色值清理；ESLint 接入 + 5 公共包覆盖率门槛；`@mt/model-client` 健壮 parseJson（5 服务替换裸 JSON.parse）；outbox dead 终态；CI build 去重（32→1 步）+ turbo 缓存；新增 `pnpm test:affected` 回归层；README 重写与记忆文件去重。
 
-## 2026-08-25（补记）
+## 2026-08-25
 
-- **网关首页导航（PR #27，5e65a36）**：根路径新增应用导航首页（8 应用卡片，名称+简介），替代纯反代的 Cannot GET /。
+- **网关首页导航（PR #27，5e65a36，补记）**：根路径新增应用导航首页（8 应用卡片，名称+简介），替代纯反代的 Cannot GET /。
+- **前后台双外壳打样 applicant（PR #28，d12386d）**：确立「前台各异、后台统一」信息架构——`@mt/ui` 新增 UserShell（杂志风前台外壳，UserShellTheme 按应用定制主题）与 AdminShell（全平台统一控制台后台外壳）；applicant 前台改杂志风岗位博览墙（检索/分页/空态引导），表格管理挪至 /admin/positions；e2e 补前后台路由拆分覆盖；ui-spec 增补双外壳规范。后续按同模式铺开其余 7 应用。
