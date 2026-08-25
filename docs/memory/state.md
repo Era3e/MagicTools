@@ -40,8 +40,7 @@
 
 ## 进行中任务
 
-- 已完成（PR #28，d12386d）：applicant 前后台双外壳打样；平台级 CHANGELOG 补齐 PR #26/#27/#28 三条（机制为「合入 main 时追加」，前两次漏执行已补记）；
-- 待办：按同模式铺开其余 7 应用双外壳（scholar 图书馆风 / assistant 对话极简 / gatherer 报刊风等，每应用独立前台主题，参考 docs/ui-spec.md 双外壳规范）；
+- 进行中（分支 feat-all-apps-dual-shell）：双外壳铺开全部 8 应用——scholar 图书馆风/assistant 对话极简/gatherer 报刊风/investigator 档案风/assessor 文书风/manager 驾驶舱风/designer 画廊风（各 App.tsx 内主题常量）；gatherer/investigator/assessor 无前台形态，默认路由直跳后台；UserShell 新增 footerNote；e2e scholar/manager/gatherer 页面用例改走 /admin 路径；单测 7 应用全绿、build/lint 绿，待提交 PR；
 - 候选：部署上线（需 GitHub Secrets）、Designer 可视化编辑器。
 
 ## 已知问题
