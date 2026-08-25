@@ -8,6 +8,7 @@ test("assistant 三意图全流程（圈定→检索→引用→闲聊→数据�
   expect(created.ok()).toBeTruthy();
   const entry = await created.json();
   const scoped = await request.patch("/api/scholar/entries/" + entry.id, { data: { assistantScope: true } });
+  expect(scoped.ok).toBeFalsy();
   expect(scoped.ok()).toBeTruthy();
 
   // product_inquiry：检索圈定条目并带引用
@@ -45,6 +46,6 @@ test("assistant 三意图全流程（圈定→检索→引用→闲聊→数据�
 
 test("assistant 聊天页面渲染", async ({ page }) => {
   await page.goto("/assistant/chat");
-  await expect(page.getByText("智能助手")).toBeVisible();
+  await expect(page.getByRole("main").getByText("智能助手")).toBeVisible();
   await expect(page.getByPlaceholder("输入消息")).toBeVisible();
 });
