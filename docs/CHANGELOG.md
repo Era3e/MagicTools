@@ -1,7 +1,7 @@
 # MagicTools 迭代日志（平台级）
 
 - 各子项目与公共包的版本化变更由 changesets 自动生成到各自包目录的 CHANGELOG.md；
-- 本文件记录平台级迭代摘要（阶段、里程碑、关键决策），在每次 dev→main 合并时追加一条；
+- 本文件记录平台级迭代摘要（阶段、里程碑、关键决策），在每次合入 main 时追加一条（含补记，需注明）；
 - 条目格式：日期、变更摘要、涉及子项目、关联 PR。
 
 ## 2026-08-18
@@ -22,4 +22,12 @@
 - **Assistant 多系统意图路由迭代（PR #22）**：intent_logs 意图日志可观测层（含置信度与纠错回填、列表/纠错 API、Web 日志页）；分层路由（系统归属 → 域内意图，规则/模型双轨 {domain,intent,confidence}）；低置信度澄清反问闭环。
 - **Assistant 增强完成并合并 main（PR #19，077ee28）**：意图路由扩 6 类（process_execution 创建需求/触发采集经网关执行、trouble_shooting 全服务健康探测 + LLM 排查建议、complaint_feedback 反馈落库 + Web 反馈页）；cybercloud 真实对接（源码逆向契约：payload 头认证 + apiKey 换发 + 智能体 block 对话，集成手册 docs/integrations/cybercloud-setup.md）。
 - **Designer MVP 完成并合并 main（PR #17，f062c9f）**：自然语言/设计稿图片 → LLM 生成 @mt/ui 令牌组件源码 → esbuild 沙箱预览 → 下载/沉淀组件库 + 生成历史（Phase 4 设计师降级版）。**Phase 4 完成，8 子项目全部交付**：Applicant/Investigator/Assessor/Manager（需求主线）+ Gatherer/Scholar/Assistant（知识主线）+ Designer（设计）全线落地。
-- **Assistant MVP 完成并合并 main（PR #15，637f1df）**：LLM 三意图路由（product_inquiry 检索 Scholar 圈定条目带引用回答 / data_query 对接 cybercloud 可配置查询 + 桩模式 / chitchat_reject 兜底）、多轮对话持久化与指代消解、网页聊天 + HTTP API 双入口；CI 冒烟/E2E 覆盖三意图全流程。**Phase 3 智能助手全部完成**：知识主线闭环（Gatherer 采集 → Scholar 沉淀检索 → Assistant 圈定问答）全线贯通；另修复 scholar 收件箱 e2e 与 gatherer e2e 的并行竞态（独立测试库）。
+- **Assistant MVP 完成并合并 main（PR #15，637f1df）**：LLM 三意图路由（product_inquiry 检索 Scholar 圈定条目带引用回答 / data_query 对接 cybercloud 可配置查询 + 桩模式 / chitchat_reject 兜底）、多轮对话持久化与指代消解、网页聊天 + HTTP API 双入口；CI 冒烟与 E2E 覆盖三意图全流程。**Phase 3 智能助手全部完成**：知识主线闭环（Gatherer 采集 → Scholar 沉淀检索 → Assistant 圈定问答）全线贯通；另修复 scholar 收件箱 e2e 与 gatherer e2e 的并行竞态（独立测试库）。
+
+## 2026-08-22（补记）
+
+- **统一前端外壳与工程化加固（PR #26，8c4c045）**：`@mt/ui` AppShell 统一 8 子项目外壳（侧导航+顶栏+跨应用切换）；9 页交互补全（loading/空态/错误态）与硬编码色值清理；ESLint 接入 + 5 公共包覆盖率门槛；`@mt/model-client` 健壮 parseJson（5 服务替换裸 JSON.parse）；outbox dead 终态；CI build 去重（32→1 步）+ turbo 缓存；新增 `pnpm test:affected` 回归层；README 重写与记忆文件去重。
+
+## 2026-08-25（补记）
+
+- **网关首页导航（PR #27，5e65a36）**：根路径新增应用导航首页（8 应用卡片，名称+简介），替代纯反代的 Cannot GET /。

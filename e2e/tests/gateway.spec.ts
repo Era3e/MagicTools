@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 
 test("网关将 /applicant 代理到 applicant web", async ({ page }) => {
   await page.goto("/applicant/positions");
-  await expect(page.getByText("岗位列表")).toBeVisible();
+  await expect(page.getByText("每一次投递，都值得被认真对待")).toBeVisible();
 });
 
 test("网关健康检查返回 up", async ({ request }) => {

@@ -4,17 +4,19 @@
 > 即时更新：每完成一个功能 / 关键决策 / 迭代结束，即刻追加条目，禁止事后批量补记。
 > 本文件定位「当前状态快照」，历史细节见 docs/CHANGELOG.md 与 docs/superpowers/specs/、plans/。
 
-## 当前状态快照（2026-08-22）
+## 当前状态快照（2026-08-25）
 
 - **交付状态**：8 子项目全部交付。需求主线三环（Investigator → Assessor → Manager）、知识主线（Gatherer → Scholar → Assistant）、Designer（降级版）均完成；Assistant 意图路由扩至 6 类并完成 cybercloud 真实对接（testcybercloud-dev 实测打通）。
 - **工程化基座**：Monorepo（pnpm + turbo）+ 网关 + outbox + 幂等 + CI/CD + Docker 部署链路；main 分支保护（required checks: quality/smoke/e2e）。
-- **本轮改造（2026-08-22，PR #26，尚未合并）**：
+- **本轮改造（2026-08-22，PR #26，已合并 main 8c4c045）**：
   - 前端统一外壳 `@mt/ui` 的 `AppShell`（侧边导航 + 顶栏 + 跨应用切换），8 子项目全部接入，替换原先 3 处重复的深色 Menu 外壳与 5 处裸 Card；
   - 前端交互补全：9 页 loading/空态/错误态，合并 applicant 冗余 api 层，ChatPage 自动滚动，清理硬编码色值，修复简历改写误作用首份简历与 gatherer/scholar e2e 文案撞车；
   - 测试可信度：接入 ESLint（typescript-eslint + react-hooks）、覆盖率门槛（`@vitest/coverage-v8`，5 个 DB 无关公共包 70/70/70/50）、统一 scholar e2e skip 守卫；
   - 后端健壮性：`@mt/model-client` 新增健壮 `parseJson`（容错无引号键/代码围栏/夹杂文字），5 服务替换裸 `JSON.parse`；`@mt/db` outbox 失败达上限进入 dead 终态；
   - 工程化：CI 合并重复 build 步骤并缓存 turbo 构建（`.turbo`）；新增 `pnpm test:affected`（`turbo run test --affected`）补齐「回归层」；
   - 文档：README 重写、memory 去重、AGENTS.md 对齐。
+- **网关首页导航（2026-08-25，PR #27，已合并 main 5e65a36）**：根路径新增 landingPage()，8 应用卡片（名称+简介），替代裸反代的 Cannot GET /。
+- **前后台双外壳打样（2026-08-25，PR #28，进行中）**：`@mt/ui` 新增 UserShell（前台，杂志风默认主题 MAGAZINE_THEME，主题可按应用定制）与 AdminShell（后台，统一控制台风 ADMIN_TOKENS）；applicant 前台改杂志风岗位墙 PositionWall，表格管理挪至 /admin/positions；e2e 补前后台路由拆分覆盖。方向已确认：前台各异、后台统一，打样验收后铺开其余 7 应用。
 
 ## 关键决策
 
@@ -28,6 +30,7 @@
 - outbox 失败达 `maxAttempts` 进入 `dead` 终态（status 为无约束文本列，无需迁移）；
 - 四层测试的「回归层」由 `turbo run test --affected` 实现，不另造轮子；
 - CI 用 `actions/cache` 缓存 `.turbo`，smoke/e2e 的 16 条 build 合并为 `pnpm build`。
+- 前端信息架构走「前后台双外壳」：用户前台每应用独立审美主题（UserShell + UserShellTheme，默认杂志风），配置后台全平台统一控制台风（AdminShell）；路由以 `/admin` 前缀划分，前后台经页脚/侧栏互跳；AppShell 保留为单一形态应用的过渡外壳。
 
 ## 关键事件契约
 
@@ -37,16 +40,16 @@
 
 ## 进行中任务
 
-- 已完成（PR #26）：统一外壳、测试可信度、前端交互补全、后端 LLM JSON/outbox 加固、CI 去重、回归层、文档落地；
-- 待办：PR #26 合并后执行 worktree 清理与 `pnpm smoke`（需 PostgreSQL，本地无 DB）；
+- 进行中（PR #28）：applicant 前后台双外壳打样，待 CI 全绿合并；同步补记平台级 CHANGELOG（PR #26/#27 两条，机制为「合入 main 时追加」，此前两次合并漏执行）；
+- 待办：PR #28 合并后按同模式铺开其余 7 应用双外壳（scholar 图书馆风 / assistant 对话极简 / gatherer 报刊风等，每应用独立前台主题）；
 - 候选：部署上线（需 GitHub Secrets）、Designer 可视化编辑器。
 
 ## 已知问题
 
 1. 本机 PowerShell 执行策略限制：pnpm/npx 一律用 pnpm.cmd；
-2. 网络代理不稳定：沙箱代理与直连两种模式都可能失效，git 推送失败时两种都试；gh CLI 的 GraphQL 轮询（pr checks --watch）常被瞬断，改用 REST 轮询；
+2. 网络代理不稳定：沙箱代理与直连两种模式都可能失效，git 推送失败时两种都试；git 需同时配置 http.proxy 与 https.proxy（只配 http 会卡死推送）；gh CLI 未安装，CI 状态查 GitHub App 的 pull_request_read(get_check_runs)，Actions 日志经 REST API（git credential fill 取 token）下载；
 3. 本地 .env 在仓库根（从 .env.template 复制，gitignore 忽略），各服务经 @mt/config 的 loadRootEnv 自动加载，无需 export；
-4. Docker Desktop 需手动启动（引擎就绪后 compose 正常）；
+4. Docker Desktop 需手动启动（引擎就绪后 compose 正常）；本地已有 pgvector/pgvector:pg16 容器（9 库：8 业务 + mt_test），本地可跑全量测试与 smoke，不再是无 DB 环境；
 5. 镜像推送需先在 GitHub 配置 Secrets（REGISTRY_HOST/USERNAME/PASSWORD），未配置时 images job 自动跳过；
 6. 智谱 ZHIPU_API_KEY 过期（401）时真实 LLM 功能受影响，本地以桩模式（MT_LLM_STUB）运行，待更新 Key 后恢复；
 7. Node20/OpenSSL3 禁用 PKCS1 私钥解密，测试避免依赖私钥解密；
