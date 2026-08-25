@@ -1,11 +1,14 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import App from "./App";
 
 describe("App", () => {
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+  });
 
-  it("导航到条目页并渲染条目列表", async () => {
+  it("前台路由渲染书院外壳与馆藏条目", async () => {
     window.history.pushState({}, "", "/scholar/entries");
     vi.stubGlobal(
       "fetch",
@@ -35,5 +38,17 @@ describe("App", () => {
     );
     render(<App />);
     expect(await screen.findByText("测试条目")).toBeTruthy();
+    expect(screen.getByText("每一则知识，皆入馆藏")).toBeTruthy();
+    expect(screen.queryByText("ADMIN CONSOLE")).toBeNull();
+  });
+
+  it("后台路由渲染控制台外壳", () => {
+    window.history.pushState({}, "", "/scholar/admin/settings");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response("{}", { status: 200 }))
+    );
+    render(<App />);
+    expect(screen.getByText("ADMIN CONSOLE")).toBeTruthy();
   });
 });
