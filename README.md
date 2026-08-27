@@ -29,7 +29,7 @@
 - **唯一入口**：所有外部访问经 `gateway`（路径路由 / 简单鉴权 / 健康检查聚合），端口唯一来源 [infra/ports.yaml](infra/ports.yaml)
 - **服务间通信**：同步 REST + outbox 事件表（`@mt/db`）+ 幂等键
 - **独立边界**：每个子项目 = 独立 `web + server` + 独立数据库（PG 单实例多库）
-- **统一外壳**：前端共享 `@mt/ui` 的 `AppShell`（侧边导航 + 顶栏 + 跨应用切换）与设计令牌
+- **前端三外壳统一入口** `@mt/ui`：UserShell（前台 · 每应用独立审美主题）+ AdminShell（后台 · 全平台统一控制台风）+ AppShell（单一形态过渡外壳）+ 全局设计令牌 tokens
 
 ## 目录结构
 
