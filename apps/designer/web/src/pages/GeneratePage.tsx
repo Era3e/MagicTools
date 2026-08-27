@@ -1,17 +1,18 @@
 import { useState } from "react";
 import { Button, Input, Tag, message } from "antd";
 import { api, downloadText, type GenerateResult } from "../api";
-
-const GALLERY = {
-  ink: "#111111",
-  accent: "#dc2626",
-  muted: "#9ca3af",
-  paper: "#fafafa",
-  border: "#e5e5e5",
-  sans: '"Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif',
-};
+import { useTheme } from "@mt/ui";
 
 export default function GeneratePage() {
+  const theme = useTheme();
+  const GALLERY = {
+    ink: theme.ink,
+    accent: theme.accent ?? theme.primary,
+    muted: theme.muted,
+    paper: theme.paper ?? theme.background,
+    border: theme.border ?? theme.muted,
+    sans: theme.bodyFont,
+  };
   const [prompt, setPrompt] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [loading, setLoading] = useState(false);

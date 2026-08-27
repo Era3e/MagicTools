@@ -1,16 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button, Input, Tag, message } from "antd";
 import { api, type Conversation, type Message } from "../api";
-
-const QUIET = {
-  ink: "#27272a",
-  accent: "#c2410c",
-  muted: "#a1a1aa",
-  bubbleUser: "#f5f5f4",
-  bubbleBot: "#ffffff",
-  border: "#e7e5e4",
-  sans: '"Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif',
-};
+import { useTheme } from "@mt/ui";
 
 const INTENT_LABEL: Record<string, string> = {
   product_inquiry: "知识问答",
@@ -22,6 +13,16 @@ const INTENT_LABEL: Record<string, string> = {
 };
 
 export default function ChatPage() {
+  const theme = useTheme();
+  const QUIET = {
+    ink: theme.ink,
+    accent: theme.accent ?? theme.primary,
+    muted: theme.muted,
+    bubbleUser: theme.bubbleUser ?? theme.background,
+    bubbleBot: theme.bubbleBot ?? theme.background,
+    border: theme.border ?? theme.muted,
+    sans: theme.bodyFont,
+  };
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);

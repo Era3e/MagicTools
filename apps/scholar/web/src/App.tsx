@@ -6,12 +6,19 @@ import GraphPage from "./pages/GraphPage";
 import SettingsPage from "./pages/SettingsPage";
 
 const LIBRARY_THEME = {
+  // UserShellTheme 标准字段
   primary: "#0e5a3a",
   background: "#f4f1e8",
   ink: "#23301f",
   muted: "#7c8577",
   displayFont: '"Palatino Linotype", "Book Antiqua", "Noto Serif SC", "Songti SC", serif',
   bodyFont: '"Noto Serif SC", "Palatino Linotype", serif',
+  // Scholar 馆藏扩展色板（页面通过 useTheme() 访问）
+  green: "#0e5a3a",
+  rule: "#c8c0ab",
+  paper: "#ede8da",
+  card: "#faf8f2",
+  display: '"Palatino Linotype", "Book Antiqua", "Noto Serif SC", "Songti SC", serif',
 };
 
 const USER_NAV = [

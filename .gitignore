@@ -8,4 +8,5 @@ test-results/
 .env.*
 !.env.template
 *.log
+.run-logs/
 .DS_Store

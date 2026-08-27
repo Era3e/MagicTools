@@ -11,6 +11,10 @@ const QUIET_THEME = {
   muted: "#a1a1aa",
   displayFont: '"Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif',
   bodyFont: '"Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif',
+  accent: "#c2410c",
+  bubbleUser: "#f5f5f4",
+  bubbleBot: "#ffffff",
+  border: "#e7e5e4",
 };
 
 const USER_NAV = [{ key: "/chat", label: "对话" }];

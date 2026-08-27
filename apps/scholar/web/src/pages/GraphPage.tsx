@@ -1,16 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Button, message } from "antd";
 import { Graph } from "@antv/g6";
+import { tokens, useTheme } from "@mt/ui";
 import { api, type GraphEdge, type GraphNode } from "../api";
-
-const CATALOG = {
-  ink: "#23301f",
-  green: "#0e5a3a",
-  muted: "#7c8577",
-  rule: "#c8c0ab",
-  display: '"Palatino Linotype", "Book Antiqua", "Noto Serif SC", "Songti SC", serif',
-  body: '"Noto Serif SC", "Palatino Linotype", serif',
-};
 
 interface GraphData {
   nodes: GraphNode[];
@@ -18,6 +10,16 @@ interface GraphData {
 }
 
 export default function GraphPage() {
+  const theme = useTheme();
+  const CATALOG = {
+    ink: theme.ink,
+    green: theme.primary,
+    muted: theme.muted,
+    rule: theme.rule ?? tokens.color.border,
+    card: theme.card ?? theme.background,
+    display: theme.displayFont,
+    body: theme.bodyFont,
+  };
   const [data, setData] = useState<GraphData | null>(null);
   const [loading, setLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -67,7 +69,7 @@ export default function GraphPage() {
     });
     g.render();
     g6Ref.current = g;
-  }, [data]);
+  }, [data, CATALOG.green, CATALOG.ink, CATALOG.rule, CATALOG.muted, CATALOG.body]);
 
   const generate = async () => {
     setLoading(true);
@@ -103,7 +105,7 @@ export default function GraphPage() {
       </div>
       <div
         ref={containerRef}
-        style={{ width: "100%", height: 420, border: "1px solid " + CATALOG.rule, background: "#faf8f2", padding: 8 }}
+        style={{ width: "100%", height: 420, border: "1px solid " + CATALOG.rule, background: CATALOG.card, padding: 8 }}
       />
 
       {data && data.nodes.length > 0 ? (
@@ -119,7 +121,7 @@ export default function GraphPage() {
                   border: "1px solid " + CATALOG.rule,
                   borderLeft: "3px solid " + CATALOG.green,
                   padding: "10px 12px",
-                  background: "#faf8f2",
+                  background: CATALOG.card,
                 }}
               >
                 <div style={{ fontFamily: CATALOG.display, fontSize: 15, marginBottom: 4 }}>{n.name}</div>

@@ -35,6 +35,7 @@ export default function SourceList() {
       }
     >
       <Table<Source>
+        data-testid="source-table"
         rowKey="id"
         dataSource={items}
         loading={loading}

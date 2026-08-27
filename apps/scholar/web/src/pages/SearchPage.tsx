@@ -1,20 +1,21 @@
 import { useState } from "react";
 import { Button, Empty, Input, Radio, Skeleton, Tag } from "antd";
+import { tokens, useTheme } from "@mt/ui";
 import { api, type SearchHit } from "../api";
-
-const CATALOG = {
-  ink: "#23301f",
-  green: "#0e5a3a",
-  paper: "#ede8da",
-  muted: "#7c8577",
-  rule: "#c8c0ab",
-  display: '"Palatino Linotype", "Book Antiqua", "Noto Serif SC", "Songti SC", serif',
-  body: '"Noto Serif SC", "Palatino Linotype", serif',
-};
 
 const SOURCE_LABEL: Record<string, string> = { gatherer: "采集入藏", manual: "手稿", obsidian: "黑曜石笔记" };
 
 export default function SearchPage() {
+  const theme = useTheme();
+  const CATALOG = {
+    ink: theme.ink,
+    green: theme.primary,
+    paper: theme.paper ?? theme.background,
+    muted: theme.muted,
+    rule: theme.rule ?? tokens.color.border,
+    display: theme.displayFont,
+    body: theme.bodyFont,
+  };
   const [q, setQ] = useState("");
   const [mode, setMode] = useState<"fts" | "vector">("fts");
   const [hits, setHits] = useState<SearchHit[]>([]);
