@@ -1,5 +1,5 @@
 import { Form, Input, Modal, message } from "antd";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export interface SurveyFormValues {
   name: string;
@@ -11,15 +11,27 @@ export interface SurveyFormValues {
 
 export function SurveyForm(props: {
   open: boolean;
+  title?: string;
+  initialValues?: Partial<SurveyFormValues>;
   onCancel: () => void;
   onSubmit: (values: SurveyFormValues) => Promise<void>;
 }) {
   const [form] = Form.useForm<SurveyFormValues>();
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    if (props.open) {
+      if (props.initialValues) {
+        form.setFieldsValue(props.initialValues);
+      } else {
+        form.resetFields();
+      }
+    }
+  }, [props.open, props.initialValues, form]);
+
   return (
     <Modal
-      title="新建调研主题"
+      title={props.title ?? "新建调研主题"}
       open={props.open}
       confirmLoading={saving}
       onCancel={props.onCancel}

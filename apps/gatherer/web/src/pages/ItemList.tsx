@@ -27,7 +27,11 @@ export default function ItemList() {
     }
     try {
       const out = await api.pushItems(selected);
-      message.success("已推送 " + out.pushedCount + " 条（待 Scholar 接收）");
+      message.success(
+        "已推送 " +
+          out.pushedCount +
+          " 条至 Scholar 收件箱（knowledge.item.collected 事件），请通知知识管理员在 Scholar 前台点击「收 Gatherer 事件」拉取。"
+      );
       setSelected([]);
       refresh();
     } catch (err) {

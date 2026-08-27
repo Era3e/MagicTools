@@ -43,6 +43,8 @@ export const api = {
   getSurvey: (id: string) => request<Survey>("/surveys/" + id),
   createSurvey: (input: { name: string; description?: string; appToken?: string; tableId?: string; answerFields?: string[] }) =>
     request<Survey>("/surveys", { method: "POST", body: JSON.stringify(input) }),
+  updateSurvey: (id: string, patch: Record<string, unknown>) =>
+    request<Survey>("/surveys/" + id, { method: "PATCH", body: JSON.stringify(patch) }),
   syncSurvey: (id: string) => request<{ fetchedCount: number; processedCount: number }>("/surveys/" + id + "/sync", { method: "POST" }),
   listResponses: (id: string, filters?: { sentiment?: string; priority?: string }) => {
     const qs = new URLSearchParams();

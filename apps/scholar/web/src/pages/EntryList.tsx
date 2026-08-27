@@ -14,12 +14,16 @@ const CATALOG = {
 
 const SOURCE_LABEL: Record<string, string> = { gatherer: "采集入藏", manual: "手稿", obsidian: "黑曜石笔记" };
 
+type EntryFormValues = { title: string; content?: string; summary?: string; category?: string; tags?: string[] };
+
 export default function EntryList() {
   const [entries, setEntries] = useState<Entry[] | null>(null);
   const [source, setSource] = useState<string | undefined>();
   const [category, setCategory] = useState<string | undefined>();
   const [scopeCategory, setScopeCategory] = useState("");
   const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState<Entry | null>(null);
+  const [form] = Form.useForm<EntryFormValues>();
 
   const refresh = useCallback(() => {
     api.listEntries({ source, category }).then(setEntries).catch((err) => message.error(String(err)));
@@ -33,6 +37,17 @@ export default function EntryList() {
     await api.patchEntry(id, { assistantScope });
     message.success(assistantScope ? "已圈定供 Assistant 查询" : "已取消圈定");
     refresh();
+  };
+
+  const openEdit = (e: Entry) => {
+    setEditing(e);
+    form.setFieldsValue({
+      title: e.title,
+      content: e.content,
+      summary: e.summary || undefined,
+      category: e.category || undefined,
+      tags: e.tags ?? [],
+    });
   };
 
   return (
@@ -97,7 +112,7 @@ export default function EntryList() {
             key={e.id}
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr 220px",
+              gridTemplateColumns: "1fr 280px",
               gap: 16,
               padding: "14px 4px",
               borderBottom: "1px solid " + CATALOG.rule,
@@ -116,7 +131,14 @@ export default function EntryList() {
                 ))}
               </div>
             </div>
-            <div style={{ textAlign: "right" }}>
+            <div style={{ textAlign: "right", display: "flex", justifyContent: "flex-end", gap: 8 }}>
+              <Button
+                size="small"
+                style={{ borderRadius: 0, color: CATALOG.muted }}
+                onClick={() => openEdit(e)}
+              >
+                编辑
+              </Button>
               <Button
                 size="small"
                 type={e.assistantScope ? "primary" : "text"}
@@ -155,6 +177,46 @@ export default function EntryList() {
           <Button type="primary" htmlType="submit" style={{ background: CATALOG.green, borderRadius: 0 }}>
             保存
           </Button>
+        </Form>
+      </Modal>
+
+      <Modal
+        title={"编辑馆藏 · " + (editing?.title ?? "")}
+        open={!!editing}
+        onCancel={() => {
+          setEditing(null);
+          form.resetFields();
+        }}
+        onOk={async () => {
+          const values = await form.validateFields();
+          if (!editing) return;
+          try {
+            await api.patchEntry(editing.id, values);
+            message.success("已更新");
+            setEditing(null);
+            form.resetFields();
+            refresh();
+          } catch (err) {
+            message.error(String(err));
+          }
+        }}
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item name="title" label="标题" rules={[{ required: true }]}>
+            <Input placeholder="标题" />
+          </Form.Item>
+          <Form.Item name="summary" label="摘要">
+            <Input.TextArea rows={2} placeholder="摘要（可选）" />
+          </Form.Item>
+          <Form.Item name="content" label="内容">
+            <Input.TextArea rows={5} placeholder="正文内容" />
+          </Form.Item>
+          <Form.Item name="category" label="分类">
+            <Input placeholder="分类" />
+          </Form.Item>
+          <Form.Item name="tags" label="标签">
+            <Select mode="tags" placeholder="标签" />
+          </Form.Item>
         </Form>
       </Modal>
     </div>

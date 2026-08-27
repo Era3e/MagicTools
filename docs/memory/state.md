@@ -20,6 +20,10 @@
 - **双外壳铺开（2026-08-25，PR #29，已合并 main 668c8e9）**：其余 7 应用全部接入双外壳（主题见 ui-spec 对照表）；管理页统一 /admin/* 路由，旧路径 redirect 兼容；gatherer/investigator/assessor 无前台形态默认直跳后台；UserShell 新增 footerNote；8 应用信息架构「前台各异、后台统一」全部落地。
 - **前台内容页深度设计（2026-08-25，PR #30，已合并 main ee8239d）**：scholar 书目检索（图书馆目录卡片）、assistant ChatPage（极简双栏气泡）、manager 前台需求台（FLIGHT DECK 七泳道看板）、designer 定制生成（画廊委托单+展品展位）；四页主题化深度设计落地。
 - **剩余前台页主题化收官（2026-08-25，PR #31，已合并 main 7f25a9e）**：scholar EntryList 馆藏目录（书卷列表+书签式圈定）/GraphPage 类目卡片墙、manager RequirementDetail 飞行日志、applicant PositionDetail 特稿版式/InterviewPage 对开复盘/ResumeCenter 工坊。**8 应用前台主题化全部完成**。
+- **操作闭环补齐 D1/D3（2026-08-25，分支 fix-d1-d3-push-editing）**：
+  - D1 推送去向可见：gatherer ItemList 推送成功提示至 Scholar 收件箱（knowledge.item.collected）并说明拉取步骤；investigator SurveyDetail 推送成功提示至 Assessor 收件箱（researcher.response.push）并说明拉取步骤；assessor RequestDetail 推送 Manager 文案补收件箱（requirement.created）与拉取步骤；
+  - D3 编辑入口补齐：gatherer SourceList 新增「编辑」列与 Modal（PATCH /sources/:id）；investigator SurveyList 新增「编辑」列，SurveyForm 扩展 initialValues/title 支持编辑模式；scholar EntryList 馆藏条目右侧新增「编辑」按钮与 Modal，覆盖 title/summary/content/category/tags 五项（PATCH /entries/:id 前端字段扩展）；
+  - 本地构建 lint + 四应用单测全部通过（scholar 9/9、gatherer 3/3、investigator 3/3、assessor 3/3）；changeset 已加 fix-d1-d3-push-to-edit.md。
 
 ## 关键决策
 

@@ -54,7 +54,7 @@ export const api = {
   },
   createEntry: (input: { title: string; content?: string; category?: string; tags?: string[] }) =>
     request<Entry>("/entries", { method: "POST", body: JSON.stringify(input) }),
-  patchEntry: (id: string, patch: { assistantScope?: boolean; category?: string; tags?: string[] }) =>
+  patchEntry: (id: string, patch: { title?: string; content?: string; summary?: string; category?: string; tags?: string[]; assistantScope?: boolean }) =>
     request<Entry>("/entries/" + id, { method: "PATCH", body: JSON.stringify(patch) }),
   scopeCategory: (category: string, scope: boolean) =>
     request<{ updated: number }>("/entries/scope-category", { method: "POST", body: JSON.stringify({ category, scope }) }),
