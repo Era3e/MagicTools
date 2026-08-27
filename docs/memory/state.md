@@ -24,6 +24,11 @@
   - D1 推送去向可见：gatherer ItemList 推送成功提示至 Scholar 收件箱（knowledge.item.collected）并说明拉取步骤；investigator SurveyDetail 推送成功提示至 Assessor 收件箱（researcher.response.push）并说明拉取步骤；assessor RequestDetail 推送 Manager 文案补收件箱（requirement.created）与拉取步骤；
   - D3 编辑入口补齐：gatherer SourceList 新增「编辑」列与 Modal（PATCH /sources/:id）；investigator SurveyList 新增「编辑」列，SurveyForm 扩展 initialValues/title 支持编辑模式；scholar EntryList 馆藏条目右侧新增「编辑」按钮与 Modal，覆盖 title/summary/content/category/tags 五项（PATCH /entries/:id 前端字段扩展）；
   - 本地构建 lint + 四应用单测全部通过（scholar 9/9、gatherer 3/3、investigator 3/3、assessor 3/3）；changeset 已加 fix-d1-d3-push-to-edit.md。
+- **质量三角闭环（2026-08-25，分支 qa-triangle-closure）**：
+  - **低阶 Bug 防御线**：E2E 新增 4 类副作用断言（URL 跳转 / Modal 开 / 列表增改 / 接口请求拦截 URL+method）+ 16 页视觉快照基线 `_visual.spec.ts`（Playwright toHaveScreenshot，阈值 0.02）；package.json 新 `pnpm e2e:visual:update` / `pnpm e2e:visual` 脚本；PR 模板新增 UI Checklist + 0 bug loop 智能体验收记录两段；
+  - **功能缺口可追溯**：新增 `docs/superpowers/coverage-matrix.md`（规格-代码-测试三维映射，跨 8 子项目）与 `docs/memory/mvp-deferred.md`（明确写 MVP 有意推迟项、原因、重启触发条件）——区分「未实现」vs「不做」；
+  - **UI 规范工程化**：`@mt/ui` 新增三种页面模式（MagazineList/ControlTable/DetailHero）+ `ThemeContext` 与 `useTheme` 钩子；`infra/eslint/rules/no-hardcoded-colors.mjs` 自定义 ESLint 规则生效——禁止业务页硬编码色值（仅豁免 tokens.ts、应用顶层 *_THEME、AdminShell/UserShell 专用键）；5 子项目共 11 个前台页（manager RequirementBoard/Detail、scholar EntryList/SearchPage/GraphPage、applicant PositionWall/PositionDetail/InterviewPage/ResumeCenter、assistant ChatPage、designer GeneratePage）全部迁移 `useTheme()` 取色；applicant 新增 `APPLICANT_THEME` 显式传入 UserShell，assistant/designer 扩展主题键；
+  - 本地验证：`pnpm lint` 0 err（仅 2 any warning）、`pnpm test:affected` 24/24 任务通过、MtEmptyState 扩展 description 兼容 patterns 类型。
 
 ## 关键决策
 
@@ -31,6 +36,7 @@
 - 8 子项目 + gateway，端口唯一来源 infra/ports.yaml；
 - LLM 统一入口 @mt/model-client（DeepSeek + 智谱，OpenAI 兼容协议）；
 - 数据交互：网关 + 同步 REST + outbox + 幂等键；
+- 数据库 ORM 选型：原生 SQL + Zod 校验（不引入 TypeORM/Prisma），兼顾 pgvector 向量操作、全文检索 FTS 支持最直接，零黑盒、迁移可控；
 - 部署：单台阿里云 ECS + Docker Compose；
 - 分支绑任务不绑对话，四层清理机制；
 - LLM 解析统一走 `@mt/model-client` 的 `parseJson`（逐级降级容错），禁止服务内裸 `JSON.parse`；
@@ -38,7 +44,11 @@
 - 四层测试的「回归层」由 `turbo run test --affected` 实现，不另造轮子；
 - CI 用 `actions/cache` 缓存 `.turbo`，smoke/e2e 的 16 条 build 合并为 `pnpm build`。
 - 前端信息架构走「前后台双外壳」：用户前台每应用独立审美主题（UserShell + UserShellTheme，默认杂志风），配置后台全平台统一控制台风（AdminShell）；路由以 `/admin` 前缀划分，前后台经页脚/侧栏互跳；AppShell 保留为单一形态应用的过渡外壳。
-- 前台内容页主题常量沉淀在各自页面文件内（CATALOG/DECK/MAG/QUIET/PRESS/ARCHIVE/BRIEF/GALLERY），与 App.tsx 外壳主题同源同色。
+- 前台色值取用统一走 `ThemeContext` + `useTheme()`：应用主题仅在各自 `App.tsx` 顶层 `*_THEME` 常量中定义（含扩展键），`@mt/ui tokens.ts` 为状态/语义色唯一来源；业务页禁止硬编码色值，由 `@mt/rules/no-hardcoded-colors` ESLint 工程化门禁保障。
+- 质量治理三角机制（长期有效）：
+  1) E2E 「副作用断言 + 视觉快照」双保险，捕获样式/交互退化；
+  2) coverage-matrix + mvp-deferred 文档体系，消除「功能缺失」歧义；
+  3) 可复用 UI 模式 + 主题上下文 + ESLint 硬编码拦截，确保 ui-spec 落地不退化。
 
 ## 关键事件契约
 
@@ -49,6 +59,7 @@
 ## 进行中任务
 
 - 已完成（PR #31，7f25a9e）：剩余六前台页主题化（scholar 馆藏目录/图谱、manager 飞行日志、applicant 特稿/对开/工坊），前端主题化工程全部收官（双外壳 + 8 应用前台深度设计）；
+- 进行中（分支 qa-triangle-closure）：质量三角机制落地（E2E 副作用断言+视觉快照、可追溯文档、UI 规范工程化），已通过 lint+单测，待 e2e 基线更新与 PR；
 - 候选：部署上线（需 GitHub Secrets）、Designer 可视化编辑器、智谱 Key 更新。
 
 ## 已知问题
@@ -61,4 +72,4 @@
 6. 智谱 ZHIPU_API_KEY 过期（401）时真实 LLM 功能受影响，本地以桩模式（MT_LLM_STUB）运行，待更新 Key 后恢复；
 7. Node20/OpenSSL3 禁用 PKCS1 私钥解密，测试避免依赖私钥解密；
 8. 子智能体委托（subagent/subagent_fork）在本环境不可用，多智能体协作需外部 CLI 环境；
-9. 「0 bug loop」机制目前无落地产物：开发/测试分拆不同智能体的对抗性测试流程尚未留下验收记录（流程纪律问题，非代码可修）。
+9. 「0 bug loop」机制在 PR 模板里已植入「独立测试智能体验收记录」表格字段，合入前由测试智能体填写，实现流程纪律落地（不再是纯口头约定）。
