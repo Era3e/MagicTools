@@ -85,7 +85,7 @@ export default function RequestDetail() {
           </Button>
           <Button
             disabled={item.status !== "approved"}
-            onClick={() => run(() => api.push(item.id), "已推送到 Manager（待接收）")}
+            onClick={() => run(() => api.push(item.id), "已推送至 Manager 收件箱（requirement.created 事件），请通知项目经理在 Manager 后台手动拉取。")}
           >
             推送 Manager
           </Button>

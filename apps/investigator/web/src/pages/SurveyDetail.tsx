@@ -64,7 +64,11 @@ export default function SurveyDetail() {
     }
     try {
       const out = await api.pushResponses(survey.id, selectedIds);
-      message.success("已推送 " + out.pushedCount + " 条（outbox 事件待 Assessor 消费）");
+      message.success(
+        "已推送 " +
+          out.pushedCount +
+          " 条至 Assessor 收件箱（researcher.response.push 事件），请通知评审在 Assessor 首页/收件箱手动拉取。"
+      );
       setSelectedIds([]);
       refresh();
     } catch (err) {
