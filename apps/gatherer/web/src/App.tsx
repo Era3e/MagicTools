@@ -37,7 +37,6 @@ function Shell() {
         navItems={ADMIN_NAV}
         selectedKey="/admin/sources"
         onNavigate={(key) => navigate(key)}
-        frontPath="/admin/sources"
       >
         <AdminRoutes />
       </AdminShell>
