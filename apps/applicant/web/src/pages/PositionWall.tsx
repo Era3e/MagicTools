@@ -2,7 +2,7 @@ import { Input, Pagination, Skeleton, message } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api, type Position } from "../api";
-import { MAGAZINE_THEME } from "@mt/ui";
+import { useTheme } from "@mt/ui";
 import { POSITION_STATUS_LABELS } from "../status";
 
 const PAGE_SIZE = 9;
@@ -13,6 +13,7 @@ export default function PositionWall() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(false);
+  const theme = useTheme();
 
   const refresh = useCallback(() => {
     setLoading(true);
@@ -41,8 +42,8 @@ export default function PositionWall() {
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 24 }}>
-        <h2 style={{ fontFamily: MAGAZINE_THEME.displayFont, fontSize: 26, color: MAGAZINE_THEME.ink, margin: 0 }}>
-          岗位博览 <span style={{ fontSize: 14, color: MAGAZINE_THEME.muted, fontStyle: "italic" }}>{total} 个机会在册</span>
+        <h2 style={{ fontFamily: theme.displayFont, fontSize: 26, color: theme.ink, margin: 0 }}>
+          岗位博览 <span style={{ fontSize: 14, color: theme.muted, fontStyle: "italic" }}>{total} 个机会在册</span>
         </h2>
         <Input.Search
           placeholder="检索公司 / 职位 / 城市"
@@ -62,7 +63,7 @@ export default function PositionWall() {
           ))}
         </div>
       ) : items.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "80px 0", color: MAGAZINE_THEME.muted, fontStyle: "italic", fontSize: 16 }}>
+        <div style={{ textAlign: "center", padding: "80px 0", color: theme.muted, fontStyle: "italic", fontSize: 16 }}>
           尚无岗位在册——去后台录入第一条机会吧。
         </div>
       ) : (
@@ -73,8 +74,8 @@ export default function PositionWall() {
               to={"/positions/" + p.id}
               style={{
                 display: "block",
-                background: "#fffdf9",
-                border: "1px solid #e8e2d6",
+                background: theme.card,
+                border: "1px solid " + (theme.border || theme.rule),
                 padding: "20px 20px 16px",
                 color: "inherit",
                 textDecoration: "none",
@@ -83,10 +84,10 @@ export default function PositionWall() {
             >
               <div
                 style={{
-                  fontFamily: MAGAZINE_THEME.displayFont,
+                  fontFamily: theme.displayFont,
                   fontSize: 11,
                   letterSpacing: 2,
-                  color: MAGAZINE_THEME.muted,
+                  color: theme.muted,
                   marginBottom: 8,
                   display: "flex",
                   justifyContent: "space-between",
@@ -95,11 +96,11 @@ export default function PositionWall() {
                 <span>No. {String((page - 1) * PAGE_SIZE + index + 1).padStart(2, "0")}</span>
                 <span>{POSITION_STATUS_LABELS[p.status] ?? p.status}</span>
               </div>
-              <h3 style={{ fontFamily: MAGAZINE_THEME.displayFont, fontSize: 20, color: MAGAZINE_THEME.ink, margin: "0 0 4px" }}>
+              <h3 style={{ fontFamily: theme.displayFont, fontSize: 20, color: theme.ink, margin: "0 0 4px" }}>
                 {p.title}
               </h3>
-              <div style={{ color: MAGAZINE_THEME.primary, fontSize: 14, marginBottom: 10 }}>{p.company}</div>
-              <div style={{ color: MAGAZINE_THEME.muted, fontSize: 12, display: "flex", gap: 12 }}>
+              <div style={{ color: theme.primary, fontSize: 14, marginBottom: 10 }}>{p.company}</div>
+              <div style={{ color: theme.muted, fontSize: 12, display: "flex", gap: 12 }}>
                 {p.city ? <span>📍 {p.city}</span> : null}
                 <span>更新于 {new Date(p.updatedAt).toLocaleDateString()}</span>
               </div>

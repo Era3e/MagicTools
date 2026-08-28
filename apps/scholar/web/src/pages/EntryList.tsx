@@ -1,22 +1,23 @@
 import { useCallback, useEffect, useState } from "react";
 import { Button, Empty, Form, Input, Modal, Select, Skeleton, Tag, message } from "antd";
+import { tokens, useTheme } from "@mt/ui";
 import { api, type Entry } from "../api";
-
-const CATALOG = {
-  ink: "#23301f",
-  green: "#0e5a3a",
-  muted: "#7c8577",
-  rule: "#c8c0ab",
-  paper: "#ede8da",
-  display: '"Palatino Linotype", "Book Antiqua", "Noto Serif SC", "Songti SC", serif',
-  body: '"Noto Serif SC", "Palatino Linotype", serif',
-};
 
 const SOURCE_LABEL: Record<string, string> = { gatherer: "采集入藏", manual: "手稿", obsidian: "黑曜石笔记" };
 
 type EntryFormValues = { title: string; content?: string; summary?: string; category?: string; tags?: string[] };
 
 export default function EntryList() {
+  const theme = useTheme();
+  const CATALOG = {
+    ink: theme.ink,
+    green: theme.primary,
+    muted: theme.muted,
+    rule: theme.rule ?? tokens.color.border,
+    paper: theme.paper ?? theme.background,
+    display: theme.displayFont,
+    body: theme.bodyFont,
+  };
   const [entries, setEntries] = useState<Entry[] | null>(null);
   const [source, setSource] = useState<string | undefined>();
   const [category, setCategory] = useState<string | undefined>();
@@ -56,7 +57,7 @@ export default function EntryList() {
         <span style={{ fontFamily: CATALOG.display, letterSpacing: 4, fontSize: 13 }}>
           馆 藏 目 录
         </span>
-        <span style={{ color: CATALOG.muted, fontSize: 12 }}>
+        <span data-testid="entry-count" style={{ color: CATALOG.muted, fontSize: 12 }}>
           在册 {entries?.length ?? "…"} 卷
         </span>
       </div>
@@ -107,8 +108,9 @@ export default function EntryList() {
       ) : entries.length === 0 ? (
         <Empty description={<span style={{ color: CATALOG.muted }}>书架空空——先收录一卷吧</span>} />
       ) : (
-        entries.map((e) => (
-          <article
+        <div data-testid="entry-rows">
+          {entries.map((e) => (
+            <article
             key={e.id}
             style={{
               display: "grid",
@@ -149,7 +151,8 @@ export default function EntryList() {
               </Button>
             </div>
           </article>
-        ))
+          ))}
+        </div>
       )}
 
       <Modal title="新增条目（录入手稿）" open={creating} onCancel={() => setCreating(false)} footer={null}>

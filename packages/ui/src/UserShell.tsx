@@ -2,6 +2,7 @@ import { Dropdown, Layout, Typography } from "antd";
 import type { MenuProps } from "antd";
 import type { ReactNode } from "react";
 import { APPS } from "./apps";
+import { ThemeProvider } from "./theme";
 
 export interface UserNavItem {
   key: string;
@@ -15,6 +16,8 @@ export interface UserShellTheme {
   muted: string;
   displayFont: string;
   bodyFont: string;
+  /** 各应用可选扩展色板键（按项目约定自行填入页面需要的面板/分割线/纸底色等） */
+  [key: string]: string;
 }
 
 export const MAGAZINE_THEME: UserShellTheme = {
@@ -48,7 +51,8 @@ export function UserShell(props: UserShellProps) {
   }));
 
   return (
-    <Layout style={{ minHeight: "100vh", background: theme.background, fontFamily: theme.bodyFont }}>
+    <ThemeProvider value={theme}>
+      <Layout style={{ minHeight: "100vh", background: theme.background, fontFamily: theme.bodyFont }}>
       <header
         style={{
           borderBottom: "3px double " + theme.ink,
@@ -135,5 +139,6 @@ export function UserShell(props: UserShellProps) {
         </span>
       </footer>
     </Layout>
+    </ThemeProvider>
   );
 }

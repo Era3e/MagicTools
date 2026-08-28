@@ -1,18 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Empty, Skeleton, Tag, message } from "antd";
+import { tokens, useTheme } from "@mt/ui";
 import { api, type Requirement } from "../api";
-
-const DECK = {
-  ink: "#0f172a",
-  sky: "#0ea5e9",
-  bg: "#e8eef5",
-  panel: "#f8fafc",
-  border: "#cbd5e1",
-  muted: "#64748b",
-  mono: '"Consolas", "Microsoft YaHei", monospace',
-  sans: '"Segoe UI", "Microsoft YaHei", sans-serif',
-};
 
 const LANES: Array<{ key: string; label: string; code: string }> = [
   { key: "waiting", label: "待分析", code: "WAIT" },
@@ -24,9 +14,25 @@ const LANES: Array<{ key: string; label: string; code: string }> = [
   { key: "done", label: "已完成", code: "DONE" },
 ];
 
-const PRIORITY_COLOR: Record<string, string> = { P0: "#dc2626", P1: "#ea580c", P2: DECK.muted };
+/** 优先级颜色：P0/P1 走平台 tokens 语义色，P2 走应用主题 muted */
+function priorityColor(priority: string, muted: string): string {
+  if (priority === "P0") return tokens.color.error;
+  if (priority === "P1") return tokens.color.warning;
+  return muted;
+}
 
 export default function RequirementBoard() {
+  const theme = useTheme();
+  const DECK = {
+    ink: theme.ink,
+    sky: theme.primary,
+    bg: theme.bg ?? theme.background,
+    panel: theme.panel ?? theme.background,
+    border: theme.border ?? tokens.color.border,
+    muted: theme.muted,
+    mono: theme.displayFont,
+    sans: theme.bodyFont,
+  };
   const [items, setItems] = useState<Requirement[] | null>(null);
 
   const refresh = useCallback(() => {
@@ -43,7 +49,7 @@ export default function RequirementBoard() {
         <span style={{ fontFamily: DECK.mono, letterSpacing: 3, color: DECK.sky, fontSize: 12 }}>
           FLIGHT DECK · 需求在轨
         </span>
-        <span style={{ fontFamily: DECK.mono, fontSize: 12, color: DECK.muted }}>
+        <span data-testid="board-total" style={{ fontFamily: DECK.mono, fontSize: 12, color: DECK.muted }}>
           TOTAL {items?.length ?? "--"}
         </span>
       </div>
@@ -53,6 +59,7 @@ export default function RequirementBoard() {
         <Skeleton active paragraph={{ rows: 8 }} />
       ) : (
         <div
+          data-testid="board-lanes"
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(7, minmax(150px, 1fr))",
@@ -93,7 +100,7 @@ export default function RequirementBoard() {
                         display: "block",
                         background: DECK.panel,
                         border: "1px solid " + DECK.border,
-                        borderLeft: "3px solid " + (PRIORITY_COLOR[r.priority] ?? DECK.muted),
+                        borderLeft: "3px solid " + priorityColor(r.priority, DECK.muted),
                         padding: "8px 10px",
                         marginBottom: 8,
                         color: DECK.ink,
@@ -103,7 +110,7 @@ export default function RequirementBoard() {
                         {r.title}
                       </div>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <span style={{ fontFamily: DECK.mono, fontSize: 10, color: PRIORITY_COLOR[r.priority] ?? DECK.muted }}>
+                        <span style={{ fontFamily: DECK.mono, fontSize: 10, color: priorityColor(r.priority, DECK.muted) }}>
                           {r.priority}
                         </span>
                         {r.prUrl ? <Tag color="blue" style={{ fontSize: 10, margin: 0, paddingInline: 4 }}>PR</Tag> : null}

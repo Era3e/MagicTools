@@ -1,16 +1,7 @@
 import { Button, Form, Input, Select, Tag, Typography, message } from "antd";
 import { useEffect, useState } from "react";
 import { api, type Position, type Resume } from "../api";
-
-const MAG = {
-  ink: "#2b2620",
-  brick: "#b4532a",
-  paper: "#f8f5ef",
-  muted: "#8a8175",
-  rule: "#ddd5c7",
-  display: 'Georgia, "Times New Roman", "Noto Serif SC", "Songti SC", serif',
-  body: '"Noto Serif SC", Georgia, serif',
-};
+import { useTheme } from "@mt/ui";
 
 interface QuotaInfo {
   configured: boolean;
@@ -19,6 +10,17 @@ interface QuotaInfo {
 }
 
 export default function ResumeCenter() {
+  const theme = useTheme();
+  const MAG = {
+    ink: theme.ink,
+    brick: theme.brick ?? theme.primary,
+    paper: theme.paper ?? theme.background,
+    muted: theme.muted,
+    rule: theme.rule ?? theme.border,
+    display: theme.displayFont,
+    body: theme.bodyFont,
+  };
+
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [positions, setPositions] = useState<Position[]>([]);
   const [quota, setQuota] = useState<QuotaInfo | null>(null);

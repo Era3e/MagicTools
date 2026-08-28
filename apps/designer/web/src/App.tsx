@@ -11,6 +11,9 @@ const GALLERY_THEME = {
   muted: "#9ca3af",
   displayFont: '"Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif',
   bodyFont: '"Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif',
+  accent: "#dc2626",
+  paper: "#fafafa",
+  border: "#e5e5e5",
 };
 
 const ADMIN_NAV = [

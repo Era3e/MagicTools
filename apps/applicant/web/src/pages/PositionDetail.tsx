@@ -4,20 +4,21 @@ import { useNavigate, useParams } from "react-router-dom";
 import { api, type Position } from "../api";
 import { StatusTag } from "../components/StatusTag";
 import { POSITION_STATUS_OPTIONS } from "../status";
-
-const MAG = {
-  ink: "#2b2620",
-  brick: "#b4532a",
-  paper: "#f8f5ef",
-  muted: "#8a8175",
-  rule: "#ddd5c7",
-  display: 'Georgia, "Times New Roman", "Noto Serif SC", "Songti SC", serif',
-  body: '"Noto Serif SC", Georgia, serif',
-};
+import { useTheme } from "@mt/ui";
 
 export default function PositionDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const MAG = {
+    ink: theme.ink,
+    brick: theme.brick ?? theme.primary,
+    paper: theme.paper ?? theme.background,
+    muted: theme.muted,
+    rule: theme.rule ?? theme.border,
+    display: theme.displayFont,
+    body: theme.bodyFont,
+  };
   const [item, setItem] = useState<Position | null>(null);
   const [notes, setNotes] = useState("");
   const [greeting, setGreeting] = useState("");

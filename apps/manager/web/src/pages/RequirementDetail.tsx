@@ -1,17 +1,8 @@
 import { Button, Input, Select, Tag, message } from "antd";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { tokens, useTheme } from "@mt/ui";
 import { api, type Requirement, type RequirementStatus } from "../api";
-
-const DECK = {
-  ink: "#0f172a",
-  sky: "#0ea5e9",
-  panel: "#f8fafc",
-  border: "#cbd5e1",
-  muted: "#64748b",
-  mono: '"Consolas", "Microsoft YaHei", monospace',
-  sans: '"Segoe UI", "Microsoft YaHei", sans-serif',
-};
 
 const STATUS_OPTIONS: Array<{ value: RequirementStatus; label: string }> = [
   { value: "waiting", label: "待分析" },
@@ -23,9 +14,24 @@ const STATUS_OPTIONS: Array<{ value: RequirementStatus; label: string }> = [
   { value: "done", label: "已完成" },
 ];
 
-const PRIORITY_COLOR: Record<string, string> = { P0: "#dc2626", P1: "#ea580c", P2: DECK.muted };
+/** 优先级颜色：P0/P1 使用 tokens 语义色，P2 使用应用 muted */
+function priorityColor(priority: string, muted: string): string {
+  if (priority === "P0") return tokens.color.error;
+  if (priority === "P1") return tokens.color.warning;
+  return muted;
+}
 
 export default function RequirementDetail() {
+  const theme = useTheme();
+  const DECK = {
+    ink: theme.ink,
+    sky: theme.primary,
+    panel: theme.panel ?? theme.background,
+    border: theme.border ?? tokens.color.border,
+    muted: theme.muted,
+    mono: theme.displayFont,
+    sans: theme.bodyFont,
+  };
   const { id } = useParams();
   const navigate = useNavigate();
   const [item, setItem] = useState<Requirement | null>(null);
@@ -85,7 +91,7 @@ export default function RequirementDetail() {
 
       <div style={{ display: "flex", gap: 12, alignItems: "baseline", marginBottom: 16, flexWrap: "wrap" }}>
         <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>{item.title}</h2>
-        <span style={{ fontFamily: DECK.mono, fontSize: 12, color: PRIORITY_COLOR[item.priority] ?? DECK.muted }}>
+        <span style={{ fontFamily: DECK.mono, fontSize: 12, color: priorityColor(item.priority, DECK.muted) }}>
           {item.priority}
         </span>
         <Tag style={{ borderRadius: 0 }}>{item.source}</Tag>

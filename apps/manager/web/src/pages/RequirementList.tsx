@@ -76,6 +76,7 @@ export default function RequirementList() {
       }
     >
       <Table<Requirement>
+        data-testid="requirement-table"
         rowKey="id"
         dataSource={items}
         loading={loading}
