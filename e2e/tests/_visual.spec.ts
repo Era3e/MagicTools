@@ -9,6 +9,16 @@
 
 import { test, expect } from "@playwright/test";
 
+// CI 守卫：视觉像素基线与生成平台强绑定（字体光栅化/反锯齿差异），
+// 仓库只维护本机 win32 基线；CI（linux）无对应基线文件，跑必失败于 snapshot missing。
+// CI 上显式跳过并计入汇总行——跨平台视觉回归见 mvp-deferred D-18。
+// 本地跑法不变：pnpm e2e:visual（或全量 pnpm e2e）。
+const isCi = !!process.env.CI;
+test.skip(
+  isCi,
+  "CI(linux) 无 win32 像素基线，视觉快照仅本地跑（跨平台方案 mvp-deferred D-18）"
+);
+
 /**
  * 16 页映射表：[测试名, 访问路径, 页面加载后等待的锚点元素（确保内容渲染完再拍）]
  * - 前台 8 页：带 front- 前缀

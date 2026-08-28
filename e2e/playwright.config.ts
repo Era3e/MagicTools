@@ -9,6 +9,8 @@ export default defineConfig({
     timeout: 10000,
   },
   snapshotDir: "./snapshots",
+  // 视觉基线按平台分文件（win32/linux 字体光栅化不同，像素基线不可跨平台复用）；
+  // 基线当前仅 win32（本机生成），CI 上跳过视觉用例（见 _visual.spec.ts 的 CI 守卫）
   snapshotPathTemplate:
     "{snapshotDir}/{testFileDir}/{testName}-{arg}-{platform}{ext}",
   use: {
