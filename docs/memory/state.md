@@ -85,8 +85,8 @@
 
 - 已完成（PR #35，acae500）：质量三角机制全部落地合并 main（E2E 副作用断言+视觉基线+空转绿治理、coverage-matrix/mvp-deferred 追溯体系、UI 规范工程化）；CI 全绿后 squash 合并，分支已清理（本地/远程仅剩 main）；
 - **D-09 意图路由在线学习落地（2026-08-28，PR #43 已合并 main 5eae2a3）**：三层闭环——① few-shot 在线注入（IntentService 从纠错样本均衡采样构造示例注入 system prompt，每意图 3 条/总数 12 封顶，60s TTL 缓存，纠错落库即清缓存即时生效）；② 评估闭环（EvaluationService：混淆矩阵 + 回放评估命中率，`GET /intent-logs/evaluation[/replay]`）；③ 数据集导出（OpenAI 兼容 JSONL，`GET /intent-logs/export` + 前端 Blob 下载）。前端 IntentLogPage 新增「路由评估」卡片。真 LoRA 微调继续延期（导出格式已就绪）。同批含 D-06/D-08/D-12/D-13。**CI 修复两轮**：① obsidian.controller D-06 重写时丢失显式 @Inject（vitest/esbuild 不产装饰器元数据，隐式构造注入在测试内 DI 失败）——已恢复并本地真实执行验证（scholar 29/29、gatherer 19/19）；② 误移除视觉快照 CI 守卫（linux 无 -linux.png 基线必 snapshot-missing，装 CJK 字体≠有基线）——已恢复守卫。教训：turbo 缓存会复用「DB 未启动时的 skip 轮」结果，e2e 类改动必须本地起库真实执行后再推。squash 合并后分支已清理（内容级验证：evaluation.service/useResponsive 等关键文件在 main）；
-- **D-07/D-11/D-16/D-17 兑现（2026-08-28，PR #36 待合并）**：Investigator node-cron 自动调度（scheduler.ts + surveys.cron 列 + startScheduler 挂载 + meta/scheduler-status API + 3 单测）；CI quality job 新增 0 bug loop 验收记录复选框检测（仅 PR 事件触发）；Designer 前台「组件馆藏」导航入口（/components 直达 ComponentList）；D-17 经核实 main 已含意图日志入口（确认已修复）；
-- 剩余 open PR：#36（investigator-cron）、#37（gateway-dashboard）、#38（scholar-graph）、#39（cleanup-d16-lint）、#40（manager-burndown）、#41（manager-webhook）、#42（designer-publish）——对应本地分支保留待处理；
+- **D-07/D-11/D-16/D-17 兑现（2026-08-28，PR #36 已合并 main 2934264）**：Investigator node-cron 自动调度（scheduler.ts + surveys.cron 列 + startScheduler 挂载 + meta/scheduler-status API + 3 单测）；CI quality job 新增 0 bug loop 验收记录复选框检测（仅 PR 事件触发）；Designer 前台「组件馆藏」导航入口（/components 直达 ComponentList）；D-17 经核实 main 已含意图日志入口（确认已修复）。**分支更新三轮**：merge main 解 state.md 冲突；修 mvp-deferred 表格列数 MD056（9 列→8 列）；designer e2e 断言收敛唯一锚点「组件库」（D-16 直渲染后宽正则 strict mode 3 元素冲突——E2E 校准纪律的典型场景）；
+- 剩余 open PR：#37（gateway-dashboard）、#38（scholar-graph）、#39（cleanup-d16-lint，D-16 与 #36 重复需关闭或重构）、#40（manager-burndown）、#41（manager-webhook）、#42（designer-publish）——对应本地分支保留待处理；
 - 候选（mvp-deferred 未兑现项）：D-15（Applicant 投递日历）、D-18（E2E 视觉快照 linux 基线）；#37-#42 对应的 D-10/D-05/D-16 重复项/D-14/D-03/D-04 已在各自 PR 实现待合并；
 - 候选：部署上线（需 GitHub Secrets）、Designer 可视化编辑器、智谱 Key 更新。
 
