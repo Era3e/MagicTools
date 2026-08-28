@@ -75,6 +75,7 @@
 ## 进行中任务
 
 - 已完成（PR #35，acae500）：质量三角机制全部落地合并 main（E2E 副作用断言+视觉基线+空转绿治理、coverage-matrix/mvp-deferred 追溯体系、UI 规范工程化）；CI 全绿后 squash 合并，分支已清理（本地/远程仅剩 main）；
+- **D-09 意图路由在线学习落地（2026-08-28，本地全绿待提 PR）**：三层闭环——① few-shot 在线注入（IntentService 从纠错样本均衡采样构造示例注入 system prompt，每意图 3 条/总数 12 封顶，60s TTL 缓存，纠错落库即清缓存即时生效）；② 评估闭环（EvaluationService：混淆矩阵 + 回放评估命中率，`GET /intent-logs/evaluation[/replay]`）；③ 数据集导出（OpenAI 兼容 JSONL，`GET /intent-logs/export` + 前端 Blob 下载）。前端 IntentLogPage 新增「路由评估」卡片（回放按钮/混淆对表格/导出数据集）。真 LoRA 微调继续延期（导出格式已就绪）。同批含 D-13 收尾（ESLint 5 处修复、AdminShell ThemeProvider、@ant-design/icons 依赖补齐）。验证：assistant-server 81/81（含 3 条新 e2e）、assistant-web 13/13、pnpm lint 0 err、test:affected 33/33；
 - 候选（mvp-deferred）：D-07（Cron 拉取）、D-11（0 bug loop 验收记录）建议下迭代立即兑现；D-16/D-17 两处导航入口（各一行配置）；D-18 视觉快照 linux 基线；
 - 候选：部署上线（需 GitHub Secrets）、Designer 可视化编辑器、智谱 Key 更新。
 
