@@ -8,6 +8,7 @@ import { llmChat } from "./llm";
 import { responseStructuredSchema } from "./schemas";
 import { finishSyncRun, listResponses, markPushed, startSyncRun, touchSurveySyncedAt, upsertResponse } from "./response.repo";
 import { createSurvey, getSurvey, listSurveys, setSurveySummary, updateSurvey } from "./survey.repo";
+import { isValidCron } from "./scheduler";
 
 const STRUCTURE_PROMPT =
   "你是需求调研分析助手。将受访者的回答结构化为 JSON：requirements（需求点数组）、painPoints（痛点数组）、expectations（期望数组）、sentiment（positive/neutral/negative）、priority（P0/P1/P2）、summary（一句话摘要）。只输出 JSON。回答：";
@@ -24,14 +25,18 @@ export class SurveyService {
     return row;
   }
 
-  create(input: { name: string; description?: string; appToken?: string; tableId?: string; answerFields?: string[] }) {
+  create(input: { name: string; description?: string; appToken?: string; tableId?: string; answerFields?: string[]; cron?: string }) {
     if (!input.name || input.name.trim().length === 0) throw new BadRequestException("名称必填");
+    if (input.cron && !isValidCron(input.cron)) throw new BadRequestException("非法 cron 表达式");
     return createSurvey(input);
   }
 
   async update(id: string, patch: Parameters<typeof updateSurvey>[1]) {
     if (patch.status && !["active", "archived"].includes(patch.status)) {
       throw new BadRequestException("非法状态: " + patch.status);
+    }
+    if (patch.cron !== undefined && patch.cron !== "" && !isValidCron(patch.cron)) {
+      throw new BadRequestException("非法 cron 表达式");
     }
     const row = await updateSurvey(id, patch);
     if (!row) throw new NotFoundException("调研主题不存在");
