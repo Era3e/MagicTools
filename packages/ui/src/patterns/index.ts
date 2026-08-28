@@ -15,3 +15,5 @@ export { ControlTable } from "./ControlTable";
 export type { ControlTableProps } from "./ControlTable";
 export { DetailHero } from "./DetailHero";
 export type { DetailHeroProps, DetailHeroMetaItem } from "./DetailHero";
+export { TimelineBurndown } from "./TimelineBurndown";
+export type { TimelineBurndownProps, BurndownRequirement, BurndownStatus } from "./TimelineBurndown";

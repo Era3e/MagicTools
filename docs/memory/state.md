@@ -4,7 +4,16 @@
 > 即时更新：每完成一个功能 / 关键决策 / 迭代结束，即刻追加条目，禁止事后批量补记。
 > 本文件定位「当前状态快照」，历史细节见 docs/CHANGELOG.md 与 docs/superpowers/specs/、plans/。
 
-## 当前状态快照（2026-08-25）
+## 当前状态快照（2026-08-28）
+
+- **交付状态**：8 子项目全部交付。需求主线三环（Investigator → Assessor → Manager）、知识主线（Gatherer → Scholar → Assistant）、Designer（降级版）均完成；Assistant 意图路由扩至 6 类并完成 cybercloud 真实对接（testcybercloud-dev 实测打通）。
+- **工程化基座**：Monorepo（pnpm + turbo）+ 网关 + outbox + 幂等 + CI/CD + Docker 部署链路；main 分支保护（required checks: quality/smoke/e2e）。
+- **本轮改造（2026-08-28，分支 feat-investigator-cron-d11-d16-d17）**：
+  - **D-07 P0 兑现**：Investigator 增加 node-cron 定时调度——migrations 003 给 surveys 加 cron 列、package.json 加 node-cron + @types/node-cron、scheduler.ts（参考 gatherer 模式，cron 校验 + 注册 active 调研自动 sync + 状态查询）、main.ts listen 后 startScheduler(app.get(SurveyService))、SurveyService.create/update 校验 cron 合法性、controller 新增 GET meta/scheduler-status API、scheduler.test.ts 3 用例；本地 lint 0 err + test 10/19 pass/skip；
+  - **D-11 P0 兑现**：CI quality job 开头新增条件 step（仅 PR 事件触发）检查 0 bug loop 验收记录复选框是否勾选——未勾选则阻断 CI 并提示；PR 模板原已含复选框，此次补自动检测形成闭环；
+  - **D-16 P2 兑现**：Designer 前台 USER_NAV 加「组件馆藏」入口 + Route 从 Navigate 改为直接渲染 ComponentList；tsc --noEmit 通过；
+  - **D-17 P2 确认已修复**：Assistant ADMIN_NAV 已有「意图日志」菜单（/admin/intent-logs + IntentLogPage 路由存在），2026-08-27 显式 skip 后代码已补齐，无需额外改动；
+  - 本地验证：pnpm lint 0 err（2 any warning 遗留）、pnpm test:affected 10/10 成功。
 
 - **交付状态**：8 子项目全部交付。需求主线三环（Investigator → Assessor → Manager）、知识主线（Gatherer → Scholar → Assistant）、Designer（降级版）均完成；Assistant 意图路由扩至 6 类并完成 cybercloud 真实对接（testcybercloud-dev 实测打通）。
 - **工程化基座**：Monorepo（pnpm + turbo）+ 网关 + outbox + 幂等 + CI/CD + Docker 部署链路；main 分支保护（required checks: quality/smoke/e2e）。
@@ -75,7 +84,11 @@
 ## 进行中任务
 
 - 已完成（PR #35，acae500）：质量三角机制全部落地合并 main（E2E 副作用断言+视觉基线+空转绿治理、coverage-matrix/mvp-deferred 追溯体系、UI 规范工程化）；CI 全绿后 squash 合并，分支已清理（本地/远程仅剩 main）；
-- 候选（mvp-deferred）：D-07（Cron 拉取）、D-11（0 bug loop 验收记录）建议下迭代立即兑现；D-16/D-17 两处导航入口（各一行配置）；D-18 视觉快照 linux 基线；
+- **D-09 意图路由在线学习落地（2026-08-28，PR #43 已合并 main 5eae2a3）**：三层闭环——① few-shot 在线注入（IntentService 从纠错样本均衡采样构造示例注入 system prompt，每意图 3 条/总数 12 封顶，60s TTL 缓存，纠错落库即清缓存即时生效）；② 评估闭环（EvaluationService：混淆矩阵 + 回放评估命中率，`GET /intent-logs/evaluation[/replay]`）；③ 数据集导出（OpenAI 兼容 JSONL，`GET /intent-logs/export` + 前端 Blob 下载）。前端 IntentLogPage 新增「路由评估」卡片。真 LoRA 微调继续延期（导出格式已就绪）。同批含 D-06/D-08/D-12/D-13。**CI 修复两轮**：① obsidian.controller D-06 重写时丢失显式 @Inject（vitest/esbuild 不产装饰器元数据，隐式构造注入在测试内 DI 失败）——已恢复并本地真实执行验证（scholar 29/29、gatherer 19/19）；② 误移除视觉快照 CI 守卫（linux 无 -linux.png 基线必 snapshot-missing，装 CJK 字体≠有基线）——已恢复守卫。教训：turbo 缓存会复用「DB 未启动时的 skip 轮」结果，e2e 类改动必须本地起库真实执行后再推。squash 合并后分支已清理（内容级验证：evaluation.service/useResponsive 等关键文件在 main）；
+- **D-07/D-11/D-16/D-17 兑现（2026-08-28，PR #36 已合并 main 2934264）**：Investigator node-cron 自动调度（scheduler.ts + surveys.cron 列 + startScheduler 挂载 + meta/scheduler-status API + 3 单测）；CI quality job 新增 0 bug loop 验收记录复选框检测（仅 PR 事件触发）；Designer 前台「组件馆藏」导航入口（/components 直达 ComponentList）；D-17 经核实 main 已含意图日志入口（确认已修复）。**分支更新三轮**：merge main 解 state.md 冲突；修 mvp-deferred 表格列数 MD056（9 列→8 列）；designer e2e 断言收敛唯一锚点「组件库」（D-16 直渲染后宽正则 strict mode 3 元素冲突——E2E 校准纪律的典型场景）；
+- **D-10 兑现（2026-08-28，PR #37 已合并 main d3481f3）**：Gateway 统一健康监控仪表盘——probeAllServices 聚合探测（3s 超时容错）+ `GET /api/health` 聚合 JSON + `GET /status` Chart.js 暗色仪表盘（服务健康表/延迟柱状图/可用性趋势，5s 轮询）+ 2 单测。分支更新走服务端零冲突路径（mergeable_state: behind → update_pull_request_branch 一键 merge），对比 #36 的本地三轮修复——「behind 可服务端更新 vs conflict 须本地解」成为剩余 PR 的快速通道判据；
+- 剩余 open PR：#38（scholar-graph）、#39（cleanup-d16-lint，D-16 与 #36 重复需关闭或重构）、#40（manager-burndown）、#41（manager-webhook）、#42（designer-publish）——对应本地分支保留待处理；
+- 候选（mvp-deferred 未兑现项）：D-15（Applicant 投递日历）、D-18（E2E 视觉快照 linux 基线）；#37-#42 对应的 D-10/D-05/D-16 重复项/D-14/D-03/D-04 已在各自 PR 实现待合并；
 - 候选：部署上线（需 GitHub Secrets）、Designer 可视化编辑器、智谱 Key 更新。
 
 ## 已知问题

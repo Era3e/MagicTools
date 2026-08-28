@@ -44,6 +44,15 @@ export interface GraphEdge {
   label: string;
 }
 
+export interface ConflictInfo {
+  entryId: string;
+  sourceRef: string;
+  title: string;
+  dbContent: string;
+  obsidianContent: string;
+  dbUpdatedAt: string;
+}
+
 export const api = {
   listEntries: (filters: { source?: string; category?: string } = {}) => {
     const qs = new URLSearchParams();
@@ -65,7 +74,12 @@ export const api = {
   getGraph: () => request<{ nodes: GraphNode[]; edges: GraphEdge[] }>("/graph"),
   getSettings: () => request<{ vaultPath: string }>("/settings"),
   patchSettings: (vaultPath: string) => request<{ vaultPath: string }>("/settings", { method: "PATCH", body: JSON.stringify({ vaultPath }) }),
-  syncObsidian: () => request<{ scanned: number; created: number; skipped: number }>("/sync/obsidian", { method: "POST" }),
+  syncObsidian: () => request<{ scanned: number; created: number; skipped: number; conflicts: ConflictInfo[] }>("/sync/obsidian", { method: "POST" }),
+  listConflicts: () => request<ConflictInfo[]>("/sync/conflicts"),
+  resolveConflict: (entryId: string, strategy: "keep-db" | "take-obsidian" | "merge", mergedContent?: string) =>
+    request<void>("/sync/conflicts/" + entryId + "/resolve", { method: "POST", body: JSON.stringify({ strategy, mergedContent }) }),
+  batchResolve: (resolutions: Array<{ entryId: string; strategy: "keep-db" | "take-obsidian" | "merge"; mergedContent?: string }>) =>
+    request<{ resolved: number }>("/sync/conflicts/batch-resolve", { method: "POST", body: JSON.stringify({ resolutions }) }),
   embeddingStatus: () =>
     request<{ stub: boolean; provider: string; model: string; apiKeyConfigured: boolean }>("/meta/embedding-status"),
 };

@@ -23,6 +23,19 @@ jobs:
           --health-retries 10
     steps:
       - uses: actions/checkout@v4
+      - name: 检查 0 bug loop 验收记录（PR 事件）
+        if: github.event_name == 'pull_request'
+        env:
+          PR_BODY: ${{ github.event.pull_request.body || '' }}
+        shell: bash
+        run: |
+          if echo "$PR_BODY" | grep -qiE '\[x\]\s*\*\*0 bug loop 验收记录\*\*'; then
+            echo "✅ 0 bug loop 验收记录已勾选"
+          else
+            echo "❌ PR 未勾选 0 bug loop 验收记录复选框"
+            echo "请在 PR 描述「自检清单」勾选 [x] **0 bug loop 验收记录** 并附验收链接/说明"
+            exit 1
+          fi
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -134,6 +147,12 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
+      # D-18 前置：安装 CJK 字体。注意：字体只保证 linux 渲染与 win32 一致，
+      # 基线文件仍需专门 workflow 生成入库；当前 CI 视觉用例由 _visual.spec.ts 守卫显式 skip。
+      - name: 安装 CJK 字体
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk fonts-noto-color-emoji
       - name: 缓存 turbo 构建
         uses: actions/cache@v4
         with:
