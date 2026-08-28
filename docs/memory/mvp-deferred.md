@@ -23,11 +23,13 @@
 | **D-15** | 规划遗漏 | Applicant **投递日历视图 / 面试时间线** | applicant-spec.md 未覆盖 | MVP 只有 PositionDetail 面试 Tab 列表 + InterviewPage 单份复盘，无跨岗位面试时间轴/日历 | 用户看 InterviewPage 列表手动梳理 | P2 | 复用 manager 飞行日志时间线 patterns/ 改造 |
 | **D-16** | 落地降级 | Designer 前台页 **「组件馆藏」导航入口** | e2e designer.spec 导航跳转用例；2026-08-27 显式 skip 发现 | 前台 UserShell 导航只有「定制生成」，无通往 /admin/components 组件馆藏的入口（仅页脚「管理后台 →」间接可达） | 用户走页脚「管理后台 →」再点侧栏 | P2（低工作量） | designer App.tsx UserShell nav 增加一项即可 |
 | **D-17** | 落地降级 | Assistant **「意图日志」导航入口** | e2e assistant.spec 导航跳转用例；2026-08-27 显式 skip 发现 | 反馈页（/admin/feedback）侧栏无「意图日志」菜单，仅能手动输 URL /admin/intent-logs 到达 | 用户手动输入 URL | P2（低工作量） | assistant AdminShell 侧栏 nav 增加意图日志项 |
+| **D-18** | 落地降级 | E2E 视觉快照 **跨平台基线（CI/linux）** | PR #35 CI e2e job 失败实证：snapshotPathTemplate 含 {platform}，仓库仅 win32 基线，CI 找 -linux.png 必失败 | 视觉快照用例带 CI 守卫：CI 上 test.skip 显式跳过（计入汇总行），仅本地 win32 跑 | 方案 A：CI ubuntu 上安装 CJK 字体 + 独立生成并提交 linux 基线；方案 B：改 toHaveSnapshot 多平台矩阵；方案 C：CI 只跑 DOM 结构断言不比像素 | P1 | CI runner 加 `fonts-noto-cjk` + Playwright `--with-deps`，在 CI 里 `--update-snapshots` 生成一次 linux 基线入库（与 win32 并存，互不干扰） |
 
 ## 统计摘要（基线版本：2026-08-27）
 
-- 总数：17 项
-- 按来源：**功能裁剪（规划时决定不做 MVP）** 4 项（D-01/02/09/09） · **落地降级（有骨架但缺完整实现）** 10 项（D-03/05/06/07/08/10/12/13/16/17） · **规划遗漏（spec 没写但理应存在）** 3 项（D-04/14/15） · **流程纪律** 1 项（D-11）
-- 按优先级：P0 2 项 · P1 9 项 · P2 5 项 · P3 1 项
+- 总数：18 项
+- 按来源：**功能裁剪（规划时决定不做 MVP）** 4 项（D-01/02/09/09） · **落地降级（有骨架但缺完整实现）** 11 项（D-03/05/06/07/08/10/12/13/16/17/18） · **规划遗漏（spec 没写但理应存在）** 3 项（D-04/14/15） · **流程纪律** 1 项（D-11）
+- 按优先级：P0 2 项 · P1 10 项 · P2 5 项 · P3 1 项
 - 建议下迭代立即兑现：**D-07**（Cron 拉取，复用 gatherer）、**D-11**（0 bug loop 验收记录，PR 模板改两行）—— 两项合计工时 < 1 天。
 - D-16/D-17 是 2026-08-27 「guard-skip 改显式 skip」治理后从空转绿用例中暴露的两个导航入口缺失（改造成本各一行 nav 配置，可与 D-07 同批处理）。
+- D-18 由 PR #35 CI 首跑实证（win32 基线在 linux CI 必 snapshot-missing），当前以 CI 守卫显式 skip 过渡，兑现路径见行内方案。
