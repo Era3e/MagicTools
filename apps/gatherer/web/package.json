@@ -9,6 +9,7 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
+    "@ant-design/icons": "^6.3.2",
     "@mt/ui": "workspace:*",
     "antd": "^5.21.0",
     "react": "^18.3.1",

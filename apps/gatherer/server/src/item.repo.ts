@@ -78,3 +78,16 @@ export async function finishRun(runId: string, stats: { fetchedCount: number; ne
 export async function markPushed(ids: string[]): Promise<void> {
   await pool.query("UPDATE items SET pushed_at = now() WHERE id = ANY($1::uuid[])", [ids]);
 }
+
+/** D-12: 标记 run 为 dead 终态 */
+export async function markRunDead(runId: string, error: string): Promise<void> {
+  await pool.query(
+    "UPDATE runs SET status = 'dead', finished_at = now(), error = $2, dead_at = now() WHERE id = $1",
+    [runId, error],
+  );
+}
+
+/** D-12: 递增 run 的 attempt 计数（每次重试前调用） */
+export async function incrementRunAttempt(runId: string): Promise<void> {
+  await pool.query("UPDATE runs SET attempt = attempt + 1 WHERE id = $1", [runId]);
+}

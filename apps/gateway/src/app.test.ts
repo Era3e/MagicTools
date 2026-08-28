@@ -59,4 +59,23 @@ describe("gateway app", () => {
       server.close();
     }
   });
+
+  it("/api/health 返回聚合健康 JSON", async () => {
+    const app = createGateway({ applicant: { web: 4008, server: 5008 } }, {});
+    const res = await request(app).get("/api/health");
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty("status");
+    expect(res.body).toHaveProperty("timestamp");
+    expect(res.body).toHaveProperty("services");
+    expect(Array.isArray(res.body.services)).toBe(true);
+  });
+
+  it("/status 返回监控仪表盘 HTML", async () => {
+    const app = createGateway({}, {});
+    const res = await request(app).get("/status");
+    expect(res.status).toBe(200);
+    expect(res.headers["content-type"]).toContain("text/html");
+    expect(res.text).toContain("系统监控");
+    expect(res.text).toContain("chart.js");
+  });
 });
