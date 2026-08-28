@@ -4,7 +4,16 @@
 > 即时更新：每完成一个功能 / 关键决策 / 迭代结束，即刻追加条目，禁止事后批量补记。
 > 本文件定位「当前状态快照」，历史细节见 docs/CHANGELOG.md 与 docs/superpowers/specs/、plans/。
 
-## 当前状态快照（2026-08-25）
+## 当前状态快照（2026-08-28）
+
+- **交付状态**：8 子项目全部交付。需求主线三环（Investigator → Assessor → Manager）、知识主线（Gatherer → Scholar → Assistant）、Designer（降级版）均完成；Assistant 意图路由扩至 6 类并完成 cybercloud 真实对接（testcybercloud-dev 实测打通）。
+- **工程化基座**：Monorepo（pnpm + turbo）+ 网关 + outbox + 幂等 + CI/CD + Docker 部署链路；main 分支保护（required checks: quality/smoke/e2e）。
+- **本轮改造（2026-08-28，分支 feat-investigator-cron-d11-d16-d17）**：
+  - **D-07 P0 兑现**：Investigator 增加 node-cron 定时调度——migrations 003 给 surveys 加 cron 列、package.json 加 node-cron + @types/node-cron、scheduler.ts（参考 gatherer 模式，cron 校验 + 注册 active 调研自动 sync + 状态查询）、main.ts listen 后 startScheduler(app.get(SurveyService))、SurveyService.create/update 校验 cron 合法性、controller 新增 GET meta/scheduler-status API、scheduler.test.ts 3 用例；本地 lint 0 err + test 10/19 pass/skip；
+  - **D-11 P0 兑现**：CI quality job 开头新增条件 step（仅 PR 事件触发）检查 0 bug loop 验收记录复选框是否勾选——未勾选则阻断 CI 并提示；PR 模板原已含复选框，此次补自动检测形成闭环；
+  - **D-16 P2 兑现**：Designer 前台 USER_NAV 加「组件馆藏」入口 + Route 从 Navigate 改为直接渲染 ComponentList；tsc --noEmit 通过；
+  - **D-17 P2 确认已修复**：Assistant ADMIN_NAV 已有「意图日志」菜单（/admin/intent-logs + IntentLogPage 路由存在），2026-08-27 显式 skip 后代码已补齐，无需额外改动；
+  - 本地验证：pnpm lint 0 err（2 any warning 遗留）、pnpm test:affected 10/10 成功。
 
 - **交付状态**：8 子项目全部交付。需求主线三环（Investigator → Assessor → Manager）、知识主线（Gatherer → Scholar → Assistant）、Designer（降级版）均完成；Assistant 意图路由扩至 6 类并完成 cybercloud 真实对接（testcybercloud-dev 实测打通）。
 - **工程化基座**：Monorepo（pnpm + turbo）+ 网关 + outbox + 幂等 + CI/CD + Docker 部署链路；main 分支保护（required checks: quality/smoke/e2e）。
@@ -74,8 +83,8 @@
 
 ## 进行中任务
 
-- 已完成（PR #35，acae500）：质量三角机制全部落地合并 main（E2E 副作用断言+视觉基线+空转绿治理、coverage-matrix/mvp-deferred 追溯体系、UI 规范工程化）；CI 全绿后 squash 合并，分支已清理（本地/远程仅剩 main）；
-- 候选（mvp-deferred）：D-07（Cron 拉取）、D-11（0 bug loop 验收记录）建议下迭代立即兑现；D-16/D-17 两处导航入口（各一行配置）；D-18 视觉快照 linux 基线；
+- 已完成（2026-08-28，分支 feat-investigator-cron-d11-d16-d17）：D-07 Cron 自动调度 + D-11 CI 验收记录检测 + D-16 Designer 前台导航入口 + D-17 确认已修复；本地全绿待提交；
+- 候选（mvp-deferred）：D-03（Manager PR Webhook 自动刷新）、D-04（Designer 组件一键 PR）、D-05（Scholar 图谱真实力导向图）、D-08（ClawCV 配额告警）、D-10（Gateway 健康监控仪表盘）、D-12（Gatherer 采集失败重试）、D-13（移动端响应式）、D-14（Manager 燃尽图）、D-15（Applicant 投递日历）、D-18（E2E 视觉快照 linux 基线）；
 - 候选：部署上线（需 GitHub Secrets）、Designer 可视化编辑器、智谱 Key 更新。
 
 ## 已知问题

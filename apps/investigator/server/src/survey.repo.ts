@@ -11,6 +11,7 @@ export interface SurveyRow {
   answerFields: string[];
   summary: string | null;
   lastSyncedAt: string | null;
+  cron: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -27,6 +28,7 @@ function mapRow(r: Record<string, unknown>): SurveyRow {
     answerFields: (r.answer_fields as string[]) ?? [],
     summary: (r.summary as string) ?? null,
     lastSyncedAt: r.last_synced_at ? new Date(r.last_synced_at as string).toISOString() : null,
+    cron: (r.cron as string) ?? "",
     createdAt: new Date(r.created_at as string).toISOString(),
     updatedAt: new Date(r.updated_at as string).toISOString(),
   };
@@ -48,10 +50,11 @@ export async function createSurvey(input: {
   appToken?: string;
   tableId?: string;
   answerFields?: string[];
+  cron?: string;
 }): Promise<SurveyRow> {
   const rows = await pool.query(
-    "INSERT INTO surveys (name, description, app_token, table_id, answer_fields) VALUES ($1,$2,$3,$4,$5) RETURNING *",
-    [input.name, input.description ?? "", input.appToken ?? "", input.tableId ?? "", JSON.stringify(input.answerFields ?? [])]
+    "INSERT INTO surveys (name, description, app_token, table_id, answer_fields, cron) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *",
+    [input.name, input.description ?? "", input.appToken ?? "", input.tableId ?? "", JSON.stringify(input.answerFields ?? []), input.cron ?? ""]
   );
   return mapRow(rows.rows[0]);
 }
@@ -64,13 +67,14 @@ export async function updateSurvey(id: string, patch: {
   tableId?: string;
   answerFields?: string[];
   summary?: string | null;
+  cron?: string;
 }): Promise<SurveyRow | null> {
   const current = await getSurvey(id);
   if (!current) return null;
   const next = { ...current, ...patch };
   const rows = await pool.query(
-    "UPDATE surveys SET name=$1, description=$2, status=$3, app_token=$4, table_id=$5, answer_fields=$6, summary=$7, updated_at=now() WHERE id=$8 RETURNING *",
-    [next.name, next.description, next.status, next.appToken, next.tableId, JSON.stringify(next.answerFields), next.summary, id]
+    "UPDATE surveys SET name=$1, description=$2, status=$3, app_token=$4, table_id=$5, answer_fields=$6, summary=$7, cron=$8, updated_at=now() WHERE id=$9 RETURNING *",
+    [next.name, next.description, next.status, next.appToken, next.tableId, JSON.stringify(next.answerFields), next.summary, next.cron, id]
   );
   return rows.rowCount ? mapRow(rows.rows[0]) : null;
 }

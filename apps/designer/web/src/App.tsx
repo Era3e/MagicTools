@@ -21,6 +21,11 @@ const ADMIN_NAV = [
   { key: "/admin/history", label: "生成历史" },
 ];
 
+const USER_NAV = [
+  { key: "/generate", label: "定制生成" },
+  { key: "/components", label: "组件馆藏" },
+];
+
 function AdminRoutes() {
   return (
     <Routes>
@@ -51,12 +56,13 @@ function Shell() {
     );
   }
 
+  const selected = USER_NAV.find((m) => location.pathname.startsWith(m.key))?.key ?? "/generate";
   return (
     <UserShell
       title="组件画廊"
       subtitle="描述你的想象，取走你的组件"
-      navItems={[{ key: "/generate", label: "定制生成" }]}
-      selectedKey="/generate"
+      navItems={USER_NAV}
+      selectedKey={selected}
       onNavigate={(key) => navigate(key)}
       adminPath="/admin/components"
       footerNote="设计 · Designer Gallery"
@@ -65,7 +71,7 @@ function Shell() {
       <Routes>
         <Route path="/" element={<Navigate to="/generate" replace />} />
         <Route path="/generate" element={<GeneratePage />} />
-        <Route path="/components" element={<Navigate to="/admin/components" replace />} />
+        <Route path="/components" element={<ComponentList />} />
         <Route path="/history" element={<Navigate to="/admin/history" replace />} />
         <Route path="/admin/*" element={<Navigate to="/admin/components" replace />} />
       </Routes>
