@@ -9,6 +9,23 @@ describe("IntentLogPage", () => {
     fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
       const u = String(url);
       const method = init?.method ?? "GET";
+      if (u.includes("/api/assistant/intent-logs/evaluation")) {
+        const emptyMatrix = Object.fromEntries(
+          ["product_inquiry", "data_query", "chitchat_reject", "process_execution", "trouble_shooting", "complaint_feedback"].map((p) => [
+            p,
+            Object.fromEntries(
+              ["product_inquiry", "data_query", "chitchat_reject", "process_execution", "trouble_shooting", "complaint_feedback"].map((a) => [a, 0])
+            ),
+          ])
+        );
+        return new Response(
+          JSON.stringify({ confusion: { matrix: emptyMatrix, labels: [], total: 0, diagHits: 0 }, stats: [] }),
+          { status: 200 }
+        );
+      }
+      if (u.includes("/api/assistant/intent-logs/export/preview")) {
+        return new Response(JSON.stringify({ count: 2, preview: [] }), { status: 200 });
+      }
       if (u.includes("/api/assistant/intent-logs") && method === "GET") {
         return new Response(
           JSON.stringify([
@@ -43,6 +60,41 @@ describe("IntentLogPage", () => {
     expect(await screen.findByText("帮我创建一个订单业务对象")).toBeTruthy();
     expect(screen.getByText("cybercloud")).toBeTruthy();
     expect(screen.getByText("data_query")).toBeTruthy();
+  });
+
+  it("D-09 渲染路由评估卡片与混淆矩阵空态", async () => {
+    render(<IntentLogPage />);
+    expect(await screen.findByText("路由评估（D-09 在线学习）")).toBeTruthy();
+    expect(await screen.findByText(/暂无纠错样本/)).toBeTruthy();
+    expect(screen.getByText(/纠错样本 0 条/)).toBeTruthy();
+  });
+
+  it("D-09 回放评估按钮请求 evaluation/replay 并展示命中率", async () => {
+    fetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
+      const u = String(url);
+      const method = init?.method ?? "GET";
+      if (u.includes("/evaluation/replay")) {
+        return new Response(
+          JSON.stringify({ total: 2, hits: 1, accuracy: 0.5, misses: [{ message: "查询数据", predicted: "product_inquiry", actual: "data_query" }] }),
+          { status: 200 }
+        );
+      }
+      if (u.includes("/evaluation")) {
+        const m = { product_inquiry: { data_query: 1, product_inquiry: 0, chitchat_reject: 0, process_execution: 0, trouble_shooting: 0, complaint_feedback: 0 } };
+        return new Response(JSON.stringify({ confusion: { matrix: m, labels: [], total: 1, diagHits: 0 }, stats: [{ intent: "product_inquiry", total: 1, corrected: 1 }] }), { status: 200 });
+      }
+      if (u.includes("/export/preview")) {
+        return new Response(JSON.stringify({ count: 1, preview: [] }), { status: 200 });
+      }
+      if (u.includes("/intent-logs") && method === "GET") {
+        return new Response(JSON.stringify([]), { status: 200 });
+      }
+      return new Response("{}", { status: 200 });
+    });
+    render(<IntentLogPage />);
+    fireEvent.click(await screen.findByRole("button", { name: /回放评估/ }));
+    expect(await screen.findByText("50%")).toBeTruthy();
+    expect(await screen.findByText("查询数据")).toBeTruthy();
   });
 
   it("纠错弹窗提交 POST /intent-logs/:id/correct", async () => {
