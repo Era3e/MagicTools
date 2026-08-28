@@ -1,9 +1,9 @@
-import { Body, Controller, Get, Inject, Patch, Post } from "@nestjs/common";
-import { ObsidianService } from "./obsidian.service";
+import { Body, Controller, Get, Param, Patch, Post } from "@nestjs/common";
+import { ConflictInfo, ObsidianService } from "./obsidian.service";
 
 @Controller()
 export class ObsidianController {
-  constructor(@Inject(ObsidianService) private readonly service: ObsidianService) {}
+  constructor(private readonly service: ObsidianService) {}
 
   @Get("settings")
   getSettings() {
@@ -16,8 +16,39 @@ export class ObsidianController {
   }
 
   @Post("sync/obsidian")
-  sync() {
-    return this.service.sync();
+  async sync() {
+    const result = await this.service.sync();
+    return result;
+  }
+
+  /** D-06: 列出待解决的冲突 */
+  @Get("sync/conflicts")
+  listConflicts(): Promise<ConflictInfo[]> {
+    return this.service.listConflicts();
+  }
+
+  /** D-06: 解决单个冲突 */
+  @Post("sync/conflicts/:entryId/resolve")
+  resolveConflict(
+    @Param("entryId") entryId: string,
+    @Body() body: { strategy: "keep-db" | "take-obsidian" | "merge"; mergedContent?: string }
+  ) {
+    return this.service.resolveConflict(entryId, body.strategy, body.mergedContent);
+  }
+
+  /** D-06: 批量解决冲突 */
+  @Post("sync/conflicts/batch-resolve")
+  batchResolve(
+    @Body()
+    body: {
+      resolutions: Array<{
+        entryId: string;
+        strategy: "keep-db" | "take-obsidian" | "merge";
+        mergedContent?: string;
+      }>;
+    }
+  ) {
+    return this.service.batchResolve(body.resolutions);
   }
 
   @Get("meta/embedding-status")
