@@ -168,7 +168,7 @@ const MagazineList: React.FC<MagazineListProps> = ({
                 child &&
                 typeof child === "object" &&
                 "type" in child &&
-                (child as any).type === Col
+                (child as { type?: unknown }).type === Col
               ) {
                 return child;
               }
