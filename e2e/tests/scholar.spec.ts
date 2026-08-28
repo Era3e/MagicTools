@@ -127,7 +127,7 @@ test("scholar 馆藏 圈定书签按钮 副作用：点击后 assistantScope 开
   );
   await trigger.click();
   const patchReq = await patchPromise;
-  const body = (patchReq.postDataJSON && patchReq.postDataJSON()) as any;
+  const body = (patchReq.postDataJSON && patchReq.postDataJSON()) as { assistantScope?: boolean } | null;
   // 副作用：请求体里 assistantScope 应该变成 true
   if (body) expect(body.assistantScope).toBe(true);
 });

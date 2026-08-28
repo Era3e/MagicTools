@@ -134,6 +134,11 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
+      # D-18: 安装 CJK 字体，确保 linux 上中文字符渲染与 win32 基线一致
+      - name: 安装 CJK 字体
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk fonts-noto-color-emoji
       - name: 缓存 turbo 构建
         uses: actions/cache@v4
         with:
