@@ -81,4 +81,47 @@ describe("intent_logs", () => {
       .send({ correctedIntent: "data_query" });
     expect(res.status).toBe(404);
   });
+
+  it("D-09 纠错后评估报告混淆矩阵正确聚合", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    await request(app.getHttpServer()).post("/api/assistant/chat").send({ message: "我们的产品有哪些功能" });
+    const list = await request(app.getHttpServer()).get("/api/assistant/intent-logs");
+    const id = list.body[0].id;
+    await request(app.getHttpServer()).post("/api/assistant/intent-logs/" + id + "/correct").send({ correctedIntent: "data_query" });
+    const report = await request(app.getHttpServer()).get("/api/assistant/intent-logs/evaluation");
+    expect(report.status).toBe(200);
+    expect(report.body.confusion.total).toBe(1);
+    expect(report.body.confusion.matrix.product_inquiry.data_query).toBe(1);
+    expect(report.body.stats.length).toBeGreaterThan(0);
+  });
+
+  it("D-09 回放评估对已纠错样本返回命中率", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    await request(app.getHttpServer()).post("/api/assistant/chat").send({ message: "查询本月销售额" });
+    const list = await request(app.getHttpServer()).get("/api/assistant/intent-logs");
+    const id = list.body[0].id;
+    // 真实判定 data_query，故意纠错为 trouble_shooting 制造 miss
+    await request(app.getHttpServer()).post("/api/assistant/intent-logs/" + id + "/correct").send({ correctedIntent: "trouble_shooting" });
+    const replay = await request(app.getHttpServer()).get("/api/assistant/intent-logs/evaluation/replay");
+    expect(replay.status).toBe(200);
+    expect(replay.body.total).toBe(1);
+    expect(replay.body.hits).toBe(0);
+    expect(replay.body.accuracy).toBe(0);
+    expect(replay.body.misses[0].predicted).toBe("data_query");
+    expect(replay.body.misses[0].actual).toBe("trouble_shooting");
+  });
+
+  it("D-09 数据集导出 JSONL 每行可解析且含纠错标签", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    await request(app.getHttpServer()).post("/api/assistant/chat").send({ message: "帮我创建一个需求：支持导出功能" });
+    const list = await request(app.getHttpServer()).get("/api/assistant/intent-logs");
+    const id = list.body[0].id;
+    await request(app.getHttpServer()).post("/api/assistant/intent-logs/" + id + "/correct").send({ correctedIntent: "process_execution" });
+    const preview = await request(app.getHttpServer()).post("/api/assistant/intent-logs/export/preview");
+    expect(preview.status).toBe(200);
+    expect(preview.body.count).toBe(1);
+    const row = preview.body.preview[0];
+    expect(row.messages).toHaveLength(3);
+    expect((row.messages[2] as { content: string }).content).toContain("process_execution");
+  });
 });

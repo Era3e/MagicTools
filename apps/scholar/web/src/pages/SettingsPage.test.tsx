@@ -14,7 +14,7 @@ describe("SettingsPage", () => {
         return new Response(JSON.stringify({ vaultPath: "D:/vault" }), { status: 200 });
       }
       if (String(url).includes("/api/scholar/sync/obsidian")) {
-        return new Response(JSON.stringify({ scanned: 2, created: 2, skipped: 0 }), { status: 201 });
+        return new Response(JSON.stringify({ scanned: 2, created: 2, skipped: 0, conflicts: [] }), { status: 201 });
       }
       if (String(url).includes("/api/scholar/meta/embedding-status")) {
         return new Response(

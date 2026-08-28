@@ -20,7 +20,8 @@
     "@mt/model-client": "workspace:*",
     "@mt/utils": "workspace:*",
     "zod": "^3.23.0",
-    "pg": "^8.12.0"
+    "pg": "^8.12.0",
+    "node-cron": "^3.0.3"
   },
   "devDependencies": {
     "typescript": "^5.5.0",
@@ -30,6 +31,7 @@
     "@nestjs/testing": "^10.4.0",
     "supertest": "^7.0.0",
     "@types/supertest": "^6.0.2",
-    "@types/pg": "^8.11.0"
+    "@types/pg": "^8.11.0",
+    "@types/node-cron": "^3.0.11"
   }
 }
