@@ -51,6 +51,11 @@ export const api = {
   addComponent: (input: { name: string; description: string; code: string }) =>
     request<{ component: ComponentItem; duplicated: boolean }>("/components", { method: "POST", body: JSON.stringify(input) }),
   deleteComponent: (id: string) => request<{ deleted: boolean }>("/components/" + id, { method: "DELETE" }),
+  publishComponent: (id: string) =>
+    request<{ ok: boolean; prUrl: string; prNumber: number; branch: string; targetPath: string; message: string }>(
+      "/components/" + id + "/publish",
+      { method: "POST" },
+    ),
 };
 
 export function downloadText(filename: string, text: string) {
