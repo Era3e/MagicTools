@@ -1,8 +1,11 @@
-import { Dropdown, Layout, Typography } from "antd";
+import { Dropdown, Layout, Menu, Typography, Drawer } from "antd";
 import type { MenuProps } from "antd";
+import { useState } from "react";
+import { MenuOutlined } from "@ant-design/icons";
 import type { ReactNode } from "react";
 import { APPS } from "./apps";
 import { ThemeProvider } from "./theme";
+import { useResponsive } from "./useResponsive";
 
 export interface UserNavItem {
   key: string;
@@ -44,11 +47,23 @@ export interface UserShellProps {
 
 export function UserShell(props: UserShellProps) {
   const { title, subtitle, navItems, selectedKey, onNavigate, adminPath, adminLabel = "管理后台", footerNote = "MagicTools", theme = MAGAZINE_THEME, children } = props;
+  const { isMobile } = useResponsive();
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const switcherItems: MenuProps["items"] = APPS.map((app) => ({
     key: app.key,
     label: <a href={app.path}>{app.label}</a>,
   }));
+
+  const navMenuItems: MenuProps["items"] = navItems.map((item) => ({
+    key: item.key,
+    label: item.label,
+  }));
+
+  const handleNav = (key: string) => {
+    onNavigate(key);
+    setDrawerOpen(false);
+  };
 
   return (
     <ThemeProvider value={theme}>
@@ -56,7 +71,7 @@ export function UserShell(props: UserShellProps) {
       <header
         style={{
           borderBottom: "3px double " + theme.ink,
-          padding: "36px 24px 0",
+          padding: isMobile ? "20px 16px 0" : "36px 24px 0",
           textAlign: "center",
         }}
       >
@@ -66,7 +81,7 @@ export function UserShell(props: UserShellProps) {
         <h1
           style={{
             fontFamily: theme.displayFont,
-            fontSize: 40,
+            fontSize: isMobile ? 28 : 40,
             fontWeight: 700,
             color: theme.ink,
             margin: "8px 0 4px",
@@ -80,48 +95,84 @@ export function UserShell(props: UserShellProps) {
             {subtitle}
           </Typography.Paragraph>
         ) : null}
-        <nav
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: 36,
-            padding: "12px 0",
-            borderTop: "1px solid " + theme.ink,
-            borderBottom: "1px solid " + theme.ink,
-          }}
-        >
-          {navItems.map((item) => {
-            const active = item.key === selectedKey;
-            return (
-              <a
-                key={item.key}
-                onClick={() => onNavigate(item.key)}
-                style={{
-                  fontFamily: theme.displayFont,
-                  fontSize: 15,
-                  letterSpacing: 2,
-                  color: active ? theme.primary : theme.ink,
-                  borderBottom: active ? "2px solid " + theme.primary : "2px solid transparent",
-                  paddingBottom: 2,
-                  cursor: "pointer",
-                }}
-              >
-                {item.label}
-              </a>
-            );
-          })}
-        </nav>
+
+        {isMobile ? (
+          // 移动端：汉堡菜单
+          <div style={{ padding: "8px 0", textAlign: "left" }}>
+            <MenuOutlined
+              style={{ fontSize: 20, cursor: "pointer", color: theme.ink }}
+              onClick={() => setDrawerOpen(true)}
+            />
+          </div>
+        ) : (
+          // 桌面端：水平导航
+          <nav
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: 36,
+              padding: "12px 0",
+              borderTop: "1px solid " + theme.ink,
+              borderBottom: "1px solid " + theme.ink,
+            }}
+          >
+            {navItems.map((item) => {
+              const active = item.key === selectedKey;
+              return (
+                <a
+                  key={item.key}
+                  onClick={() => onNavigate(item.key)}
+                  style={{
+                    fontFamily: theme.displayFont,
+                    fontSize: 15,
+                    letterSpacing: 2,
+                    color: active ? theme.primary : theme.ink,
+                    borderBottom: active ? "2px solid " + theme.primary : "2px solid transparent",
+                    paddingBottom: 2,
+                    cursor: "pointer",
+                  }}
+                >
+                  {item.label}
+                </a>
+              );
+            })}
+          </nav>
+        )}
       </header>
-      <Layout.Content style={{ maxWidth: 1080, width: "100%", margin: "0 auto", padding: "32px 24px 64px" }}>
+
+      {/* 移动端抽屉导航 */}
+      {isMobile && (
+        <Drawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          title="导航"
+          placement="left"
+          width={240}
+          styles={{ header: { background: theme.background, color: theme.ink } }}
+        >
+          <Menu
+            mode="inline"
+            selectedKeys={[selectedKey]}
+            items={navMenuItems}
+            onClick={(e) => handleNav(e.key)}
+            style={{ borderInlineEnd: "none", background: "transparent" }}
+          />
+        </Drawer>
+      )}
+
+      <Layout.Content style={{ maxWidth: 1080, width: "100%", margin: "0 auto", padding: isMobile ? "16px 12px 32px" : "32px 24px 64px" }}>
         {children}
       </Layout.Content>
+
       <footer
         style={{
           borderTop: "1px solid " + theme.muted,
-          padding: "16px 24px",
+          padding: isMobile ? "12px 16px" : "16px 24px",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          flexDirection: isMobile ? "column" : "row",
+          gap: isMobile ? 8 : 0,
           color: theme.muted,
           fontSize: 12,
         }}

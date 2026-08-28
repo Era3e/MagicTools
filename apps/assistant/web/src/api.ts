@@ -90,4 +90,19 @@ export const api = {
   },
   correctIntentLog: (id: string, correctedIntent: string) =>
     request<IntentLog>("/intent-logs/" + id + "/correct", { method: "POST", body: JSON.stringify({ correctedIntent }) }),
+  intentEvaluation: () =>
+    request<{
+      confusion: { matrix: Record<string, Record<string, number>>; labels: string[]; total: number; diagHits: number };
+      stats: Array<{ intent: string; total: number; corrected: number }>;
+    }>("/intent-logs/evaluation"),
+  intentReplay: () =>
+    request<{ total: number; hits: number; accuracy: number; misses: Array<{ message: string; predicted: string; actual: string }> }>(
+      "/intent-logs/evaluation/replay"
+    ),
+  datasetPreview: () =>
+    request<{ count: number; preview: Array<{ messages: Array<{ role: string; content: string }> }> }>("/intent-logs/export/preview", {
+      method: "POST",
+      body: JSON.stringify({}),
+    }),
+  exportDataset: () => request<{ jsonl: string; count: number }>("/intent-logs/export"),
 };

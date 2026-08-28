@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Inject, Param, Patch, Post, Query, BadRequestException } from "@nestjs/common";
 import { SurveyService } from "./survey.service";
+import { schedulerStatus } from "./scheduler";
 
 @Controller()
 export class SurveyController {
@@ -56,5 +57,10 @@ export class SurveyController {
   @Post("surveys/:id/send-link")
   sendLink(@Param("id") id: string) {
     return this.service.sendLink(id);
+  }
+
+  @Get("meta/scheduler-status")
+  scheduler() {
+    return schedulerStatus();
   }
 }
