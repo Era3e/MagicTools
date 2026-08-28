@@ -134,6 +134,12 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
+      # D-18 前置：安装 CJK 字体。注意：字体只保证 linux 渲染与 win32 一致，
+      # 基线文件仍需专门 workflow 生成入库；当前 CI 视觉用例由 _visual.spec.ts 守卫显式 skip。
+      - name: 安装 CJK 字体
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk fonts-noto-color-emoji
       - name: 缓存 turbo 构建
         uses: actions/cache@v4
         with:
