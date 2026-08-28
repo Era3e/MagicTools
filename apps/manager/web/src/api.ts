@@ -40,10 +40,11 @@ export interface Iteration {
 
 export const api = {
   pollInbox: () => request<{ consumed: number; created: number; skipped: number }>("/inbox/poll", { method: "POST" }),
-  listRequirements: (filters?: { status?: string; source?: string }) => {
+  listRequirements: (filters?: { status?: string; source?: string; iterationId?: string }) => {
     const qs = new URLSearchParams();
     if (filters?.status) qs.set("status", filters.status);
     if (filters?.source) qs.set("source", filters.source);
+    if (filters?.iterationId) qs.set("iterationId", filters.iterationId);
     const q = qs.toString();
     return request<Requirement[]>("/requirements" + (q ? "?" + q : ""));
   },

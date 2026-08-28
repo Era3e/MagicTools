@@ -9,10 +9,13 @@ export { AdminShell } from "./AdminShell";
 export type { AdminShellProps, AdminNavItem } from "./AdminShell";
 export { APPS } from "./apps";
 // ===== P1-3：通用页面模式库（patterns）=====
-export { MagazineList, ControlTable, DetailHero } from "./patterns";
+export { MagazineList, ControlTable, DetailHero, TimelineBurndown } from "./patterns";
 export type {
   MagazineListProps,
   ControlTableProps,
   DetailHeroProps,
   DetailHeroMetaItem,
+  TimelineBurndownProps,
+  BurndownRequirement,
+  BurndownStatus,
 } from "./patterns";
