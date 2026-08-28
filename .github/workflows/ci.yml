@@ -134,7 +134,8 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
-      # D-18: 安装 CJK 字体，确保 linux 上中文字符渲染与 win32 基线一致
+      # D-18 前置：安装 CJK 字体。注意：字体只保证 linux 渲染与 win32 一致，
+      # 基线文件仍需专门 workflow 生成入库；当前 CI 视觉用例由 _visual.spec.ts 守卫显式 skip。
       - name: 安装 CJK 字体
         run: |
           sudo apt-get update -qq

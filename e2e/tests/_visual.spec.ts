@@ -13,6 +13,16 @@
 
 import { test, expect } from "@playwright/test";
 
+// CI 守卫：仓库仅维护 win32 基线（字体光栅化/反锯齿跨平台差异），CI（linux）无 -linux.png
+// 基线文件，跑必失败于 snapshot missing。装 CJK 字体只解决渲染差异，不解决基线缺失——
+// linux 基线需专门的基线生成 workflow 产出后入库（见 mvp-deferred D-18）。
+// CI 上显式跳过并计入汇总行；本地跑法不变：pnpm e2e:visual（或全量 pnpm e2e）。
+const isCi = !!process.env.CI;
+test.skip(
+  isCi,
+  "CI(linux) 无 linux 像素基线，视觉快照仅本地跑（基线生成方案 mvp-deferred D-18）"
+);
+
 /**
  * 16 页映射表：[测试名, 访问路径, 页面加载后等待的锚点元素（确保内容渲染完再拍）]
  * - 前台 8 页：带 front- 前缀
