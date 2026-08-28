@@ -55,7 +55,10 @@ function Shell() {
     <UserShell
       title="组件画廊"
       subtitle="描述你的想象，取走你的组件"
-      navItems={[{ key: "/generate", label: "定制生成" }]}
+      navItems={[
+        { key: "/generate", label: "定制生成" },
+        { key: "/components", label: "组件馆藏" },
+      ]}
       selectedKey="/generate"
       onNavigate={(key) => navigate(key)}
       adminPath="/admin/components"
