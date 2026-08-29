@@ -1,0 +1,92 @@
+# D-18: linux 视觉基线生成 workflow
+# 手动触发（workflow_dispatch）：在 ubuntu 上起桩服务 → PLAYWRIGHT_UPDATE=1 生成 16 页基线
+# → 经 REST API 提交到 feat/visual-baseline-linux 分支并开 PR（合入后 CI e2e 自动开始真跑视觉用例）
+#
+# 前置：仓库 Secrets 需配置 VISUAL_BASELINE_TOKEN（PAT，contents:write + pull_request 权限）
+# 触发频率：仅在前台视觉/主题改动后手动跑一次（win32 基线同步用本地 pnpm e2e:update）
+name: visual-baseline
+
+on:
+  workflow_dispatch:
+    inputs:
+      note:
+        description: "基线更新原因（写入 PR 描述）"
+        required: false
+        default: "前台视觉/主题变更，重新生成 linux 基线"
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: applicant
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      PORT: "5008"
+      DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/applicant
+      MT_LLM_STUB: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      # CJK 字体：保证 linux 渲染与 win32 基线口径一致（中文不落豆腐块）
+      - name: 安装 CJK 字体
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk fonts-noto-color-emoji
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: 缓存 Playwright 浏览器
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+      - run: pnpm --filter @mt/e2e exec playwright install chromium
+      - name: 启动全部服务并生成基线
+        env:
+          PLAYWRIGHT_UPDATE: "1"
+        run: |
+          node apps/applicant/server/dist/main.js &
+          (cd apps/applicant/web && node node_modules/vite/bin/vite.js preview --port 4008 --strictPort --host 127.0.0.1) &
+          node apps/gateway/dist/index.js &
+          PORT=5002 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/investigator FEISHU_STUB=1 MT_LLM_STUB=1 node apps/investigator/server/dist/main.js &
+          (cd apps/investigator/web && node node_modules/vite/bin/vite.js preview --port 4002 --strictPort --host 127.0.0.1) &
+          PORT=5003 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/assessor INVESTIGATOR_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/investigator MT_LLM_STUB=1 GITHUB_STUB=1 node apps/assessor/server/dist/main.js &
+          (cd apps/assessor/web && node node_modules/vite/bin/vite.js preview --port 4003 --strictPort --host 127.0.0.1) &
+          PORT=5004 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/manager ASSESSOR_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/assessor GITHUB_STUB=1 node apps/manager/server/dist/main.js &
+          (cd apps/manager/web && node node_modules/vite/bin/vite.js preview --port 4004 --strictPort --host 127.0.0.1) &
+          PORT=5001 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/gatherer FEED_STUB=1 MT_LLM_STUB=1 node apps/gatherer/server/dist/main.js &
+          (cd apps/gatherer/web && node node_modules/vite/bin/vite.js preview --port 4001 --strictPort --host 127.0.0.1) &
+          PORT=5006 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/scholar GATHERER_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/gatherer MT_LLM_STUB=1 node apps/scholar/server/dist/main.js &
+          (cd apps/scholar/web && node node_modules/vite/bin/vite.js preview --port 4006 --strictPort --host 127.0.0.1) &
+          PORT=5007 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/assistant SCHOLAR_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/scholar MT_LLM_STUB=1 CYBERCLOUD_STUB=1 ACTION_STUB=1 CLARIFY_STUB_CONFIDENCE=0.9 node apps/assistant/server/dist/main.js &
+          (cd apps/assistant/web && node node_modules/vite/bin/vite.js preview --port 4007 --strictPort --host 127.0.0.1) &
+          PORT=5005 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/designer MT_LLM_STUB=1 node apps/designer/server/dist/main.js &
+          (cd apps/designer/web && node node_modules/vite/bin/vite.js preview --port 4005 --strictPort --host 127.0.0.1) &
+          sleep 10
+          pnpm --filter @mt/e2e exec playwright test _visual.spec.ts
+      - name: 校验基线产物
+        run: |
+          COUNT=$(find e2e/snapshots -name "*-linux.png" | wc -l)
+          echo "生成 linux 基线 ${COUNT} 张"
+          if [ "$COUNT" -lt 16 ]; then
+            echo "::error::基线数量不足 16（实际 ${COUNT}），检查服务启动与视觉用例日志"
+            exit 1
+          fi
+      - name: 提交基线并开 PR
+        env:
+          GH_TOKEN: ${{ secrets.VISUAL_BASELINE_TOKEN }}
+          NOTE: ${{ github.event.inputs.note }}
+        run: node infra/scripts/push-visual-baseline.mjs

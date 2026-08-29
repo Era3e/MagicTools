@@ -1,27 +1,16 @@
-/**
- * 视觉快照回归（P0-1c + D-18 落地）
- * 覆盖：8 应用前台首屏 + 8 应用后台主列表 = 共 16 页
- * 用途：样式跑版 / 颜色错位 / 字体硬编码 / 元素遮挡 等低级 UI bug 在 CI 直接拦截
- *
- * 基准快照更新：
- *   - 本地 win32：pnpm --filter @mt/e2e exec playwright test _visual.spec.ts --update-snapshots
- *   - CI linux：  CI 安装 fonts-noto-cjk 后自动生成 linux 基线（首次需手动触发基线生成 workflow）
- *   - 或根目录：pnpm e2e:update（见 package.json 脚本）
- *
- * 基线按平台分文件（snapshotPathTemplate 含 {platform}），win32/linux 独立维护。
- */
-
 import { test, expect } from "@playwright/test";
+import { existsSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 
-// CI 守卫：仓库仅维护 win32 基线（字体光栅化/反锯齿跨平台差异），CI（linux）无 -linux.png
-// 基线文件，跑必失败于 snapshot missing。装 CJK 字体只解决渲染差异，不解决基线缺失——
-// linux 基线需专门的基线生成 workflow 产出后入库（见 mvp-deferred D-18）。
-// CI 上显式跳过并计入汇总行；本地跑法不变：pnpm e2e:visual（或全量 pnpm e2e）。
-const isCi = !!process.env.CI;
-test.skip(
-  isCi,
-  "CI(linux) 无 linux 像素基线，视觉快照仅本地跑（基线生成方案 mvp-deferred D-18）"
-);
+// D-18 跨平台基线：守卫改为「运行平台上是否已存在对应基线文件」——
+// snapshotPathTemplate 含 {platform}，win32/linux 基线独立文件互不干扰。
+// - 本地 win32：snapshots/…-win32.png 在仓库中 → 正常跑
+// - CI linux：snapshots/…-linux.png 由 .github/workflows/visual-baseline.yml
+//   生成入库（fonts-noto-cjk 保证渲染一致）→ 基线存在后自动开始真跑
+// - 基线缺失的平台：显式 skip 计入汇总（提示走基线生成 workflow）
+// - PLAYWRIGHT_UPDATE=1：基线生成模式（workflow 专用），跳过守卫强制跑
+const isUpdateMode = process.env.PLAYWRIGHT_UPDATE === "1";
+const platform = process.platform as string;
 
 /**
  * 16 页映射表：[测试名, 访问路径, 页面加载后等待的锚点元素（确保内容渲染完再拍）]
@@ -121,6 +110,30 @@ const PAGES: Array<{ name: string; path: string; anchor?: string | RegExp; mask?
     anchor: /ADMIN CONSOLE|分析请求审批/,
   },
 ];
+
+// 基线探测：递归扫 snapshots 目录按平台后缀计数。
+// 不按文件名拼接探测——Playwright 会 sanitize 测试名（空格/中括号→'-'，中文与→保留），
+// 拼路径易与实际产物名错位；按「-<platform>.png 后缀数量」判断与命名规则完全解耦。
+// 基线总是整批生成（16 张），≥16 视为该平台基线齐备。
+function countPlatformBaselines(platform: string): number {
+  const snapshotDir = join(__dirname, "..", "snapshots");
+  if (!existsSync(snapshotDir)) return 0;
+  let count = 0;
+  (function walk(dir: string) {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const abs = join(dir, entry.name);
+      if (entry.isDirectory()) walk(abs);
+      else if (entry.name.endsWith(`-${platform}.png`)) count += 1;
+    }
+  })(snapshotDir);
+  return count;
+}
+const platformBaselineCount = countPlatformBaselines(platform);
+const hasBaseline = platformBaselineCount >= PAGES.length;
+test.skip(
+  !isUpdateMode && !hasBaseline,
+  `${platform} 平台基线不足（${platformBaselineCount}/${PAGES.length} 张 -${platform}.png），视觉快照跳过；基线生成见 .github/workflows/visual-baseline.yml`
+);
 
 for (const { name, path, anchor, mask } of PAGES) {
   test(`视觉快照 [${name}] → ${path}`, async ({ page }) => {
