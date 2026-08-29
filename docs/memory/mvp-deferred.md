@@ -23,12 +23,12 @@
 | **D-15** | 规划遗漏 | Applicant **投递日历视图 / 面试时间线** | applicant-spec.md 未覆盖 | MVP 只有 PositionDetail 面试 Tab 列表 + InterviewPage 单份复盘，无跨岗位面试时间轴/日历 | 用户看 InterviewPage 列表手动梳理 | P2 | 复用 manager 飞行日志时间线 patterns/ 改造 |
 | **D-16** | ~~落地降级~~ ✅ **已兑现** | Designer 前台页 **「组件馆藏」导航入口** | e2e designer.spec 导航跳转用例；2026-08-27 显式 skip 发现 | 前台 UserShell 导航只有「定制生成」，无通往 /admin/components 组件馆藏的入口（仅页脚「管理后台 →」间接可达） | ✅ 2026-08-28 兑现（PR #36）：USER_NAV 加「组件馆藏」+ Route 改直接渲染 ComponentList | ✅ P2 已完成 | — |
 | **D-17** | ~~落地降级~~ ✅ **已确认已修复** | Assistant **「意图日志」导航入口** | e2e assistant.spec 导航跳转用例；2026-08-27 显式 skip 发现 | 反馈页（/admin/feedback）侧栏无「意图日志」菜单，仅能手动输 URL /admin/intent-logs 到达 | ✅ 已确认：ADMIN_NAV 已有「意图日志」菜单 + /admin/intent-logs Route + IntentLogPage，2026-08-27 后代码已补齐 | ✅ P2 已完成 | — |
-| **D-18** | ~~落地降级~~ 🔧 **链路已建（基线待生成）** | E2E 视觉快照 **跨平台基线（CI/linux）** | PR #35 CI e2e job 失败实证：snapshotPathTemplate 含 {platform}，仓库仅 win32 基线，CI 找 -linux.png 必失败 | ~~CI 守卫显式 skip~~ **2026-08-29 链路落地（PR #44）**：① 守卫改平台基线感知（按 `-linux.png` 后缀计数 ≥16，基线合入自动真跑）；② `visual-baseline.yml` 手动生成 workflow（ubuntu+CJK 字体+桩服务+产物校验）；③ `push-visual-baseline.mjs` REST API 回传开 PR | ✅ 链路就绪；剩一步：配 `VISUAL_BASELINE_TOKEN` Secret（PAT）→ 手动触发 workflow → 合入基线 PR | ✅ P1 链路完成 | 用户操作：Settings→Secrets 加 VISUAL_BASELINE_TOKEN（contents:write+pull_request），Actions 页触发 visual-baseline |
+| **D-18** | ~~落地降级~~ ✅ **已完成（PR #45）** | E2E 视觉快照 **跨平台基线（CI/linux）** | PR #35 CI e2e job 失败实证：snapshotPathTemplate 含 {platform}，仓库仅 win32 基线，CI 找 -linux.png 必失败 | ✅ 2026-08-29 全链路收官：① 守卫平台基线感知（PR #44）；② `visual-baseline.yml` 生成 workflow（PR #44）；③ 回传脚本三轮修复（Trees encoding 无效→Blobs API+sha 自校验；PR 复用 head 格式）上 main 8fc1b2d；④ 16 张真二进制 linux 基线入库（PR #45 合并 3e674d4），CI 视觉用例首次真跑全绿 | ✅ 已完成 | ✅ P1 已完成 | 后续：前台视觉/主题改动后手动 dispatch visual-baseline 重生成；升级 runner 版本需同步重生成 |
 
-## 统计摘要（基线版本：2026-08-28）
+## 统计摘要（更新：2026-08-29）
 
 - 总数：18 项
-- **已兑现 10 项**：D-03（Webhook，PR #41）、D-06（Obsidian 冲突，PR #43）、D-07（Cron，PR #36）、D-08（ClawCV 告警，PR #43）、D-09 在线学习层（PR #43）、D-10（Gateway 仪表盘，PR #37）、D-11（0 bug loop 检测，PR #36）、D-12（死信队列，PR #43）、D-13（移动端响应式，PR #43）、D-16/D-17（导航入口，PR #36）；D-05（PR #38）、D-14（PR #40）已在各自 PR 实现待合并
-- **真延期 6 项**：D-01/D-02（Designer 拖拽与双向编辑，P2）、D-09 LoRA 层（P3）、D-15（投递日历，P2）、D-18（linux 视觉基线，P1）、D-04（一键 PR，PR #42 待合并）
-- 按优先级：P0 全部兑现 · P1 剩 D-18 · P2 剩 D-01/02/15 · P3 剩 D-09 LoRA 层
-- **下一迭代建议**：D-18（linux 视觉基线，CI 全绿最后一环，需专门基线生成 workflow）；D-15 可复用 manager 时间线 patterns
+- **已兑现 17 项**：D-03（Webhook，PR #41）、D-06（Obsidian 冲突，PR #43）、D-07（Cron，PR #36）、D-08（ClawCV 告警，PR #43）、D-09 在线学习层（PR #43）、D-10（Gateway 仪表盘，PR #37）、D-11（0 bug loop 检测，PR #36）、D-12（死信队列，PR #43）、D-13（移动端响应式，PR #43）、D-16/D-17（导航入口，PR #36）、D-05（PR #38）、D-14（PR #40）、D-04（PR #42）、**D-18（linux 视觉基线全链路，PR #44+#45）**
+- **真延期 5 项**：D-01/D-02（Designer 拖拽与双向编辑，P2）、D-09 LoRA 层（P3）、D-15（投递日历，P2）
+- 按优先级：P0 全部兑现 · **P1 全部兑现** · P2 剩 D-01/02/15 · P3 剩 D-09 LoRA 层
+- **下一迭代建议**：D-15（投递日历，可复用 manager 时间线 patterns）；D-01/02（Designer 拖拽画布）
