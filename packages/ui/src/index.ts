@@ -8,11 +8,16 @@ export type { UserShellProps, UserShellTheme, UserNavItem } from "./UserShell";
 export { AdminShell } from "./AdminShell";
 export type { AdminShellProps, AdminNavItem } from "./AdminShell";
 export { APPS } from "./apps";
+export { useResponsive, BREAKPOINTS } from "./useResponsive";
+export type { ResponsiveInfo } from "./useResponsive";
 // ===== P1-3：通用页面模式库（patterns）=====
-export { MagazineList, ControlTable, DetailHero } from "./patterns";
+export { MagazineList, ControlTable, DetailHero, TimelineBurndown } from "./patterns";
 export type {
   MagazineListProps,
   ControlTableProps,
   DetailHeroProps,
   DetailHeroMetaItem,
+  TimelineBurndownProps,
+  BurndownRequirement,
+  BurndownStatus,
 } from "./patterns";

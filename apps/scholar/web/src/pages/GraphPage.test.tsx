@@ -2,10 +2,17 @@ import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import GraphPage from "./GraphPage";
 
+const graphEventHandlers: Record<string, Array<(evt: unknown) => void>> = {};
+
 vi.mock("@antv/g6", () => ({
   Graph: class {
     render() {}
     destroy() {}
+    on(eventName: string, cb: (evt: unknown) => void) {
+      graphEventHandlers[eventName] = graphEventHandlers[eventName] ?? [];
+      graphEventHandlers[eventName].push(cb);
+      return this;
+    }
   },
 }));
 

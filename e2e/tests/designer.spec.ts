@@ -80,5 +80,7 @@ test("designer 导航跳转 副作用：组件馆藏 / 生成历史 URL 变化",
   );
   await compTrigger.click();
   await expect(page).toHaveURL(/\/designer\/(admin\/)?components/, { timeout: 8000 });
-  await expect(page.getByText(/组件|components|馆藏/i)).toBeVisible();
+  // D-16 后 /components 直渲染 ComponentList：h1「组件画廊」/副标题/导航均含「组件」，
+  // 正则宽匹配会 strict mode 多命中——收敛到 Card 标题「组件库」（页面唯一锚点）
+  await expect(page.getByText("组件库")).toBeVisible({ timeout: 8000 });
 });

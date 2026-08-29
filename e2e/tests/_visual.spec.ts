@@ -1,22 +1,26 @@
 /**
- * 视觉快照回归（P0-1c 落地）
+ * 视觉快照回归（P0-1c + D-18 落地）
  * 覆盖：8 应用前台首屏 + 8 应用后台主列表 = 共 16 页
  * 用途：样式跑版 / 颜色错位 / 字体硬编码 / 元素遮挡 等低级 UI bug 在 CI 直接拦截
  *
- * 基准快照更新：pnpm --filter @mt/e2e exec playwright test _visual.spec.ts --update-snapshots
- * （或根目录 pnpm e2e:update，见 package.json 脚本）
+ * 基准快照更新：
+ *   - 本地 win32：pnpm --filter @mt/e2e exec playwright test _visual.spec.ts --update-snapshots
+ *   - CI linux：  CI 安装 fonts-noto-cjk 后自动生成 linux 基线（首次需手动触发基线生成 workflow）
+ *   - 或根目录：pnpm e2e:update（见 package.json 脚本）
+ *
+ * 基线按平台分文件（snapshotPathTemplate 含 {platform}），win32/linux 独立维护。
  */
 
 import { test, expect } from "@playwright/test";
 
-// CI 守卫：视觉像素基线与生成平台强绑定（字体光栅化/反锯齿差异），
-// 仓库只维护本机 win32 基线；CI（linux）无对应基线文件，跑必失败于 snapshot missing。
-// CI 上显式跳过并计入汇总行——跨平台视觉回归见 mvp-deferred D-18。
-// 本地跑法不变：pnpm e2e:visual（或全量 pnpm e2e）。
+// CI 守卫：仓库仅维护 win32 基线（字体光栅化/反锯齿跨平台差异），CI（linux）无 -linux.png
+// 基线文件，跑必失败于 snapshot missing。装 CJK 字体只解决渲染差异，不解决基线缺失——
+// linux 基线需专门的基线生成 workflow 产出后入库（见 mvp-deferred D-18）。
+// CI 上显式跳过并计入汇总行；本地跑法不变：pnpm e2e:visual（或全量 pnpm e2e）。
 const isCi = !!process.env.CI;
 test.skip(
   isCi,
-  "CI(linux) 无 win32 像素基线，视觉快照仅本地跑（跨平台方案 mvp-deferred D-18）"
+  "CI(linux) 无 linux 像素基线，视觉快照仅本地跑（基线生成方案 mvp-deferred D-18）"
 );
 
 /**
