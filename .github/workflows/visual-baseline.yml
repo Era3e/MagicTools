@@ -76,7 +76,9 @@ jobs:
           PORT=5005 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/designer MT_LLM_STUB=1 node apps/designer/server/dist/main.js &
           (cd apps/designer/web && node node_modules/vite/bin/vite.js preview --port 4005 --strictPort --host 127.0.0.1) &
           sleep 10
-          pnpm --filter @mt/e2e exec playwright test _visual.spec.ts
+          # --update-snapshots：官方 CLI 标志（PLAYWRIGHT_UPDATE env 是自定义守卫用名，
+          # Playwright 本体不识别，首跑曾因此走比对模式 snapshot-missing 全挂 exit 1）
+          pnpm --filter @mt/e2e exec playwright test _visual.spec.ts --update-snapshots
       - name: 校验基线产物
         run: |
           COUNT=$(find e2e/snapshots -name "*-linux.png" | wc -l)
