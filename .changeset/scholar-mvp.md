@@ -1,6 +1,4 @@
 ---
-"@mt/scholar-server": minor
-"@mt/scholar-web": minor
 "@mt/model-client": minor
 ---
 

@@ -70,6 +70,8 @@ async function main() {
   const baseTree = baseCommit.tree.sha;
 
   // 3. 建 tree（中文/箭头文件名走 path 字段，无需 URL 编码——body 是 JSON）
+  // encoding:"base64" 必须显式声明：Trees API 默认把 content 当 UTF-8 文本存，
+  // 漏掉该字段会把 base64 字符串原样入库（PNG 变 39KB ASCII，CI 解析必挂——首跑踩坑）
   const tree = await gh("/git/trees", {
     method: "POST",
     body: JSON.stringify({
@@ -78,6 +80,7 @@ async function main() {
         path: relative(process.cwd(), abs).replace(/\\/g, "/"),
         mode: "100644",
         type: "blob",
+        encoding: "base64",
         content: readFileSync(abs).toString("base64"),
       })),
     }),

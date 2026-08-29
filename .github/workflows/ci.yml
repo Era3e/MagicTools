@@ -122,7 +122,8 @@ jobs:
 
   e2e:
     needs: smoke
-    runs-on: ubuntu-latest
+    # 钉 ubuntu-24.04：与 visual-baseline.yml 同口径，避免 latest 滚动镜像造成像素比对假阳性
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: pgvector/pgvector:pg16

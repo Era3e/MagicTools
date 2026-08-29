@@ -1,6 +1,4 @@
 ---
-"@mt/assistant-server": minor
-"@mt/assistant-web": minor
 "@mt/ui": patch
 ---
 

@@ -1,13 +1,6 @@
 ---
 "@mt/model-client": minor
 "@mt/db": patch
-"@mt/applicant-server": patch
-"@mt/gatherer-server": patch
-"@mt/investigator-server": patch
-"@mt/assessor-server": patch
-"@mt/assistant-server": patch
-"@mt/designer-server": patch
-"@mt/scholar-server": patch
 ---
 
 后端健壮性与工程化收尾：

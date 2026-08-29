@@ -1,10 +1,5 @@
 ---
 "@mt/ui": minor
-"@mt/applicant-web": minor
-"@mt/scholar-web": minor
-"@mt/manager-web": minor
-"@mt/assistant-web": minor
-"@mt/designer-web": patch
 ---
 
 质量治理三角闭环：

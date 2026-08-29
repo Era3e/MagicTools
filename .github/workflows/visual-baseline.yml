@@ -16,7 +16,9 @@ on:
 
 jobs:
   generate:
-    runs-on: ubuntu-latest
+    # 钉 ubuntu-24.04：像素基线对 runner 环境敏感，ubuntu-latest 滚动升级（字体/渲染库小版本漂移）
+    # 会造成「生成基线」与「比对基线」环境不一致的假阳性；升级 runner 版本时需同步重生成基线
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: pgvector/pgvector:pg16
