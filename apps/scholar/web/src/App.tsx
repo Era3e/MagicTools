@@ -19,6 +19,9 @@ const LIBRARY_THEME = {
   paper: "#ede8da",
   card: "#faf8f2",
   display: '"Palatino Linotype", "Book Antiqua", "Noto Serif SC", "Songti SC", serif',
+  link: "#0e5a3a",     // 强调链接色（替换原 #3370ff 蓝色，统一书院绿）
+  chipBg: "#ede8da",   // 关系列表 chip 背景（替换原 rgba(0,0,0,0.04)）
+  subtle: "#7c8577",   // 次次要灰文字（替换原 #86909c，统一用 muted）
 };
 
 const USER_NAV = [
