@@ -23,7 +23,7 @@
 | **D-15** | 规划遗漏 | Applicant **投递日历视图 / 面试时间线** | applicant-spec.md 未覆盖 | MVP 只有 PositionDetail 面试 Tab 列表 + InterviewPage 单份复盘，无跨岗位面试时间轴/日历 | 用户看 InterviewPage 列表手动梳理 | P2 | 复用 manager 飞行日志时间线 patterns/ 改造 |
 | **D-16** | ~~落地降级~~ ✅ **已兑现** | Designer 前台页 **「组件馆藏」导航入口** | e2e designer.spec 导航跳转用例；2026-08-27 显式 skip 发现 | 前台 UserShell 导航只有「定制生成」，无通往 /admin/components 组件馆藏的入口（仅页脚「管理后台 →」间接可达） | ✅ 2026-08-28 兑现（PR #36）：USER_NAV 加「组件馆藏」+ Route 改直接渲染 ComponentList | ✅ P2 已完成 | — |
 | **D-17** | ~~落地降级~~ ✅ **已确认已修复** | Assistant **「意图日志」导航入口** | e2e assistant.spec 导航跳转用例；2026-08-27 显式 skip 发现 | 反馈页（/admin/feedback）侧栏无「意图日志」菜单，仅能手动输 URL /admin/intent-logs 到达 | ✅ 已确认：ADMIN_NAV 已有「意图日志」菜单 + /admin/intent-logs Route + IntentLogPage，2026-08-27 后代码已补齐 | ✅ P2 已完成 | — |
-| **D-18** | 落地降级 | E2E 视觉快照 **跨平台基线（CI/linux）** | PR #35 CI e2e job 失败实证：snapshotPathTemplate 含 {platform}，仓库仅 win32 基线，CI 找 -linux.png 必失败 | 视觉快照用例带 CI 守卫：CI 上 test.skip 显式跳过（计入汇总行），仅本地 win32 跑 | 方案 A：CI ubuntu 上安装 CJK 字体 + 独立生成并提交 linux 基线；方案 B：改 toHaveSnapshot 多平台矩阵；方案 C：CI 只跑 DOM 结构断言不比像素 | P1 | CI runner 加 `fonts-noto-cjk` + Playwright `--with-deps`，在 CI 里 `--update-snapshots` 生成一次 linux 基线入库（与 win32 并存，互不干扰） |
+| **D-18** | ~~落地降级~~ 🔧 **链路已建（基线待生成）** | E2E 视觉快照 **跨平台基线（CI/linux）** | PR #35 CI e2e job 失败实证：snapshotPathTemplate 含 {platform}，仓库仅 win32 基线，CI 找 -linux.png 必失败 | ~~CI 守卫显式 skip~~ **2026-08-29 链路落地（PR #44）**：① 守卫改平台基线感知（按 `-linux.png` 后缀计数 ≥16，基线合入自动真跑）；② `visual-baseline.yml` 手动生成 workflow（ubuntu+CJK 字体+桩服务+产物校验）；③ `push-visual-baseline.mjs` REST API 回传开 PR | ✅ 链路就绪；剩一步：配 `VISUAL_BASELINE_TOKEN` Secret（PAT）→ 手动触发 workflow → 合入基线 PR | ✅ P1 链路完成 | 用户操作：Settings→Secrets 加 VISUAL_BASELINE_TOKEN（contents:write+pull_request），Actions 页触发 visual-baseline |
 
 ## 统计摘要（基线版本：2026-08-28）
 
