@@ -121,9 +121,10 @@ async function main() {
   console.log(`[baseline-push] 分支 ${BRANCH} → ${commit.sha.slice(0, 7)}`);
 
   // 5. 开 PR（已存在同 head 的 open PR 则复用不重复开）
-  // head 参数必须整体 URL 编码：分支名含 '/' 时未编码会导致 GitHub 过滤失效
-  // 返回空列表，误判为「无 PR」再新建即撞 422 already exists（第二轮踩坑）
-  const prs = await gh(`/pulls?head=${encodeURIComponent(`${REPO_FULL}:${BRANCH}`)}&state=open`);
+  // head 过滤格式必须是「用户:分支」（如 Era3e:feat/x）而非「owner/repo:分支」——
+  // 后者不报错但永远查空 → 误判无 PR → 新建撞 422 already exists（第三轮踩坑）
+  const owner = REPO_FULL.split("/")[0];
+  const prs = await gh(`/pulls?head=${encodeURIComponent(`${owner}:${BRANCH}`)}&state=open`);
   let prUrl;
   if (Array.isArray(prs) && prs.length > 0) {
     prUrl = prs[0].html_url;
