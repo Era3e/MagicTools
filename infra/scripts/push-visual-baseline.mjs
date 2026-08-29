@@ -69,21 +69,33 @@ async function main() {
   const baseCommit = await gh(`/git/commits/${baseSha}`);
   const baseTree = baseCommit.tree.sha;
 
-  // 3. 建 tree（中文/箭头文件名走 path 字段，无需 URL 编码——body 是 JSON）
-  // encoding:"base64" 必须显式声明：Trees API 默认把 content 当 UTF-8 文本存，
-  // 漏掉该字段会把 base64 字符串原样入库（PNG 变 39KB ASCII，CI 解析必挂——首跑踩坑）
+  // 3. 逐张建 blob 再以 sha 引用建 tree。
+  // 教训×2：①Trees API 的 entry 级 encoding 字段会被静默忽略（文档 schema 里根本没有
+  // 该字段——encoding 是 Blobs API 的参数），content 里的 base64 会被当 UTF-8 文本原样入库；
+  // ②文件名含中文/箭头也必须走 Blobs+sha 路径。Blobs API 的 encoding:"base64" 是官方语义。
+  // 自校验：blob sha = git sha1(blob)，与本地 hash-object 比对，不一致立即中止（防再次静默坏档）
+  const { execSync } = await import("node:child_process");
+  const treeEntries = [];
+  for (const abs of files) {
+    const buf = readFileSync(abs);
+    const localSha = execSync(`git hash-object "${abs}"`).toString().trim();
+    const blob = await gh("/git/blobs", {
+      method: "POST",
+      body: JSON.stringify({ content: buf.toString("base64"), encoding: "base64" }),
+    });
+    if (blob.sha !== localSha) {
+      throw new Error(`blob sha 不一致 ${abs}: api=${blob.sha} local=${localSha}（二进制疑似被当文本存，中止）`);
+    }
+    treeEntries.push({
+      path: relative(process.cwd(), abs).replace(/\\/g, "/"),
+      mode: "100644",
+      type: "blob",
+      sha: blob.sha,
+    });
+  }
   const tree = await gh("/git/trees", {
     method: "POST",
-    body: JSON.stringify({
-      base_tree: baseTree,
-      tree: files.map((abs) => ({
-        path: relative(process.cwd(), abs).replace(/\\/g, "/"),
-        mode: "100644",
-        type: "blob",
-        encoding: "base64",
-        content: readFileSync(abs).toString("base64"),
-      })),
-    }),
+    body: JSON.stringify({ base_tree: baseTree, tree: treeEntries }),
   });
 
   // 4. 建 commit + 分支（已存在则强制指向新 commit——基线重生成场景）
