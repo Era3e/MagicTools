@@ -22,6 +22,7 @@
     "docs:lint": "markdownlint-cli2 \"docs/**/*.md\"",
     "changeset": "changeset",
     "release": "changeset version",
+    "release:tag": "changeset tag",
     "ws:create": "node infra/scripts/workspace.mjs create",
     "ws:cleanup": "node infra/scripts/workspace.mjs cleanup"
   },

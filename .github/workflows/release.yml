@@ -21,6 +21,10 @@ jobs:
       - uses: changesets/action@v1
         with:
           version: pnpm release
+          # publish 是 changesets/action 的分叉开关：无待消费 changeset 时不再尝试
+          # 开 Version PR（否则撞 422 No commits），改为执行 publish 脚本——私有
+          # monorepo 不发 npm，用 changeset tag 仅打 git tag
+          publish: pnpm release:tag
           commit: "chore(release): 发布新版本并更新迭代日志"
           title: "chore(release): 迭代日志与版本更新"
         env:
