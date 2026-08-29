@@ -188,7 +188,11 @@ jobs:
           PORT=5005 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/designer MT_LLM_STUB=1 node apps/designer/server/dist/main.js &
           (cd apps/designer/web && node node_modules/vite/bin/vite.js preview --port 4005 --strictPort --host 127.0.0.1) &
           sleep 10
-          pnpm --filter @mt/e2e exec playwright test
+          # 视觉快照须在「空库态」单独跑（与基线生成 workflow 同口径）：
+          # 并发 spec 会与视觉用例同时写库，页面数据行数漂移导致像素比对必失败
+          pnpm --filter @mt/e2e exec playwright test _visual.spec.ts
+          # 其余功能用例并发跑（会写库，但不影响已完成的视觉比对）
+          pnpm --filter @mt/e2e exec playwright test --grep-invert "视觉快照"
 
   images:
     if: github.ref == 'refs/heads/main'
