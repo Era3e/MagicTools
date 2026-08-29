@@ -88,8 +88,8 @@
 | Sc7 | 向量检索（pgvector + embedding-2 1024） | spec 3.3, 10.3 | search.service.ts vectorSearch() + embed() | ✅ 已实现（桩模式伪向量） | scholar.spec.ts vector 接口 |
 | Sc8 | 双通道切换 UI | PR #30 | web/pages/SearchPage.tsx 目录卡 + FTS/VECTOR 切换器 | ✅ 已实现 | SearchPage.test.tsx |
 | Sc9 | LLM 图谱抽取（实体/关系）+ 重建 | spec 3.4 | graph.service.ts generateGraph() + rebuild() | ✅ 已实现 | graph.e2e.test.ts |
-| Sc10 | 图谱查询 + 展示 | spec 3.4 + PR #31 | GraphPage.tsx 类目卡片墙（图书馆配色） | ✅ 已实现（静态卡片，缺拖拽） | GraphPage.test.tsx |
-| Sc11 | Obsidian Vault 同步（路径去重） | spec 3.5 | obsidian.controller/service.ts scanVault() | ✅ 已实现（仅扫描+去重，缺冲突合并） | obsidian.e2e.test.ts |
+| Sc10 | 图谱查询 + 展示 | spec 3.4 + PR #31/#38 | GraphPage.tsx G6 力导向图 + 节点拖拽 + 边可点击 + 详情面板 | ✅ 已实现（PR #38：G6 5.1.1，drag-canvas/drag-element/zoom-canvas/click-select 四行为，详情面板 SelectedNodePanel/SelectedEdgePanel） | GraphPage.test.tsx 2 tests |
+| Sc11 | Obsidian Vault 同步（路径去重 + 冲突合并） | spec 3.5 + PR #43 | obsidian.controller/service.ts scanVault() + content_hash 冲突检测 + 三策略解决 | ✅ 已实现（PR #43：保留库/采用库外/合并编辑 + SettingsPage 冲突表格） | obsidian.e2e.test.ts + obsidian.service.spec.ts 7 tests |
 | Sc12 | 前台书目检索（卡片）+ 馆藏目录（书卷）+ 图谱 | PR #30/#31 | SearchPage/EntryList/GraphPage 三页深度主题 | ✅ 已实现 | scholar.spec.ts 页面渲染 |
 | Sc13 | 后台条目五项字段编辑（D3） | state.md fix-d1-d3 | admin/entries 页面 Modal（title/summary/content/category/tags） | ✅ 已实现 | EntryList.test.tsx |
 | Sc14 | 前台 EntryList 书签式圈定 | PR #31 | EntryList.tsx 圈定按钮 + 视觉书签样式 | ✅ 已实现 | EntryList.test.tsx |
