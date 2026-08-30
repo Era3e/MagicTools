@@ -21,6 +21,7 @@
   - **根因三（publish 缺失）**：Version PR 合并后无待消费 changeset，action 仍走「开 Version PR」路径 → 分支与 main 无差异 → 422 "No commits between main and changeset-release/main"；修法：release.yml 加 `publish: pnpm release:tag`（= `changeset tag`，私有 monorepo 只打 git tag 不发 npm，ba16032）；
   - **根因四（gateway 残留）**：`gateway-landing.md` 纯私有包 changeset 残留——此前 16 包清理清单只列了 8 应用 web/server，漏了 gateway；其存在使 action 误判「有待处理 changeset」→ 删除（8a7ceac）后 Release 转绿；
   - **结果**：`changeset tag` 自动打出 6 个 tag（@mt/ui@0.1.0、@mt/model-client@0.1.0、@mt/db@0.0.1 + 3 个 0.0.0 初始补打，0.0.0 无副作用）；全链路 = changeset 文件 → Release 自动开 Version PR → 人工合并（补勾选）→ 自动打 tag；
+  - **分支终态（2026-08-29 收尾清理）**：`changeset-release/main` 经取证（ba16032 为 main 祖先、无独有提交、无挂载 PR）后删除——远端/本地仅剩 main；该分支为 changesets/action 工作分支，下有待发布 changeset 时自动重建，删除无损失；
   - **本地教训**：`pnpm release`（=changeset version）是**CI 消费型命令**——本地误跑会把全部 changeset 消费掉（生成 CHANGELOG + 版本号），需 git checkout 整体回滚；验证 changeset 合法性用只读的 `changeset status`。
 - **网络与推送经验（本机代理 127.0.0.1:7890 间歇抖动）**：git push/POST 认证请求常挂死（设 GIT_HTTP_LOW_SPEED_LIMIT/TIME 让其快速失败重试），匿名 GET 大多可用；MCP GitHub 通道（push_files/merge 等）全程稳定，为推送降级首选；workflow 触发须**新建 dispatch**（Re-run 会 checkout 旧 commit 跑旧脚本）。
 - **本轮改造（2026-08-28，分支 feat-investigator-cron-d11-d16-d17）**：
