@@ -1,8 +1,9 @@
 /**
- * MagicTools v2 设计令牌（墨蓝石墨·工房感）
+ * MagicTools v2.1 设计令牌（墨蓝石墨·工房感 · 质感升级）
+ * 参考系：Linear 四级表面阶梯 + Stripe 双层投影 + GitHub 发丝边框 + Vercel 排版精度
  * 唯一规范来源：.design_library/magictools/colors_and_type.css（docs/ui-spec.md v2）
  * 兼容说明：color/spacing/fontSize/radius 保持 v1 键结构（存量业务代码零改动），
- * 值全部替换为 v2 色板；新增 dark/admin/shadow/motion/size/font 扩展块。
+ * 值全部替换为 v2 色板；新增 dark/admin/shadow/craft/motion/size/font 扩展块。
  */
 export const tokens = {
   color: {
@@ -35,38 +36,84 @@ export const tokens = {
     error: ["#faf1f0", "#f4dedb", "#e8bcb7", "#d9958d", "#c76d63", "#b04f45", "#943d35", "#76312b", "#582622", "#401d1a"],
     info: ["#eff5fa", "#dce9f3", "#bcd2e5", "#92b4d2", "#6893bc", "#4a77a1", "#3a5f84", "#2f4c69", "#253a50", "#1b2a3c"],
   },
-  // ---------- v2 扩展：暗色板（一等公民，AdminShell 常驻） ----------
+  // ---------- v2.1 升级：暗色板（Linear 四级表面阶梯 + 透明度文字层级） ----------
   dark: {
     primary: "#6e8bad", // mt-ink-400
-    text: "#dde4ec",
-    textSecondary: "#9aa7b6",
-    background: "#14181f",
-    surface0: "#171c24",
-    surface1: "#1b212b",
-    surface2: "#232b37",
-    card: "#1b212b",
-    border: "#2d3644",
+    text: "#dde4ec", // 兼容存量代码（= textPrimary 的实色映射）
+    textSecondary: "#9aa7b6", // 兼容存量代码
+    // 透明度文字层级（Notion/Vercel 风格：一色多变，换底自动适配）
+    textPrimary: "rgba(245, 247, 250, 0.95)", // 主文字
+    textTertiary: "rgba(245, 247, 250, 0.65)", // 次级文字
+    textFaint: "rgba(245, 247, 250, 0.40)", // 辅助文字
+    textDisabled: "rgba(245, 247, 250, 0.28)", // 禁用/占位
+    // Linear 式四级表面亮度阶梯（非投影承载层级）
+    background: "#0e1218", // 画布——带蓝调微调的近黑，非纯黑
+    surface0: "#14181f", // 基础表面（侧栏/底栏）
+    surface1: "#181d26", // 卡片表面
+    surface2: "#1e2530", // 悬停表面
+    surface3: "#252e3b", // 抬起/active 表面
+    surface4: "#2d3848", // 下拉/弹层表面
+    card: "#181d26", // = surface1
+    border: "#2a3340", // 发丝边框色（冷蓝调）
     accent: "#cfa04c", // mt-amber-400
-    rowHover: "#263040", // 后台表格悬浮行（surface2 与 surface1 之间的墨蓝 tint）
+    rowHover: "#1e2530", // 表格悬浮行（= surface2）
+    // 暗色发丝边框（GitHub 式半透明白）
+    hairline: "rgba(255, 255, 255, 0.07)",
+    hairlineStrong: "rgba(255, 255, 255, 0.12)",
+    hairlineHover: "rgba(255, 255, 255, 0.16)",
   },
-  // ---------- v2 扩展：后台外壳（石墨深色控制台锚点） ----------
+  // ---------- v2.1 升级：后台外壳（对齐四级表面阶梯） ----------
   admin: {
-    siderBg: "#14181f",
-    contentBg: "#14181f",
-    headerBg: "#171c24",
-    border: "#2d3644",
-    text: "#dde4ec",
-    textSecondary: "#9aa7b6",
+    siderBg: "#0e1218", // = dark.background（画布级深色）
+    contentBg: "#0e1218",
+    headerBg: "#14181f", // = dark.surface0
+    border: "#2a3340", // = dark.border
+    text: "rgba(245, 247, 250, 0.95)", // 透明度文字层级
+    textSecondary: "rgba(245, 247, 250, 0.65)",
     accent: "#6e8bad", // 墨蓝 400（暗色下主色）
     accentHover: "#9db3ca", // mt-ink-300
   },
-  // ---------- v2 扩展：海拔（墨调投影，海拔即层级） ----------
+  // ---------- v2.1 升级：海拔（Stripe 双层投影 + 暗色 inset 高光） ----------
   shadow: {
-    card: "0 1px 2px rgba(27, 46, 69, 0.06), 0 1px 1px rgba(27, 46, 69, 0.04)",
-    cardHover: "0 2px 6px -1px rgba(27, 46, 69, 0.10), 0 1px 2px rgba(27, 46, 69, 0.06)",
-    dropdown: "0 8px 20px -6px rgba(27, 46, 69, 0.16), 0 2px 6px -2px rgba(27, 46, 69, 0.08)",
+    card: "inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 1px 2px rgba(27, 46, 69, 0.07), 0 1px 1px rgba(27, 46, 69, 0.04)",
+    cardHover: "inset 0 1px 0 rgba(255, 255, 255, 0.65), 0 2px 6px -1px rgba(27, 46, 69, 0.10), 0 1px 2px rgba(27, 46, 69, 0.06)",
+    dropdown: "0 0 0 1px rgba(27, 46, 69, 0.05), 0 8px 20px -6px rgba(27, 46, 69, 0.16), 0 2px 6px -2px rgba(27, 46, 69, 0.08)",
     modal: "0 16px 36px -12px rgba(27, 46, 69, 0.22), 0 4px 10px -4px rgba(27, 46, 69, 0.10)",
     overlay: "0 24px 56px -20px rgba(20, 33, 48, 0.30), 0 8px 18px -8px rgba(20, 33, 48, 0.14)",
+    // Stripe 式暗色双层投影：近距小模糊 + 远距大模糊 + inset 顶部高光线
+    darkCard: "inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3)",
+    darkCardHover: "inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 4px 8px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2)",
+    darkDropdown: "inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 8px 24px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.25)",
+    darkModal: "inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 16px 48px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(0, 0, 0, 0.3)",
+    // GitHub 式焦点环：品牌色 3px 透明度
+    focusRing: "0 0 0 3px rgba(110, 139, 173, 0.4)",
+  },
+  // ---------- v2.1 升级：质感工艺层（Linear 噪点 + 多层环境光 + 渐变描边） ----------
+  craft: {
+    hairline: "rgba(20, 33, 48, 0.08)", // 亮色发丝分隔
+    hairlineStrong: "rgba(20, 33, 48, 0.14)",
+    // Linear 式多层环境聚光灯（非 box-shadow，径向渐变产生羽化光）
+    glowDark: "radial-gradient(900px 420px at 50% -120px, rgba(110, 139, 173, 0.10), transparent 70%)", // 后台顶部主氛围光
+    glowDarkSecondary: "radial-gradient(600px 300px at 85% 15%, rgba(207, 160, 76, 0.05), transparent 60%)", // 琥珀色副氛围光
+    glowLight: "radial-gradient(1100px 380px at 50% -100px, rgba(44, 74, 110, 0.05), transparent 70%)",
+    // Linear 式侧栏纵向渐变（更深更丰富）
+    siderGrad: "linear-gradient(180deg, #161b24 0%, #121620 40%, #0e1218 100%)",
+    // 毛玻璃顶栏底色
+    headerGlass: "rgba(14, 18, 24, 0.82)",
+    // Linear 式噪点：baseFrequency 0.65 + numOctaves 3 + saturate 0（去色）
+    noise: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E\")",
+    noiseOpacity: 0.045, // 噪点叠加透明度（Linear 标准 4%）
+    // Linear 式渐变描边（顶部亮 → 底部暗，mask-composite 技法用）
+    cardBorderGradient: "linear-gradient(180deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.04) 100%)",
+    // Linear 式悬浮聚光灯（径向渐变，inset -40% 外延）
+    hoverSpotlight: "radial-gradient(50% 50% at 50% 50%, rgba(255, 255, 255, 0.035), transparent 90%)",
+    dark: {
+      hairline: "rgba(255, 255, 255, 0.07)",
+      hairlineStrong: "rgba(255, 255, 255, 0.12)",
+      hairlineHover: "rgba(255, 255, 255, 0.16)",
+      cardBorderGradient: "linear-gradient(180deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.04) 100%)",
+      hoverSpotlight: "radial-gradient(50% 50% at 50% 50%, rgba(255, 255, 255, 0.035), transparent 90%)",
+    },
   },
   // ---------- v2 扩展：动效 ----------
   motion: {
@@ -78,11 +125,18 @@ export const tokens = {
   },
   // ---------- v2 扩展：尺寸（工房密度） ----------
   size: { buttonSm: 32, buttonMd: 36, buttonLg: 44, input: 36, iconSm: 16, iconMd: 20, iconLg: 24 },
-  // ---------- v2 扩展：字体三层 ----------
+  // ---------- v2.1 升级：字体三层 + 暗色光学修正 ----------
   font: {
     display: `"Noto Serif SC", "Source Serif 4", "Songti SC", serif`,
     body: `"Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif`,
     mono: `"JetBrains Mono", "Cascadia Mono", Consolas, monospace`,
+    // 暗色光学修正：亮文字在暗底上有"光渗"幻觉，视觉显重 → 字重降一档
+    weightBodyDark: "350", // 暗色正文（亮色 400 → 暗色 350）
+    weightHeadingDark: "500", // 暗色标题（亮色 600 → 暗色 500）
+    // 字距修正：暗色微正字距抵消增重，标题负字距递进（Linear 风格）
+    letterSpacingBodyDark: "0.01em",
+    letterSpacingHeadingSm: "-0.01em",
+    letterSpacingHeadingLg: "-0.015em",
   },
   // ---------- v2 扩展：圆角细则 ----------
   radiusTokens: { sm: 4, md: 6, lg: 10, full: 9999 },
