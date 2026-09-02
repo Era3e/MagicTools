@@ -103,12 +103,12 @@ export function AdminDarkThemeProvider(props: { children: ReactNode }) {
         },
         components: {
           Table: {
-            headerBg: "rgba(255, 255, 255, 0.025)",
+            headerBg: tokens.dark.tableHeaderBg,
             headerColor: tokens.dark.textTertiary,
             headerSplitColor: tokens.dark.hairline,
-            rowHoverBg: "rgba(255, 255, 255, 0.035)",
-            rowSelectedBg: "rgba(110, 139, 173, 0.08)",
-            rowSelectedHoverBg: "rgba(110, 139, 173, 0.12)",
+            rowHoverBg: tokens.dark.tableRowHoverBg,
+            rowSelectedBg: tokens.dark.rowSelectedBg,
+            rowSelectedHoverBg: tokens.dark.rowSelectedHoverBg,
             headerBorderRadius: tokens.radiusTokens.md,
             borderColor: tokens.dark.hairline,
             cellPaddingBlock: 12,
@@ -126,8 +126,8 @@ export function AdminDarkThemeProvider(props: { children: ReactNode }) {
           },
           Menu: {
             itemBg: "transparent",
-            itemSelectedBg: "rgba(110, 139, 173, 0.10)",
-            itemHoverBg: "rgba(255, 255, 255, 0.04)",
+            itemSelectedBg: tokens.dark.menuSelectedBg,
+            itemHoverBg: tokens.dark.menuHoverBg,
             itemSelectedColor: tokens.admin.text,
             itemColor: tokens.dark.textTertiary,
           },
@@ -141,10 +141,10 @@ export function AdminDarkThemeProvider(props: { children: ReactNode }) {
           },
           Select: {
             colorBgContainer: tokens.dark.surface0,
-            optionSelectedBg: "rgba(110, 139, 173, 0.10)",
+            optionSelectedBg: tokens.dark.menuSelectedBg,
           },
           Tag: {
-            defaultBg: "rgba(255, 255, 255, 0.04)",
+            defaultBg: tokens.dark.tagBg,
             defaultColor: tokens.dark.textTertiary,
           },
         },
