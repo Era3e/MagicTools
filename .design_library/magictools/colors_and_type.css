@@ -134,12 +134,22 @@
   --size-button-sm: 32px; --size-button-md: 36px; --size-button-lg: 44px; --size-input-height: 36px;
   /* Radius */
   --radius-sm: 4px; --radius-md: 6px; --radius-lg: 10px; --radius-full: 9999px;
-  /* Shadows (ink-tinted elevation) */
-  --shadow-1: 0 1px 2px rgba(27, 46, 69, 0.06), 0 1px 1px rgba(27, 46, 69, 0.04); /* Card */
-  --shadow-2: 0 2px 6px -1px rgba(27, 46, 69, 0.10), 0 1px 2px rgba(27, 46, 69, 0.06); /* Card Hover */
-  --shadow-3: 0 8px 20px -6px rgba(27, 46, 69, 0.16), 0 2px 6px -2px rgba(27, 46, 69, 0.08); /* Dropdown */
+  /* Shadows (ink-tinted elevation, ring + key-light layered) */
+  --shadow-1: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 1px 2px rgba(27, 46, 69, 0.07), 0 1px 1px rgba(27, 46, 69, 0.04); /* Card */
+  --shadow-2: inset 0 1px 0 rgba(255, 255, 255, 0.65), 0 2px 6px -1px rgba(27, 46, 69, 0.10), 0 1px 2px rgba(27, 46, 69, 0.06); /* Card Hover */
+  --shadow-3: 0 0 0 1px rgba(27, 46, 69, 0.05), 0 8px 20px -6px rgba(27, 46, 69, 0.16), 0 2px 6px -2px rgba(27, 46, 69, 0.08); /* Dropdown */
   --shadow-4: 0 16px 36px -12px rgba(27, 46, 69, 0.22), 0 4px 10px -4px rgba(27, 46, 69, 0.10); /* Modal */
   --shadow-5: 0 24px 56px -20px rgba(20, 33, 48, 0.30), 0 8px 18px -8px rgba(20, 33, 48, 0.14); /* Overlay */
+  /* craft (v2.1 Linear/Stripe-grade finish) */
+  --mt-hairline: rgba(20, 33, 48, 0.08); --mt-hairline-strong: rgba(20, 33, 48, 0.14);
+  --mt-glow-dark: radial-gradient(900px 420px at 50% -120px, rgba(110, 139, 173, 0.10), transparent 70%);
+  --mt-glow-dark-secondary: radial-gradient(600px 300px at 85% 15%, rgba(207, 160, 76, 0.05), transparent 60%);
+  --mt-glow-light: radial-gradient(1100px 380px at 50% -100px, rgba(44, 74, 110, 0.05), transparent 70%);
+  --mt-sider-grad: linear-gradient(180deg, #161b24 0%, #121620 40%, #0e1218 100%);
+  --mt-header-glass: rgba(14, 18, 24, 0.82);
+  --mt-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  --mt-card-border-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.04) 100%);
+  --mt-hover-spotlight: radial-gradient(50% 50% at 50% 50%, rgba(255, 255, 255, 0.035), transparent 90%);
   /* Motion */
   --duration-fast: 120ms; --duration-base: 200ms; --duration-slow: 320ms;
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1); --ease-entrance: cubic-bezier(0, 0, 0.2, 1);
@@ -153,15 +163,30 @@
   --link: var(--mt-ink-300); /* AI-generated */
   --accent: var(--mt-amber-400); --accent-hover: var(--mt-amber-300); /* AI-generated */
   --success: var(--mt-success-400); --warning: var(--mt-warning-400); --error: var(--mt-error-400); --info: var(--mt-info-400); /* AI-generated */
-  --text-strong: #f0f4f8; --text-body: #dde4ec; --text-muted: #9aa7b6; --text-faint: #6d7a89; --text-inverse: #1c2530; /* AI-generated */
-  --fg: var(--text-body); --background: #14181f; --surface-0: #171c24; --surface-1: #1b212b; --surface-2: #232b37; /* AI-generated */
-  --card: #1b212b; --popover: #232b37; --muted: var(--mt-graphite-800); --rule: #2d3644; --border: #2d3644; --bg: var(--background); /* AI-generated */
-  /* shadow */
-  --shadow-1: 0 1px 2px rgba(8, 12, 18, 0.40), 0 1px 1px rgba(8, 12, 18, 0.30); /* Card */
-  --shadow-2: 0 2px 6px -1px rgba(8, 12, 18, 0.50), 0 1px 2px rgba(8, 12, 18, 0.36); /* Card Hover */
-  --shadow-3: 0 8px 20px -6px rgba(8, 12, 18, 0.58), 0 2px 6px -2px rgba(8, 12, 18, 0.40); /* Dropdown */
-  --shadow-4: 0 16px 36px -12px rgba(8, 12, 18, 0.66), 0 4px 10px -4px rgba(8, 12, 18, 0.44); /* Modal */
-  --shadow-5: 0 24px 56px -20px rgba(4, 7, 11, 0.74), 0 8px 18px -8px rgba(4, 7, 11, 0.50); /* Overlay */
+  /* v2.1 透明度文字层级（Notion/Vercel 风格） */
+  --text-strong: rgba(245, 247, 250, 0.95); --text-body: rgba(245, 247, 250, 0.85); --text-muted: rgba(245, 247, 250, 0.65); --text-faint: rgba(245, 247, 250, 0.40); --text-inverse: #1c2530;
+  --fg: var(--text-body);
+  /* v2.1 Linear 四级表面阶梯 */
+  --background: #0e1218; --surface-0: #14181f; --surface-1: #181d26; --surface-2: #1e2530; --surface-3: #252e3b; --surface-4: #2d3848;
+  --card: #181d26; --popover: #252e3b; --muted: var(--mt-graphite-800); --rule: #2a3340; --border: #2a3340; --bg: var(--background);
+  /* v2.1 Stripe 式暗色双层投影（近距小模糊 + 远距大模糊 + inset 顶部高光） */
+  --shadow-1: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-2: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 4px 8px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-3: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 8px 24px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.25);
+  --shadow-4: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 16px 48px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(0, 0, 0, 0.3);
+  --shadow-5: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 24px 56px rgba(0, 0, 0, 0.6), 0 12px 28px rgba(0, 0, 0, 0.4);
+  /* v2.1 焦点环 */
+  --shadow-focus: 0 0 0 3px rgba(110, 139, 173, 0.4);
+  /* v2.1 craft dark */
+  --mt-hairline: rgba(255, 255, 255, 0.07); --mt-hairline-strong: rgba(255, 255, 255, 0.12); --mt-hairline-hover: rgba(255, 255, 255, 0.16);
+  --mt-card-border-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.04) 100%);
+  --mt-hover-spotlight: radial-gradient(50% 50% at 50% 50%, rgba(255, 255, 255, 0.035), transparent 90%);
+  /* v2.1 噪点参数升级（Linear spec: 0.65 baseFrequency, 3 octaves） */
+  --mt-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  --mt-glow-dark: radial-gradient(900px 420px at 50% -120px, rgba(110, 139, 173, 0.10), transparent 70%);
+  --mt-glow-dark-secondary: radial-gradient(600px 300px at 85% 15%, rgba(207, 160, 76, 0.05), transparent 60%);
+  --mt-sider-grad: linear-gradient(180deg, #161b24 0%, #121620 40%, #0e1218 100%);
+  --mt-header-glass: rgba(14, 18, 24, 0.82);
 }
 
 /* Typography classes */
