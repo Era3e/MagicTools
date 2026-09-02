@@ -66,6 +66,7 @@ export function MtThemeProvider(props: { children: ReactNode }) {
             headerColor: tokens.color.textSecondary,
             rowHoverBg: tokens.color.bgActive,
             headerBorderRadius: tokens.radiusTokens.md,
+            borderColor: tokens.craft.hairline,
           },
           Card: { boxShadowTertiary: tokens.shadow.card },
           Modal: { boxShadowSecondary: tokens.shadow.modal },
@@ -77,7 +78,7 @@ export function MtThemeProvider(props: { children: ReactNode }) {
   );
 }
 
-/** @internal AdminShell 暗色注入：石墨深色控制台（全平台统一） */
+/** @internal AdminShell 暗色注入：v2.1 石墨深色控制台（四级表面阶梯 + 双层投影 + 透明度文字） */
 export function AdminDarkThemeProvider(props: { children: ReactNode }) {
   return (
     <ConfigProvider
@@ -86,23 +87,65 @@ export function AdminDarkThemeProvider(props: { children: ReactNode }) {
         token: {
           colorPrimary: tokens.admin.accent,
           colorInfo: tokens.admin.accent,
-          colorBgLayout: tokens.admin.contentBg,
-          colorBgContainer: tokens.dark.surface1,
-          colorBgElevated: tokens.dark.surface2,
-          colorBorder: tokens.dark.border,
-          colorBorderSecondary: tokens.dark.border,
-          colorText: tokens.dark.text,
+          colorBgLayout: tokens.admin.contentBg,       // 画布级 #0e1218
+          colorBgContainer: tokens.dark.surface1,       // 卡片表面 #181d26
+          colorBgElevated: tokens.dark.surface3,        // 抬起表面 #252e3b（原 surface2→surface3）
+          colorBorder: tokens.dark.border,             // 发丝边框 #2a3340
+          colorBorderSecondary: tokens.dark.hairline,  // 二级边框（半透明白 7%）
+          colorText: tokens.dark.text,                 // 兼容实色映射
           colorTextSecondary: tokens.dark.textSecondary,
+          colorTextTertiary: tokens.dark.textTertiary,  // 透明度三级文字
+          colorTextQuaternary: tokens.dark.textFaint,   // 透明度四级文字
           fontFamily: tokens.font.body,
+          fontSize: 14,
           borderRadius: tokens.radiusTokens.md,
           controlHeight: tokens.size.buttonMd,
         },
         components: {
           Table: {
-            headerBg: tokens.dark.surface2,
-            headerColor: tokens.dark.textSecondary,
-            rowHoverBg: tokens.dark.rowHover,
+            headerBg: "rgba(255, 255, 255, 0.025)",
+            headerColor: tokens.dark.textTertiary,
+            headerSplitColor: tokens.dark.hairline,
+            rowHoverBg: "rgba(255, 255, 255, 0.035)",
+            rowSelectedBg: "rgba(110, 139, 173, 0.08)",
+            rowSelectedHoverBg: "rgba(110, 139, 173, 0.12)",
             headerBorderRadius: tokens.radiusTokens.md,
+            borderColor: tokens.dark.hairline,
+            cellPaddingBlock: 12,
+            cellPaddingInline: 12,
+          },
+          Card: {
+            boxShadowTertiary: tokens.shadow.darkCard,
+            colorBgContainer: tokens.dark.surface1,
+            colorBorderSecondary: tokens.dark.hairline,
+          },
+          Modal: {
+            boxShadowSecondary: tokens.shadow.darkModal,
+            contentBg: tokens.dark.surface3,
+            headerBg: tokens.dark.surface3,
+          },
+          Menu: {
+            itemBg: "transparent",
+            itemSelectedBg: "rgba(110, 139, 173, 0.10)",
+            itemHoverBg: "rgba(255, 255, 255, 0.04)",
+            itemSelectedColor: tokens.admin.text,
+            itemColor: tokens.dark.textTertiary,
+          },
+          Button: {
+            primaryShadow: "inset 0 0 0 1px rgba(255, 255, 255, 0.1)",
+          },
+          Input: {
+            colorBgContainer: tokens.dark.surface0,
+            activeBorderColor: tokens.admin.accent,
+            activeShadow: tokens.shadow.focusRing,
+          },
+          Select: {
+            colorBgContainer: tokens.dark.surface0,
+            optionSelectedBg: "rgba(110, 139, 173, 0.10)",
+          },
+          Tag: {
+            defaultBg: "rgba(255, 255, 255, 0.04)",
+            defaultColor: tokens.dark.textTertiary,
           },
         },
       }}
