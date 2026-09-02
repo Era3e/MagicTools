@@ -168,7 +168,27 @@ const JOBS=[
  {no:'No. 04',title:'全栈工程师 · AI 工具链',org:'拓竹机器人',meta:'深圳南山 · 35-55K · 09-02 刊出',remote:true,tags:[['st-accent','招募中'],['st-info','远程']]}
 ];
 const APPS=['岗位博览','知识书院','智能助手','采集策展','调研档案馆','评审台','交付驾驶舱','组件画廊'];
-const APP_GO={'岗位博览':'front','采集策展':'sources','组件画廊':'gallery','交付驾驶舱':'overview'};
+const APP_GO={'岗位博览':'jobs','知识书院':'scholar','智能助手':'intents','采集策展':'sources','调研档案馆':'invest','交付驾驶舱':'overview','组件画廊':'gallery'};
+
+const ENTRIES=[
+ {title:'RAG 分块策略实践笔记',cat:'工程笔记',src:'gatherer',time:'09-02 08:12',scoped:true},
+ {title:'pgvector 调参备忘',cat:'数据库',src:'manual',time:'09-01 21:40',scoped:false},
+ {title:'意图路由 few-shot 设计',cat:'算法',src:'obsidian',time:'09-01 15:03',scoped:true},
+ {title:'AntD 主题令牌注入方案',cat:'前端',src:'gatherer',time:'08-31 19:26',scoped:false},
+ {title:'飞书 Bitable 同步踩坑',cat:'集成',src:'gatherer',time:'08-30 11:05',scoped:false}
+];
+const SURVEYS=[
+ {name:'Q3 竞品定价调研',src:'飞书 Bitable · 市场组',last:'09-02 07:30',status:['ok','自动同步'],n:'312'},
+ {name:'新用户流失访谈',src:'飞书 Bitable · 用研组',last:'09-01 18:00',status:['warn','频率受限'],n:'96'},
+ {name:'渠道伙伴满意度',src:'飞书 Bitable · 渠道部',last:'08-30 09:10',status:['pause','已暂停'],n:'204'}
+];
+const LOGS=[
+ {time:'09-02 09:41',domain:'magictools',intent:'knowledge_qa · 知识问答',conf:'0.92',fixed:''},
+ {time:'09-02 09:38',domain:'cybercloud',intent:'data_query · 数据查询',conf:'0.71',fixed:'知识问答'},
+ {time:'09-02 09:35',domain:'magictools',intent:'process_execution · 流程执行',conf:'0.88',fixed:''},
+ {time:'09-02 09:30',domain:'chitchat',intent:'chitchat_reject · 闲聊',conf:'0.97',fixed:''},
+ {time:'09-02 09:22',domain:'cybercloud',intent:'knowledge_qa · 知识问答',conf:'0.64',fixed:'数据查询'}
+];
 
 function Overview(){
  return (
@@ -406,6 +426,188 @@ function Gallery(){
  );
 }
 
+function Jobs(){
+ const [q,setQ]=useState('');
+ const kw=q.trim();
+ const jobs=JOBS.filter(function(j){return !kw||(j.title+j.org+j.meta).indexOf(kw)>=0;});
+ return (
+  <div className="view">
+   <header className="page-head">
+    <p className="mt-eyebrow page-eyebrow">ADMIN CONSOLE · 求职者门户</p>
+    <div className="page-title-row">
+     <h1 className="mt-h1 page-title uikit-truncate">岗位博览 · 后台编目</h1>
+     <span className="st st-accent" data-component="status-tag"><span className="st-dot"></span>招募中 4</span>
+    </div>
+    <p className="mt-caption page-sub">岗位全生命周期：待投递 / 笔试 / 面试 / offer —— 状态即 MtStatusTag 语义</p>
+   </header>
+   <div className="uikit-toolbar">
+    <div className="control src-search" data-component="input">
+     <input className="in" placeholder="检索公司 / 职位 / 城市" value={q} onChange={function(e){setQ(e.target.value);}}/>
+    </div>
+    <button className="btn btn-ghost">状态筛选</button>
+    <div className="tb-right"><button className="btn btn-primary">新 岗 位</button></div>
+   </div>
+   <div className="uikit-responsive-grid g3">
+    {jobs.map(function(j){return (
+     <div className="mt-card is-link" key={j.no} data-component="surface-card">
+      <p className="sc-eyebrow">{j.no} · APPLICANT</p>
+      <h3 className="sc-title">{j.title}</h3>
+      <p className="sc-body">{j.org}</p>
+      <div className="job-tags">
+       {j.tags.map(function(t){return <span key={t[1]} className={'st '+t[0]} data-component="status-tag">{t[0]==='st-accent'?<span className="st-dot"></span>:null}{t[1]}</span>;})}
+      </div>
+      <p className="sc-meta">{j.meta}</p>
+     </div>);})}
+    {jobs.length===0?<div className="mt-card"><p className="empty-title">没有匹配的岗位——换个关键词试试。</p></div>:null}
+   </div>
+  </div>
+ );
+}
+
+function Scholar(){
+ const [onlyScoped,setOnlyScoped]=useState(false);
+ const rows=ENTRIES.filter(function(e){return !onlyScoped||e.scoped;});
+ return (
+  <div className="view">
+   <header className="page-head">
+    <p className="mt-eyebrow page-eyebrow">ADMIN CONSOLE · 知识书院</p>
+    <div className="page-title-row">
+     <h1 className="mt-h1 page-title uikit-truncate">馆藏条目 · 编目台</h1>
+     <span className="st st-info" data-component="status-tag">在册 3,264 卷</span>
+    </div>
+    <p className="mt-caption page-sub">三来源入库：gatherer 采集 / manual 手工 / obsidian 同步；书签 = 圈定进 Assistant 知识范围</p>
+   </header>
+   <div className="uikit-toolbar">
+    <div className="control src-search" data-component="input">
+     <input className="in" placeholder="检索标题 / 类目 / 来源"/>
+    </div>
+    <button className={'btn btn-ghost'+(onlyScoped?' filter-on':'')} onClick={function(){setOnlyScoped(!onlyScoped);}} aria-pressed={onlyScoped}>只看已圈定</button>
+    <div className="tb-right"><button className="btn btn-ghost">同步 Obsidian</button><button className="btn btn-primary">新 条 目</button></div>
+   </div>
+   <div className="tbl-card" data-component="data-table">
+    <div className="uikit-table-wrap">
+     <table className="tbl">
+      <thead><tr><th style={{width:'44px'}}></th><th>标题</th><th>类目</th><th>来源</th><th className="ta-r">入库时间</th><th>操作</th></tr></thead>
+      <tbody>
+       {rows.map(function(e,i){return (
+        <tr key={e.title}>
+         <td className="check"><span className={'ck ckbtn'+(e.scoped?' on':'')} role="checkbox" aria-checked={e.scoped} aria-label="圈定" title="书签式圈定：勾选后进入 Assistant 检索范围"></span></td>
+         <td><span className="uikit-truncate" title={e.title}>{e.title}</span></td>
+         <td><span className="type-cell uikit-truncate">{e.cat}</span></td>
+         <td><span className={'st '+(e.src==='gatherer'?'st-info':e.src==='manual'?'st-neutral':'st-intent')}>{e.src}</span></td>
+         <td className="ta-r"><span className="mt-mono">{e.time}</span></td>
+         <td><div className="uikit-action-cell"><button className="op uikit-action">查 看</button><button className="op uikit-action">编 辑</button></div></td>
+        </tr>);})}
+      </tbody>
+     </table>
+    </div>
+    <div className="pager"><span className="mt-mono uikit-truncate">共 3,264 卷 · 1 / 218 页</span><button className="pg on">1</button><span className="pg" aria-hidden="true">…</span><button className="pg">218</button></div>
+   </div>
+  </div>
+ );
+}
+
+function Invest(){
+ return (
+  <div className="view">
+   <header className="page-head">
+    <p className="mt-eyebrow page-eyebrow">ADMIN CONSOLE · 调研档案馆</p>
+    <div className="page-title-row">
+     <h1 className="mt-h1 page-title uikit-truncate">调研主题 · 卷宗管理</h1>
+     <span className="st st-warn" data-component="status-tag"><span className="st-dot"></span>1 卷受限</span>
+    </div>
+    <p className="mt-caption page-sub">飞书 Bitable 源 + cron 自动同步 · 按记录推送 Assessor 收件箱（researcher.response.push）</p>
+   </header>
+   <div className="uikit-toolbar">
+    <div className="control src-search" data-component="input">
+     <input className="in" placeholder="检索主题 / 数据源"/>
+    </div>
+    <button className="btn btn-ghost">调度状态</button>
+    <div className="tb-right"><button className="btn btn-primary">新 调 研</button></div>
+   </div>
+   <div className="tbl-card" data-component="data-table">
+    <div className="uikit-table-wrap">
+     <table className="tbl">
+      <thead><tr><th>卷宗名</th><th>数据源</th><th>状态</th><th className="ta-r">记录数</th><th>最近同步</th><th>操作</th></tr></thead>
+      <tbody>
+       {SURVEYS.map(function(s){return (
+        <tr key={s.name}>
+         <td><span className="uikit-truncate" title={s.name}>{s.name}</span></td>
+         <td><span className="type-cell uikit-truncate">{s.src}</span></td>
+         <td><span className={'tag '+s.status[0]} data-component="status-tag">{s.status[1]}</span></td>
+         <td className="ta-r"><span className="mt-mono">{s.n}</span></td>
+         <td><span className="mt-mono">{s.last}</span></td>
+         <td><div className="uikit-action-cell"><button className="op uikit-action">立即同步</button><button className="op uikit-action">推 送</button></div></td>
+        </tr>);})}
+      </tbody>
+     </table>
+    </div>
+   </div>
+  </div>
+ );
+}
+
+function Intents(){
+ const ok=LOGS.filter(function(l){return !l.fixed;}).length;
+ return (
+  <div className="view">
+   <header className="page-head">
+    <p className="mt-eyebrow page-eyebrow">ADMIN CONSOLE · 智能助手</p>
+    <div className="page-title-row">
+     <h1 className="mt-h1 page-title uikit-truncate">意图日志 · 路由评估</h1>
+     <span className="st st-success" data-component="status-tag"><span className="st-dot"></span>在线学习已启用</span>
+    </div>
+    <p className="mt-caption page-sub">纠错样本自动注入 few-shot · 回放评估与 JSONL 数据集导出（D-09）</p>
+   </header>
+   <div className="uikit-responsive-grid kpi-grid">
+    <div className="mt-card" data-component="surface-card">
+     <div className="kpi-grid">
+      <div className="kpi-cell"><span className="kpi-label">今日样本</span><span className="kpi-value">12,847<span className="kpi-unit"> 条</span></span><span className="kpi-delta kpi-up">+1,203 较昨日</span></div>
+     </div>
+    </div>
+    <div className="mt-card" data-component="surface-card">
+     <div className="kpi-grid">
+      <div className="kpi-cell"><span className="kpi-label">回放命中率</span><span className="kpi-value">94.2<span className="kpi-unit"> %</span></span><span className="kpi-delta kpi-up">+1.8 较上轮</span></div>
+     </div>
+    </div>
+    <div className="mt-card" data-component="surface-card">
+     <div className="kpi-grid">
+      <div className="kpi-cell"><span className="kpi-label">已纠错</span><span className="kpi-value">{ok}<span className="kpi-unit"> / {LOGS.length}</span></span><span className="kpi-delta">本页待纠 2 条</span></div>
+     </div>
+    </div>
+    <div className="mt-card" data-component="surface-card">
+     <div className="kpi-grid">
+      <div className="kpi-cell"><span className="kpi-label">few-shot 注入</span><span className="kpi-value">12<span className="kpi-unit"> / 12 封顶</span></span><span className="kpi-delta">每意图 3 条</span></div>
+     </div>
+    </div>
+   </div>
+   <div className="tbl-card" data-component="data-table">
+    <div className="tb-title uikit-truncate">最近请求</div>
+    <div className="uikit-table-wrap">
+     <table className="tbl">
+      <thead><tr><th>时间</th><th>系统域</th><th>判定意图</th><th className="ta-r">置信度</th><th>纠错</th></tr></thead>
+      <tbody>
+       {LOGS.map(function(l){return (
+        <tr key={l.time}>
+         <td><span className="mt-mono">{l.time}</span></td>
+         <td><span className={'st '+(l.domain==='cybercloud'?'st-count':l.domain==='magictools'?'st-info':'st-neutral')}>{l.domain}</span></td>
+         <td><span className="st st-intent irow-tag uikit-truncate" data-component="status-tag">{l.intent}</span></td>
+         <td className="ta-r"><span className="mt-mono">{l.conf}</span></td>
+         <td>{l.fixed?<span className="st st-warn">{l.fixed}</span>:<span className="type-cell">—</span>}</td>
+        </tr>);})}
+      </tbody>
+     </table>
+    </div>
+    <div className="card-foot" data-component="button">
+     <button className="btn btn-ghost">回放评估</button>
+     <button className="btn btn-ghost">导出 JSONL</button>
+     <span className="card-foot-note uikit-truncate">导出格式兼容 OpenAI 微调数据集</span>
+    </div>
+   </div>
+  </div>
+ );
+}
+
 function Front(props){
  const [q,setQ]=useState('');
  const [aq,setAq]=useState('');
@@ -469,7 +671,7 @@ function App(){
   document.documentElement.classList.toggle('dark',dark);
   if(window.lucide){window.lucide.createIcons();}
  },[dark,view,sw]);
- const crumb={overview:'总览驾驶舱 · FLIGHT DECK',sources:'采集源管理',gallery:'组件画廊 · 委托生成',front:'前台门面 · 岗位博览'}[view];
+ const crumb={overview:'总览驾驶舱 · FLIGHT DECK',sources:'采集源管理',gallery:'组件画廊 · 委托生成',front:'前台门面 · 岗位博览',jobs:'岗位博览 · 后台编目',scholar:'知识书院 · 编目台',invest:'调研档案馆 · 卷宗管理',intents:'意图日志 · 路由评估'}[view];
  const NAV=[
   {k:'overview',l:'总览驾驶舱'},
   {k:'jobs',l:'岗位博览',c:'12'},
@@ -479,7 +681,7 @@ function App(){
   {k:'gallery',l:'组件画廊'},
   {k:'intents',l:'意图日志',c:'47'}
  ];
- const WIRED=['overview','sources','gallery'];
+ const WIRED=['overview','sources','gallery','jobs','scholar','invest','intents'];
  return (
   <div className="uikit-shell" data-layout-guard="uikit-v1" style={{'--uikit-sidebar-w':'208px'}}>
    <aside className="uikit-sidebar">
@@ -521,6 +723,10 @@ function App(){
      {view==='overview'?<Overview/>:null}
      {view==='sources'?<Sources/>:null}
      {view==='gallery'?<Gallery/>:null}
+     {view==='jobs'?<Jobs/>:null}
+     {view==='scholar'?<Scholar/>:null}
+     {view==='invest'?<Invest/>:null}
+     {view==='intents'?<Intents/>:null}
      {view==='front'?<Front go={setView}/>:null}
     </main>
    </div>
