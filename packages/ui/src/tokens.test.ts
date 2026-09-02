@@ -19,23 +19,48 @@ describe("v2 品牌令牌（墨蓝石墨·工房感）", () => {
   });
 
   it("暗色板（一等公民）与后台表面锚点正确", () => {
-    expect(tokens.dark.background).toBe("#14181f");
-    expect(tokens.dark.surface0).toBe("#171c24");
-    expect(tokens.dark.surface1).toBe("#1b212b");
-    expect(tokens.dark.surface2).toBe("#232b37");
-    expect(tokens.dark.border).toBe("#2d3644");
+    // v2.1 升级：Linear 四级表面阶梯 + 深蓝调画布
+    expect(tokens.dark.background).toBe("#0e1218");
+    expect(tokens.dark.surface0).toBe("#14181f");
+    expect(tokens.dark.surface1).toBe("#181d26");
+    expect(tokens.dark.surface2).toBe("#1e2530");
+    expect(tokens.dark.surface3).toBe("#252e3b");
+    expect(tokens.dark.surface4).toBe("#2d3848");
+    expect(tokens.dark.border).toBe("#2a3340");
     expect(tokens.dark.primary).toBe("#6e8bad");
+    // v2.1 新增：透明度文字层级
+    expect(tokens.dark.textPrimary).toContain("rgba(245, 247, 250");
+    expect(tokens.dark.hairline).toContain("rgba(255, 255, 255, 0.07)");
   });
 
   it("后台外壳令牌取自暗色板", () => {
-    expect(tokens.admin.siderBg).toBe("#14181f");
-    expect(tokens.admin.contentBg).toBe("#14181f");
-    expect(tokens.admin.border).toBe("#2d3644");
+    expect(tokens.admin.siderBg).toBe("#0e1218");
+    expect(tokens.admin.contentBg).toBe("#0e1218");
+    expect(tokens.admin.border).toBe("#2a3340");
   });
 
   it("海拔体系为墨调投影且分层递进", () => {
-    expect(tokens.shadow.card).toContain("rgba(27, 46, 69");
+    expect(tokens.shadow.card).toContain("inset 0 1px 0");
     expect(tokens.shadow.modal).toContain("0 16px 36px");
+  });
+
+  it("质感工艺层（craft）就位：发丝线/氛围光/侧栏渐变/噪点/渐变描边", () => {
+    expect(tokens.craft.hairline).toContain("rgba(20, 33, 48, 0.08)");
+    expect(tokens.craft.glowDark).toContain("radial-gradient");
+    expect(tokens.craft.glowDarkSecondary).toContain("radial-gradient"); // v2.1 多层环境光
+    expect(tokens.craft.siderGrad).toContain("linear-gradient");
+    expect(tokens.craft.noise).toContain("data:image/svg+xml");
+    expect(tokens.craft.noiseOpacity).toBe(0.045); // v2.1 Linear 标准透明度
+    expect(tokens.craft.cardBorderGradient).toContain("linear-gradient"); // v2.1 渐变描边
+    expect(tokens.craft.hoverSpotlight).toContain("radial-gradient"); // v2.1 悬浮聚光灯
+    expect(tokens.craft.dark.hairline).toContain("rgba(255, 255, 255, 0.07)");
+  });
+
+  it("暗色投影体系（Stripe 双层 + 焦点环）就位", () => {
+    expect(tokens.shadow.darkCard).toContain("inset 0 1px 0");
+    expect(tokens.shadow.darkCardHover).toContain("inset 0 1px 0");
+    expect(tokens.shadow.darkDropdown).toContain("inset 0 1px 0");
+    expect(tokens.shadow.focusRing).toContain("0 0 0 3px");
   });
 
   it("动效与尺寸令牌就位", () => {
