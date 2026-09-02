@@ -12,6 +12,7 @@
   - **测试**：@mt/ui 20 用例（探针组件读 antdTheme.useToken() 断言注入结果；darkAlgorithm 会把种子 #6e8bad 微调为 #617996、inline 色值被规范化为 rgb()——断言按色彩族+双格式兼容）；全仓 46/46、lint 0 err、e2e 全量 52 passed/1 skipped（含视觉基线 16 张重生成）；
   - **门禁教训**：ESLint 白名单需补 card/brick 主题扩展键；后台页直引 tokens.color 亮色值在暗色 AdminShell 下不可读（designer pre 块/assistant Statistic 已改 useToken()/bgUser 自适应）——后续后台页一律 useToken() 或语义底色；
   - 八应用主题常量已按 v2 派生口径重算（applicant 砖红 #a8522e / scholar 馆藏绿 #2f5a3b / assistant 瓷青墨蓝 #4a688c / manager 驾驶舱蓝 #3a5f84 / gatherer 藏青 #1f3a5c / investigator 铜金 #8a6a3b / assessor 深赭 #6e3b28 / designer 墨黑 #1c2530），display 字体统一进品牌栈（Noto Serif SC / JetBrains Mono 优先）。
+  - **PR #47 已开出**（head a37fba4 + 8ec3345）：linux 旧基线已随 PR 移除（旧 UI 像素必不匹配，平台感知守卫会显式 skip linux 视觉用例），**合并后需手动 dispatch visual-baseline workflow 重生成 linux 基线**（Ubuntu CJK 环境跑真实新 UI）；push 曾因代理抖动挂死一轮，恢复全局代理配置（127.0.0.1:7890）后一次通过——直连 443 不通。
 - **UI「塑料感」评审 + v2 设计规范定稿（2026-09-02，本会话）**：
   - **评审结论（四根源）**：①tokens.ts 原样照搬 AntD 出厂值（#2f54eb/#52c41a/radius 6 等，从未被设计）；②外壳有个性、内脏默认件——MtThemeProvider 只注入 5 个基础 token，前台八主题内的分页器/搜索框/Tag/Empty 仍是 AntD 默认蓝与简笔画（风格断裂主因）；③无质感体系（仅 2 个灰、无中性阶/海拔分级/表面材质）；④字体廉价（OS 自带字体角色扮演）+ 字号仅 4 档 + 无动效 token。
   - **用户拍板**：统一底座 + 八主题真注入 / 墨蓝石墨·工房感基调 / 暗色纳入本期 / 先规范后落地（代码改造另起任务走分支流程）；并要求八主题贴合各子项目真实业务受众。
