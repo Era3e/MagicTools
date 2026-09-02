@@ -34,7 +34,7 @@ function DarkTokenProbe() {
 }
 
 describe("AdminShell（v2 石墨深色控制台）", () => {
-  it("侧栏为石墨深色（#14181f 系）", () => {
+  it("侧栏为石墨深色（v2.1 质感升级渐变）", () => {
     const { container } = render(
       <AdminShell
         title="采集"
@@ -47,9 +47,12 @@ describe("AdminShell（v2 石墨深色控制台）", () => {
     );
     const sider = container.querySelector(".ant-layout-sider");
     expect(sider).toBeTruthy();
-    // AntD 会把 inline 色值规范化为 rgb() 形式；两种写法等价于 tokens.admin.siderBg #14181f
+    // v2.1 质感层：侧栏为更深纵向渐变（siderGrad #161b24→#0e1218）
     const siderBg = (sider as HTMLElement).style.background.toLowerCase();
-    expect(["#14181f", "rgb(20, 24, 31)"]).toContain(siderBg);
+    const isGraphite =
+      siderBg.startsWith("linear-gradient(180deg, #161b24") ||
+      ["#0e1218", "rgb(14, 18, 24)"].includes(siderBg);
+    expect(isGraphite).toBe(true);
     expect(screen.getByText("信息源管理")).toBeTruthy();
   });
 
@@ -65,17 +68,16 @@ describe("AdminShell（v2 石墨深色控制台）", () => {
       </AdminShell>
     );
     const probe = screen.getByTestId("dark-probe");
-    // darkAlgorithm 会把种子主色 ink-400 #6e8bad 按暗色对比度微调为 #617996（同色相族）；
-    // 断言接受种子值或算法适配值，且必须区别于亮色主色与 AntD 默认蓝
+    // v2.1 四级表面阶梯：画布 #0e1218 / 卡片 #181d26 / 抬起 #252e3b / 边框 #2a3340
     const darkPrimary = probe.getAttribute("data-primary");
     expect(["#6e8bad", "#617996"]).toContain(darkPrimary);
     expect(darkPrimary).not.toBe("#2c4a6e");
     expect(darkPrimary).not.toBe("#1677ff");
-    expect(probe.getAttribute("data-bg-container")).toBe("#1b212b");
-    expect(probe.getAttribute("data-bg-layout")).toBe("#14181f");
-    expect(probe.getAttribute("data-bg-elevated")).toBe("#232b37");
+    expect(probe.getAttribute("data-bg-container")).toBe("#181d26");
+    expect(probe.getAttribute("data-bg-layout")).toBe("#0e1218");
+    expect(probe.getAttribute("data-bg-elevated")).toBe("#252e3b");
     expect(probe.getAttribute("data-text")).toBe("#dde4ec");
-    expect(probe.getAttribute("data-border")).toBe("#2d3644");
+    expect(probe.getAttribute("data-border")).toBe("#2a3340");
   });
 
   it("点击导航触发回调；frontPath 存在时渲染返回前台入口", () => {
