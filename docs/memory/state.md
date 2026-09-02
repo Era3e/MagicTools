@@ -6,6 +6,16 @@
 
 ## 当前状态快照（2026-09-02 更新）
 
+- **UI v2.1 质感升级 @mt/ui（2026-09-02，分支 feat-ui-v2-migrate-mtui，进行中）**：
+  - **背景**：用户反馈"UI 还是没啥质感"，要求参考头部科技公司现有产品 UI 优化。
+  - **研究**：深度逆向分析 Linear/Stripe/Vercel/GitHub/Notion 五家公司的"质感密码"——提取 10 项可复用 CSS 技法（含具体 hex/rgba 值、SVG 参数、阴影配方）。
+  - **六维度升级**：①Linear 四级表面亮度阶梯（surface0-4：#14181f→#2d3848，替代投影承载层级）；②Stripe 双层投影系统（近距小模糊+远距大模糊+inset 顶部高光）；③GitHub 发丝边框（rgba 白 7%/12%/16% 三档）+ 表格 hover 重音条（inset 2px accent）；④Linear 噪点纹理升级（feTurbulence 0.65/3 octaves + mix-blend-mode overlay/4.5%）；⑤Vercel 透明度文字层级（95%/65%/40%/28% 四档）+ tabular-nums；⑥暗色光学修正（字重降一档 350/500 + 负字距 -0.01em）。
+  - **新增 token**：shadow.darkCard/DarkCardHover/DarkDropdown/DarkModal/focusRing、craft.glowDarkSecondary/cardBorderGradient/hoverSpotlight/noiseOpacity、dark.surface3/surface4/textPrimary/textTertiary/textFaint/textDisabled/hairline/hairlineHover、font.weightBodyDark/weightHeadingDark/letterSpacingBodyDark/letterSpacingHeadingSm/Lg。
+  - **AdminShell 落地**：注入全局 CSS（.mt-admin-shell 焦点环/表格发丝线+hover 重音条/卡片双层投影+hover 加深/按钮内描边+hover 辉光+active 缩放/字重光学修正/tabular-nums）；多层环境光（主氛围光+琥珀色副氛围光）；噪点 overlay 混合模式；侧栏顶部高光+右缘发丝线；顶栏毛玻璃+底部高光。
+  - **AdminDarkThemeProvider**：补齐 Menu（itemSelectedBg 透明度）/Input（surface0 底+focusRing）/Select/Tag/Modal（surface3）组件级暗色注入。
+  - **视觉参考页**：`.design_library/magictools/ui_kits/premium-reference/index.html`（54KB，含 AdminShell 实机演示+5 组 BEFORE/AFTER 对照+组件展示+排版规范），预览 http://localhost:4180。
+  - **测试**：@mt/ui 22/22 pass、lint 0 err、build 通过。tokens.test.ts 和 AdminShell.test.tsx 断言已更新匹配新值。
+  - **设计库同步**：colors_and_type.css 暗色块全量更新（四级表面/双层投影/透明度文字/噪点升级/环境光/渐变描边/焦点环）。
 - **UI v2 落地 @mt/ui（2026-09-02，分支 feat-ui-v2-migrate-mtui，进行中）**：
   - **改造策略**：tokens.ts 保持 v1 键结构（color/spacing/fontSize/radius）值全换 v2 色板——业务代码零改动；新增 scale（7 组 10 阶）/dark/admin/shadow/motion/size/font/radiusTokens 扩展块；
   - **主题真注入**：MtThemeProvider 全量注入 AntD（36 控件高/品牌字体/表头石墨底/墨调浮层影）+ 品牌字体 link 幂等注入（id=mt-brand-fonts）；AdminShell 经内部 AdminDarkThemeProvider（darkAlgorithm + tokens.admin 锚点）整体深色——**后台 AntD 表格/表单/Modal 全部跟随深色**；UserShell 嵌套 ConfigProvider 让前台分页/输入/按钮跟随应用 accent；
