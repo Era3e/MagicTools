@@ -1,0 +1,47 @@
+{
+  "slug": "shell-nav",
+  "schemaVersion": 2,
+  "name": "MtShellNav 外壳导航",
+  "category": "navigation",
+  "sourceKind": "from-scratch",
+  "confidence": "medium",
+  "semanticTypeCandidates": [
+    { "candidate": "admin-sider-nav", "evidence": "AdminShell 深色侧栏：导航项 + 底部返回前台 + 顶栏切换应用" },
+    { "candidate": "front-masthead-nav", "evidence": "UserShell 前台报头：衬线大标题 + 双细线水平导航" },
+    { "candidate": "app-switcher", "evidence": "跨应用 Dropdown 切换（8 应用）" }
+  ],
+  "variantDimensions": [
+    { "dimension": "shell", "values": ["admin(深色侧栏 208px)", "front(报头水平导航)"] },
+    { "dimension": "state", "values": ["default", "active", "hover"] },
+    { "dimension": "platform", "values": ["desktop", "mobile(汉堡+Drawer)"] }
+  ],
+  "representativeVariants": [
+    {
+      "name": "Admin sider",
+      "whySelected": "全平台统一后台导航心智",
+      "traits": { "siderBg": "#14181f", "width": "208px", "itemHeight": "36px", "itemRadius": "var(--radius-sm)", "itemColor": "var(--mt-neutral-400)", "itemActiveBg": "var(--mt-ink-700)", "itemActiveColor": "#ffffff", "itemActiveIndicator": "3px 左缘 accent 竖条", "brandEyebrow": "11px letterspacing-2 uppercase mono", "sectionGap": "var(--space-1)" },
+      "childrenDigest": "ADMIN CONSOLE 眉题 + 「采集源管理」「条目库」+ 底部「← 返回前台」"
+    },
+    {
+      "name": "Front masthead nav",
+      "whySelected": "前台报头是八应用个性门面（主题派生层）",
+      "traits": { "headerBorder": "3px double ink", "eyebrow": "12px letterspacing-6 uppercase muted", "displayTitle": "display serif 40px 700", "navGap": "var(--space-9)", "navItem": "15px letterspacing-2", "navActive": "accent 色 + 2px 底线", "navBorderTop": "1px solid ink", "navBorderBottom": "1px solid ink" },
+      "childrenDigest": "MagicTools 眉题 / 知识书院 / 馆藏检索·图谱·收件箱 水平导航"
+    },
+    {
+      "name": "App switcher dropdown",
+      "whySelected": "跨应用切换入口，前后台都有",
+      "traits": { "trigger": "ghost sm 按钮「切换应用」", "menuBg": "var(--surface-2)", "menuShadow": "var(--shadow-3)", "itemHoverBg": "var(--mt-ink-50)", "itemHeight": "32px" },
+      "childrenDigest": "8 应用名列表（求职/知识书院/智能助手/…）"
+    }
+  ],
+  "anatomy": {
+    "parts": ["品牌区（眉题+标题）", "导航项列表", "辅助区（切换应用/返回前台）", "内容区容器"],
+    "structure": "双外壳同一令牌底座：admin 用深色派生，front 用主题派生（accent hue + paper tint + display font）"
+  },
+  "structurePatterns": ["后台导航选中态 = 墨蓝底 + 左缘竖条", "前台导航选中态 = accent 文字 + 底线", "移动端统一折叠为 Drawer"],
+  "usageHints": { "priorityHint": "high", "rules": ["后台全平台一套，禁止个性化", "前台主题只派生 accent/纸色/display 字体，不改布局结构", "ADMIN CONSOLE 眉题字距 2px"] },
+  "doNotInvent": ["多级折叠菜单", "面包屑（页面级，不属外壳）"],
+  "unknowns": ["移动端 Drawer 展开动画时长沿用 duration-base"],
+  "keyInsightSeed": "双外壳：前台报头水平导航 vs 后台石墨深侧栏，一套令牌两种性格"
+}

@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="zh" class="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MagicTools · 组件驾驶舱 · Design System UIKit</title>
+<link rel="stylesheet" href="../../colors_and_type.css">
+<link rel="stylesheet" href="../../components.css">
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"></script>
+<style>
+:root{--uikit-sidebar-w:208px}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--background);color:var(--fg);font-family:var(--font-body);font-size:var(--font-size-body);line-height:var(--line-height-body);transition:background var(--duration-base) var(--ease-standard)}
+#root{min-height:100vh}
+/* ── layout guard skeleton ── */
+.uikit-shell{width:100%;max-width:1184px;margin:0 auto;overflow:hidden;display:grid;grid-template-columns:var(--uikit-sidebar-w,220px) minmax(0,1fr);gap:0;min-height:100vh}
+.uikit-sidebar,.uikit-main,.uikit-toolbar{min-width:0}
+.uikit-sidebar{overflow:hidden;max-width:100%}
+[data-component]{min-width:0;max-width:100%;overflow:hidden}
+.uikit-toolbar{display:flex;align-items:center;gap:var(--space-2)}
+.uikit-responsive-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);min-width:0}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.uikit-table-wrap{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain}
+.uikit-table-wrap .tbl{min-width:720px}
+.uikit-truncate{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.uikit-nowrap{white-space:nowrap;flex-shrink:0}
+.uikit-action-cell{display:flex;align-items:center;gap:8px;min-width:0;max-width:160px;overflow:hidden}
+.uikit-action{min-width:0;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* ── admin chrome（页面层：石墨顶栏 + 深侧栏容器）── */
+.uikit-right{display:flex;flex-direction:column;min-width:0;min-height:100vh}
+.topbar{display:flex;align-items:center;gap:var(--space-2);height:52px;padding:0 var(--space-4);background:var(--mt-graphite-900);border-bottom:1px solid var(--mt-graphite-700);flex-shrink:0}
+.topbar-brand{display:inline-flex;align-items:center;font-family:var(--font-mono);font-size:var(--font-size-eyebrow);font-weight:var(--font-weight-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mt-graphite-300)}
+.topbar-crumb{font-size:var(--font-size-caption);color:var(--mt-graphite-300)}
+.topbar-spacer{flex:1}
+.tb-sep{width:1px;height:20px;background:var(--mt-graphite-700);flex-shrink:0}
+.topbar-btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-1);height:32px;padding:0 var(--space-3);background:transparent;border:1px solid var(--mt-graphite-700);border-radius:var(--radius-sm);color:var(--mt-graphite-200);font-family:var(--font-body);font-size:var(--font-size-caption);white-space:nowrap;cursor:pointer;transition:border-color var(--duration-fast) var(--ease-standard),background var(--duration-fast) var(--ease-standard)}
+.topbar-btn:hover{border-color:var(--mt-graphite-400);background:var(--mt-graphite-800)}
+.topbar-user{display:inline-flex;align-items:center;gap:var(--space-2);color:var(--mt-graphite-200);font-size:var(--font-size-caption)}
+.switchstrip{flex-direction:row;flex-wrap:nowrap;gap:var(--space-1);border-bottom:1px solid var(--mt-graphite-700);overflow-x:auto}
+.switchstrip .mt-switcher-item{flex-shrink:0}
+.i16{width:16px;height:16px}.i20{width:20px;height:20px}.i40{width:40px;height:40px}
+.ico-gap{margin-right:var(--space-2);flex-shrink:0}
+/* 侧栏品牌字在 .dark 下的可读性修正（components.css 未含 dark 变体） */
+.uikit-sidebar .mt-sider-brand{color:var(--mt-graphite-100)}
+.sider-label{flex:1;min-width:0}
+.ckbtn{padding:0;background:transparent;cursor:pointer;flex-shrink:0}
+/* ── 主内容 ── */
+.uikit-main{flex:1;display:flex;flex-direction:column;gap:var(--space-5);padding:var(--space-6) var(--space-5)}
+.view{display:flex;flex-direction:column;gap:var(--space-5);min-width:0;animation:viewIn var(--duration-slow) var(--ease-entrance)}
+@keyframes viewIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.page-head{display:flex;flex-direction:column;gap:var(--space-2);min-width:0}
+.page-eyebrow{color:var(--text-muted)}
+.page-title-row{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap;min-width:0}
+.page-title{margin:0;color:var(--text-strong);word-break:keep-all;overflow-wrap:break-word}
+.page-sub{margin:0}
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));min-width:0}
+.kpi-cell{display:flex;flex-direction:column;gap:var(--space-1);padding-left:var(--space-4);min-width:0;border-left:1px solid var(--rule)}
+.kpi-cell:first-child{border-left:none;padding-left:0}
+.kpi-label{font-size:var(--font-size-caption);color:var(--text-muted)}
+.kpi-value{font-family:var(--font-mono);font-weight:var(--font-weight-mono);font-size:var(--font-size-h2);line-height:1.2;color:var(--text-strong);font-variant-numeric:tabular-nums;white-space:nowrap}
+.kpi-unit{font-size:var(--font-size-caption);font-weight:400;color:var(--text-muted)}
+.kpi-delta{font-family:var(--font-mono);font-size:var(--font-size-caption);color:var(--text-muted);font-variant-numeric:tabular-nums}
+.kpi-up{color:var(--color-success)}
+/* 图表 */
+.card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-3);min-width:0}
+.card-head h3{margin:0;color:var(--text-strong)}
+.card-side{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;text-align:right}
+.plot{position:relative;display:flex;align-items:flex-end;gap:6px;height:150px;margin:var(--space-4) 0 var(--space-2);border-bottom:1px solid var(--rule)}
+.gl{position:absolute;left:0;right:0;top:50%;border-top:1px solid var(--rule);pointer-events:none}
+.bar{position:relative;z-index:1;flex:1;min-width:0;background:var(--primary);border-radius:var(--radius-sm) var(--radius-sm) 0 0;transition:opacity var(--duration-fast) var(--ease-standard)}
+.bar:hover{opacity:.8}
+.bar.today{background:var(--accent)}
+.barH50{height:50%}.barH55{height:55%}.barH60{height:60%}.barH65{height:65%}.barH70{height:70%}.barH75{height:75%}.barH80{height:80%}.barH85{height:85%}.barH90{height:90%}.barH95{height:95%}.barH100{height:100%}
+.xlabels{display:flex;gap:6px;min-width:0}
+.xl{flex:1;min-width:0;text-align:center;font-family:var(--font-mono);font-size:var(--font-size-eyebrow);color:var(--text-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.legend-today{font-family:var(--font-mono);font-size:var(--font-size-caption);color:var(--accent);white-space:nowrap}
+/* 意图列表 */
+.ilist{margin-top:var(--space-3);display:flex;flex-direction:column;min-width:0}
+.irow{display:flex;flex-direction:column;gap:var(--space-1);padding:var(--space-2) 0;border-bottom:1px solid var(--rule)}
+.irow:last-of-type{border-bottom:none}
+.irow-top{display:flex;align-items:center;gap:var(--space-2);min-width:0}
+.irow-tag{flex:1;min-width:0}
+.irow-num{margin-left:auto;font-family:var(--font-mono);font-size:var(--font-size-caption);color:var(--text-muted);white-space:nowrap;flex-shrink:0;font-variant-numeric:tabular-nums}
+.ptrack{height:4px;background:var(--surface-2);border-radius:var(--radius-full);overflow:hidden}
+.pfill{height:100%;background:var(--primary);border-radius:var(--radius-full)}
+.p46{width:46%}.p32{width:32%}.p12{width:12%}.p7{width:7%}
+.card-foot{display:flex;align-items:center;gap:var(--space-2);margin-top:var(--space-4);flex-wrap:wrap;min-width:0}
+.card-foot-note{margin-left:auto;font-size:var(--font-size-caption);color:var(--text-faint)}
+/* 规格 rail / 表单 */
+.rail-label{margin:var(--space-4) 0 var(--space-2);font-size:var(--font-size-caption);font-weight:600;color:var(--text-muted)}
+.rail-label:first-child{margin-top:0}
+.rail{display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap;min-width:0}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);min-width:0}
+.field-hint{font-size:var(--font-size-caption);color:var(--text-faint)}
+.ovl-fields{display:flex;flex-direction:column;gap:var(--space-2)}
+/* 表格页 */
+.src-search{flex:0 1 220px;min-width:140px}
+.tb-right{display:flex;align-items:center;gap:var(--space-2);margin-left:auto;flex-shrink:0}
+.type-cell{color:var(--text-muted);font-size:var(--font-size-caption)}
+.ta-r{text-align:right}
+.tbl-empty{display:flex;flex-direction:column;align-items:center;gap:var(--space-3);padding:var(--space-7) var(--space-4);text-align:center}
+.empty-title{margin:0;font-family:var(--font-display);font-style:italic;font-size:var(--font-size-h4);color:var(--text-muted)}
+.empty-ico{color:var(--mt-graphite-300)}
+/* 前台门面 */
+.front-note{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);flex-wrap:wrap;min-width:0}
+.front-note p{margin:0}
+.search-wrap{flex:1;min-width:200px;max-width:420px}
+.masthead-count{color:var(--text-muted)}
+.filter-on{border-color:var(--primary);color:var(--primary)}
+.job-tags{display:flex;align-items:center;gap:var(--space-1);margin-top:var(--space-2)}
+.front-foot{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);flex-wrap:wrap;min-width:0}
+.front-foot p{margin:0}
+.front-ver{color:var(--text-faint)}
+/* 响应式 */
+@media (max-width:900px){
+.uikit-shell{grid-template-columns:minmax(0,1fr)}
+.uikit-responsive-grid,.form-grid{grid-template-columns:minmax(0,1fr)}
+.g3{grid-template-columns:repeat(2,minmax(0,1fr))}
+.kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.kpi-cell:nth-child(odd){border-left:none;padding-left:0}
+.uikit-sidebar .mt-sider{width:100%;flex-direction:row;flex-wrap:wrap;align-items:center}
+.mt-sider-back{margin-top:0;margin-left:auto}
+}
+@media (max-width:640px){
+.uikit-toolbar{flex-direction:column;align-items:stretch}
+.uikit-responsive-grid,.g3,.form-grid{grid-template-columns:minmax(0,1fr)}
+.tb-right{margin-left:0;flex-wrap:wrap}
+.toolbar{flex-wrap:wrap}
+.topbar{flex-wrap:wrap;height:auto;padding:var(--space-2) var(--space-3)}
+.search-wrap{max-width:none}
+}
+@media (prefers-reduced-motion:reduce){
+body,.bar,.topbar-btn,.view{transition-duration:0.01ms;animation-duration:0.01ms}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const {useState,useEffect} = React;
+
+const SOURCES=[
+ {id:1,name:'脉脉 · 职位板',type:'职位',status:['ok','采集中'],count:'1,286',time:'09-02 08:30'},
+ {id:2,name:'少数派 · 文章区',type:'文章',status:['ok','采集中'],count:'864',time:'09-02 07:15'},
+ {id:3,name:'36氪 · 快讯',type:'资讯',status:['warn','频率受限'],count:'1,542',time:'09-01 18:05'},
+ {id:4,name:'Hacker News · Best',type:'技术',status:['warn','待验证'],count:'233',time:'09-01 22:40'},
+ {id:5,name:'Product Hunt · Daily',type:'产品',status:['ok','采集中'],count:'397',time:'09-02 06:45'},
+ {id:6,name:'V2EX · 分享节点',type:'技术',status:['pause','已暂停'],count:'728',time:'08-30 09:10'},
+ {id:7,name:'豆瓣 · 小组讨论',type:'社区',status:['pause','已暂停'],count:'512',time:'08-28 11:20'}
+];
+const BARS=[['H55','448'],['H50','402'],['H65','516'],['H60','475'],['H75','598'],['H65','540'],['H80','662'],['H75','608'],['H90','715'],['H80','664'],['H95','780'],['H100','812']];
+const XLABELS=['08-22','','08-24','','08-26','','08-28','','08-30','','09-01',''];
+const INTENTS=[
+ {tag:'knowledge_qa · 知识问答',num:'5,942',pct:'46%',cls:'p46'},
+ {tag:'data_query · 数据查询',num:'4,120',pct:'32%',cls:'p32'},
+ {tag:'tool_invoke · 工具调用',num:'1,540',pct:'12%',cls:'p12'},
+ {tag:'chit_chat · 闲聊',num:'890',pct:'7%',cls:'p7'}
+];
+const JOBS=[
+ {no:'No. 01',title:'资深前端工程师',org:'星河智能 · 组件工房',meta:'上海浦东 · 25-40K · 09-02 刊出',remote:true,tags:[['st-accent','招募中'],['st-info','远程']]},
+ {no:'No. 02',title:'AI 产品经理',org:'墨知科技',meta:'杭州滨江 · 30-45K · 09-01 刊出',remote:false,tags:[['st-accent','招募中']]},
+ {no:'No. 03',title:'数据工程师',org:'云篆数据',meta:'北京海淀 · 28-42K · 08-31 刊出',remote:false,tags:[['st-info','复评中']]},
+ {no:'No. 04',title:'全栈工程师 · AI 工具链',org:'拓竹机器人',meta:'深圳南山 · 35-55K · 09-02 刊出',remote:true,tags:[['st-accent','招募中'],['st-info','远程']]}
+];
+const APPS=['岗位博览','知识书院','智能助手','采集策展','调研档案馆','评审台','交付驾驶舱','组件画廊'];
+const APP_GO={'岗位博览':'front','采集策展':'sources','组件画廊':'gallery','交付驾驶舱':'overview'};
+
+function Overview(){
+ return (
+  <div className="view">
+   <header className="page-head">
+    <p className="mt-eyebrow page-eyebrow">ADMIN CONSOLE · 总览</p>
+    <div className="page-title-row">
+     <h1 className="mt-h1 page-title uikit-truncate">交付驾驶舱 · FLIGHT DECK</h1>
+     <span className="st st-success" data-component="status-tag"><span className="st-dot"></span>运行正常</span>
+     <span className="st st-error st-click" data-component="status-tag" title="36氪 · 快讯 频率受限"><span className="st-dot"></span>采集源异常 1</span>
+    </div>
+    <p className="mt-caption page-sub">今日读数 · 更新于 09-02 09:00 · 数字均为等宽读数</p>
+   </header>
+   <div className="mt-card" data-component="surface-card">
+    <div className="kpi-grid">
+     <div className="kpi-cell"><span className="kpi-label">在册岗位</span><span className="kpi-value">128<span className="kpi-unit"> 个</span></span><span className="kpi-delta kpi-up">+12 本周</span></div>
+     <div className="kpi-cell"><span className="kpi-label">馆藏条目</span><span className="kpi-value">3,264<span className="kpi-unit"> 条</span></span><span className="kpi-delta kpi-up">+186 本周</span></div>
+     <div className="kpi-cell"><span className="kpi-label">今日意图</span><span className="kpi-value">12,847<span className="kpi-unit"> 次</span></span><span className="kpi-delta">峰值 14:00</span></div>
+     <div className="kpi-cell"><span className="kpi-label">推送成功率</span><span className="kpi-value">98.2<span className="kpi-unit"> %</span></span><span className="kpi-delta kpi-up">+0.6 较昨日</span></div>
+    </div>
+   </div>
+   <div className="uikit-responsive-grid">
+    <div className="mt-card" data-component="surface-card">
+     <div className="card-head">
+      <div>
+       <p className="sc-eyebrow">INTAKE · 采集趋势</p>
+       <h3 className="mt-h3">近 12 日采集条目</h3>
+      </div>
+      <div className="card-side">
+       <span className="legend-today">今日 812 条</span>
+       <span className="mt-caption uikit-nowrap">单位：条 / 日</span>
+      </div>
+     </div>
+     <div className="plot">
+      <span className="gl"></span>
+      {BARS.map(function(b,i){return <div key={i} className={'bar'+(i===11?' today':'')+' bar'+b[0]} title={b[1]+' 条 · '+['08-22','08-23','08-24','08-25','08-26','08-27','08-28','08-29','08-30','08-31','09-01','09-02'][i]}></div>;})}
+     </div>
+     <div className="xlabels">{XLABELS.map(function(l,i){return <span key={i} className="xl">{l}</span>;})}</div>
+    </div>
+    <div className="mt-card" data-component="surface-card">
+     <p className="sc-eyebrow">INTENT · 路由评估</p>
+     <h3 className="mt-h3">意图日志 · 路由评估</h3>
+     <div className="ilist">
+      {INTENTS.map(function(it){return (
+       <div className="irow" key={it.tag}>
+        <div className="irow-top">
+         <span className="st st-intent irow-tag" data-component="status-tag"><span className="uikit-truncate">{it.tag}</span></span>
+         <span className="irow-num">{it.num} · {it.pct}</span>
+        </div>
+        <div className="ptrack"><div className={'pfill '+it.cls}></div></div>
+       </div>);})}
+     </div>
+     <div className="card-foot" data-component="button">
+      <button className="btn btn-primary">生成周报</button>
+      <button className="btn btn-ghost" disabled title="本期周报生成中">导出 PNG</button>
+      <span className="card-foot-note uikit-truncate">周报按 ISO 周归档至知识书院</span>
+     </div>
+    </div>
+   </div>
+  </div>
+ );
+}
+
+function Sources(){
+ const [q,setQ]=useState('');
+ const [sel,setSel]=useState(new Set());
+ const [showEmpty,setShowEmpty]=useState(false);
+ const [page,setPage]=useState(1);
+ const [pushing,setPushing]=useState(false);
+ const [toast,setToast]=useState('');
+ useEffect(function(){if(window.lucide){window.lucide.createIcons();}},[showEmpty]);
+ const kw=q.trim();
+ const rows=SOURCES.filter(function(s){return !kw||s.name.indexOf(kw)>=0||s.type.indexOf(kw)>=0;});
+ const all=rows.length>0&&rows.every(function(r){return sel.has(r.id);});
+ const n=rows.filter(function(r){return sel.has(r.id);}).length;
+ function toggle(id){const s2=new Set(sel);if(s2.has(id)){s2.delete(id);}else{s2.add(id);}setSel(s2);}
+ function toggleAll(){const s2=new Set(sel);if(all){rows.forEach(function(r){s2.delete(r.id);});}else{rows.forEach(function(r){s2.add(r.id);});}setSel(s2);}
+ function push(){if(n===0||pushing){return;}setPushing(true);setTimeout(function(){setPushing(false);setToast('已推送 '+n+' 条');setSel(new Set());setTimeout(function(){setToast('');},2600);},1000);}
+ const days=[1,2,3,'…',5];
+ return (
+  <div className="view">
+   <header className="page-head">
+    <p className="mt-eyebrow page-eyebrow">ADMIN CONSOLE · 采集策展</p>
+    <div className="page-title-row">
+     <h1 className="mt-h1 page-title uikit-truncate">采集源管理</h1>
+     <span className="st st-accent" data-component="status-tag"><span className="st-dot"></span>3 个待处理</span>
+    </div>
+    <p className="mt-caption page-sub">共 47 个来源 · 推送前请核对抓取频率</p>
+   </header>
+   <div className="tbl-card" data-component="data-table">
+    <div className="tb-title uikit-truncate">采集源列表</div>
+    <div className="toolbar">
+     <div className="control src-search" data-component="input">
+      <i data-lucide="search" className="ico" aria-hidden="true"></i>
+      <input className="in" placeholder="检索名称 / 类型" value={q} onChange={function(e){setQ(e.target.value);}}/>
+     </div>
+     <button className="btn ghost">全部状态</button>
+     <button className="btn ghost">全部类型</button>
+     <button className={'btn ghost'+(showEmpty?' filter-on':'')} onClick={function(){setShowEmpty(!showEmpty);}} aria-pressed={showEmpty}>空态预览</button>
+     <div className="tb-right">
+      {toast?<span className="st st-success" data-component="status-tag"><span className="st-dot"></span>{toast}</span>:null}
+      <button className="btn ghost">新　建</button>
+      <button className="btn primary" disabled={n===0||pushing} onClick={push} title={n===0?'请先勾选要推送的来源':''}>{pushing?<span className="spinner"></span>:null}推送选中（{n}）</button>
+     </div>
+    </div>
+    {showEmpty?(
+     <div className="tbl-empty">
+      <i data-lucide="inbox" className="i40 empty-ico" aria-hidden="true"></i>
+      <p className="empty-title">尚无采集源在册——去右上角新建第一条来源吧。</p>
+      <button className="btn ghost">新　建</button>
+     </div>
+    ):(
+     <div className="uikit-table-wrap">
+      <table className="tbl">
+       <colgroup><col style={{width:'44px'}}/><col/><col style={{width:'84px'}}/><col style={{width:'104px'}}/><col style={{width:'88px'}}/><col style={{width:'116px'}}/><col style={{width:'132px'}}/></colgroup>
+       <thead><tr>
+        <th className="check"><button className={'ck ckbtn'+(all?' on':'')} onClick={toggleAll} aria-label="全选当前页"></button></th>
+        <th>采集源</th><th>类型</th><th>状态</th><th className="ta-r">条目</th><th>最近采集</th><th>操作</th>
+       </tr></thead>
+       <tbody>
+        {rows.map(function(r){return (
+        <tr key={r.id} className={sel.has(r.id)?'sel':''}>
+         <td className="check"><button className={'ck ckbtn'+(sel.has(r.id)?' on':'')} onClick={function(){toggle(r.id);}} aria-label={'选择 '+r.name}></button></td>
+         <td><span className="uikit-truncate" title={r.name}>{r.name}</span></td>
+         <td><span className="type-cell uikit-truncate">{r.type}</span></td>
+         <td><span className={'tag '+r.status[0]} data-component="status-tag">{r.status[1]}</span></td>
+         <td className="ta-r"><span className="mt-mono">{r.count}</span></td>
+         <td><span className="time">{r.time}</span></td>
+         <td><div className="uikit-action-cell"><button className="op uikit-action">编　辑</button><button className="op uikit-action">删　除</button></div></td>
+        </tr>);})}
+        {rows.length===0?<tr><td colSpan="7"><div className="tbl-empty"><p className="empty-title">没有匹配的采集源——换个关键词试试。</p></div></td></tr>:null}
+       </tbody>
+      </table>
+     </div>
+    )}
+    <div className="pager">
+     <span className="time uikit-truncate">共 47 条 · 每页 10 条</span>
+     {days.map(function(p){return typeof p==='number'
+      ?<button key={p} className={'pg'+(page===p?' on':'')} onClick={function(){setPage(p);}}>{p}</button>
+      :<span key="dot" className="pg uikit-nowrap" aria-hidden="true">…</span>;})}
+    </div>
+   </div>
+  </div>
+ );
+}
+
+function Gallery(){
+ const [gen,setGen]=useState('idle');
+ function runGen(){if(gen!=='idle'){return;}setGen('loading');setTimeout(function(){setGen('done');setTimeout(function(){setGen('idle');},1800);},1100);}
+ return (
+  <div className="view">
+   <header className="page-head">
+    <p className="mt-eyebrow page-eyebrow">DESIGNER · 组件工房</p>
+    <div className="page-title-row"><h1 className="mt-h1 page-title uikit-truncate">组件画廊 · 委托生成</h1></div>
+    <p className="mt-caption page-sub">向工房描述需求，委托生成 MtComponent 规格与实现 · 双字按钮保留全角空格</p>
+   </header>
+   <div className="mt-card" data-component="surface-card">
+    <p className="rail-label">按钮 · 变体（md · 点击「生　成」查看 loading 态）</p>
+    <div className="rail" data-component="button">
+     <button className="btn btn-primary" onClick={runGen}>{gen==='loading'?<span className="spinner"></span>:null}生　成</button>
+     {gen==='done'?<span className="st st-success" data-component="status-tag"><span className="st-dot"></span>已生成</span>:null}
+     <button className="btn btn-secondary">编　辑</button>
+     <button className="btn btn-ghost">取　消</button>
+     <button className="btn btn-danger">删　除</button>
+    </div>
+    <p className="rail-label">按钮 · 尺寸（sm 32 / md 36 / lg 44）</p>
+    <div className="rail" data-component="button">
+     <button className="btn primary btn-sm">推　送</button>
+     <button className="btn ghost">预　览</button>
+     <button className="btn primary btn-lg">提交委托</button>
+    </div>
+    <p className="rail-label">按钮 · 状态（disabled 保留文字）</p>
+    <div className="rail" data-component="button">
+     <button className="btn btn-primary" disabled>保　存</button>
+     <button className="btn btn-ghost" disabled>撤　回</button>
+    </div>
+    <p className="rail-label">状态标签 · 语义 / 意图 / 计数</p>
+    <div className="rail" data-component="status-tag">
+     <span className="st st-success"><span className="st-dot"></span>已完成</span>
+     <span className="st st-info">进行中</span>
+     <span className="st st-accent"><span className="st-dot"></span>招募中</span>
+     <span className="st st-error">已失败</span>
+     <span className="st st-solid">DOING</span>
+     <span className="st st-intent">data_query · 数据查询</span>
+     <span className="st st-count">12</span>
+    </div>
+   </div>
+   <div className="mt-card" data-component="surface-card">
+    <p className="rail-label">输入 · 检索 / 校验 / 只读 / 多行（聚焦呈墨蓝 2px 光环）</p>
+    <div className="form-grid">
+     <div className="field" data-component="input">
+      <span className="fld-label">检索</span>
+      <div className="control"><i data-lucide="search" className="ico" aria-hidden="true"></i><input className="in" placeholder="检索公司 / 职位 / 城市"/></div>
+     </div>
+     <div className="field" data-component="input">
+      <span className="fld-label">回调地址</span>
+      <div className="control error"><input className="in" defaultValue="api.magic-tools.cn/hook"/></div>
+      <span className="err-text">回调地址需以 https:// 开头并携带签名</span>
+     </div>
+     <div className="field" data-component="input">
+      <span className="fld-label">源编号</span>
+      <div className="control disabled"><input className="in" disabled value="MT-SRC-0142"/></div>
+      <span className="field-hint">由系统生成，不可编辑</span>
+     </div>
+     <div className="field" data-component="input">
+      <span className="fld-label">生成描述</span>
+      <textarea className="mt-textarea" placeholder="用一句话描述你想生成的组件…"></textarea>
+     </div>
+    </div>
+   </div>
+   <div className="mt-paper" data-component="surface-card">
+    <div className="uikit-responsive-grid">
+     <div className="mt-card">
+      <p className="sc-eyebrow">No. 01 · SURFACE-1</p>
+      <h3 className="sc-title">海拔即层级</h3>
+      <p className="sc-body">卡片 surface-1 静止时只带 shadow-1，悬停升至 shadow-2——海拔克制是本系统的辨识点，纸面 surface-0 永不加阴影。</p>
+      <hr className="sc-div"/>
+      <p className="sc-meta">surface-0 纸面 · surface-1 卡片 · surface-2 浮层</p>
+     </div>
+     <div className="mt-card is-overlay">
+      <p className="sc-eyebrow">OVERLAY · SURFACE-2</p>
+      <h3 className="sc-title">编　辑 采集源</h3>
+      <div className="ovl-fields">
+       <input className="sc-field" defaultValue="脉脉 · 职位板" aria-label="采集源名称"/>
+       <input className="sc-field" defaultValue="0 */30 * * * *" aria-label="抓取频率"/>
+      </div>
+      <div className="sc-foot">
+       <button className="sc-btn">取　消</button>
+       <button className="sc-btn is-primary">保　存</button>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+ );
+}
+
+function Front(props){
+ const [q,setQ]=useState('');
+ const [aq,setAq]=useState('');
+ const [remoteOnly,setRemoteOnly]=useState(false);
+ const [nav,setNav]=useState('岗位墙');
+ const kw=aq.trim();
+ const jobs=JOBS.filter(function(j){return (!remoteOnly||j.remote)&&(!kw||(j.title+j.org+j.meta).indexOf(kw)>=0);});
+ function run(){setAq(q);}
+ return (
+  <div className="view">
+   <div className="front-note">
+    <p className="mt-caption uikit-truncate">前台外壳预览 · UserShell · 同一令牌底座的另一面：报头水平导航 + 主题纸面</p>
+    <button className="btn btn-ghost" onClick={function(){props.go('overview');}}>返回控制台</button>
+   </div>
+   <header className="mt-masthead" data-component="shell-nav">
+    <div className="mt-masthead-top">
+     <span className="mt-masthead-eyebrow uikit-truncate">MAGICTOOLS · 求职者门户</span>
+     <span className="mt-mono masthead-count uikit-nowrap">128 个机会在册</span>
+    </div>
+    <h1 className="mt-masthead-title">岗位博览</h1>
+    <nav className="mt-masthead-nav">
+     {['岗位墙','公司名录','简历工坊','面经档案'].map(function(nname){return (
+      <a key={nname} href="#" className={'mt-masthead-link'+(nav===nname?' is-active':'')} onClick={function(e){e.preventDefault();setNav(nname);}}>{nname}</a>);})}
+    </nav>
+   </header>
+   <div className="uikit-toolbar">
+    <div className="control search-wrap" data-component="input">
+     <i data-lucide="search" className="ico" aria-hidden="true"></i>
+     <input className="in" placeholder="检索公司 / 职位 / 城市" value={q} onChange={function(e){setQ(e.target.value);}} onKeyDown={function(e){if(e.key==='Enter'){run();}}}/>
+    </div>
+    <button className="btn btn-primary" onClick={run}>检　索</button>
+    <button className={'btn btn-ghost'+(remoteOnly?' filter-on':'')} onClick={function(){setRemoteOnly(!remoteOnly);}} aria-pressed={remoteOnly}>只看远程</button>
+    <button className="btn btn-ghost" disabled title="登录后可保存当前筛选">保存筛选</button>
+   </div>
+   <div className="uikit-responsive-grid g3">
+    {jobs.map(function(j){return (
+     <div className="mt-card is-link" key={j.no} data-component="surface-card">
+      <p className="sc-eyebrow">{j.no}</p>
+      <h3 className="sc-title">{j.title}</h3>
+      <p className="sc-body">{j.org}</p>
+      <div className="job-tags">
+       {j.tags.map(function(t){return <span key={t[1]} className={'st '+t[0]} data-component="status-tag">{t[0]==='st-accent'?<span className="st-dot"></span>:null}{t[1]}</span>;})}
+      </div>
+      <p className="sc-meta">{j.meta}</p>
+     </div>);})}
+    {jobs.length===0?<div className="mt-card"><p className="empty-title">没有匹配的岗位——换个关键词，或稍后再来。</p></div>:null}
+   </div>
+   <div className="front-foot">
+    <p className="mt-caption uikit-truncate">岗位数据每 30 分钟同步 · 来源见后台「采集源管理」</p>
+    <p className="mt-mono front-ver uikit-truncate">v0.9.2 · 墨蓝石墨</p>
+   </div>
+  </div>
+ );
+}
+
+function App(){
+ const [view,setView]=useState('overview');
+ const [dark,setDark]=useState(true);
+ const [sw,setSw]=useState(false);
+ useEffect(function(){
+  document.documentElement.classList.toggle('dark',dark);
+  if(window.lucide){window.lucide.createIcons();}
+ },[dark,view,sw]);
+ const crumb={overview:'总览驾驶舱 · FLIGHT DECK',sources:'采集源管理',gallery:'组件画廊 · 委托生成',front:'前台门面 · 岗位博览'}[view];
+ const NAV=[
+  {k:'overview',l:'总览驾驶舱'},
+  {k:'jobs',l:'岗位博览',c:'12'},
+  {k:'scholar',l:'知识书院'},
+  {k:'invest',l:'调研档案馆'},
+  {k:'sources',l:'采集源管理'},
+  {k:'gallery',l:'组件画廊'},
+  {k:'intents',l:'意图日志',c:'47'}
+ ];
+ const WIRED=['overview','sources','gallery'];
+ return (
+  <div className="uikit-shell" data-layout-guard="uikit-v1" style={{'--uikit-sidebar-w':'208px'}}>
+   <aside className="uikit-sidebar">
+    <nav className="mt-sider" data-component="shell-nav">
+     <div className="mt-sider-brand uikit-truncate">MAGICTOOLS · ADMIN</div>
+     {NAV.map(function(it){const wired=WIRED.indexOf(it.k)>=0;return (
+      <a key={it.k} href="#" className={'mt-sider-item'+(view===it.k?' is-active':'')} onClick={function(e){e.preventDefault();if(wired){setView(it.k);}}}>
+       <span className="uikit-truncate sider-label">{it.l}</span>
+       {it.c?<span className="st st-count">{it.c}</span>:null}
+      </a>);})}
+     <a className="mt-sider-item mt-sider-back" href="#" onClick={function(e){e.preventDefault();setView('front');}}>
+      <i data-lucide="arrow-left" className="i16 ico-gap" aria-hidden="true"></i>
+      <span className="uikit-truncate sider-label">返回前台</span>
+     </a>
+    </nav>
+   </aside>
+   <div className="uikit-right">
+    <header className="topbar">
+     <span className="topbar-brand uikit-nowrap">MT · ADMIN CONSOLE</span>
+     <span className="tb-sep"></span>
+     <span className="topbar-crumb uikit-truncate">{crumb}</span>
+     <span className="topbar-spacer"></span>
+     <button className="topbar-btn" onClick={function(){setSw(!sw);}} aria-expanded={sw}>
+      <span className="uikit-truncate">切换应用</span><i data-lucide="chevron-down" className="i16" aria-hidden="true"></i>
+     </button>
+     <span className="tb-sep"></span>
+     <button className="topbar-btn" aria-label="通知"><i data-lucide="bell" className="i16" aria-hidden="true"></i></button>
+     <button className="topbar-btn" onClick={function(){setDark(!dark);}} aria-label="切换亮色或暗色主题">{dark?'切换亮色':'切换暗色'}<i data-lucide={dark?'sun':'moon'} className="i16" aria-hidden="true"></i></button>
+     <span className="tb-sep"></span>
+     <span className="topbar-user uikit-nowrap"><i data-lucide="user" className="i20" aria-hidden="true"></i>墨工 · 超级管理员</span>
+    </header>
+    {sw?(
+     <div className="mt-switcher-menu switchstrip" data-component="shell-nav">
+      {APPS.map(function(a){return (
+       <a key={a} href="#" className="mt-switcher-item" onClick={function(e){e.preventDefault();setSw(false);if(APP_GO[a]){setView(APP_GO[a]);}}}><span className="uikit-truncate">{a}</span></a>);})}
+     </div>
+    ):null}
+    <main className="uikit-main">
+     {view==='overview'?<Overview/>:null}
+     {view==='sources'?<Sources/>:null}
+     {view==='gallery'?<Gallery/>:null}
+     {view==='front'?<Front go={setView}/>:null}
+    </main>
+   </div>
+  </div>
+ );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+<script>try{lucide.createIcons();}catch(e){}</script>
+</body>
+</html>

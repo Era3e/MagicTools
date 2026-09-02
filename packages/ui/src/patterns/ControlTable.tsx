@@ -135,6 +135,7 @@ const ControlTable: React.FC<ControlTableProps> = ({
           borderRadius: radius,
           border: `1px solid ${color.border}`,
           padding: spacing.md,
+          boxShadow: tokens.shadow.card,
           boxSizing: "border-box",
         }}
       >

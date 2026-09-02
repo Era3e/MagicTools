@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "tokenSource": "css.json",
+  "uikitPlan": "uikit-plan.json",
+  "recommendedReadOrder": [
+    "SKILL.md",
+    "css.json",
+    "uikit-plan.json",
+    "components/index.json",
+    "components/{slug}.json",
+    "preview/component-{slug}.html",
+    "components.css",
+    "ui_kits/dashboard/index.html"
+  ],
+  "coreComponents": ["button", "surface-card", "data-table", "input", "shell-nav", "status-tag"],
+  "supportComponents": []
+}

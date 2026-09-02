@@ -1,0 +1,10 @@
+{
+  "components": [
+    { "slug": "button", "name": "MtButton 按钮", "category": "actions", "sourceKind": "from-scratch", "confidence": "medium", "variantCount": 5, "priorityHint": "highest", "keyInsightSeed": "墨蓝实心主按钮，工房密度 36px 默认高，克制圆角与按压反馈" },
+    { "slug": "surface-card", "name": "MtSurfaceCard 表面卡片", "category": "layout", "sourceKind": "from-scratch", "confidence": "medium", "variantCount": 3, "priorityHint": "high", "keyInsightSeed": "纸面/卡片/浮层三级表面语言，海拔即层级，替代白卡平铺" },
+    { "slug": "data-table", "name": "MtTable 数据表格", "category": "data-display", "sourceKind": "from-scratch", "confidence": "medium", "variantCount": 3, "priorityHint": "high", "keyInsightSeed": "后台 ControlTable 骨架，石墨表头 + 等宽数字右对齐 + 纸色悬浮行" },
+    { "slug": "input", "name": "MtInput 输入框", "category": "forms", "sourceKind": "from-scratch", "confidence": "medium", "variantCount": 3, "priorityHint": "medium", "keyInsightSeed": "墨蓝聚焦环 2px，纸面底而非纯白，前置图标与检索态" },
+    { "slug": "shell-nav", "name": "MtShellNav 外壳导航", "category": "navigation", "sourceKind": "from-scratch", "confidence": "medium", "variantCount": 2, "priorityHint": "high", "keyInsightSeed": "双外壳：前台报头水平导航 vs 后台石墨深侧栏，一套令牌两种性格" },
+    { "slug": "status-tag", "name": "MtStatusTag 状态标签", "category": "data-display", "sourceKind": "from-scratch", "confidence": "medium", "variantCount": 4, "priorityHint": "medium", "keyInsightSeed": "低饱和语义底 + 深阶文字，等宽小字号，禁用 AntD 预设色" }
+  ]
+}

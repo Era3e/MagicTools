@@ -4,12 +4,12 @@ import RequestList from "./pages/RequestList";
 import RequestDetail from "./pages/RequestDetail";
 
 const BRIEF_THEME = {
-  primary: "#7c2d12",
-  background: "#faf7f2",
-  ink: "#292524",
-  muted: "#8a837c",
-  displayFont: '"Georgia", "Noto Serif SC", "Songti SC", serif',
-  bodyFont: '"Noto Serif SC", Georgia, serif',
+  primary: "#6e3b28",
+  background: "#f6f2ea",
+  ink: "#251f1a",
+  muted: "#7a7066",
+  displayFont: '"Noto Serif SC", "Source Serif 4", "Songti SC", serif',
+  bodyFont: '"Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif',
 };
 
 const ADMIN_NAV = [{ key: "/admin/requests", label: "分析请求审批" }];

@@ -1,10 +1,11 @@
-import { Dropdown, Layout, Menu, Typography, Drawer } from "antd";
+import { ConfigProvider, Dropdown, Layout, Menu, Typography, Drawer } from "antd";
 import type { MenuProps } from "antd";
 import { useState } from "react";
 import { MenuOutlined } from "@ant-design/icons";
 import type { ReactNode } from "react";
 import { APPS } from "./apps";
 import { ThemeProvider } from "./theme";
+import { tokens } from "./tokens";
 import { useResponsive } from "./useResponsive";
 
 export interface UserNavItem {
@@ -23,13 +24,19 @@ export interface UserShellTheme {
   [key: string]: string;
 }
 
+/** v2 杂志风默认主题：砖红 accent + 暖纸底 + 品牌衬线（Noto Serif SC 优先） */
 export const MAGAZINE_THEME: UserShellTheme = {
-  primary: "#b4532a",
-  background: "#f8f5ef",
-  ink: "#2b2620",
-  muted: "#8a8175",
-  displayFont: 'Georgia, "Times New Roman", "Noto Serif SC", "Songti SC", serif',
-  bodyFont: '"Noto Serif SC", Georgia, serif',
+  primary: "#a8522e",
+  background: "#f7f3ec",
+  ink: "#241f1a",
+  muted: "#857b6f",
+  displayFont: `"Noto Serif SC", "Source Serif 4", "Songti SC", serif`,
+  bodyFont: `"Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif`,
+  brick: "#a8522e",
+  paper: "#f7f3ec",
+  rule: "#e0d6c6",
+  card: "#fffdf8",
+  border: "#e6ddcf",
 };
 
 export interface UserShellProps {
@@ -45,6 +52,11 @@ export interface UserShellProps {
   children: ReactNode;
 }
 
+/**
+ * UserShell — v2 前台外壳（八应用主题派生层）。
+ * 主题仅派生 accent / paper / display font；AntD 控件（分页/输入/按钮）
+ * 经嵌套 ConfigProvider 跟随应用 accent（主题真注入），结构全平台统一。
+ */
 export function UserShell(props: UserShellProps) {
   const { title, subtitle, navItems, selectedKey, onNavigate, adminPath, adminLabel = "管理后台", footerNote = "MagicTools", theme = MAGAZINE_THEME, children } = props;
   const { isMobile } = useResponsive();
@@ -66,130 +78,151 @@ export function UserShell(props: UserShellProps) {
   };
 
   return (
-    <ThemeProvider value={theme}>
-      <Layout style={{ minHeight: "100vh", background: theme.background, fontFamily: theme.bodyFont }}>
-      <header
-        style={{
-          borderBottom: "3px double " + theme.ink,
-          padding: isMobile ? "20px 16px 0" : "36px 24px 0",
-          textAlign: "center",
-        }}
-      >
-        <div style={{ fontSize: 12, letterSpacing: 6, color: theme.muted, textTransform: "uppercase" }}>
-          MagicTools
-        </div>
-        <h1
-          style={{
-            fontFamily: theme.displayFont,
-            fontSize: isMobile ? 28 : 40,
-            fontWeight: 700,
-            color: theme.ink,
-            margin: "8px 0 4px",
-            letterSpacing: 2,
-          }}
-        >
-          {title}
-        </h1>
-        {subtitle ? (
-          <Typography.Paragraph style={{ color: theme.muted, fontStyle: "italic", marginBottom: 16 }}>
-            {subtitle}
-          </Typography.Paragraph>
-        ) : null}
-
-        {isMobile ? (
-          // 移动端：汉堡菜单
-          <div style={{ padding: "8px 0", textAlign: "left" }}>
-            <MenuOutlined
-              style={{ fontSize: 20, cursor: "pointer", color: theme.ink }}
-              onClick={() => setDrawerOpen(true)}
-            />
-          </div>
-        ) : (
-          // 桌面端：水平导航
-          <nav
+    <ConfigProvider
+      theme={{
+        token: {
+          colorPrimary: theme.primary,
+          colorLink: theme.primary,
+          colorInfo: theme.primary,
+          borderRadius: tokens.radiusTokens.md,
+          controlHeight: tokens.size.buttonMd,
+          fontFamily: theme.bodyFont,
+        },
+        components: {
+          Table: {
+            headerBg: theme.paper ?? theme.background,
+            headerColor: theme.muted,
+            rowHoverBg: theme.card ?? theme.background,
+          },
+        },
+      }}
+    >
+      <ThemeProvider value={theme}>
+        <Layout style={{ minHeight: "100vh", background: theme.background, fontFamily: theme.bodyFont }}>
+          <header
             style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: 36,
-              padding: "12px 0",
-              borderTop: "1px solid " + theme.ink,
-              borderBottom: "1px solid " + theme.ink,
+              borderBottom: "3px double " + theme.ink,
+              padding: isMobile ? "20px 16px 0" : "36px 24px 0",
+              textAlign: "center",
             }}
           >
-            {navItems.map((item) => {
-              const active = item.key === selectedKey;
-              return (
-                <a
-                  key={item.key}
-                  onClick={() => onNavigate(item.key)}
-                  style={{
-                    fontFamily: theme.displayFont,
-                    fontSize: 15,
-                    letterSpacing: 2,
-                    color: active ? theme.primary : theme.ink,
-                    borderBottom: active ? "2px solid " + theme.primary : "2px solid transparent",
-                    paddingBottom: 2,
-                    cursor: "pointer",
-                  }}
-                >
-                  {item.label}
+            <div style={{ fontSize: 12, letterSpacing: 6, color: theme.muted, textTransform: "uppercase", fontFamily: tokens.font.mono }}>
+              MagicTools
+            </div>
+            <h1
+              style={{
+                fontFamily: theme.displayFont,
+                fontSize: isMobile ? 28 : 40,
+                fontWeight: 700,
+                color: theme.ink,
+                margin: "8px 0 4px",
+                letterSpacing: 2,
+              }}
+            >
+              {title}
+            </h1>
+            {subtitle ? (
+              <Typography.Paragraph style={{ color: theme.muted, fontStyle: "italic", marginBottom: 16 }}>
+                {subtitle}
+              </Typography.Paragraph>
+            ) : null}
+
+            {isMobile ? (
+              // 移动端：汉堡菜单
+              <div style={{ padding: "8px 0", textAlign: "left" }}>
+                <MenuOutlined
+                  style={{ fontSize: 20, cursor: "pointer", color: theme.ink }}
+                  onClick={() => setDrawerOpen(true)}
+                />
+              </div>
+            ) : (
+              // 桌面端：水平导航
+              <nav
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: 36,
+                  padding: "12px 0",
+                  borderTop: "1px solid " + theme.ink,
+                  borderBottom: "1px solid " + theme.ink,
+                }}
+              >
+                {navItems.map((item) => {
+                  const active = item.key === selectedKey;
+                  return (
+                    <a
+                      key={item.key}
+                      onClick={() => onNavigate(item.key)}
+                      style={{
+                        fontFamily: theme.displayFont,
+                        fontSize: 15,
+                        letterSpacing: 2,
+                        color: active ? theme.primary : theme.ink,
+                        borderBottom: active ? "2px solid " + theme.primary : "2px solid transparent",
+                        paddingBottom: 2,
+                        cursor: "pointer",
+                        transition: `color ${tokens.motion.durationFast} ${tokens.motion.easeStandard}`,
+                      }}
+                    >
+                      {item.label}
+                    </a>
+                  );
+                })}
+              </nav>
+            )}
+          </header>
+
+          {/* 移动端抽屉导航 */}
+          {isMobile && (
+            <Drawer
+              open={drawerOpen}
+              onClose={() => setDrawerOpen(false)}
+              title="导航"
+              placement="left"
+              width={240}
+              styles={{ header: { background: theme.background, color: theme.ink } }}
+            >
+              <Menu
+                mode="inline"
+                selectedKeys={[selectedKey]}
+                items={navMenuItems}
+                onClick={(e) => handleNav(e.key)}
+                style={{ borderInlineEnd: "none", background: "transparent" }}
+              />
+            </Drawer>
+          )}
+
+          <Layout.Content style={{ maxWidth: 1080, width: "100%", margin: "0 auto", padding: isMobile ? "16px 12px 32px" : "32px 24px 64px" }}>
+            {children}
+          </Layout.Content>
+
+          <footer
+            style={{
+              borderTop: "1px solid " + theme.muted,
+              padding: isMobile ? "12px 16px" : "16px 24px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexDirection: isMobile ? "column" : "row",
+              gap: isMobile ? 8 : 0,
+              color: theme.muted,
+              fontSize: 12,
+            }}
+          >
+            <span>{footerNote}</span>
+            <span style={{ display: "flex", gap: 16, alignItems: "center" }}>
+              {adminPath ? (
+                <a href={adminPath} onClick={(e) => { e.preventDefault(); onNavigate(adminPath); }} style={{ color: theme.muted }}>
+                  {adminLabel} →
                 </a>
-              );
-            })}
-          </nav>
-        )}
-      </header>
-
-      {/* 移动端抽屉导航 */}
-      {isMobile && (
-        <Drawer
-          open={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
-          title="导航"
-          placement="left"
-          width={240}
-          styles={{ header: { background: theme.background, color: theme.ink } }}
-        >
-          <Menu
-            mode="inline"
-            selectedKeys={[selectedKey]}
-            items={navMenuItems}
-            onClick={(e) => handleNav(e.key)}
-            style={{ borderInlineEnd: "none", background: "transparent" }}
-          />
-        </Drawer>
-      )}
-
-      <Layout.Content style={{ maxWidth: 1080, width: "100%", margin: "0 auto", padding: isMobile ? "16px 12px 32px" : "32px 24px 64px" }}>
-        {children}
-      </Layout.Content>
-
-      <footer
-        style={{
-          borderTop: "1px solid " + theme.muted,
-          padding: isMobile ? "12px 16px" : "16px 24px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexDirection: isMobile ? "column" : "row",
-          gap: isMobile ? 8 : 0,
-          color: theme.muted,
-          fontSize: 12,
-        }}
-      >
-        <span>{footerNote}</span>
-        <span style={{ display: "flex", gap: 16, alignItems: "center" }}>
-          {adminPath ? (
-            <a href={adminPath} onClick={(e) => { e.preventDefault(); onNavigate(adminPath); }} style={{ color: theme.muted }}>
-              {adminLabel} →
-            </a>
-          ) : null}
-          <Dropdown menu={{ items: switcherItems }}>
-            <a style={{ color: theme.muted }}>切换应用</a>
-          </Dropdown>
-        </span>
-      </footer>
-    </Layout>
-    </ThemeProvider>
+              ) : null}
+              <Dropdown menu={{ items: switcherItems }}>
+                <a style={{ color: theme.muted }}>切换应用</a>
+              </Dropdown>
+            </span>
+          </footer>
+        </Layout>
+      </ThemeProvider>
+    </ConfigProvider>
   );
 }

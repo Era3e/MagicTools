@@ -5,16 +5,16 @@ import FeedbackPage from "./pages/FeedbackPage";
 import IntentLogPage from "./pages/IntentLogPage";
 
 const QUIET_THEME = {
-  primary: "#c2410c",
-  background: "#fbfaf8",
-  ink: "#27272a",
-  muted: "#a1a1aa",
-  displayFont: '"Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif',
-  bodyFont: '"Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif',
-  accent: "#c2410c",
-  bubbleUser: "#f5f5f4",
+  primary: "#4a688c",
+  background: "#f8f9fa",
+  ink: "#1c2530",
+  muted: "#5f6c7c",
+  displayFont: '"Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif',
+  bodyFont: '"Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif',
+  accent: "#4a688c",
+  bubbleUser: "#eef1f5",
   bubbleBot: "#ffffff",
-  border: "#e7e5e4",
+  border: "#d9dde3",
 };
 
 const USER_NAV = [{ key: "/chat", label: "对话" }];

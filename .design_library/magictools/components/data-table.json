@@ -1,0 +1,47 @@
+{
+  "slug": "data-table",
+  "schemaVersion": 2,
+  "name": "MtTable 数据表格",
+  "category": "data-display",
+  "sourceKind": "from-scratch",
+  "confidence": "medium",
+  "semanticTypeCandidates": [
+    { "candidate": "admin-crud-table", "evidence": "8 应用后台 ControlTable：岗位/采集源/调研/请求/需求/组件/反馈/意图日志" },
+    { "candidate": "selectable-batch-table", "evidence": "推送选中（N）批量操作行选" },
+    { "candidate": "readonly-log-table", "evidence": "意图日志、操作历史" }
+  ],
+  "variantDimensions": [
+    { "dimension": "selection", "values": ["none", "checkbox-batch"] },
+    { "dimension": "density", "values": ["compact 40px 行高（后台默认）", "comfortable 48px"] },
+    { "dimension": "state", "values": ["default", "row-hover", "empty", "loading"] }
+  ],
+  "representativeVariants": [
+    {
+      "name": "Admin CRUD table",
+      "whySelected": "后台最高频形态，8 应用共用",
+      "traits": { "headerBg": "var(--mt-neutral-50)", "headerText": "var(--mt-neutral-700)", "headerHeight": "40px", "rowHeight": "40px", "rowHoverBg": "var(--mt-ink-50)", "borderRadius": "var(--radius-md)", "cellPadding": "0 var(--space-3)", "headerWeight": "600", "headerFontSize": "var(--type-scale-caption)" },
+      "childrenDigest": "列：名称 / 状态(标签) / 更新时间(mono) / 操作(编 辑 · 删 除)"
+    },
+    {
+      "name": "Batch select table",
+      "whySelected": "推送工作流：勾选行 → 工具条出现批量按钮",
+      "traits": { "toolbarGap": "var(--space-2)", "selectedRowBg": "var(--mt-ink-50)", "checkboxColor": "var(--mt-ink-600)" },
+      "childrenDigest": "工具条：「推送选中（2）」primary + 「全选」ghost"
+    },
+    {
+      "name": "Empty table",
+      "whySelected": "空态规范（MtEmptyState 升级），替代 AntD 简笔画",
+      "traits": { "padding": "var(--space-12) 0", "iconColor": "var(--mt-neutral-300)", "titleColor": "var(--color-muted)", "titleFont": "display serif italic" },
+      "childrenDigest": "「尚无岗位在册——去后台录入第一条机会吧。」+ 主操作按钮"
+    }
+  ],
+  "anatomy": {
+    "parts": ["toolbar（筛选+批量操作）", "header 行（石墨底）", "data rows", "pagination（mono 数字）", "empty/loading 态"],
+    "structure": "ControlTable 骨架：TitleBar → Toolbar → Table → Pagination"
+  },
+  "structurePatterns": ["数字列右对齐且用 JetBrains Mono", "时间列 mono + 次要色", "操作列右对齐文字按钮（ghost sm）", "行悬浮纸色 tint，不用 AntD 默认蓝 tint"],
+  "usageHints": { "priorityHint": "high", "rules": ["表头禁止 AntD 默认蓝悬浮", "状态列一律用 MtStatusTag", "批量按钮文案带计数「推送选中（N）」"] },
+  "doNotInvent": ["虚拟滚动长表", "列分组表头"],
+  "unknowns": [" сорt 图标交互细节沿用 AntD，仅换色"],
+  "keyInsightSeed": "后台 ControlTable 骨架，石墨表头 + 等宽数字右对齐 + 纸色悬浮行"
+}

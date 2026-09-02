@@ -5,12 +5,12 @@ import SourceDetail from "./pages/SourceDetail";
 import ItemList from "./pages/ItemList";
 
 const PRESS_THEME = {
-  primary: "#0f4c81",
-  background: "#fdfdfb",
-  ink: "#111111",
-  muted: "#6b6b6b",
-  displayFont: '"Impact", "Arial Black", "Noto Sans SC", sans-serif',
-  bodyFont: '"Noto Serif SC", Georgia, serif',
+  primary: "#1f3a5c",
+  background: "#f7f7f4",
+  ink: "#141a20",
+  muted: "#5f6c7c",
+  displayFont: '"JetBrains Mono", "Cascadia Mono", Consolas, "Noto Sans SC", monospace',
+  bodyFont: '"Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif',
 };
 
 const ADMIN_NAV = [{ key: "/admin/sources", label: "信息源管理" }];

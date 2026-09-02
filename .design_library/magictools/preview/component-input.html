@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>MtInput 输入框</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+/* Page scaffold — NOT extracted */
+body { margin:0; padding:12px; background:var(--color-surface); font-family:var(--font-body); font-size:var(--font-size-body); color:var(--color-text); }
+.row { display:flex; align-items:flex-start; gap:var(--space-3); margin-bottom:var(--space-3); flex-wrap:wrap; }
+.label { flex:0 0 92px; font-size:var(--font-size-caption); color:var(--text-muted); white-space:nowrap; line-height:18px; }
+.divider { border:none; border-top:1px solid var(--rule); margin:var(--space-2) 0 var(--space-3); }
+
+/* @component-css-start */
+/* Component definitions — extracted to components.css by deterministic script */
+.field { display:flex; flex-direction:column; gap:var(--space-1); flex:1; min-width:200px; }
+.fld-label { font-size:var(--font-size-caption); font-weight:600; color:var(--mt-graphite-700); line-height:1.5; }
+.err-text { font-size:var(--font-size-caption); color:var(--color-error); line-height:1.5; }
+.control { display:flex; align-items:center; gap:var(--space-2); height:var(--size-input-height); padding:0 var(--space-3); background:var(--surface-2); border:1px solid var(--color-border); border-radius:var(--radius-sm); transition:border-color .15s, box-shadow .15s; }
+.control.sm { height:var(--size-button-sm); }
+.control:hover { border-color:var(--mt-ink-400); }
+.control:focus-within { border-color:var(--mt-ink-600); box-shadow:0 0 0 2px var(--mt-ink-100); }
+.control.error { border-color:var(--mt-error-500); }
+.control.error:focus-within { border-color:var(--mt-error-500); box-shadow:0 0 0 2px var(--mt-error-100); }
+.control.disabled { background:var(--muted); cursor:not-allowed; }
+.control.disabled:hover { border-color:var(--color-border); }
+.control .in { flex:1; min-width:0; height:100%; border:none; outline:none; background:transparent; font-family:var(--font-body); font-size:var(--font-size-body); color:var(--color-text); }
+.control .in::placeholder { color:var(--text-faint); }
+.control .in:disabled { color:var(--text-faint); cursor:not-allowed; }
+.control .ico { width:var(--size-icon-sm); height:var(--size-icon-sm); color:var(--text-muted); flex-shrink:0; }
+.control .prefix { flex-shrink:0; align-self:stretch; display:flex; align-items:center; padding:0 var(--space-2); margin-left:calc(-1 * var(--space-3)); background:var(--muted); border-right:1px solid var(--color-border); border-radius:var(--radius-sm) 0 0 var(--radius-sm); color:var(--text-muted); font-size:var(--font-size-body); }
+.mt-textarea { width:100%; min-height:96px; padding:var(--space-2) var(--space-3); background:var(--surface-2); border:1px solid var(--color-border); border-radius:var(--radius-sm); font-family:var(--font-body); font-size:var(--font-size-body); line-height:1.7; color:var(--color-text); resize:vertical; outline:none; transition:border-color .15s, box-shadow .15s; }
+.mt-textarea:hover { border-color:var(--mt-ink-400); }
+.mt-textarea:focus { border-color:var(--mt-ink-600); box-shadow:0 0 0 2px var(--mt-ink-100); }
+.mt-textarea::placeholder { color:var(--text-faint); }
+/* @component-css-end */
+</style>
+</head>
+<body>
+
+<div class="row">
+  <span class="label">默认</span>
+  <div class="field" data-evidence-sample="Form input md">
+    <span class="fld-label">采集源名称</span>
+    <div class="control"><input class="in" type="text"></div>
+  </div>
+</div>
+
+<div class="row">
+  <span class="label">小号</span>
+  <div class="field" data-evidence-sample="Form input md">
+    <span class="fld-label">采集源名称</span>
+    <div class="control sm"><input class="in" type="text"></div>
+  </div>
+</div>
+
+<div class="row">
+  <span class="label">错误</span>
+  <div class="field" data-evidence-sample="Form input md">
+    <span class="fld-label">采集源名称</span>
+    <div class="control error"><input class="in" type="text"></div>
+    <span class="err-text">请输入采集源名称</span>
+  </div>
+</div>
+
+<div class="row">
+  <span class="label">禁用</span>
+  <div class="field" data-evidence-sample="Form input md">
+    <span class="fld-label">采集源名称</span>
+    <div class="control disabled"><input class="in" type="text" disabled></div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<div class="row">
+  <span class="label">检索</span>
+  <div class="field" data-evidence-sample="Search input md">
+    <div class="control"><img class="ico" src="https://cdn.jsdelivr.net/npm/lucide-static@1.8.0/icons/search.svg" alt=""><input class="in" type="text" placeholder="检索公司 / 职位 / 城市"></div>
+  </div>
+  <div class="field" data-evidence-sample="Search input md">
+    <div class="control"><img class="ico" src="https://cdn.jsdelivr.net/npm/lucide-static@1.8.0/icons/search.svg" alt=""><input class="in" type="text" value="公司"><img class="ico" src="https://cdn.jsdelivr.net/npm/lucide-static@1.8.0/icons/x.svg" alt=""></div>
+  </div>
+</div>
+
+<div class="row">
+  <span class="label">前缀</span>
+  <div class="field" data-evidence-sample="Form input md">
+    <div class="control"><span class="prefix">https://</span><input class="in" type="text"></div>
+  </div>
+</div>
+
+<div class="row">
+  <span class="label">多行</span>
+  <div class="field" data-evidence-sample="Textarea">
+    <textarea class="mt-textarea" placeholder="用一句话描述你想生成的组件…"></textarea>
+  </div>
+</div>
+
+</body>
+</html>

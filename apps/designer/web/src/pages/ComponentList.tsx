@@ -84,7 +84,7 @@ export default function ComponentList() {
           {viewing ? (
             <>
               <Tag>{viewing.description || "无描述"}</Tag>
-              <pre style={{ maxHeight: 420, overflow: "auto", background: tokens.color.bgNeutral, padding: 12, borderRadius: 6 }}>
+              <pre style={{ maxHeight: 420, overflow: "auto", background: tokens.color.bgUser, padding: 12, borderRadius: 6, fontFamily: tokens.font.mono, fontSize: 12 }}>
                 {viewing.code}
               </pre>
             </>
