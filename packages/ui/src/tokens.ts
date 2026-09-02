@@ -61,6 +61,14 @@ export const tokens = {
     hairline: "rgba(255, 255, 255, 0.07)",
     hairlineStrong: "rgba(255, 255, 255, 0.12)",
     hairlineHover: "rgba(255, 255, 255, 0.16)",
+    // 暗色交互表面 tint（透明度层，供 AntD 组件注入用）
+    tableHeaderBg: "rgba(255, 255, 255, 0.025)",
+    tableRowHoverBg: "rgba(255, 255, 255, 0.035)",
+    rowSelectedBg: "rgba(110, 139, 173, 0.08)",
+    rowSelectedHoverBg: "rgba(110, 139, 173, 0.12)",
+    menuSelectedBg: "rgba(110, 139, 173, 0.10)",
+    menuHoverBg: "rgba(255, 255, 255, 0.04)",
+    tagBg: "rgba(255, 255, 255, 0.04)",
   },
   // ---------- v2.1 升级：后台外壳（对齐四级表面阶梯） ----------
   admin: {
