@@ -34,12 +34,12 @@
 
 v2 新增：
 
-6. 禁止 AntD 出厂观感：默认蓝 `#1677ff`/`#2f54eb`、Tag 预设色、Empty 简笔画插画一律禁用；空态用 MtEmptyState 品牌化定制；
-7. 海拔即层级：surface-0 纸面（无阴影）/ surface-1 卡片（shadow-1，hover 升 shadow-2）/ surface-2 浮层（shadow-4）；卡片内禁止再嵌卡片；
-8. 数字一律等宽：表格数字列右对齐且用 JetBrains Mono；计数徽标 / 读数 / 时间戳同用 mono；
-9. 状态标签规则：底取语义色 50 阶、字取 700 阶、高 22px；意图 / 计数类内容用 mono；暗色下底取 800 阶、字取 200 阶；
-10. 主题派生规则：前台主题仅派生 accent hue / paper tint / display font 三个变量，布局结构与组件规则全平台统一；后台 AdminShell 永远深色一套（surface `#14181f` 系），禁止个性化；
-11. 动效：hover / 按压用 duration-fast（120ms）+ ease-standard；浮层进出 duration-base（200ms）+ ease-entrance；禁止弹性夸张缓动。
+1. 禁止 AntD 出厂观感：默认蓝 `#1677ff`/`#2f54eb`、Tag 预设色、Empty 简笔画插画一律禁用；空态用 MtEmptyState 品牌化定制；
+2. 海拔即层级：surface-0 纸面（无阴影）/ surface-1 卡片（shadow-1，hover 升 shadow-2）/ surface-2 浮层（shadow-4）；卡片内禁止再嵌卡片；
+3. 数字一律等宽：表格数字列右对齐且用 JetBrains Mono；计数徽标 / 读数 / 时间戳同用 mono；
+4. 状态标签规则：底取语义色 50 阶、字取 700 阶、高 22px；意图 / 计数类内容用 mono；暗色下底取 800 阶、字取 200 阶；
+5. 主题派生规则：前台主题仅派生 accent hue / paper tint / display font 三个变量，布局结构与组件规则全平台统一；后台 AdminShell 永远深色一套（surface `#0e1218` 系，v2.1 四级阶梯 surface0-4），禁止个性化；
+6. 动效：hover / 按压用 duration-fast（120ms）+ ease-standard；浮层进出 duration-base（200ms）+ ease-entrance；禁止弹性夸张缓动。
 
 ## 三、前后台双外壳（v1 延续，引用更新）
 
