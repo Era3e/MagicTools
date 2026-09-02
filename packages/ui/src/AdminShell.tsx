@@ -24,7 +24,8 @@ export interface AdminShellProps {
 }
 
 /**
- * AdminShell — v2 石墨深色控制台外壳（全平台统一，禁止个性化）。
+ * AdminShell — v2.1 石墨深色控制台外壳（全平台统一，禁止个性化）。
+ * 质感升级：Linear 噪点 + 多层环境光 + GitHub 发丝边框 + Vercel 透明度文字层级。
  * 表面色锚点取 tokens.admin / tokens.dark；内容区经 AdminDarkThemeProvider
  * 注入 AntD 暗色算法，后台表格/表单/浮层整体转深色（主题真注入）。
  */
@@ -87,7 +88,100 @@ export function AdminShell(props: AdminShellProps) {
   return (
     <AdminDarkThemeProvider>
       <ThemeProvider value={{ ...MAGAZINE_THEME_STUB }}>
-        <Layout style={{ minHeight: "100vh", background: tokens.admin.contentBg }}>
+        {/* 质感 CSS：焦点环 + 表格行悬浮重音条 + 卡片渐变描边 */}
+        <style>{`
+          .mt-admin-shell *:focus-visible {
+            outline: none;
+            box-shadow: ${tokens.shadow.focusRing};
+          }
+          .mt-admin-shell .ant-table-tbody > tr:hover > td {
+            background: rgba(255, 255, 255, 0.035) !important;
+            box-shadow: inset 2px 0 0 ${tokens.admin.accent};
+          }
+          .mt-admin-shell .ant-table-tbody > tr > td {
+            border-bottom: 1px solid ${tokens.dark.hairline};
+            transition: background ${tokens.motion.durationFast} ${tokens.motion.easeStandard};
+          }
+          .mt-admin-shell .ant-table-thead > tr > th {
+            background: rgba(255, 255, 255, 0.03) !important;
+            border-bottom: 1px solid ${tokens.dark.hairlineStrong};
+          }
+          .mt-admin-shell .ant-card {
+            box-shadow: ${tokens.shadow.darkCard};
+            transition: box-shadow ${tokens.motion.durationBase} ${tokens.motion.easeStandard}, border-color ${tokens.motion.durationFast} ${tokens.motion.easeStandard};
+          }
+          .mt-admin-shell .ant-card:hover {
+            box-shadow: ${tokens.shadow.darkCardHover};
+            border-color: ${tokens.dark.hairlineHover};
+          }
+          .mt-admin-shell .ant-btn-primary {
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+          }
+          .mt-admin-shell .ant-btn-primary:hover {
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15), 0 0 20px rgba(110, 139, 173, 0.15);
+          }
+          .mt-admin-shell .ant-btn-primary:active {
+            transform: scale(0.98);
+          }
+          .mt-admin-shell .ant-typography {
+            font-variant-numeric: tabular-nums;
+          }
+          /* 暗色光学修正：亮文字在暗底上有"光渗"幻觉 → 字重降一档 */
+          .mt-admin-shell, .mt-admin-shell .ant-typography, .mt-admin-shell .ant-btn, .mt-admin-shell .ant-menu-item {
+            font-weight: 350;
+          }
+          .mt-admin-shell h1, .mt-admin-shell h2, .mt-admin-shell h3,
+          .mt-admin-shell .ant-typography-h1, .mt-admin-shell .ant-typography-h2, .mt-admin-shell .ant-typography-h3 {
+            font-weight: 500;
+            letter-spacing: -0.01em;
+          }
+          .mt-admin-shell h4, .mt-admin-shell .ant-typography-h4 {
+            font-weight: 500;
+          }
+          /* 表格数字列对齐 */
+          .mt-admin-shell .ant-table-cell {
+            font-variant-numeric: tabular-nums;
+          }
+        `}</style>
+        <Layout className="mt-admin-shell" style={{ minHeight: "100vh", background: tokens.admin.contentBg, position: "relative" }}>
+          {/* 质感层：Linear 式多层环境聚光灯 */}
+          <div
+            aria-hidden
+            style={{
+              position: "absolute",
+              inset: "0 0 auto 0",
+              height: 420,
+              background: tokens.craft.glowDark,
+              pointerEvents: "none",
+              zIndex: 0,
+            }}
+          />
+          <div
+            aria-hidden
+            style={{
+              position: "absolute",
+              inset: "0 0 auto 0",
+              height: 300,
+              background: tokens.craft.glowDarkSecondary,
+              pointerEvents: "none",
+              zIndex: 0,
+            }}
+          />
+          {/* 质感层：Linear 式噪点纹理（mix-blend-mode overlay） */}
+          <div
+            aria-hidden
+            className="mt-noise-layer"
+            style={{
+              position: "absolute",
+              inset: 0,
+              backgroundImage: tokens.craft.noise,
+              backgroundRepeat: "repeat",
+              opacity: tokens.craft.noiseOpacity,
+              mixBlendMode: "overlay" as const,
+              pointerEvents: "none",
+              zIndex: 1,
+            }}
+          />
           {isMobile ? (
             // 移动端：侧边栏用 Drawer 呈现
             <Drawer
@@ -100,8 +194,17 @@ export function AdminShell(props: AdminShellProps) {
               {siderContent}
             </Drawer>
           ) : (
-            // 桌面端：固定侧边栏
-            <Layout.Sider width={208} style={{ background: tokens.admin.siderBg }}>
+            // 桌面端：固定侧边栏（纵向渐变 + 右缘发丝线 + 顶部高光）
+            <Layout.Sider
+              width={208}
+              style={{
+                background: tokens.craft.siderGrad,
+                borderRight: "1px solid " + tokens.dark.hairline,
+                boxShadow: "inset 1px 0 0 rgba(255, 255, 255, 0.03)",
+                position: "relative",
+                zIndex: 2,
+              }}
+            >
               {siderContent}
             </Layout.Sider>
           )}
@@ -109,14 +212,20 @@ export function AdminShell(props: AdminShellProps) {
           <Layout>
             <Layout.Header
               style={{
-                background: tokens.admin.headerBg,
+                background: tokens.craft.headerGlass,
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
                 padding: isMobile ? "0 12px" : "0 20px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                borderBottom: "1px solid " + tokens.admin.border,
+                borderBottom: "1px solid " + tokens.dark.hairline,
+                boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.04)",
                 height: 52,
                 lineHeight: "52px",
+                position: "sticky",
+                top: 0,
+                zIndex: 3,
               }}
             >
               <span style={{ display: "flex", alignItems: "center", gap: isMobile ? 6 : 8 }}>
@@ -153,7 +262,7 @@ export function AdminShell(props: AdminShellProps) {
                 </Button>
               </Dropdown>
             </Layout.Header>
-            <Layout.Content style={{ padding: isMobile ? 12 : 16, background: tokens.admin.contentBg }}>
+            <Layout.Content style={{ padding: isMobile ? 12 : 16, background: "transparent", position: "relative", zIndex: 2 }}>
               {children}
             </Layout.Content>
           </Layout>
@@ -167,8 +276,8 @@ export function AdminShell(props: AdminShellProps) {
 const MAGAZINE_THEME_STUB = {
   primary: tokens.admin.accent,
   background: tokens.admin.contentBg,
-  ink: tokens.admin.text,
-  muted: tokens.admin.textSecondary,
+  ink: tokens.dark.textPrimary,       // 透明度文字（Vercel 风格）
+  muted: tokens.dark.textTertiary,    // 透明度三级
   displayFont: tokens.font.body,
   bodyFont: tokens.font.body,
 } as const;
