@@ -1,0 +1,1623 @@
+<!DOCTYPE html>
+<html lang="zh" class="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MagicTools · 质感升级参考 · Premium UI Reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;350;400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+<style>
+  /* ============================================================
+     MagicTools · Premium UI Reference
+     墨蓝石墨·工房感 暗色质感升级参考页
+     ============================================================ */
+  :root {
+    /* Dark palette - blue-tinted, NOT pure black */
+    --bg-canvas: #0e1218;
+    --surface-0: #14181f;
+    --surface-1: #181d26;
+    --surface-2: #1e2530;
+    --surface-3: #252e3b;
+    --surface-4: #2d3848;
+
+    /* Text - transparency-based hierarchy */
+    --text-primary: rgba(245, 247, 250, 0.95);
+    --text-secondary: rgba(245, 247, 250, 0.65);
+    --text-tertiary: rgba(245, 247, 250, 0.40);
+    --text-faint: rgba(245, 247, 250, 0.28);
+
+    /* Brand accent */
+    --accent: #6e8bad;
+    --accent-hover: #9db3ca;
+    --accent-amber: #cfa04c;
+
+    /* Status */
+    --success: #6fbf8e;
+    --warning: #d4a55a;
+    --error: #d77373;
+    --info: #7ba0c4;
+
+    /* Borders - hairline */
+    --hairline: rgba(255, 255, 255, 0.07);
+    --hairline-strong: rgba(255, 255, 255, 0.12);
+    --hairline-hover: rgba(255, 255, 255, 0.16);
+
+    /* Shadows - Stripe-style double-layer */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    --shadow-focus: 0 0 0 3px rgba(110, 139, 173, 0.4);
+
+    /* Gradients */
+    --ambient-glow: radial-gradient(800px 400px at 50% -100px, rgba(110, 139, 173, 0.08), transparent 70%);
+    --ambient-glow-2: radial-gradient(600px 300px at 80% 20%, rgba(207, 160, 76, 0.04), transparent 60%);
+    --sider-gradient: linear-gradient(180deg, #161b24 0%, #121620 40%, #0e1218 100%);
+    --card-border-gradient: linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 100%);
+
+    /* Noise texture */
+    --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+
+    /* Fonts */
+    --font-body: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
+    --font-display: 'Noto Serif SC', 'Source Serif 4', serif;
+
+    /* Motion */
+    --ease: cubic-bezier(0.4, 0, 0.2, 1);
+    --dur-fast: 120ms;
+    --dur-base: 200ms;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg-canvas);
+    color: var(--text-primary);
+    line-height: 1.65;
+    font-weight: 350;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    position: relative;
+    min-height: 100vh;
+  }
+
+  /* Ambient glow */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: var(--ambient-glow), var(--ambient-glow-2);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Global noise overlay */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image: var(--noise);
+    background-size: 200px;
+    opacity: 0.025;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page-wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 32px 80px;
+  }
+
+  /* Focus ring (GitHub technique) */
+  *:focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-focus);
+    border-radius: inherit;
+  }
+
+  /* Numeric */
+  .numeric {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+
+  /* Noise overlay utility */
+  .noise-overlay { position: relative; }
+  .noise-overlay::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: var(--noise);
+    background-size: 200px;
+    opacity: 0.04;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  /* ============================================================
+     SECTION: Page Header
+     ============================================================ */
+  .page-header {
+    padding: 56px 0 40px;
+    border-bottom: 1px solid var(--hairline);
+    margin-bottom: 48px;
+    position: relative;
+  }
+  .page-header .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    margin-bottom: 12px;
+  }
+  .page-header h1 {
+    font-family: var(--font-display);
+    font-size: 40px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    line-height: 1.15;
+  }
+  .page-header h1 .accent { color: var(--accent-hover); }
+  .page-header .lead {
+    font-size: 15px;
+    color: var(--text-secondary);
+    max-width: 720px;
+    line-height: 1.7;
+  }
+  .page-header .meta-row {
+    display: flex;
+    gap: 20px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+  .meta-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-tertiary);
+    font-family: var(--font-mono);
+  }
+  .meta-chip svg { width: 13px; height: 13px; }
+
+  /* Section title */
+  .section { margin-bottom: 64px; }
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .section-head .num {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 1px;
+  }
+  .section-head h2 {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--text-primary);
+  }
+  .section-head .desc {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--text-tertiary);
+    font-family: var(--font-mono);
+  }
+
+  /* ============================================================
+     SECTION 1: Admin Shell Demo
+     ============================================================ */
+  .admin-shell {
+    width: 100%;
+    height: 620px;
+    background: var(--bg-canvas);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow-xl);
+    position: relative;
+    display: flex;
+    border: 1px solid var(--hairline-strong);
+  }
+  .admin-shell::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: var(--card-border-gradient);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  /* Sider */
+  .as-sider {
+    width: 208px;
+    flex-shrink: 0;
+    background: var(--sider-gradient);
+    border-right: 1px solid var(--hairline);
+    display: flex;
+    flex-direction: column;
+    padding: 16px 0;
+    position: relative;
+  }
+  .as-sider::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: var(--noise);
+    background-size: 200px;
+    opacity: 0.03;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+  }
+  .as-brand {
+    padding: 4px 16px 18px;
+    border-bottom: 1px solid var(--hairline);
+    margin-bottom: 8px;
+  }
+  .as-brand .label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    display: block;
+    margin-bottom: 6px;
+  }
+  .as-brand .title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .as-brand .title .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px rgba(110,139,173,0.6);
+  }
+  .as-nav { padding: 8px 8px; flex: 1; position: relative; z-index: 1; }
+  .as-nav-group-label {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    padding: 12px 8px 6px;
+    font-family: var(--font-mono);
+  }
+  .as-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    cursor: pointer;
+    transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+    position: relative;
+    margin-bottom: 1px;
+  }
+  .as-nav-item svg { width: 16px; height: 16px; opacity: 0.7; flex-shrink: 0; }
+  .as-nav-item:hover { background: rgba(255,255,255,0.04); color: var(--text-primary); }
+  .as-nav-item.active {
+    background: rgba(110,139,173,0.10);
+    color: var(--text-primary);
+  }
+  .as-nav-item.active svg { opacity: 1; color: var(--accent-hover); }
+  .as-nav-item.active::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 6px; bottom: 6px;
+    width: 2px;
+    border-radius: 2px;
+    background: var(--accent-hover);
+  }
+  .as-nav-item .badge {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.06);
+    color: var(--text-tertiary);
+  }
+  .as-sider-foot {
+    padding: 12px 16px;
+    border-top: 1px solid var(--hairline);
+    font-size: 11px;
+    color: var(--text-faint);
+    font-family: var(--font-mono);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .as-sider-foot .live-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 6px rgba(111,191,142,0.6);
+  }
+
+  /* Main */
+  .as-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .as-topbar {
+    height: 52px;
+    flex-shrink: 0;
+    background: rgba(20,24,31,0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--hairline);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 14px;
+    position: relative;
+    z-index: 2;
+  }
+  .as-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 9px;
+    border-radius: 6px;
+    background: rgba(207,160,76,0.12);
+    color: var(--accent-amber);
+    border: 1px solid rgba(207,160,76,0.18);
+  }
+  .as-crumb {
+    font-size: 12px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .as-crumb .sep { color: var(--text-faint); }
+  .as-crumb .cur { color: var(--text-primary); }
+  .as-topbar-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .as-icon-btn {
+    width: 30px; height: 30px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 6px;
+    color: var(--text-tertiary);
+    background: transparent;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease);
+    position: relative;
+  }
+  .as-icon-btn svg { width: 15px; height: 15px; }
+  .as-icon-btn:hover { background: rgba(255,255,255,0.04); color: var(--text-secondary); border-color: var(--hairline); }
+  .as-icon-btn .pip {
+    position: absolute; top: 6px; right: 6px;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent-amber);
+    border: 1.5px solid var(--surface-0);
+  }
+  .as-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--surface-3));
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; color: #fff;
+    border: 1px solid var(--hairline-strong);
+  }
+  .as-switch-btn {
+    font-size: 12px;
+    color: var(--text-secondary);
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--hairline);
+    background: var(--surface-1);
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease);
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .as-switch-btn svg { width: 13px; height: 13px; }
+  .as-switch-btn:hover { border-color: var(--hairline-hover); color: var(--text-primary); }
+
+  .as-content {
+    flex: 1;
+    overflow: auto;
+    padding: 24px;
+    position: relative;
+  }
+  .as-content::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: var(--noise);
+    background-size: 200px;
+    opacity: 0.02;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+  }
+  .as-page-head { margin-bottom: 22px; position: relative; }
+  .as-page-head h3 {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .as-page-head p { font-size: 13px; color: var(--text-secondary); }
+
+  /* KPI cards */
+  .as-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 22px;
+    position: relative;
+  }
+  .as-kpi {
+    position: relative;
+    background: var(--surface-1);
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--dur-base) var(--ease);
+    overflow: hidden;
+  }
+  .as-kpi::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: var(--card-border-gradient);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  .as-kpi::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: var(--noise);
+    background-size: 200px;
+    opacity: 0.03;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    border-radius: inherit;
+  }
+  .as-kpi .kpi-label {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .as-kpi .kpi-label svg { width: 13px; height: 13px; }
+  .as-kpi .kpi-value {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .as-kpi .kpi-trend {
+    font-size: 11px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .as-kpi .trend-up { color: var(--success); }
+  .as-kpi .trend-down { color: var(--error); }
+  .as-kpi .trend-up svg, .as-kpi .trend-down svg { width: 12px; height: 12px; }
+  .as-kpi .kpi-spark {
+    position: absolute;
+    right: 12px; bottom: 12px;
+    opacity: 0.5;
+  }
+
+  /* Table */
+  .as-table-wrap {
+    background: var(--surface-1);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+  }
+  .as-table-wrap::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: var(--card-border-gradient);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 2;
+  }
+  .as-table-head {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--hairline);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    z-index: 1;
+  }
+  .as-table-head h4 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .as-table-head .tools { display: flex; gap: 6px; }
+  .as-tbl-btn {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    padding: 4px 8px;
+    border-radius: 5px;
+    border: 1px solid transparent;
+    background: transparent;
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease);
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .as-tbl-btn svg { width: 12px; height: 12px; }
+  .as-tbl-btn:hover { background: rgba(255,255,255,0.04); color: var(--text-secondary); }
+  table.as-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    position: relative;
+    z-index: 1;
+  }
+  table.as-table thead th {
+    text-align: left;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    font-size: 11px;
+    letter-spacing: 0.3px;
+    padding: 9px 16px;
+    background: rgba(255,255,255,0.03);
+    border-bottom: 1px solid var(--hairline);
+    white-space: nowrap;
+  }
+  table.as-table tbody td {
+    padding: 11px 16px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--hairline);
+    white-space: nowrap;
+  }
+  table.as-table tbody tr:last-child td { border-bottom: none; }
+  table.as-table tbody tr {
+    transition: background var(--dur-fast) var(--ease);
+  }
+  table.as-table tbody tr:hover {
+    background: rgba(255,255,255,0.035);
+    box-shadow: inset 2px 0 0 var(--accent);
+  }
+  table.as-table tbody tr:hover td { color: var(--text-primary); }
+  table.as-table .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  table.as-table .id-cell {
+    color: var(--accent-hover);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  .name-cell { display: flex; align-items: center; gap: 9px; color: var(--text-primary); }
+  .name-cell .av {
+    width: 22px; height: 22px; border-radius: 5px;
+    background: linear-gradient(135deg, var(--surface-3), var(--surface-2));
+    border: 1px solid var(--hairline);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 600; color: var(--text-secondary);
+  }
+
+  /* Status tags */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 10px;
+    line-height: 1.6;
+    border: 1px solid transparent;
+  }
+  .tag::before {
+    content: "";
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .tag-success { background: rgba(111,191,142,0.15); color: var(--success); border-color: rgba(111,191,142,0.22); }
+  .tag-warning { background: rgba(212,165,90,0.15); color: var(--warning); border-color: rgba(212,165,90,0.22); }
+  .tag-error { background: rgba(215,115,115,0.15); color: var(--error); border-color: rgba(215,115,115,0.22); }
+  .tag-info { background: rgba(123,160,196,0.15); color: var(--info); border-color: rgba(123,160,196,0.22); }
+  .tag-neutral { background: rgba(255,255,255,0.06); color: var(--text-tertiary); border-color: var(--hairline); }
+
+  /* ============================================================
+     SECTION 2: Comparison Panel
+     ============================================================ */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .compare-item {
+    display: contents;
+  }
+  .cmp-card {
+    background: var(--surface-1);
+    border-radius: 10px;
+    padding: 18px;
+    position: relative;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+  }
+  .cmp-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: var(--card-border-gradient);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  .cmp-before { background: var(--surface-0); }
+  .cmp-before::before { background: var(--hairline); }
+  .cmp-after { background: var(--surface-1); }
+  .cmp-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .cmp-before .cmp-label { color: var(--text-faint); }
+  .cmp-after .cmp-label { color: var(--accent-hover); }
+  .cmp-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .cmp-desc {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .cmp-body {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border-radius: 6px;
+    min-height: 70px;
+    overflow: hidden;
+  }
+
+  /* Comparison: Noise */
+  .demo-flat { background: var(--surface-2); width: 100%; height: 70px; border-radius: 6px; }
+  .demo-noise {
+    background: var(--surface-2); width: 100%; height: 70px; border-radius: 6px;
+    position: relative;
+  }
+  .demo-noise::after {
+    content: ""; position: absolute; inset: 0; border-radius: inherit;
+    background-image: var(--noise); background-size: 200px; opacity: 0.12;
+    mix-blend-mode: overlay; pointer-events: none;
+  }
+
+  /* Comparison: Ambient glow */
+  .demo-ambient-flat { background: var(--bg-canvas); width: 100%; height: 70px; border-radius: 6px; }
+  .demo-ambient {
+    background: var(--bg-canvas); width: 100%; height: 70px; border-radius: 6px;
+    position: relative; overflow: hidden;
+  }
+  .demo-ambient::before {
+    content: ""; position: absolute; inset: 0;
+    background: radial-gradient(200px 100px at 50% 0%, rgba(110,139,173,0.22), transparent 70%);
+  }
+
+  /* Comparison: Shadow */
+  .demo-shadow-flat {
+    width: 70px; height: 70px; border-radius: 8px;
+    background: var(--surface-2);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  }
+  .demo-shadow-premium {
+    width: 70px; height: 70px; border-radius: 8px;
+    background: var(--surface-2);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* Comparison: Gradient border */
+  .demo-border-solid {
+    width: 90px; height: 60px; border-radius: 8px;
+    background: var(--surface-2);
+    border: 1px solid var(--hairline);
+  }
+  .demo-border-grad {
+    width: 90px; height: 60px; border-radius: 8px;
+    background: var(--surface-2);
+    position: relative;
+  }
+  .demo-border-grad::before {
+    content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px;
+    background: var(--card-border-gradient);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+  }
+
+  /* Comparison: Surface ladder */
+  .ladder-flat { display: flex; gap: 6px; }
+  .ladder-flat span {
+    width: 40px; height: 50px; border-radius: 5px;
+    border: 1px solid var(--hairline);
+  }
+  .ladder-flat span:nth-child(1) { background: var(--surface-1); }
+  .ladder-flat span:nth-child(2) { background: var(--surface-3); }
+  .ladder-prem { display: flex; gap: 6px; }
+  .ladder-prem span {
+    width: 30px; height: 50px; border-radius: 5px;
+    position: relative;
+  }
+  .ladder-prem span::before {
+    content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px;
+    background: var(--card-border-gradient);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+  }
+  .ladder-prem span:nth-child(1) { background: var(--surface-0); }
+  .ladder-prem span:nth-child(2) { background: var(--surface-1); }
+  .ladder-prem span:nth-child(3) { background: var(--surface-2); }
+  .ladder-prem span:nth-child(4) { background: var(--surface-3); }
+  .ladder-prem span:nth-child(5) { background: var(--surface-4); }
+
+  .tech-anno {
+    position: absolute;
+    bottom: 8px; right: 10px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-faint);
+    letter-spacing: 0.5px;
+  }
+
+  /* ============================================================
+     SECTION 3: Component Showcase
+     ============================================================ */
+  .comp-row { margin-bottom: 28px; }
+  .comp-row-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .comp-row-title::before {
+    content: "";
+    width: 3px; height: 12px; border-radius: 2px;
+    background: var(--accent);
+  }
+
+  /* Cards showcase */
+  .cards-show {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .show-card {
+    position: relative;
+    background: var(--surface-1);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: var(--shadow-md);
+    transition: box-shadow var(--dur-base) var(--ease), transform var(--dur-base) var(--ease);
+    overflow: hidden;
+    min-height: 140px;
+    isolation: isolate;
+  }
+  .show-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: var(--card-border-gradient);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .show-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: var(--noise);
+    background-size: 200px;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    border-radius: inherit;
+    z-index: 0;
+  }
+  .show-card .sc-content { position: relative; z-index: 2; }
+  .show-card .sc-tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--text-tertiary);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+  .show-card h5 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+  .show-card p {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    line-height: 1.6;
+  }
+  .show-card.hover-demo:hover {
+    box-shadow: var(--shadow-lg);
+  }
+  .show-card.hover-demo:hover .sc-spotlight {
+    opacity: 1;
+  }
+  .sc-spotlight {
+    position: absolute;
+    inset: -40%;
+    background: radial-gradient(50% 50% at 50% 50%, rgba(255,255,255,0.04), transparent 90%);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity var(--dur-base) var(--ease);
+  }
+  .show-card.elevated {
+    background: var(--surface-3);
+    box-shadow: var(--shadow-xl);
+  }
+
+  /* Buttons */
+  .btn-row { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+  .btn {
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 18px;
+    border-radius: 7px;
+    border: none;
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease);
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    position: relative;
+  }
+  .btn svg { width: 15px; height: 15px; }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1), var(--shadow-sm);
+  }
+  .btn-primary:hover {
+    background: var(--accent-hover);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15), 0 0 20px rgba(110,139,173,0.15);
+  }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-secondary {
+    background: var(--surface-2);
+    color: var(--text-primary);
+    box-shadow: inset 0 0 0 1px var(--hairline-strong);
+  }
+  .btn-secondary:hover {
+    background: var(--surface-3);
+    box-shadow: inset 0 0 0 1px var(--hairline-hover);
+  }
+  .btn-secondary:active { transform: scale(0.98); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    box-shadow: inset 0 0 0 1px transparent;
+  }
+  .btn-ghost:hover {
+    background: rgba(255,255,255,0.05);
+    color: var(--text-primary);
+    box-shadow: inset 0 0 0 1px var(--hairline);
+  }
+  .btn-ghost:active { transform: scale(0.98); }
+
+  /* Inputs */
+  .input-row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+  .input {
+    font-family: var(--font-body);
+    font-size: 13px;
+    background: var(--surface-2);
+    border: 1px solid var(--hairline);
+    border-radius: 7px;
+    padding: 8px 12px;
+    color: var(--text-primary);
+    transition: all var(--dur-fast) var(--ease);
+    width: 240px;
+  }
+  .input::placeholder { color: var(--text-faint); }
+  .input:hover { border-color: var(--hairline-strong); }
+  .input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: var(--shadow-focus);
+    background: var(--surface-3);
+  }
+  .input.mono { font-family: var(--font-mono); }
+
+  /* ============================================================
+     SECTION 4: Typography Specimen
+     ============================================================ */
+  .typo-card {
+    background: var(--surface-1);
+    border-radius: 10px;
+    padding: 32px;
+    position: relative;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+  }
+  .typo-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: var(--card-border-gradient);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  .typo-card::after {
+    content: "";
+    position: absolute; inset: 0;
+    background-image: var(--noise); background-size: 200px;
+    opacity: 0.03; mix-blend-mode: overlay; pointer-events: none; border-radius: inherit;
+  }
+  .typo-display {
+    font-family: var(--font-display);
+    font-size: 36px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+  .typo-spec {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-faint);
+    letter-spacing: 0.5px;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .typo-h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.012em; color: var(--text-primary); margin-bottom: 4px; }
+  .typo-h2 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; color: var(--text-primary); margin-bottom: 4px; }
+  .typo-h3 { font-size: 18px; font-weight: 600; letter-spacing: -0.008em; color: var(--text-primary); margin-bottom: 4px; }
+  .typo-h4 { font-size: 15px; font-weight: 600; letter-spacing: -0.005em; color: var(--text-primary); margin-bottom: 4px; }
+  .typo-h-row { margin-bottom: 18px; display: flex; align-items: baseline; gap: 14px; }
+  .typo-h-row .tag-spec {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-faint);
+    letter-spacing: 0.5px;
+  }
+  .typo-body {
+    font-size: 14px;
+    line-height: 1.65;
+    font-weight: 350;
+    color: var(--text-secondary);
+    max-width: 640px;
+    margin-bottom: 28px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .typo-mono-demo {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 15px;
+    color: var(--accent-hover);
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+  }
+  .typo-hierarchy { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+  .typo-level { display: flex; align-items: baseline; gap: 14px; }
+  .typo-level .lvl-tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-faint);
+    width: 72px;
+    flex-shrink: 0;
+  }
+  .lvl-primary { color: var(--text-primary); font-size: 14px; }
+  .lvl-secondary { color: var(--text-secondary); font-size: 14px; }
+  .lvl-tertiary { color: var(--text-tertiary); font-size: 14px; }
+  .lvl-faint { color: var(--text-faint); font-size: 14px; }
+
+  /* Footer */
+  .doc-foot {
+    margin-top: 56px;
+    padding-top: 24px;
+    border-top: 1px solid var(--hairline);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-faint);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .doc-foot .links { display: flex; gap: 16px; }
+  .doc-foot a { color: var(--text-tertiary); text-decoration: none; transition: color var(--dur-fast) var(--ease); }
+  .doc-foot a:hover { color: var(--accent-hover); }
+
+  /* Responsive */
+  @media (max-width: 1080px) {
+    .page-wrap { padding: 0 20px 60px; }
+    .admin-shell { height: auto; flex-direction: column; }
+    .as-sider { width: 100%; height: auto; flex-direction: row; flex-wrap: wrap; padding: 12px; }
+    .as-nav { flex-direction: row; flex-wrap: wrap; }
+    .as-kpis { grid-template-columns: repeat(2, 1fr); }
+    .cards-show { grid-template-columns: 1fr; }
+    .compare-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <!-- ===================== Page Header ===================== -->
+  <header class="page-header">
+    <div class="eyebrow">MagicTools · Design System Reference</div>
+    <h1>质感升级参考 <span class="accent">Premium UI Reference</span></h1>
+    <p class="lead">本页汇集来自 Linear、Stripe、Vercel、GitHub 的高质感暗色界面技法，针对「墨蓝石墨·工房感」设计系统进行可落地的质感升级演示。每一处技法均以「前 / 后」对照形式呈现，可直接作为 AdminShell 控制台的视觉参考。</p>
+    <div class="meta-row">
+      <span class="meta-chip"><i data-lucide="palette"></i> 墨蓝石墨色板</span>
+      <span class="meta-chip"><i data-lucide="layers"></i> 4 级表面层级</span>
+      <span class="meta-chip"><i data-lucide="sparkles"></i> 8 项核心技法</span>
+      <span class="meta-chip"><i data-lucide="monitor"></i> 1280px+ 桌面优化</span>
+    </div>
+  </header>
+
+  <!-- ===================== SECTION 1: Admin Shell ===================== -->
+  <section class="section">
+    <div class="section-head">
+      <span class="num">01</span>
+      <h2>AdminShell 控制台实机演示</h2>
+      <span class="desc">真实产品截图级还原 · 非线框稿</span>
+    </div>
+
+    <div class="admin-shell noise-overlay">
+      <!-- Sider -->
+      <aside class="as-sider">
+        <div class="as-brand">
+          <span class="label">ADMIN CONSOLE</span>
+          <div class="title"><span class="dot"></span>MagicTools 工房</div>
+        </div>
+        <nav class="as-nav">
+          <div class="as-nav-group-label">运营</div>
+          <div class="as-nav-item active">
+            <i data-lucide="layout-dashboard"></i> 总览面板
+          </div>
+          <div class="as-nav-item">
+            <i data-lucide="users"></i> 用户管理
+            <span class="badge">12</span>
+          </div>
+          <div class="as-nav-item">
+            <i data-lucide="database"></i> 数据资产
+          </div>
+          <div class="as-nav-item">
+            <i data-lucide="server"></i> 服务编排
+          </div>
+          <div class="as-nav-group-label">系统</div>
+          <div class="as-nav-item">
+            <i data-lucide="shield-check"></i> 权限策略
+          </div>
+          <div class="as-nav-item">
+            <i data-lucide="settings-2"></i> 系统设置
+          </div>
+        </nav>
+        <div class="as-sider-foot">
+          <span class="live-dot"></span> v2.4.1 · 运行中
+        </div>
+      </aside>
+
+      <!-- Main -->
+      <div class="as-main">
+        <!-- Topbar -->
+        <div class="as-topbar">
+          <span class="as-badge"><i data-lucide="terminal" style="width:12px;height:12px"></i>后台</span>
+          <div class="as-crumb">
+            <span>运营</span><span class="sep">/</span><span class="cur">总览面板</span>
+          </div>
+          <div class="as-topbar-right">
+            <button class="as-icon-btn" aria-label="搜索"><i data-lucide="search"></i></button>
+            <button class="as-icon-btn" aria-label="通知"><i data-lucide="bell"></i><span class="pip"></span></button>
+            <span class="as-avatar">墨</span>
+            <button class="as-switch-btn"><i data-lucide="repeat"></i>切换</button>
+          </div>
+        </div>
+
+        <!-- Content -->
+        <div class="as-content">
+          <div class="as-page-head">
+            <h3>总览面板</h3>
+            <p>近 30 天运营核心指标 · 数据每 5 分钟刷新</p>
+          </div>
+
+          <!-- KPIs -->
+          <div class="as-kpis">
+            <div class="as-kpi">
+              <div class="kpi-label"><i data-lucide="users"></i> 活跃用户</div>
+              <div class="kpi-value">24,891</div>
+              <div class="kpi-trend trend-up"><i data-lucide="trending-up"></i> +12.4% 环比</div>
+            </div>
+            <div class="as-kpi">
+              <div class="kpi-label"><i data-lucide="zap"></i> 调用次数</div>
+              <div class="kpi-value">1.82M</div>
+              <div class="kpi-trend trend-up"><i data-lucide="trending-up"></i> +8.7% 环比</div>
+            </div>
+            <div class="as-kpi">
+              <div class="kpi-label"><i data-lucide="clock"></i> 平均响应</div>
+              <div class="kpi-value">184<span style="font-size:14px;color:var(--text-tertiary)">ms</span></div>
+              <div class="kpi-trend trend-down"><i data-lucide="trending-down"></i> -6.2% 环比</div>
+            </div>
+            <div class="as-kpi">
+              <div class="kpi-label"><i data-lucide="check-circle"></i> 成功率</div>
+              <div class="kpi-value">99.42%</div>
+              <div class="kpi-trend trend-up"><i data-lucide="trending-up"></i> +0.3% 环比</div>
+            </div>
+          </div>
+
+          <!-- Table -->
+          <div class="as-table-wrap">
+            <div class="as-table-head">
+              <h4>最近任务执行记录</h4>
+              <div class="tools">
+                <button class="as-tbl-btn"><i data-lucide="filter"></i>筛选</button>
+                <button class="as-tbl-btn"><i data-lucide="download"></i>导出</button>
+                <button class="as-tbl-btn"><i data-lucide="refresh-cw"></i>刷新</button>
+              </div>
+            </div>
+            <table class="as-table">
+              <thead>
+                <tr>
+                  <th>任务 ID</th>
+                  <th>任务名称</th>
+                  <th>类型</th>
+                  <th>耗时</th>
+                  <th>调用方</th>
+                  <th>状态</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="id-cell">MT-2419</td>
+                  <td><div class="name-cell"><span class="av">向</span>向量索引重建</div></td>
+                  <td>调度</td>
+                  <td class="num">1,284 ms</td>
+                  <td>search-svc</td>
+                  <td><span class="tag tag-success">成功</span></td>
+                </tr>
+                <tr>
+                  <td class="id-cell">MT-2418</td>
+                  <td><div class="name-cell"><span class="av">嵌</span>嵌入向量批量生成</div></td>
+                  <td>异步</td>
+                  <td class="num">8.42 s</td>
+                  <td>llm-gateway</td>
+                  <td><span class="tag tag-success">成功</span></td>
+                </tr>
+                <tr>
+                  <td class="id-cell">MT-2417</td>
+                  <td><div class="name-cell"><span class="av">数</span>数据源同步校验</div></td>
+                  <td>定时</td>
+                  <td class="num">312 ms</td>
+                  <td>etl-worker</td>
+                  <td><span class="tag tag-warning">部分跳过</span></td>
+                </tr>
+                <tr>
+                  <td class="id-cell">MT-2416</td>
+                  <td><div class="name-cell"><span class="av">模</span>模型推理预热</div></td>
+                  <td>调度</td>
+                  <td class="num">2.18 s</td>
+                  <td>model-client</td>
+                  <td><span class="tag tag-success">成功</span></td>
+                </tr>
+                <tr>
+                  <td class="id-cell">MT-2415</td>
+                  <td><div class="name-cell"><span class="av">权</span>权限策略下发</div></td>
+                  <td>事件</td>
+                  <td class="num">96 ms</td>
+                  <td>auth-service</td>
+                  <td><span class="tag tag-error">失败</span></td>
+                </tr>
+                <tr>
+                  <td class="id-cell">MT-2414</td>
+                  <td><div class="name-cell"><span class="av">日</span>日志归档压缩</div></td>
+                  <td>定时</td>
+                  <td class="num">14.6 s</td>
+                  <td>log-worker</td>
+                  <td><span class="tag tag-info">进行中</span></td>
+                </tr>
+                <tr>
+                  <td class="id-cell">MT-2413</td>
+                  <td><div class="name-cell"><span class="av">缓</span>缓存键过期清理</div></td>
+                  <td>维护</td>
+                  <td class="num">58 ms</td>
+                  <td>cache-svc</td>
+                  <td><span class="tag tag-success">成功</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SECTION 2: Comparison Panel ===================== -->
+  <section class="section">
+    <div class="section-head">
+      <span class="num">02</span>
+      <h2>质感技法对照</h2>
+      <span class="desc">前 / 后并置 · 标注所用技法</span>
+    </div>
+
+    <div class="compare-grid">
+      <!-- Noise -->
+      <div class="cmp-card cmp-before">
+        <div class="cmp-label">BEFORE · 普通</div>
+        <div class="cmp-title">扁平表面</div>
+        <div class="cmp-desc">纯色填充，无任何纹理，暗色下显塑料感。</div>
+        <div class="cmp-body"><div class="demo-flat"></div></div>
+        <span class="tech-anno">flat-color</span>
+      </div>
+      <div class="cmp-card cmp-after noise-overlay">
+        <div class="cmp-label">AFTER · 质感升级</div>
+        <div class="cmp-title">噪点纹理叠加</div>
+        <div class="cmp-desc">SVG fractalNoise 以 4% 不透明度叠加，消除色带，赋予哑光材质感（Linear 标志技法）。</div>
+        <div class="cmp-body"><div class="demo-noise"></div></div>
+        <span class="tech-anno">noise-overlay · mix-blend</span>
+      </div>
+
+      <!-- Ambient glow -->
+      <div class="cmp-card cmp-before">
+        <div class="cmp-label">BEFORE · 普通</div>
+        <div class="cmp-title">纯色背景</div>
+        <div class="cmp-desc">单一深色背景，缺少空间层次与光感。</div>
+        <div class="cmp-body"><div class="demo-ambient-flat"></div></div>
+        <span class="tech-anno">solid-bg</span>
+      </div>
+      <div class="cmp-card cmp-after">
+        <div class="cmp-label">AFTER · 质感升级</div>
+        <div class="cmp-title">环境光晕</div>
+        <div class="cmp-desc">页面固定层叠加双层 radial-gradient，模拟环境散射光，营造空间深度。</div>
+        <div class="cmp-body"><div class="demo-ambient"></div></div>
+        <span class="tech-anno">ambient-glow · radial-gradient</span>
+      </div>
+
+      <!-- Shadow -->
+      <div class="cmp-card cmp-before">
+        <div class="cmp-label">BEFORE · 普通</div>
+        <div class="cmp-title">单层阴影</div>
+        <div class="cmp-desc">单一 box-shadow，边缘生硬，缺乏空气感。</div>
+        <div class="cmp-body"><div class="demo-shadow-flat"></div></div>
+        <span class="tech-anno">single-shadow</span>
+      </div>
+      <div class="cmp-card cmp-after">
+        <div class="cmp-label">AFTER · 质感升级</div>
+        <div class="cmp-title">双层阴影 + 内高光</div>
+        <div class="cmp-desc">Stripe 式双 box-shadow 叠加 inset 1px 顶部高光，模拟真实光线折射。</div>
+        <div class="cmp-body"><div class="demo-shadow-premium"></div></div>
+        <span class="tech-anno">double-layer + inset-highlight</span>
+      </div>
+
+      <!-- Gradient border -->
+      <div class="cmp-card cmp-before">
+        <div class="cmp-label">BEFORE · 普通</div>
+        <div class="cmp-title">实线描边</div>
+        <div class="cmp-desc">固定透明度 hairline，上下无渐变，偏死板。</div>
+        <div class="cmp-body"><div class="demo-border-solid"></div></div>
+        <span class="tech-anno">solid-hairline</span>
+      </div>
+      <div class="cmp-card cmp-after">
+        <div class="cmp-label">AFTER · 质感升级</div>
+        <div class="cmp-title">渐变描边</div>
+        <div class="cmp-desc">mask-composite 技巧实现 1px 渐变描边，顶部更亮、底部收暗（Linear 技法）。</div>
+        <div class="cmp-body"><div class="demo-border-grad"></div></div>
+        <span class="tech-anno">gradient-border · mask-composite</span>
+      </div>
+
+      <!-- Surface ladder -->
+      <div class="cmp-card cmp-before">
+        <div class="cmp-label">BEFORE · 普通</div>
+        <div class="cmp-title">2 级层级</div>
+        <div class="cmp-desc">仅背景与卡片两级，悬浮/激活态难区分。</div>
+        <div class="cmp-body"><div class="ladder-flat"><span></span><span></span></div></div>
+        <span class="tech-anno">2-level</span>
+      </div>
+      <div class="cmp-card cmp-after">
+        <div class="cmp-label">AFTER · 质感升级</div>
+        <div class="cmp-title">4 级亮度阶梯</div>
+        <div class="cmp-desc">surface-0 至 surface-4 五档递进，配合渐变描边，层级关系一眼可辨。</div>
+        <div class="cmp-body"><div class="ladder-prem"><span></span><span></span><span></span><span></span><span></span></div></div>
+        <span class="tech-anno">4-level brightness ladder</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SECTION 3: Component Showcase ===================== -->
+  <section class="section">
+    <div class="section-head">
+      <span class="num">03</span>
+      <h2>组件展示</h2>
+      <span class="desc">卡片 · 按钮 · 表格 · 输入框</span>
+    </div>
+
+    <!-- Cards -->
+    <div class="comp-row">
+      <div class="comp-row-title">卡片 · 三态</div>
+      <div class="cards-show">
+        <div class="show-card">
+          <div class="sc-spotlight"></div>
+          <div class="sc-content">
+            <div class="sc-tag">DEFAULT</div>
+            <h5>默认态</h5>
+            <p>渐变 1px 描边 + 噪点纹理 + 双层阴影，奠定基础质感。</p>
+          </div>
+        </div>
+        <div class="show-card hover-demo">
+          <div class="sc-spotlight"></div>
+          <div class="sc-content">
+            <div class="sc-tag">HOVER</div>
+            <h5>悬停态</h5>
+            <p>描边加深至 hairline-hover，聚光灯辉光浮现，阴影抬升至 shadow-lg。</p>
+          </div>
+        </div>
+        <div class="show-card elevated noise-overlay">
+          <div class="sc-content">
+            <div class="sc-tag">ELEVATED</div>
+            <h5>悬浮态</h5>
+            <p>表面提亮至 surface-3，阴影强化为 shadow-xl，用于弹层与抽屉。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="comp-row">
+      <div class="comp-row-title">按钮 · 主 / 次 / 幽灵</div>
+      <div class="btn-row">
+        <button class="btn btn-primary"><i data-lucide="plus"></i>新建任务</button>
+        <button class="btn btn-secondary"><i data-lucide="upload"></i>导入数据</button>
+        <button class="btn btn-ghost"><i data-lucide="more-horizontal"></i>更多操作</button>
+        <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-faint);margin-left:8px">内描边 · 焦点环 · 按压缩放</span>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="comp-row">
+      <div class="comp-row-title">数据表格 · GitHub 风格</div>
+      <div class="as-table-wrap">
+        <div class="as-table-head">
+          <h4>资源配额清单</h4>
+          <div class="tools">
+            <button class="as-tbl-btn"><i data-lucide="filter"></i>筛选</button>
+            <button class="as-tbl-btn"><i data-lucide="search"></i>查找</button>
+          </div>
+        </div>
+        <table class="as-table">
+          <thead>
+            <tr>
+              <th>资源 ID</th>
+              <th>名称</th>
+              <th>配额</th>
+              <th>已用</th>
+              <th>使用率</th>
+              <th>状态</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="id-cell">RES-01</td>
+              <td>GPU 推理池</td>
+              <td class="num">128 核</td>
+              <td class="num">96 核</td>
+              <td class="num">75.0%</td>
+              <td><span class="tag tag-warning">高位</span></td>
+            </tr>
+            <tr>
+              <td class="id-cell">RES-02</td>
+              <td>向量存储</td>
+              <td class="num">2.0 TB</td>
+              <td class="num">1.1 TB</td>
+              <td class="num">55.0%</td>
+              <td><span class="tag tag-info">正常</span></td>
+            </tr>
+            <tr>
+              <td class="id-cell">RES-03</td>
+              <td>嵌入并发槽</td>
+              <td class="num">64 路</td>
+              <td class="num">12 路</td>
+              <td class="num">18.8%</td>
+              <td><span class="tag tag-success">充足</span></td>
+            </tr>
+            <tr>
+              <td class="id-cell">RES-04</td>
+              <td>出网带宽</td>
+              <td class="num">1.0 Gbps</td>
+              <td class="num">982 Mbps</td>
+              <td class="num">98.2%</td>
+              <td><span class="tag tag-error">告警</span></td>
+            </tr>
+            <tr>
+              <td class="id-cell">RES-05</td>
+              <td>缓存内存</td>
+              <td class="num">32.0 GB</td>
+              <td class="num">19.4 GB</td>
+              <td class="num">60.6%</td>
+              <td><span class="tag tag-info">正常</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:10px;font-family:var(--font-mono);font-size:11px;color:var(--text-faint)">技法：1px hairline 行线 · 表头 rgba(255,255,255,0.03) · 悬停行 inset 左侧重音条 · 数字列 tabular-nums</div>
+    </div>
+
+    <!-- Inputs -->
+    <div class="comp-row">
+      <div class="comp-row-title">输入框 · 焦点环 + 表面填充</div>
+      <div class="input-row">
+        <div class="field">
+          <label>任务名称</label>
+          <input class="input" type="text" placeholder="输入任务名称…" />
+        </div>
+        <div class="field">
+          <label>任务 ID（等宽）</label>
+          <input class="input mono" type="text" placeholder="MT-0000" value="MT-2420" />
+        </div>
+        <div class="field">
+          <label>超时阈值（毫秒）</label>
+          <input class="input mono" type="text" value="30000" />
+        </div>
+      </div>
+      <div style="margin-top:10px;font-family:var(--font-mono);font-size:11px;color:var(--text-faint)">技法：surface-2 填充 · hairline 描边 · 聚焦 accent 描边 + shadow-focus 焦点环 · 等宽输入用 JetBrains Mono</div>
+    </div>
+  </section>
+
+  <!-- ===================== SECTION 4: Typography Specimen ===================== -->
+  <section class="section">
+    <div class="section-head">
+      <span class="num">04</span>
+      <h2>排版规范</h2>
+      <span class="desc">展示体 · 标题层级 · 正文 · 等宽数据 · 透明度层级</span>
+    </div>
+
+    <div class="typo-card noise-overlay">
+      <div class="typo-display">工房感 · 暗色质感的精确表达</div>
+      <div class="typo-spec">DISPLAY · Noto Serif SC · 36px · weight 600 · letter-spacing -0.015em</div>
+
+      <div class="typo-h-row">
+        <div class="typo-h1">一级标题 · 章节主标题</div>
+        <span class="tag-spec">H1 · 28px / 600 / -0.012em</span>
+      </div>
+      <div class="typo-h-row">
+        <div class="typo-h2">二级标题 · 区块标题</div>
+        <span class="tag-spec">H2 · 22px / 600 / -0.01em</span>
+      </div>
+      <div class="typo-h-row">
+        <div class="typo-h3">三级标题 · 卡片标题</div>
+        <span class="tag-spec">H3 · 18px / 600 / -0.008em</span>
+      </div>
+      <div class="typo-h-row">
+        <div class="typo-h4">四级标题 · 小节标题</div>
+        <span class="tag-spec">H4 · 15px / 600 / -0.005em</span>
+      </div>
+
+      <p class="typo-body">
+        正文段落使用 14px / line-height 1.65 / weight 350。暗色模式下字重略下调可补偿白色文字在深色背景上的视觉过粗问题（optical correction）。透明度驱动的文字层级让信息主次无需借助额外颜色即可清晰区分：主要文字 95%、次要文字 65%、辅助文字 40%、禁用文字 28%。
+      </p>
+
+      <div class="typo-mono-demo">24,891 · 1.82M · 184ms · 99.42%</div>
+      <div class="tag-spec" style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--hairline)">MONO · JetBrains Mono · tabular-nums · 用于所有数值数据展示</div>
+
+      <div class="typo-hierarchy">
+        <div class="typo-level"><span class="lvl-tag">95% PRIMARY</span><span class="lvl-primary">主要文字 · 标题、关键数据、表单值</span></div>
+        <div class="typo-level"><span class="lvl-tag">65% SECONDARY</span><span class="lvl-secondary">次要文字 · 正文、说明、面包屑</span></div>
+        <div class="typo-level"><span class="lvl-tag">40% TERTIARY</span><span class="lvl-tertiary">辅助文字 · 标签、表头、元信息</span></div>
+        <div class="typo-level"><span class="lvl-tag">28% FAINT</span><span class="lvl-faint">禁用文字 · 占位符、规格标注</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="doc-foot">
+    <span>MagicTools · Premium UI Reference · 2026</span>
+    <div class="links">
+      <a href="#">colors_and_type.css</a>
+      <a href="#">AdminShell 规范</a>
+      <a href="#">设计系统主页</a>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  // Lucide icon render
+  window.addEventListener('DOMContentLoaded', function () {
+    if (window.lucide) {
+      window.lucide.createIcons();
+    } else {
+      // wait for deferred script
+      var tryRender = setInterval(function () {
+        if (window.lucide) {
+          window.lucide.createIcons();
+          clearInterval(tryRender);
+        }
+      }, 80);
+      setTimeout(function () { clearInterval(tryRender); }, 4000);
+    }
+  });
+</script>
+</body>
+</html>
