@@ -1,0 +1,47 @@
+{
+  "slug": "surface-card",
+  "schemaVersion": 2,
+  "name": "MtSurfaceCard 表面卡片",
+  "category": "layout",
+  "sourceKind": "from-scratch",
+  "confidence": "medium",
+  "semanticTypeCandidates": [
+    { "candidate": "paper-surface-0", "evidence": "页面底：纸面/工作台画布" },
+    { "candidate": "card-surface-1", "evidence": "内容卡片：岗位卡/馆藏卡/表格容器" },
+    { "candidate": "overlay-surface-2", "evidence": "浮层：Modal/Drawer/Dropdown" }
+  ],
+  "variantDimensions": [
+    { "dimension": "tier", "values": ["surface-0 纸面", "surface-1 卡片", "surface-2 浮层"] },
+    { "dimension": "elevation", "values": ["shadow-1", "shadow-2", "shadow-3"] },
+    { "dimension": "border", "values": ["rule 1px", "none"] }
+  ],
+  "representativeVariants": [
+    {
+      "name": "Card surface-1",
+      "whySelected": "替代旧白卡平铺的核心层级",
+      "traits": { "background": "var(--surface-1)", "border": "1px solid var(--color-border)", "radius": "var(--radius-md)", "boxShadow": "var(--shadow-1)", "padding": "var(--space-5)", "hoverShadow": "var(--shadow-2)", "transition": "var(--duration-base) var(--ease-standard)" },
+      "childrenDigest": "眉题(muted 11px mono) + 标题(display 20px) + 正文 + 元信息行"
+    },
+    {
+      "name": "Overlay surface-2",
+      "whySelected": "Modal/Drawer 浮层语言",
+      "traits": { "background": "var(--surface-2)", "radius": "var(--radius-md)", "boxShadow": "var(--shadow-4)", "border": "1px solid var(--color-border)" },
+      "childrenDigest": "Modal 标题「编 辑 采集源」+ 表单 + 页脚按钮"
+    },
+    {
+      "name": "Interactive card",
+      "whySelected": "岗位墙/馆藏墙可点击卡片（Link 卡）",
+      "traits": { "background": "var(--surface-1)", "radius": "var(--radius-sm)", "boxShadow": "var(--shadow-1)", "hoverTransform": "translateY(-2px)", "hoverShadow": "var(--shadow-3)", "cursor": "pointer" },
+      "childrenDigest": "No. 01 编号 + 岗位标题 + 公司 + 城市/日期元信息"
+    }
+  ],
+  "anatomy": {
+    "parts": ["surface 背景", "1px rule 边框（可选）", "elevation 阴影", "内容 padding 区"],
+    "structure": "层级仅由 surface tier + shadow 表达；surface-0 永不加阴影"
+  },
+  "structurePatterns": ["卡片 hover 仅提升阴影与 -2px 位移，不变色不描边", "嵌套规则：浮层内可含卡片，卡片内禁止再嵌卡片（用 divider 分区）", "surface-0 上直接放 surface-1 卡片形成纸面层次"],
+  "usageHints": { "priorityHint": "high", "rules": ["海拔即层级：shadow-1 卡片 / shadow-2 hover / shadow-4 浮层", "暗色下三层表面分别为 #14181f / #1b2129 / #232b36", "禁止旧式白底+灰边无阴影平铺"] },
+  "doNotInvent": ["渐变表面", "玻璃拟态模糊卡片"],
+  "unknowns": ["surface-2 在前台纸色主题中的具体色相偏移规则（由各应用主题派生）"],
+  "keyInsightSeed": "纸面/卡片/浮层三级表面语言，海拔即层级，替代白卡平铺"
+}

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MtSurfaceCard 表面卡片</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  /* Page scaffold — NOT extracted */
+  body { margin: 0; padding: 12px; background: var(--background); font-family: var(--font-body); color: var(--color-text); }
+  .row { display: flex; align-items: flex-start; gap: var(--space-2); margin-bottom: var(--space-2); }
+  .label { flex: 0 0 92px; padding-top: 2px; font-size: var(--font-size-eyebrow); font-weight: var(--font-weight-eyebrow); letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); white-space: nowrap; }
+  .divider { border: none; border-top: 1px solid var(--rule); margin: var(--space-3) 0; }
+  .card-grid { flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--space-3); }
+
+  /* @component-css-start */
+  /* Component definitions — extracted to components.css by deterministic script */
+  .mt-paper { flex: 1; min-width: 0; background: var(--surface-0); padding: var(--space-3); }
+  .mt-card { background: var(--surface-1); border: 1px solid var(--color-border); border-radius: var(--radius-md); box-shadow: var(--shadow-1); padding: var(--space-5); transition: box-shadow var(--duration-base) var(--ease-standard); }
+  .mt-card:hover { box-shadow: var(--shadow-2); }
+  .mt-card.is-overlay { flex: 1; min-width: 0; background: var(--surface-2); box-shadow: var(--shadow-4); padding: var(--space-4); }
+  .mt-card.is-link { border: none; border-radius: var(--radius-sm); padding: var(--space-4); cursor: pointer; transition: box-shadow var(--duration-base) var(--ease-standard), transform var(--duration-base) var(--ease-standard); }
+  .mt-card.is-link:hover { box-shadow: var(--shadow-3); transform: translateY(-2px); }
+  .sc-eyebrow { margin: 0 0 var(--space-2); font-family: var(--font-mono); font-size: var(--font-size-eyebrow); font-weight: var(--font-weight-mono); letter-spacing: .06em; color: var(--text-muted); white-space: nowrap; }
+  .sc-title { margin: 0 0 var(--space-2); font-family: var(--font-display); font-size: 20px; font-weight: var(--font-weight-h3); line-height: var(--line-height-h3); color: var(--text-strong); word-break: keep-all; overflow-wrap: break-word; }
+  .is-overlay .sc-title { margin-bottom: var(--space-4); }
+  .is-link .sc-title { font-size: var(--font-size-h4); }
+  .sc-body { margin: 0 0 var(--space-2); font-family: var(--font-body); font-size: var(--font-size-body); line-height: var(--line-height-body); color: var(--fg); }
+  .sc-div { border: none; border-top: 1px solid var(--rule); margin: var(--space-3) 0; }
+  .sc-meta { margin: 0; font-family: var(--font-body); font-size: var(--font-size-caption); line-height: var(--line-height-caption); color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .is-link .sc-meta { margin-top: var(--space-3); }
+  .sc-field { display: block; width: 100%; height: var(--size-input-height); background: var(--surface-1); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0 var(--space-3); font-family: var(--font-body); font-size: var(--font-size-body); color: var(--fg); }
+  .sc-field::placeholder { color: var(--text-faint); }
+  .sc-foot { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-4); }
+  .sc-btn { flex-shrink: 0; height: var(--size-button-md); min-width: var(--size-button-md); padding: 0 var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--surface-1); color: var(--fg); font-family: var(--font-body); font-size: var(--font-size-body); white-space: nowrap; cursor: pointer; transition: background .15s, border-color .15s; }
+  .sc-btn:hover { filter: brightness(.97); }
+  .sc-btn.is-primary { background: var(--primary); border-color: var(--primary); color: var(--primary-foreground); }
+  .sc-btn.is-primary:hover { background: var(--color-primary-hover); filter: none; }
+  /* @component-css-end */
+</style>
+</head>
+<body>
+  <div class="row">
+    <span class="label">纸面层级</span>
+    <div class="mt-paper" data-evidence-sample="paper-surface-0">
+      <div class="mt-card" data-evidence-sample="Card surface-1">
+        <p class="sc-eyebrow">No. 01</p>
+        <h3 class="sc-title">岗位标题</h3>
+        <p class="sc-body">公司</p>
+        <hr class="sc-div">
+        <p class="sc-meta">城市 · 日期</p>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">浮层</span>
+    <div class="mt-card is-overlay" data-evidence-sample="Overlay surface-2">
+      <h3 class="sc-title">编 辑 采集源</h3>
+      <input class="sc-field" placeholder="采集源名称">
+      <div class="sc-foot">
+        <button class="sc-btn">取 消</button>
+        <button class="sc-btn is-primary">保 存</button>
+      </div>
+    </div>
+  </div>
+  <hr class="divider">
+  <div class="row">
+    <span class="label">可点击卡片</span>
+    <div class="card-grid">
+      <div class="mt-card is-link" data-evidence-sample="Interactive card">
+        <p class="sc-eyebrow">No. 01</p>
+        <h4 class="sc-title">岗位标题</h4>
+        <p class="sc-body">公司</p>
+        <p class="sc-meta">城市 · 日期</p>
+      </div>
+      <div class="mt-card is-link" data-evidence-sample="Interactive card">
+        <p class="sc-eyebrow">No. 02</p>
+        <h4 class="sc-title">岗位标题</h4>
+        <p class="sc-body">公司</p>
+        <p class="sc-meta">城市 · 日期</p>
+      </div>
+      <div class="mt-card is-link" data-evidence-sample="Interactive card">
+        <p class="sc-eyebrow">No. 03</p>
+        <h4 class="sc-title">岗位标题</h4>
+        <p class="sc-body">公司</p>
+        <p class="sc-meta">城市 · 日期</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

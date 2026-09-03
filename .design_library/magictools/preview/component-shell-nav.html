@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MtShellNav 外壳导航</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+/* Page scaffold — NOT extracted */
+body { margin: 0; padding: var(--space-3); background: var(--color-background); font-family: var(--font-body); color: var(--color-text); }
+.row { display: flex; gap: var(--space-3); align-items: center; margin-bottom: var(--space-2); flex-wrap: wrap; }
+.label { font-size: var(--font-size-caption); color: var(--text-muted); text-transform: uppercase; letter-spacing: .08em; min-width: 92px; }
+.divider { border: none; border-top: 1px solid var(--border); margin: var(--space-3) 0; }
+
+/* @component-css-start */
+/* Component definitions — extracted to components.css by deterministic script */
+.mt-sider { box-sizing: border-box; width: 208px; flex-shrink: 0; display: flex; flex-direction: column; gap: var(--space-1); background: #14181f; padding: var(--space-3); }
+.mt-sider-brand { font-family: var(--font-mono); font-size: var(--font-size-eyebrow); font-weight: var(--font-weight-mono); letter-spacing: 2px; text-transform: uppercase; color: var(--text-inverse); padding: var(--space-2) var(--space-3); }
+.mt-sider-item { display: flex; align-items: center; height: 36px; padding: 0 var(--space-3); border-left: 3px solid transparent; border-radius: var(--radius-sm); color: var(--mt-graphite-400); font-size: var(--font-size-body); text-decoration: none; white-space: nowrap; transition: background .15s; }
+.mt-sider-item:hover { background: var(--accent-hover); }
+.mt-sider-item.is-active { background: var(--mt-ink-700); border-left-color: var(--accent); color: #ffffff; }
+.mt-sider-item.is-active:hover { background: var(--mt-ink-700); }
+.mt-sider-back { margin-top: auto; }
+.mt-switcher { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2); flex-shrink: 0; }
+.mt-ghost-btn { display: inline-flex; align-items: center; justify-content: center; height: var(--size-button-sm); min-width: var(--size-button-sm); padding: 0 var(--space-3); flex-shrink: 0; background: transparent; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-body); font-family: var(--font-body); font-size: var(--font-size-body); white-space: nowrap; cursor: pointer; transition: background .15s, border-color .15s; }
+.mt-ghost-btn:hover { background: var(--mt-ink-50); border-color: var(--mt-ink-400); }
+.mt-switcher-menu { min-width: 160px; background: var(--surface-2); box-shadow: var(--shadow-3); padding: var(--space-1) 0; }
+.mt-switcher-item { display: flex; align-items: center; height: 32px; padding: 0 var(--space-3); color: var(--text-body); font-size: var(--font-size-body); text-decoration: none; white-space: nowrap; transition: background .15s; }
+.mt-switcher-item:hover { background: var(--mt-ink-50); }
+.mt-masthead { box-sizing: border-box; width: 100%; background: var(--surface-1); border: 3px double var(--mt-ink-600); padding: var(--space-4) var(--space-5); }
+.mt-masthead-top { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.mt-masthead-eyebrow { font-size: var(--font-size-caption); letter-spacing: 6px; text-transform: uppercase; color: var(--text-muted); }
+.mt-masthead-title { font-family: var(--font-display); font-size: var(--font-size-display); font-weight: 700; line-height: var(--line-height-display); color: var(--text-strong); margin: var(--space-2) 0 var(--space-4); }
+.mt-masthead-nav { display: flex; flex-wrap: wrap; gap: var(--space-7); border-top: 1px solid var(--mt-ink-600); border-bottom: 1px solid var(--mt-ink-600); padding: var(--space-2) 0; }
+.mt-masthead-link { font-size: var(--font-size-h4); letter-spacing: 2px; color: var(--text-body); text-decoration: none; white-space: nowrap; padding-bottom: var(--space-1); border-bottom: 2px solid transparent; transition: border-color .15s; }
+.mt-masthead-link:hover { border-bottom-color: var(--mt-ink-300); }
+.mt-masthead-link.is-active { color: var(--accent); border-bottom-color: var(--accent); }
+/* @component-css-end */
+</style>
+</head>
+<body>
+<div class="row"><span class="label">后台外壳 Admin Shell</span></div>
+<div class="row">
+<aside class="mt-sider" data-evidence-sample="Admin sider">
+<div class="mt-sider-brand">ADMIN CONSOLE</div>
+<a class="mt-sider-item is-active" href="#">采集源管理</a>
+<a class="mt-sider-item" href="#">条目库</a>
+<a class="mt-sider-item mt-sider-back" href="#">← 返回前台</a>
+</aside>
+<div class="mt-switcher" data-evidence-sample="App switcher dropdown">
+<button class="mt-ghost-btn" type="button">切换应用</button>
+<div class="mt-switcher-menu">
+<a class="mt-switcher-item" href="#">求职</a>
+<a class="mt-switcher-item" href="#">知识书院</a>
+<a class="mt-switcher-item" href="#">智能助手</a>
+</div>
+</div>
+</div>
+<hr class="divider">
+<div class="row"><span class="label">前台外壳 Front Shell</span></div>
+<div class="row">
+<header class="mt-masthead" data-evidence-sample="Front masthead nav">
+<div class="mt-masthead-top"><span class="mt-masthead-eyebrow">MagicTools</span><button class="mt-ghost-btn" type="button">切换应用</button></div>
+<h1 class="mt-masthead-title">知识书院</h1>
+<nav class="mt-masthead-nav">
+<a class="mt-masthead-link is-active" href="#">馆藏检索</a>
+<a class="mt-masthead-link" href="#">图谱</a>
+<a class="mt-masthead-link" href="#">收件箱</a>
+</nav>
+</header>
+</div>
+</body>
+</html>

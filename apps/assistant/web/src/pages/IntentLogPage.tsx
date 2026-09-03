@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
-import { Button, Card, Modal, Select, Space, Statistic, Table, Tag, Typography, message } from "antd";
+import { Button, Card, Modal, Select, Space, Statistic, Table, Tag, Typography, message, theme as antdTheme } from "antd";
 import { DownloadOutlined, FileSearchOutlined, PlayCircleOutlined } from "@ant-design/icons";
-import { tokens } from "@mt/ui";
 import { api, type IntentLog } from "../api";
 
 const DOMAIN_LABEL: Record<string, { label: string; color: string }> = {
-  cybercloud: { label: "cybercloud", color: "purple" },
-  magictools: { label: "MagicTools", color: "blue" },
+  cybercloud: { label: "cybercloud", color: "geekblue-inverse" },
+  magictools: { label: "MagicTools", color: "processing-inverse" },
   chitchat: { label: "闲聊", color: "default" },
 };
 
@@ -34,6 +33,7 @@ interface ReplayData {
 }
 
 export default function IntentLogPage() {
+  const { token: themeUseToken } = antdTheme.useToken();
   const [items, setItems] = useState<IntentLog[]>([]);
   const [domain, setDomain] = useState<string | undefined>();
   const [intent, setIntent] = useState<string | undefined>();
@@ -144,7 +144,11 @@ export default function IntentLogPage() {
           <Space wrap style={{ marginBottom: 16 }}>
             <Statistic title="回放样本" value={replay.total} />
             <Statistic title="命中" value={replay.hits} />
-            <Statistic title="命中率" value={Math.round(replay.accuracy * 100) + "%"} valueStyle={{ color: replay.accuracy >= 0.8 ? tokens.color.success : tokens.color.warning }} />
+            <Statistic
+              title="命中率"
+              value={Math.round(replay.accuracy * 100) + "%"}
+              valueStyle={replay.accuracy >= 0.8 ? { color: themeUseToken.colorSuccess } : { color: themeUseToken.colorWarning }}
+            />
           </Space>
         )}
         <Typography.Paragraph type="secondary" style={{ fontSize: 12 }}>

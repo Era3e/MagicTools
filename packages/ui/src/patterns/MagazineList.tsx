@@ -132,6 +132,7 @@ const MagazineList: React.FC<MagazineListProps> = ({
               padding: spacing.sm,
               borderRadius: radius,
               border: `1px solid ${color.border}`,
+              boxShadow: tokens.shadow.card,
               boxSizing: "border-box",
             }}
           >

@@ -61,6 +61,8 @@ const THEME_WHITELIST_KEYS = new Set([
   "panel",
   "rule",
   "paper",
+  "card",
+  "brick",
   "sky",
   "green",
   "bg",

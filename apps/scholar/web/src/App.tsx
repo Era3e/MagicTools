@@ -6,22 +6,22 @@ import GraphPage from "./pages/GraphPage";
 import SettingsPage from "./pages/SettingsPage";
 
 const LIBRARY_THEME = {
-  // UserShellTheme 标准字段
-  primary: "#0e5a3a",
-  background: "#f4f1e8",
-  ink: "#23301f",
-  muted: "#7c8577",
-  displayFont: '"Palatino Linotype", "Book Antiqua", "Noto Serif SC", "Songti SC", serif',
-  bodyFont: '"Noto Serif SC", "Palatino Linotype", serif',
+  // UserShellTheme 标准字段（v2 派生口径：品牌衬线 + 馆藏绿 + 羊皮纸）
+  primary: "#2f5a3b",
+  background: "#f2efe5",
+  ink: "#1f2a1d",
+  muted: "#75816e",
+  displayFont: '"Noto Serif SC", "Source Serif 4", "Palatino Linotype", serif',
+  bodyFont: '"Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif',
   // Scholar 馆藏扩展色板（页面通过 useTheme() 访问）
-  green: "#0e5a3a",
-  rule: "#c8c0ab",
-  paper: "#ede8da",
-  card: "#faf8f2",
-  display: '"Palatino Linotype", "Book Antiqua", "Noto Serif SC", "Songti SC", serif',
-  link: "#0e5a3a",     // 强调链接色（替换原 #3370ff 蓝色，统一书院绿）
-  chipBg: "#ede8da",   // 关系列表 chip 背景（替换原 rgba(0,0,0,0.04)）
-  subtle: "#7c8577",   // 次次要灰文字（替换原 #86909c，统一用 muted）
+  green: "#2f5a3b",
+  rule: "#ccc4ad",
+  paper: "#eae6d8",
+  card: "#faf8f1",
+  display: '"Noto Serif SC", "Source Serif 4", "Palatino Linotype", serif',
+  link: "#2f5a3b",     // 强调链接色（馆藏绿）
+  chipBg: "#eae6d8",   // 关系列表 chip 背景
+  subtle: "#75816e",   // 次次要灰文字（统一用 muted）
 };
 
 const USER_NAV = [

@@ -1,0 +1,53 @@
+{
+  "slug": "button",
+  "schemaVersion": 2,
+  "name": "MtButton 按钮",
+  "category": "actions",
+  "sourceKind": "from-scratch",
+  "confidence": "medium",
+  "semanticTypeCandidates": [
+    { "candidate": "primary-action", "evidence": "主操作：新建/推送/生成，实心墨蓝" },
+    { "candidate": "secondary-action", "evidence": "次操作：编辑/筛选，描边或幽灵" },
+    { "candidate": "danger-action", "evidence": "删除/撤销，错误语义红" }
+  ],
+  "variantDimensions": [
+    { "dimension": "variant", "values": ["primary", "secondary", "ghost", "danger"] },
+    { "dimension": "size", "values": ["sm(32px)", "md(36px)", "lg(44px)"] },
+    { "dimension": "state", "values": ["default", "hover", "active", "disabled", "loading"] }
+  ],
+  "representativeVariants": [
+    {
+      "name": "Primary md",
+      "whySelected": "全站出现频率最高的主操作按钮",
+      "traits": { "background": "var(--mt-ink-600)", "color": "#ffffff", "height": "36px", "padding": "0 var(--space-4)", "radius": "var(--radius-sm)", "fontWeight": "600", "fontSize": "var(--type-scale-body)", "hoverBg": "var(--mt-ink-700)", "activeBg": "var(--mt-ink-800)", "transition": "var(--duration-fast) var(--ease-standard)" },
+      "childrenDigest": "「新 建」「推 送」「生 成」等 2-3 字动词（AntD 双字按钮含字间空格）"
+    },
+    {
+      "name": "Secondary md",
+      "whySelected": "表格行内编辑、取消等次操作",
+      "traits": { "background": "transparent", "border": "1px solid var(--mt-ink-600)", "color": "var(--mt-ink-600)", "height": "36px", "radius": "var(--radius-sm)", "hoverBg": "var(--mt-ink-50)", "hoverBorder": "var(--mt-ink-700)" },
+      "childrenDigest": "「编 辑」「取 消」「同步 PR 状态」"
+    },
+    {
+      "name": "Danger md",
+      "whySelected": "删除类破坏性操作，与错误语义色一致",
+      "traits": { "background": "var(--mt-error-600)", "color": "#ffffff", "height": "36px", "radius": "var(--radius-sm)", "hoverBg": "var(--mt-error-700)" },
+      "childrenDigest": "「删 除」"
+    },
+    {
+      "name": "Ghost sm",
+      "whySelected": "卡片/工具条内轻量动作，表格批量工具条 32px 密度",
+      "traits": { "background": "transparent", "color": "var(--mt-ink-600)", "height": "32px", "hoverBg": "var(--mt-ink-50)" },
+      "childrenDigest": "「推送选中（N）」"
+    }
+  ],
+  "anatomy": {
+    "parts": ["label（2-3 字动词或动宾）", "optional leading icon (16px)", "optional count badge (mono)"],
+    "structure": "single inline-flex, center aligned, gap var(--space-1)"
+  },
+  "structurePatterns": ["同排多按钮：主操作居右，次操作向左排", "危险操作与主操作之间隔 var(--space-2)", "loading 态：文字保留 + spinner 替换 leading icon"],
+  "usageHints": { "priorityHint": "highest", "rules": ["禁止 AntD 默认蓝 #1677ff", "文案动词开头，双字词加全角空格", "一屏内 primary 按钮只出现一个"] },
+  "doNotInvent": ["icon-only 无障碍缺失态", "split-button 下拉组合"],
+  "unknowns": ["link 变体在暗色侧栏中的对比度待实测"],
+  "keyInsightSeed": "墨蓝实心主按钮，工房密度 36px 默认高，克制圆角与按压反馈"
+}

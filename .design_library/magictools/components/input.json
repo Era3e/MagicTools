@@ -1,0 +1,47 @@
+{
+  "slug": "input",
+  "schemaVersion": 2,
+  "name": "MtInput 输入框",
+  "category": "forms",
+  "sourceKind": "from-scratch",
+  "confidence": "medium",
+  "semanticTypeCandidates": [
+    { "candidate": "search-input", "evidence": "前台检索（公司/职位/城市）与后台筛选条" },
+    { "candidate": "form-input", "evidence": "Modal 表单字段（名称/URL/cron）" },
+    { "candidate": "textarea", "evidence": "调研问题、生成描述多行输入" }
+  ],
+  "variantDimensions": [
+    { "dimension": "kind", "values": ["text", "search(带检索图标+清空)", "textarea", "addon(前缀标签)"] },
+    { "dimension": "size", "values": ["sm 32px", "md 36px"] },
+    { "dimension": "state", "values": ["default", "focus", "error", "disabled"] }
+  ],
+  "representativeVariants": [
+    {
+      "name": "Search input md",
+      "whySelected": "岗位墙/馆藏检索的聚焦体验",
+      "traits": { "height": "36px", "background": "var(--surface-2)", "border": "1px solid var(--color-border)", "radius": "var(--radius-sm)", "focusBorder": "var(--mt-ink-600)", "focusRing": "0 0 0 2px var(--mt-ink-100)", "placeholderColor": "var(--mt-neutral-400)", "leadingIcon": "16px muted" },
+      "childrenDigest": "placeholder「检索公司 / 职位 / 城市」"
+    },
+    {
+      "name": "Form input md",
+      "whySelected": "编辑 Modal 表单默认字段",
+      "traits": { "height": "36px", "background": "var(--surface-2)", "border": "1px solid var(--color-border)", "errorBorder": "var(--mt-error-500)", "errorRing": "0 0 0 2px var(--mt-error-100)", "labelColor": "var(--mt-neutral-700)", "labelFontSize": "var(--type-scale-caption)", "labelWeight": "600" },
+      "childrenDigest": "label「采集源名称」+ input + 校验提示（error-600 小字）"
+    },
+    {
+      "name": "Textarea",
+      "whySelected": "描述/问题类多行输入",
+      "traits": { "minHeight": "96px", "lineHeight": "1.7", "padding": "var(--space-2) var(--space-3)", "radius": "var(--radius-sm)" },
+      "childrenDigest": "placeholder「用一句话描述你想生成的组件…」"
+    }
+  ],
+  "anatomy": {
+    "parts": ["label（可选，caption 字重 600）", "control（surface-2 底）", "leading/trailing icon", "帮助/错误文本"],
+    "structure": "focus = 墨蓝边框 + 2px 浅墨光环，禁用 AntD 默认蓝环"
+  },
+  "structurePatterns": ["表单 label 在上、控件在下，间距 var(--space-1)", "筛选条内多控件横向排列 gap var(--space-2)", "错误文本 mt-error-600 caption 字号"],
+  "usageHints": { "priorityHint": "medium", "rules": ["输入底用 surface-2（纸色浮面）不用纯白", "focus 环永远墨蓝系", "placeholder 不承载必填信息"] },
+  "doNotInvent": ["浮动 label 动效", "分段输入（OTP 类）"],
+  "unknowns": ["Select/DatePicker 等 AntD 复合控件仅通过 ConfigProvider 换肤，不在本契约展开"],
+  "keyInsightSeed": "墨蓝聚焦环 2px，纸面底而非纯白，前置图标与检索态"
+}

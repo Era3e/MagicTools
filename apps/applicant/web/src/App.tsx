@@ -7,17 +7,17 @@ import InterviewPage from "./pages/InterviewPage";
 import ResumeCenter from "./pages/ResumeCenter";
 
 const APPLICANT_THEME: UserShellTheme = {
-  primary: "#b4532a",
-  background: "#f8f5ef",
-  ink: "#2b2620",
-  muted: "#8a8175",
-  displayFont: 'Georgia, "Times New Roman", "Noto Serif SC", "Songti SC", serif',
-  bodyFont: '"Noto Serif SC", Georgia, serif',
-  brick: "#b4532a",
-  paper: "#f8f5ef",
-  rule: "#ddd5c7",
-  card: "#fffdf9",
-  border: "#e8e2d6",
+  primary: "#a8522e",
+  background: "#f7f3ec",
+  ink: "#241f1a",
+  muted: "#857b6f",
+  displayFont: '"Noto Serif SC", "Source Serif 4", "Songti SC", serif',
+  bodyFont: '"Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif',
+  brick: "#a8522e",
+  paper: "#f7f3ec",
+  rule: "#e0d6c6",
+  card: "#fffdf8",
+  border: "#e6ddcf",
 };
 
 const USER_NAV = [

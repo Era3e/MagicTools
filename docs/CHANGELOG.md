@@ -39,3 +39,8 @@
 ## 2026-08-27
 
 - **修复无前台应用后台无效返回链接（PR #32，b830c93）**：验收发现 gatherer/investigator/assessor 后台侧栏「返回前台」点击无效——frontPath 误指向后台自身；三应用本无前台形态，移除传参后 AdminShell 自动隐藏该链接。
+
+## 2026-09-02
+
+- **UI v2「墨蓝石墨·工房感」落地 @mt/ui（feat-ui-v2-migrate-mtui）**：tokens 全量替换 AntD 出厂值（墨蓝 ink-600 #2c4a6e 主色 + 石墨中性阶 + 暗色板/海拔/动效/字体扩展，键结构向后兼容零改业务代码）；主题真注入——MtThemeProvider 全量注入 AntD、AdminShell 经 darkAlgorithm 整体转石墨深色控制台、UserShell 八主题 accent 注入前台控件；MtEmptyState 品牌化去 AntD 简笔画；八应用主题常量按业务受众派生口径重算；视觉基线 16 张重生成，e2e 全量 52 passed。
+- **UI「塑料感」评审 + v2 设计规范定稿（设计系统交付，未含代码落地）**：全平台 UI 评审定位四根源（AntD 出厂令牌照搬 / 主题只装饰外壳内脏默认件 / 无中性阶与海拔体系 / OS 自带字体角色扮演）；用户拍板「统一底座 + 八主题真注入 / 墨蓝石墨·工房感 / 暗色纳入 / 先规范后落地」。交付 `.design_library/magictools/` 设计系统（191 令牌含亮暗双色板、surface 三级表面、5 级墨调海拔、motion、字体三层；6 组件契约与预览；UI Kit 展示页；SKILL/README），docs/ui-spec.md 重写为 v2（令牌唯一来源、11 条强制规则、八主题业务受众派生口径、暗色模式、8 项落地迁移清单）。代码落地按迁移清单另起任务。

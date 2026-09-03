@@ -4,8 +4,34 @@
 > 即时更新：每完成一个功能 / 关键决策 / 迭代结束，即刻追加条目，禁止事后批量补记。
 > 本文件定位「当前状态快照」，历史细节见 docs/CHANGELOG.md 与 docs/superpowers/specs/、plans/。
 
-## 当前状态快照（2026-08-29）
+## 当前状态快照（2026-09-02 更新）
 
+- **UI v2.1 质感升级 @mt/ui（2026-09-02，分支 feat-ui-v2-migrate-mtui，进行中）**：
+  - **背景**：用户反馈"UI 还是没啥质感"，要求参考头部科技公司现有产品 UI 优化。
+  - **研究**：深度逆向分析 Linear/Stripe/Vercel/GitHub/Notion 五家公司的"质感密码"——提取 10 项可复用 CSS 技法（含具体 hex/rgba 值、SVG 参数、阴影配方）。
+  - **六维度升级**：①Linear 四级表面亮度阶梯（surface0-4：#14181f→#2d3848，替代投影承载层级）；②Stripe 双层投影系统（近距小模糊+远距大模糊+inset 顶部高光）；③GitHub 发丝边框（rgba 白 7%/12%/16% 三档）+ 表格 hover 重音条（inset 2px accent）；④Linear 噪点纹理升级（feTurbulence 0.65/3 octaves + mix-blend-mode overlay/4.5%）；⑤Vercel 透明度文字层级（95%/65%/40%/28% 四档）+ tabular-nums；⑥暗色光学修正（字重降一档 350/500 + 负字距 -0.01em）。
+  - **新增 token**：shadow.darkCard/DarkCardHover/DarkDropdown/DarkModal/focusRing、craft.glowDarkSecondary/cardBorderGradient/hoverSpotlight/noiseOpacity、dark.surface3/surface4/textPrimary/textTertiary/textFaint/textDisabled/hairline/hairlineHover、font.weightBodyDark/weightHeadingDark/letterSpacingBodyDark/letterSpacingHeadingSm/Lg。
+  - **AdminShell 落地**：注入全局 CSS（.mt-admin-shell 焦点环/表格发丝线+hover 重音条/卡片双层投影+hover 加深/按钮内描边+hover 辉光+active 缩放/字重光学修正/tabular-nums）；多层环境光（主氛围光+琥珀色副氛围光）；噪点 overlay 混合模式；侧栏顶部高光+右缘发丝线；顶栏毛玻璃+底部高光。
+  - **AdminDarkThemeProvider**：补齐 Menu（itemSelectedBg 透明度）/Input（surface0 底+focusRing）/Select/Tag/Modal（surface3）组件级暗色注入。
+  - **视觉参考页**：`.design_library/magictools/ui_kits/premium-reference/index.html`（54KB，含 AdminShell 实机演示+5 组 BEFORE/AFTER 对照+组件展示+排版规范），预览 http://localhost:4180。
+  - **测试**：@mt/ui 22/22 pass、lint 0 err、build 通过。tokens.test.ts 和 AdminShell.test.tsx 断言已更新匹配新值。
+  - **设计库同步**：colors_and_type.css 暗色块全量更新（四级表面/双层投影/透明度文字/噪点升级/环境光/渐变描边/焦点环）。
+- **UI v2 落地 @mt/ui（2026-09-02，分支 feat-ui-v2-migrate-mtui，进行中）**：
+  - **改造策略**：tokens.ts 保持 v1 键结构（color/spacing/fontSize/radius）值全换 v2 色板——业务代码零改动；新增 scale（7 组 10 阶）/dark/admin/shadow/motion/size/font/radiusTokens 扩展块；
+  - **主题真注入**：MtThemeProvider 全量注入 AntD（36 控件高/品牌字体/表头石墨底/墨调浮层影）+ 品牌字体 link 幂等注入（id=mt-brand-fonts）；AdminShell 经内部 AdminDarkThemeProvider（darkAlgorithm + tokens.admin 锚点）整体深色——**后台 AntD 表格/表单/Modal 全部跟随深色**；UserShell 嵌套 ConfigProvider 让前台分页/输入/按钮跟随应用 accent；
+  - **测试**：@mt/ui 20 用例（探针组件读 antdTheme.useToken() 断言注入结果；darkAlgorithm 会把种子 #6e8bad 微调为 #617996、inline 色值被规范化为 rgb()——断言按色彩族+双格式兼容）；全仓 46/46、lint 0 err、e2e 全量 52 passed/1 skipped（含视觉基线 16 张重生成）；
+  - **门禁教训**：ESLint 白名单需补 card/brick 主题扩展键；后台页直引 tokens.color 亮色值在暗色 AdminShell 下不可读（designer pre 块/assistant Statistic 已改 useToken()/bgUser 自适应）——后续后台页一律 useToken() 或语义底色；
+  - 八应用主题常量已按 v2 派生口径重算（applicant 砖红 #a8522e / scholar 馆藏绿 #2f5a3b / assistant 瓷青墨蓝 #4a688c / manager 驾驶舱蓝 #3a5f84 / gatherer 藏青 #1f3a5c / investigator 铜金 #8a6a3b / assessor 深赭 #6e3b28 / designer 墨黑 #1c2530），display 字体统一进品牌栈（Noto Serif SC / JetBrains Mono 优先）。
+  - **PR #47 已开出**（head a37fba4 + 8ec3345）：linux 旧基线已随 PR 移除（旧 UI 像素必不匹配，平台感知守卫会显式 skip linux 视觉用例），**合并后需手动 dispatch visual-baseline workflow 重生成 linux 基线**（Ubuntu CJK 环境跑真实新 UI）；push 曾因代理抖动挂死一轮，恢复全局代理配置（127.0.0.1:7890）后一次通过——直连 443 不通。
+- **UI「塑料感」评审 + v2 设计规范定稿（2026-09-02，本会话）**：
+  - **评审结论（四根源）**：①tokens.ts 原样照搬 AntD 出厂值（#2f54eb/#52c41a/radius 6 等，从未被设计）；②外壳有个性、内脏默认件——MtThemeProvider 只注入 5 个基础 token，前台八主题内的分页器/搜索框/Tag/Empty 仍是 AntD 默认蓝与简笔画（风格断裂主因）；③无质感体系（仅 2 个灰、无中性阶/海拔分级/表面材质）；④字体廉价（OS 自带字体角色扮演）+ 字号仅 4 档 + 无动效 token。
+  - **用户拍板**：统一底座 + 八主题真注入 / 墨蓝石墨·工房感基调 / 暗色纳入本期 / 先规范后落地（代码改造另起任务走分支流程）；并要求八主题贴合各子项目真实业务受众。
+  - **交付**：设计系统 `.design_library/magictools/`（colors_and_type.css 191 变量：墨蓝 ink 十阶锚定 600 #2c4a6e、石墨中性十阶、琥珀强调、四语义色各十阶、surface-0/1/2 三级表面亮暗两套、shadow 1-5 墨调、duration/ease motion、字体三层 Noto Serif SC+Source Serif 4 / Noto Sans SC / JetBrains Mono）+ 6 组件契约（button/surface-card/data-table/input/shell-nav/status-tag）与预览 + UI Kit 展示页 + SKILL.md/README.md；质量门禁 10 文件 0 失败。
+  - **文档**：docs/ui-spec.md 重写为 v2（令牌唯一来源声明、强制规则 11 条、双外壳延续 + 八主题 v2 派生口径表、暗色模式章节、落地迁移清单 8 项）；本 CHANGELOG 追加条目。
+  - **待办**：落地迁移按 ui-spec §六清单另起任务（分支 feat-ui-v2-*，走 worktree + TDD + 视觉基线重生成流程）。
+- **用户验收测试全绿（2026-09-01）**：四层测试 + 实机抽查全部通过——①单测/集成 `pnpm test` 46/46 任务成功；②`pnpm lint` 0 错误；③E2E 功能 36 passed / 1 skipped / 0 failed；④视觉快照 16/16（win32 基线）；⑤Playwright 实机抽查 13 页零 console/page 错误（经网关访问 8 应用前后台 + `/status` 仪表盘 + `/api/health` 聚合 up）。
+  - **唯一 skip 取证**：`assistant.spec.ts:90` 在前台 Chat 页找「反馈」导航入口——按双外壳 IA 设计前台 USER_NAV 仅「对话」，反馈入口为页脚「管理后台」（UserShell adminPath 默认文案），属**测试定位器与 IA 不符的历史校准缺陷**（非功能缺失）；反馈页/意图日志页功能已被 assistant-routing:32、assistant-intents:30 两条 PASS 用例覆盖。待后续修定位器（改走页脚「管理后台」入口或 adminLabel 定制）。
+  - **stale dist 踩坑（重要）**：验收首跑发现网关 `/status`、`/api/health` 404——源码与 dist 均含路由（`pnpm test` 触发 turbo 重编 dist 至 11:44），但运行中 gateway 进程（11:39 启动）加载的是上次全量构建（停于 08-27、早于 D-10 合并）的旧产物。**教训：启动项目前先 `pnpm build`（或核对 dist 时间戳晚于最近合并提交），再 start-services；改代码后必须重启进程才生效**。
 - **交付状态**：8 子项目全部交付。需求主线三环（Investigator → Assessor → Manager）、知识主线（Gatherer → Scholar → Assistant）、Designer（降级版）均完成；Assistant 意图路由扩至 6 类并完成 cybercloud 真实对接（testcybercloud-dev 实测打通）。
 - **工程化基座**：Monorepo（pnpm + turbo）+ 网关 + outbox + 幂等 + CI/CD + Docker 部署链路；main 分支保护（required checks: quality/smoke/e2e）。
 - **D-18 跨平台视觉基线全链路收官（2026-08-29，PR #45 已合并 main 3e674d4）**：

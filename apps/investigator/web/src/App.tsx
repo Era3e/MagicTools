@@ -4,12 +4,12 @@ import SurveyList from "./pages/SurveyList";
 import SurveyDetail from "./pages/SurveyDetail";
 
 const ARCHIVE_THEME = {
-  primary: "#8a6d3b",
-  background: "#f7f3ea",
-  ink: "#2d2a24",
-  muted: "#8c8578",
-  displayFont: '"Courier New", "Noto Serif SC", monospace',
-  bodyFont: '"Noto Serif SC", "Courier New", monospace',
+  primary: "#8a6a3b",
+  background: "#f5f1e8",
+  ink: "#28241c",
+  muted: "#7d7466",
+  displayFont: '"JetBrains Mono", "Cascadia Mono", Consolas, "Noto Serif SC", monospace',
+  bodyFont: '"Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif',
 };
 
 const ADMIN_NAV = [{ key: "/admin/surveys", label: "主题档案管理" }];

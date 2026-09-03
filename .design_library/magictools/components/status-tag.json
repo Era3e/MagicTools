@@ -1,0 +1,53 @@
+{
+  "slug": "status-tag",
+  "schemaVersion": 2,
+  "name": "MtStatusTag 状态标签",
+  "category": "data-display",
+  "sourceKind": "from-scratch",
+  "confidence": "medium",
+  "semanticTypeCandidates": [
+    { "candidate": "lifecycle-status", "evidence": "岗位 open/closed、调研 active、需求 todo/doing/done 等生命周期" },
+    { "candidate": "intent-status", "evidence": "意图日志：知识问答/数据查询/闲聊等 6 类意图" },
+    { "candidate": "feedback-status", "evidence": "反馈 helpful/noisy、PR 状态映射" }
+  ],
+  "variantDimensions": [
+    { "dimension": "semantic", "values": ["neutral", "success", "warning", "error", "info", "accent"] },
+    { "dimension": "emphasis", "values": ["soft(默认)", "solid(高强调)"] },
+    { "dimension": "state", "values": ["default", "hover(可点击标签)"] }
+  ],
+  "representativeVariants": [
+    {
+      "name": "Soft semantic tags",
+      "whySelected": "表格状态列默认形态",
+      "traits": { "successBg": "var(--mt-success-50)", "successText": "var(--mt-success-700)", "warningBg": "var(--mt-warning-50)", "warningText": "var(--mt-warning-700)", "errorBg": "var(--mt-error-50)", "errorText": "var(--mt-error-700)", "infoBg": "var(--mt-info-50)", "infoText": "var(--mt-info-700)", "neutralBg": "var(--mt-neutral-100)", "neutralText": "var(--mt-neutral-700)", "height": "22px", "padding": "0 var(--space-2)", "radius": "var(--radius-xs)", "fontSize": "var(--type-scale-caption)", "fontWeight": "500" },
+      "childrenDigest": "「招募中」「进行中」「已完成」「已失败」"
+    },
+    {
+      "name": "Intent tag",
+      "whySelected": "Assistant 气泡内意图标识，等宽字",
+      "traits": { "bg": "var(--mt-ink-50)", "text": "var(--mt-ink-700)", "fontFamily": "mono", "fontSize": "11px", "border": "1px solid var(--mt-ink-100)", "radius": "var(--radius-xs)" },
+      "childrenDigest": "data_query · 数据查询"
+    },
+    {
+      "name": "Solid high-emphasis",
+      "whySelected": "看板/驾驶舱需要强对比的状态",
+      "traits": { "bg": "var(--mt-ink-600)", "text": "#ffffff", "height": "22px", "radius": "var(--radius-xs)" },
+      "childrenDigest": "DOING"
+    },
+    {
+      "name": "Priority counter",
+      "whySelected": "需求看板列头计数、驾驶舱读数",
+      "traits": { "bg": "var(--mt-neutral-100)", "text": "var(--mt-neutral-700)", "fontFamily": "mono", "minWidth": "24px", "textAlign": "center" },
+      "childrenDigest": "12"
+    }
+  ],
+  "anatomy": {
+    "parts": ["语义底色（50 阶）", "文字（700 阶）", "可选 1px 同系浅边", "可选圆点前缀"],
+    "structure": "底取色阶 50、字取同系 700，永远是低饱和纸感"
+  },
+  "structurePatterns": ["表格内多标签横排 gap var(--space-1)", "可点击标签 hover 提升 bg 至 100 阶", "暗色下反转：底 800 阶、字 200 阶"],
+  "usageHints": { "priorityHint": "medium", "rules": ["禁止 AntD Tag 预设色（color=blue/green…）", "意图/计数类用等宽字", "一列最多 3 个标签，超出收进 +N"] },
+  "doNotInvent": ["可关闭标签", "带图标徽章组"],
+  "unknowns": ["看板列头计数的具体交互态"],
+  "keyInsightSeed": "低饱和语义底 + 深阶文字，等宽小字号，禁用 AntD 预设色"
+}

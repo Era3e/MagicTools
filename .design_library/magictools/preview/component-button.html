@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>MtButton 按钮</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+/* Page scaffold — NOT extracted */
+body { margin:0; padding:12px; background:var(--color-surface); color:var(--color-text); font-family:var(--font-body); font-size:var(--font-size-body); }
+.row { display:flex; align-items:center; gap:var(--space-2); margin-bottom:var(--space-2); flex-wrap:wrap; }
+.label { width:92px; flex-shrink:0; font-size:var(--font-size-caption); color:var(--text-muted); }
+.divider { border:none; border-top:1px solid var(--rule); margin:var(--space-3) 0; }
+/* @component-css-start */
+/* Component definitions — extracted to components.css by deterministic script */
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:var(--space-1); height:var(--size-button-md); min-width:var(--size-button-md); padding:0 var(--space-4); border:none; border-radius:var(--radius-sm); font-family:var(--font-body); font-size:var(--font-size-body); font-weight:600; line-height:1; white-space:nowrap; cursor:pointer; transition:background var(--duration-fast) var(--ease-standard), border-color var(--duration-fast) var(--ease-standard); }
+.btn-primary { background:var(--primary); color:var(--primary-foreground); }
+.btn-primary:hover { background:var(--color-primary-hover); }
+.btn-primary:active { background:var(--mt-ink-800); }
+.btn-secondary { background:transparent; border:1px solid var(--primary); color:var(--primary); }
+.btn-secondary:hover { background:var(--mt-ink-50); border-color:var(--color-primary-hover); }
+.btn-danger { background:var(--error); color:#ffffff; }
+.btn-danger:hover { background:var(--mt-error-700); }
+.btn-ghost { background:transparent; color:var(--primary); }
+.btn-ghost:hover { background:var(--mt-ink-50); }
+.btn-sm { height:var(--size-button-sm); min-width:var(--size-button-sm); padding:0 var(--space-3); }
+.btn-lg { height:var(--size-button-lg); min-width:var(--size-button-lg); padding:0 var(--space-5); }
+.btn-primary:disabled, .btn-danger:disabled { background:var(--muted); color:var(--text-faint); cursor:not-allowed; }
+.btn-secondary:disabled, .btn-ghost:disabled { background:transparent; border-color:var(--border); color:var(--text-faint); cursor:not-allowed; }
+.spinner { width:14px; height:14px; flex-shrink:0; border:2px solid var(--muted); border-top-color:var(--primary-foreground); border-radius:var(--radius-full); animation:mt-spin 1s linear infinite; }
+@keyframes mt-spin { to { transform:rotate(360deg); } }
+.count { font-family:var(--font-mono); font-weight:500; }
+/* @component-css-end */
+</style>
+</head>
+<body>
+<div class="row"><span class="label">主操作</span><button class="btn btn-primary" data-evidence-sample="Primary md">新 建</button><button class="btn btn-primary" data-evidence-sample="Primary md">推 送</button><button class="btn btn-primary" data-evidence-sample="Primary md"><span class="spinner" aria-hidden="true"></span>生 成</button></div>
+<div class="row"><span class="label">次操作</span><button class="btn btn-secondary" data-evidence-sample="Secondary md">编 辑</button><button class="btn btn-secondary" data-evidence-sample="Secondary md">取 消</button><button class="btn btn-secondary" data-evidence-sample="Secondary md">同步 PR 状态</button></div>
+<div class="row"><span class="label">危险操作</span><button class="btn btn-danger" data-evidence-sample="Danger md">删 除</button></div>
+<div class="row"><span class="label">轻量动作</span><button class="btn btn-ghost btn-sm" data-evidence-sample="Ghost sm">推送选中（<span class="count">3</span>）</button></div>
+<hr class="divider">
+<div class="row"><span class="label">尺寸</span><button class="btn btn-primary btn-sm" data-evidence-sample="sm(32px)">新 建</button><button class="btn btn-primary" data-evidence-sample="md(36px)">新 建</button><button class="btn btn-primary btn-lg" data-evidence-sample="lg(44px)">新 建</button></div>
+<div class="row"><span class="label">禁用</span><button class="btn btn-primary" data-evidence-sample="Primary md" disabled>新 建</button><button class="btn btn-secondary" data-evidence-sample="Secondary md" disabled>编 辑</button><button class="btn btn-danger" data-evidence-sample="Danger md" disabled>删 除</button><button class="btn btn-ghost btn-sm" data-evidence-sample="Ghost sm" disabled>推送选中（<span class="count">3</span>）</button></div>
+</body>
+</html>

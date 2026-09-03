@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "screensGenerated": 4,
+  "coreComponentsUsed": ["button", "shell-nav", "surface-card", "status-tag", "data-table", "input"],
+  "supportComponentsUsed": [],
+  "previewClassReuseRate": 0.85,
+  "hasProductContext": true,
+  "inventedComponents": [],
+  "renderedFromEvidence": [],
+  "warnings": []
+}

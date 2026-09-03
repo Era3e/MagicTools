@@ -6,20 +6,20 @@ import RequirementDetail from "./pages/RequirementDetail";
 import IterationList from "./pages/IterationList";
 
 const COCKPIT_THEME = {
-  // UserShellTheme 标准字段
-  primary: "#0ea5e9",
-  background: "#f0f4f8",
-  ink: "#0f172a",
-  muted: "#64748b",
-  displayFont: '"Consolas", "Microsoft YaHei", monospace',
-  bodyFont: '"Segoe UI", "Microsoft YaHei", sans-serif',
+  // UserShellTheme 标准字段（v2 派生口径：驾驶舱冷蓝 + 品牌等宽/无衬线栈）
+  primary: "#3a5f84",
+  background: "#eef2f6",
+  ink: "#101a26",
+  muted: "#5f6c7c",
+  displayFont: '"JetBrains Mono", "Cascadia Mono", Consolas, "Noto Sans SC", monospace',
+  bodyFont: '"Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif',
   // Flight Deck 扩展色板（页面通过 useTheme() 访问，避免页面硬编码）
-  sky: "#0ea5e9",
-  panel: "#f8fafc",
-  bg: "#e8eef5",
-  border: "#cbd5e1",
-  mono: '"Consolas", "Microsoft YaHei", monospace',
-  sans: '"Segoe UI", "Microsoft YaHei", sans-serif',
+  sky: "#3a5f84",
+  panel: "#f7fafc",
+  bg: "#e2e9f0",
+  border: "#c9d4de",
+  mono: '"JetBrains Mono", "Cascadia Mono", Consolas, monospace',
+  sans: '"Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif',
 };
 
 const USER_NAV = [{ key: "/requirements", label: "需求台" }];

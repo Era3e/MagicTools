@@ -5,15 +5,15 @@ import ComponentList from "./pages/ComponentList";
 import HistoryList from "./pages/HistoryList";
 
 const GALLERY_THEME = {
-  primary: "#111111",
-  background: "#ffffff",
-  ink: "#111111",
-  muted: "#9ca3af",
-  displayFont: '"Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif',
-  bodyFont: '"Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif',
-  accent: "#dc2626",
-  paper: "#fafafa",
-  border: "#e5e5e5",
+  primary: "#1c2530",
+  background: "#fcfcfc",
+  ink: "#1c2530",
+  muted: "#8b98a8",
+  displayFont: '"Noto Sans SC", "PingFang SC", "Helvetica Neue", sans-serif',
+  bodyFont: '"Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif',
+  accent: "#943d35",
+  paper: "#f4f6f8",
+  border: "#e3e6ea",
 };
 
 const ADMIN_NAV = [

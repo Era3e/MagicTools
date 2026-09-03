@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>MtTable 数据表格</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+/* Page scaffold — NOT extracted */
+body{margin:0;padding:12px;background:var(--color-background);font-family:var(--font-body);font-size:var(--font-size-body);color:var(--fg);}
+.row{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;}
+.label{font-size:var(--font-size-caption);color:var(--text-muted);white-space:nowrap;width:92px;flex-shrink:0;}
+.divider{border:0;border-top:1px solid var(--rule);margin:12px 0;}
+/* @component-css-start */
+.tbl-card{width:100%;background:var(--color-card);border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;}
+.tbl{width:100%;border-collapse:collapse;table-layout:fixed;}
+.tbl th{height:40px;padding:0 var(--space-3);background:var(--mt-graphite-50);color:var(--mt-graphite-700);font-size:var(--font-size-caption);font-weight:600;text-align:left;white-space:nowrap;}
+.tbl td{height:40px;padding:0 var(--space-3);border-top:1px solid var(--rule);color:var(--text-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tbl th:last-child,.tbl td:last-child{text-align:right;}
+.tbl .time{font-family:var(--font-mono);font-size:var(--font-size-mono);color:var(--text-muted);}
+.tbl .check{width:44px;}
+.tbl tbody tr:hover,.tbl tbody tr.sel{background:var(--mt-ink-50);}
+.btn,.op,.pg,.tbl tbody tr{transition:background var(--duration-fast) var(--ease-standard);}
+.tb-title{padding:var(--space-3);border-bottom:1px solid var(--rule);font-family:var(--font-heading);font-weight:600;font-size:var(--font-size-h4);color:var(--text-strong);}
+.toolbar{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-3);border-bottom:1px solid var(--rule);}
+.btn{height:var(--size-button-sm);min-width:var(--size-button-sm);padding:0 var(--space-3);border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:var(--font-size-caption);cursor:pointer;white-space:nowrap;}
+.btn.primary,.pg.on{background:var(--primary);color:var(--primary-foreground);}
+.btn.primary:hover,.pg.on:hover{background:var(--color-primary-hover);}
+.btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text-body);}
+.op:hover,.btn.ghost:hover,.pg:hover{background:var(--mt-ink-50);}
+.tag{display:inline-flex;align-items:center;padding:2px var(--space-2);border-radius:var(--radius-full);font-size:var(--font-size-caption);white-space:nowrap;}
+.tag.ok{background:var(--mt-success-50);color:var(--mt-success-700);}
+.tag.warn{background:var(--mt-warning-50);color:var(--mt-warning-700);}
+.tag.pause{background:var(--mt-graphite-100);color:var(--mt-graphite-600);}
+.op{height:24px;min-width:24px;padding:0 var(--space-1);border:none;background:transparent;color:var(--link);font-family:inherit;font-size:var(--font-size-caption);cursor:pointer;border-radius:var(--radius-sm);white-space:nowrap;}
+.ck{display:inline-block;width:16px;height:16px;border:1px solid var(--mt-graphite-300);border-radius:var(--radius-sm);position:relative;vertical-align:middle;}
+.ck.on{background:var(--mt-ink-600);border-color:var(--mt-ink-600);}
+.ck.on::after{content:"";position:absolute;left:5px;top:2px;width:4px;height:8px;border:solid var(--primary-foreground);border-width:0 1.5px 1.5px 0;transform:rotate(45deg);}
+.pager{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-3);border-top:1px solid var(--rule);}
+.pager .time{margin-right:auto;}
+.pg{min-width:24px;height:24px;padding:0 var(--space-1);border:none;background:transparent;font-family:var(--font-mono);font-size:var(--font-size-mono);color:var(--text-body);cursor:pointer;border-radius:var(--radius-sm);}
+/* @component-css-end */
+</style>
+</head>
+<body>
+<div class="row"><span class="label">默认 CRUD</span></div>
+<div class="row" data-evidence-sample="Admin CRUD table">
+<div class="tbl-card">
+<div class="tb-title">采集源管理</div>
+<table class="tbl">
+<thead><tr><th>名称</th><th>状态</th><th>更新时间</th><th>操作</th></tr></thead>
+<tbody>
+<tr><td>知乎热榜</td><td><span class="tag ok">运行中</span></td><td class="time">09-02 08:30</td><td><button class="op">编 辑</button> · <button class="op">删 除</button></td></tr>
+<tr><td>GitHub Trending</td><td><span class="tag ok">运行中</span></td><td class="time">09-01 22:14</td><td><button class="op">编 辑</button> · <button class="op">删 除</button></td></tr>
+<tr><td>36氪快讯</td><td><span class="tag pause">已暂停</span></td><td class="time">08-30 06:00</td><td><button class="op">编 辑</button> · <button class="op">删 除</button></td></tr>
+</tbody>
+</table>
+<div class="pager"><span class="time">共 24 条</span><button class="pg on">1</button><button class="pg">2</button><button class="pg">3</button></div>
+</div>
+</div>
+<hr class="divider">
+<div class="row"><span class="label">批量选择</span></div>
+<div class="row" data-evidence-sample="Batch select table">
+<div class="tbl-card">
+<div class="toolbar"><button class="btn primary">推送选中（2）</button><button class="btn ghost">全选</button></div>
+<table class="tbl">
+<thead><tr><th class="check"><span class="ck"></span></th><th>名称</th><th>状态</th><th>更新时间</th><th>操作</th></tr></thead>
+<tbody>
+<tr class="sel"><td><span class="ck on"></span></td><td>微信公众号精选</td><td><span class="tag ok">运行中</span></td><td class="time">09-02 07:45</td><td><button class="op">编 辑</button> · <button class="op">删 除</button></td></tr>
+<tr class="sel"><td><span class="ck on"></span></td><td>少数派</td><td><span class="tag warn">限流中</span></td><td class="time">09-02 05:12</td><td><button class="op">编 辑</button> · <button class="op">删 除</button></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</body>
+</html>
