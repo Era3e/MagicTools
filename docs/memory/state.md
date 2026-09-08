@@ -6,7 +6,7 @@
 
 ## 当前状态快照（2026-09-08 更新）
 
-- **UI v2.2 页面级组件落地（2026-09-08，分支 feat/ui-v22-pages，本会话）**：
+- **UI v2.2 页面级组件已合并 main（2026-09-08，PR #51 squash 合并 31dda02）**：
 
   - **背景**：PR #47 完成了 v2/v2.1「底座」（tokens/双外壳/质感），但同批入库的 `ui_kits/dashboard/` 组件驾驶舱与 6 组件契约中的页面级规范未兑现到子项目——存量代码仍有 38 处 AntD Tag 预设色（违反 ui-spec §二 v2-1）、3 处 Empty 简笔画、全仓唯一 Statistic 组（意图日志页）。
 
@@ -14,11 +14,17 @@
 
   - **8 应用全量替换**：manager（七态 STATUS_MAP/SOURCE_MAP/PRIORITY_TONE/看板 PR 标/Empty→MtEmptyState）、assessor（五态+已推送+数字列等宽）、assistant（IntentLogPage 域名/意图/置信度/纠错/混淆矩阵全量 + Statistic→MtKpiRow + ChatPage 引用标签 + FeedbackPage）、investigator（飞书配置/情绪三态/优先级/已推送/时间戳 mono）、gatherer（TYPE_MAP 三态/启停/LLM/已推送/cron mono）、scholar（来源标签×4/图谱节点/桩模式 + 2 处 Empty 简笔画→MtEmptyState）、designer（生成失败/PR 编号/历史状态/无色 Tag×2/桩模板源码）、applicant（StatusTag 组件重写为 tone 映射，status.ts 去 color 数组改 POSITION_STATUS_TONE）。
 
-  - **测试四层全绿**：qa:gate（lint 0 err / build 23 / test 46 任务 / coverage / infra / docs 0 err）；e2e 52 passed / 1 skipped（唯一 skip 为 assistant.spec:90 历史定位器问题，非本次引入）；16 张 win32 视觉基线随新 UI 重生成并全量通过。
+  - **合并终态**：CI quality/smoke/e2e 三段绿后 squash 合并 31dda02；分支 feat/ui-v22-pages 已清理（远端自动回收 + 本地删除），本地/远端仅剩 main；ui-spec §六迁移清单 8 项全量勾选（v2.2 补齐最后一公里备注）；@mt/ui minor changeset 在队列中（Version PR 三件套待走）。
+
+  - **待办（用户操作）**：dispatch visual-baseline workflow 重生成 linux 基线——沙箱 GH_TOKEN 无 actions:write（403 Resource not accessible by integration 实证），MCP GitHub App 也无 dispatch 工具，只能在 Actions 页面手动触发（Secret `VISUAL_BASELINE_TOKEN` 已就绪，流程同 #49：基线 PR 复用 feat/visual-baseline-linux 分支自动开出，合入后 linux 视觉用例恢复真跑）。
+
+  - **测试四层全绿**：qa:gate（lint 0 err / build 23 / test 46 任务 / coverage / infra / docs 0 err）；e2e 52 passed / 1 skipped（唯一 skip 为 assistant.spec:90 历史定位器问题，非本次引入）；16 张 win32 视觉基线随新 UI 重生成并全量通过；smoke 17/17。
 
   - **顺手修复**（独立价值）：①patterns 四组件（MagazineList/ControlTable/DetailHero/TimelineBurndown）自 #35/#40 入库以来零单测——@mt/ui coverage 在 main 上实际为 59.37% < 70 门槛（此前 CI 靠 turbo 缓存复用旧轮结果未暴露），补 patterns.test.tsx（8 用例 + matchMedia polyfill 同 apps test-setup 惯例）后回 95.82%；②designer 桩模板曾含 `style={{ color: tokens... }}`，`parseJson` 的 quoteKeys 会在字符串值内 `{ color:` 处误插引号破坏 JSON——桩模板去掉内联 style 后 designer-server 测试恢复（根因已实证，教训：**含 JSX 源码的 JSON 字符串值内不要出现 `xxx:` 冒号模式**）；③state.md 尾部双空行 MD012（Node 脚本修复，PowerShell 编码不可靠的旧坑再现）。
 
   - **门禁两坑再现与新解**：no-hardcoded-colors 拦截 ①组件内联 `#ffffff`（正解：沉淀 `tokens.tagSolid`）②测试文件里模板字符串 `` `rgb(${r}...` `` 被当颜色函数字面量（正解：`["rg","b("].join("")` 拆段拼接）；jsdom 色值规范化 rgb() 断言需双格式兼容（v2 既有做法沿用）。
+
+  - **linux 基线策略（同 #47 成熟路径）**：过时 linux 基线（v2.1 像素）已随 PR #51 移除，平台感知守卫显式 skip linux 视觉用例（计入汇总、CI 可见），不阻塞合并。
 
 - **UI v2/v2.1 已合并 main（2026-09-03，PR #47 squash 合并 9f0c096）**：
 
