@@ -24,7 +24,7 @@
 
   - **真环境验收完成（2026-09-09，testcybercloud-dev）**：探活全绿（gatewayOk/authOk/agentsReachable，10 智能体，1.1s）→ **直连先行 7.1s 返回真值 52888.9184rmb** → verify 26.9s 终态 **divergent（diffPct=83%）**——智能体拿 metric.value=500 预设值当答案被双路对比当场抓获（正是 spec 立项的核心场景）。**验收即校准出四处真契约偏差并修复（提交 a851a68，140/140 测试全绿）**：①日期字段真实位置在 outline.groups.rows（type=date/datetime，userFilters/filters 为空）——探测链扩展行分组兜底；②queryByStructure 响应为包裹对象 {data,rows,grandTotals,...}（非裸数组）——取值改走 .data[0]；③取值键精确构造 {summarize}_{table}_{code}（多列并存时唯一「sum」兜底会撞 _cbc_calculation_N 计算列）；④时间窗无数据时 sum 列整体省略只剩 count_*=0——「查询成功但无数据」回答 0 而非 query_failed；⑤LLM 输出无关字段为 null（zod optional() 拒绝 null）——schema 改 nullish。另：glm-4-flash 意图分类会把数据查询误判 chitchat（模型能力问题），意图纠错 few-shot 闭环 60s 生效后正确路由——已验证在线学习闭环真实可用。
 
-  - **待办**：①changeset 迭代日志；②PR 走 Version 三件套；③linux 视觉基线随 PR #51 既有的 visual-baseline workflow 流程重生成（win32 已随本分支更新）；④glm-4-flash 意图分类能力弱（建议配 DEEPSEEK_API_KEY 或升级智谱模型档位，spec §12.2 low_confidence 样本沉淀路径已就绪）。
+  - **待办**：①changeset 迭代日志；②PR 走 Version 三件套；③linux 视觉基线随 PR #51 既有的 visual-baseline workflow 流程重生成（win32 已随本分支更新）；④**glm-5.3 已实测（2026-09-09）**：@mt/model-client 新增 envModelKey 机制（ZHIPU_MODEL=glm-5.3 免改代码切档，提交 76222bf）——意图分类显著提升（4-flash 误判 chitchat 的问句 5.3 直达 data_query 0.98）；代价是指标匹配 5~19s 波动（CYBERCLOUD_DIRECT_TIMEOUT_MS 提至 45000）+ 指标目录外问题会诚实 low_confidence 降级（合理）。**testcybercloud-dev 的智能体 block 对话本身 30~60s**（远端网络），60s 核验超时下 verify 常态 agent_timeout——生产同城部署会改善；双路架构下用户仍 14s 拿到直连答案，不受智能体慢拖累。
 
 - **UI v2.2 页面级组件已合并 main（2026-09-08，PR #51 squash 合并 31dda02）**：
 
