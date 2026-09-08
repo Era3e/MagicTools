@@ -14,6 +14,16 @@ export interface AgentMeta {
   error?: string;
 }
 
+export interface ProbeResult {
+  at: string;
+  gatewayOk: boolean;
+  authOk: boolean;
+  agentsReachable: boolean;
+  agentCount: number;
+  latencyMs: number;
+  errorDomain: "gateway" | "auth" | "agent" | null;
+}
+
 interface CyberResponse<T> {
   code: string;
   message?: string;
@@ -61,6 +71,7 @@ export class CybercloudService {
   private payloadCache: { payload: string; at: number } | null = null;
   private sessionCache: { agentId: string; code: string } | null = null;
   private jwtCache: { jwt: string; at: number } | null = null;
+  private probeCache: { at: number; result: ProbeResult } | null = null;
 
   status() {
     return {
@@ -72,6 +83,43 @@ export class CybercloudService {
       baseUrl: process.env.CYBERCLOUD_BASE_URL ?? "",
       agentId: process.env.CYBERCLOUD_AGENT_ID ?? "",
     };
+  }
+
+  /** 数据源真实探活（60s 缓存）：登录→换 payload→列智能体，定位故障域 gateway/auth/agent（spec §6.2） */
+  async probe(): Promise<ProbeResult> {
+    if (process.env.CYBERCLOUD_STUB === "1") {
+      return { at: new Date().toISOString(), gatewayOk: true, authOk: true, agentsReachable: true, agentCount: 1, latencyMs: 0, errorDomain: null };
+    }
+    if (this.probeCache && Date.now() - this.probeCache.at < 60 * 1000) return this.probeCache.result;
+    const started = Date.now();
+    const result: ProbeResult = { at: new Date().toISOString(), gatewayOk: false, authOk: false, agentsReachable: false, agentCount: 0, latencyMs: 0, errorDomain: null };
+    const finish = (): ProbeResult => {
+      result.latencyMs = Date.now() - started;
+      this.probeCache = { at: Date.now(), result };
+      return result;
+    };
+    try {
+      await this.ensureJwt();
+      result.gatewayOk = true;
+    } catch {
+      result.errorDomain = "gateway";
+      return finish();
+    }
+    try {
+      await this.ensurePayload();
+      result.authOk = true;
+    } catch {
+      result.errorDomain = "auth";
+      return finish();
+    }
+    try {
+      const agents = await this.post<AgentItem[]>("/api/setup/agent/chat/agents", { from: "Setup" });
+      result.agentCount = (agents.data ?? []).length;
+      result.agentsReachable = true;
+    } catch {
+      result.errorDomain = "agent";
+    }
+    return finish();
   }
 
   private base(): string {
