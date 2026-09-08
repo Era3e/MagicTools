@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Button, Card, Modal, Select, Space, Table, Typography, message } from "antd";
 import { DownloadOutlined, FileSearchOutlined, PlayCircleOutlined } from "@ant-design/icons";
-import { MtStatusTag, MtKpiRow } from "@mt/ui";
-import { api, type IntentLog } from "../api";
+import { MtStatusTag, MtKpiRow, MtEmptyState } from "@mt/ui";
+import { api, type IntentLog, type CybercloudCall } from "../api";
 
 const DOMAIN_LABEL: Record<string, { label: string }> = {
   cybercloud: { label: "cybercloud" },
@@ -33,6 +33,16 @@ interface ReplayData {
   misses: Array<{ message: string; predicted: string; actual: string }>;
 }
 
+function callStats(list: CybercloudCall[], route: string) {
+  const rows = list.filter((c) => c.route === route);
+  if (rows.length === 0) {
+    return { rate: "--", avg: "--" };
+  }
+  const okCount = rows.filter((c) => c.ok).length;
+  const avg = Math.round(rows.reduce((sum, c) => sum + c.latencyMs, 0) / rows.length);
+  return { rate: Math.round((okCount / rows.length) * 100) + "%", avg: String(avg) };
+}
+
 export default function IntentLogPage() {
   const [items, setItems] = useState<IntentLog[]>([]);
   const [domain, setDomain] = useState<string | undefined>();
@@ -44,6 +54,7 @@ export default function IntentLogPage() {
   const [replay, setReplay] = useState<ReplayData | null>(null);
   const [replaying, setReplaying] = useState(false);
   const [datasetCount, setDatasetCount] = useState<number | null>(null);
+  const [calls, setCalls] = useState<CybercloudCall[]>([]);
 
   const refresh = useCallback(() => {
     setLoading(true);
@@ -54,10 +65,18 @@ export default function IntentLogPage() {
     api.intentEvaluation().then(setEvaluation).catch(() => setEvaluation(null));
   }, []);
 
+  const refreshCalls = useCallback(() => {
+    api.listCybercloudCalls().then((r) => setCalls(Array.isArray(r) ? r : [])).catch((err) => {
+      console.error(err);
+      setCalls([]);
+    });
+  }, []);
+
   useEffect(() => {
     refresh();
     refreshEvaluation();
-  }, [refresh, refreshEvaluation]);
+    refreshCalls();
+  }, [refresh, refreshEvaluation, refreshCalls]);
 
   const submitCorrect = async () => {
     if (!correcting || !corrected) return;
@@ -124,6 +143,9 @@ export default function IntentLogPage() {
           .map(([actual, count]) => ({ predicted, actual, count }))
       )
     : [];
+
+  const agentStats = callStats(calls, "agent");
+  const directStats = callStats(calls, "direct");
 
   return (
     <Space direction="vertical" style={{ width: "100%" }} size="middle">
@@ -275,6 +297,66 @@ export default function IntentLogPage() {
             </Button>
           </Space>
         </Modal>
+      </Card>
+
+      <Card
+        title="数据查询监控"
+        extra={<MtStatusTag tone="info" mono>近 {calls.length} 条调用</MtStatusTag>}
+      >
+        <div style={{ marginBottom: 16 }}>
+          <MtKpiRow
+            items={[
+              { label: "agent 成功率", value: agentStats.rate },
+              { label: "agent 平均延迟", value: agentStats.avg, unit: agentStats.avg === "--" ? undefined : "ms" },
+              { label: "direct 成功率", value: directStats.rate },
+              { label: "direct 平均延迟", value: directStats.avg, unit: directStats.avg === "--" ? undefined : "ms" },
+            ]}
+          />
+        </div>
+        {calls.length > 0 ? (
+          <Table<CybercloudCall>
+            rowKey="id"
+            size="small"
+            dataSource={calls}
+            pagination={{ pageSize: 10 }}
+            columns={[
+              {
+                title: "时间",
+                dataIndex: "createdAt",
+                width: 180,
+                render: (v: string) => <MtStatusTag mono>{v.replace("T", " ").replace("Z", "")}</MtStatusTag>,
+              },
+              {
+                title: "路由",
+                dataIndex: "route",
+                width: 100,
+                render: (v: string) => <MtStatusTag mono>{v}</MtStatusTag>,
+              },
+              { title: "endpoint", dataIndex: "endpoint", render: (v: string) => <MtStatusTag mono>{v}</MtStatusTag> },
+              {
+                title: "状态",
+                dataIndex: "ok",
+                width: 90,
+                render: (v: boolean) => (v ? <MtStatusTag tone="success">成功</MtStatusTag> : <MtStatusTag tone="error">失败</MtStatusTag>),
+              },
+              {
+                title: "延迟",
+                dataIndex: "latencyMs",
+                width: 110,
+                align: "right",
+                render: (v: number) => <MtStatusTag mono>{v} ms</MtStatusTag>,
+              },
+              {
+                title: "error",
+                dataIndex: "error",
+                ellipsis: true,
+                render: (v: string | null) => (v ? <MtStatusTag tone="error" mono>{v}</MtStatusTag> : "-"),
+              },
+            ]}
+          />
+        ) : (
+          <MtEmptyState title="暂无数据查询调用" description="对话页发起数据查询后，双路（agent/direct）调用会在此记录。" />
+        )}
       </Card>
     </Space>
   );

@@ -67,6 +67,17 @@ export interface IntentLog {
   createdAt: string;
 }
 
+export interface CybercloudCall {
+  id: string;
+  route: string;
+  endpoint: string;
+  ok: boolean;
+  latencyMs: number;
+  error: string | null;
+  detail: Record<string, unknown>;
+  createdAt: string;
+}
+
 export interface Feedback {
   id: string;
   content: string;
@@ -130,4 +141,5 @@ export const api = {
       body: JSON.stringify({}),
     }),
   exportDataset: () => request<{ jsonl: string; count: number }>("/intent-logs/export"),
+  listCybercloudCalls: () => request<CybercloudCall[]>("/meta/cybercloud-calls"),
 };
