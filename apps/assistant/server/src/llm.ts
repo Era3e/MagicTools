@@ -60,6 +60,9 @@ function stubPayloadFor(messages: ChatMessage[]): Record<string, unknown> {
   if (sysText.includes("{params")) {
     return { endpoint: "/api/v1/data/query", params: { metric: "sales" } };
   }
+  if (sysText.includes("{metricId")) {
+    return { metricId: "stub-metric", confidence: 0.95, timeFilter: { mode: "semantic", enumValue: "THIS_MONTH" } };
+  }
   if (sysText.includes("{format")) {
     return { answer: "桩数据查询结果：本月销售额 12345 元（CYBERCLOUD_STUB 桩模式）" };
   }

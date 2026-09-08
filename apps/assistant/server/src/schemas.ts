@@ -59,3 +59,15 @@ export const actionSchema = z.object({
     })
     .default({}),
 });
+
+export const directMatchSchema = z.object({
+  metricId: z.string().nullable(),
+  confidence: z.number(),
+  timeFilter: z.object({
+    mode: z.enum(["semantic", "explicit", "none"]),
+    enumValue: z.string().optional(),
+    from: z.string().optional(),
+    to: z.string().optional(),
+  }),
+});
+export type DirectMatch = z.infer<typeof directMatchSchema>;
