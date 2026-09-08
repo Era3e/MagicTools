@@ -6,6 +6,22 @@
 
 ## 当前状态快照（2026-09-08 更新）
 
+- **Assistant 双路数据查询与质量兜底落地（2026-09-08，分支 feat/assistant-dual-query，阶段一）**：
+
+  - **背景**：data_query 单路依赖 cybercloud 智能体，故障域不可分、回答不准不可控。spec docs/superpowers/specs/2026-09-08-assistant-dual-query-design.md（含从 cloud-meta 源码逆向的直连 API 契约与两个关键修正：indicatorValue 是预设值禁用作实时答案、queryById userFilters 整体替换语义）。
+
+  - **双路架构**：direct-query.service（五步流水线：indicators/list 缓存10min → LLM 匹配+时间解析 → getReportStructure 字符串防御解析 → 列匹配（指标名+描述双等值）→ 去分组 queryByStructure 单值聚合）+ verify-task.registry（五终态状态机，60s 核验超时+10min TTL+迟到终态守卫）+ compare.service（数值提取万/亿/k/% 归一+1% 容差）+ chat.service 双路编排（CYBERCLOUD_MODE=dual 默认；直连先行秒回+智能体后台核验；notApplicable 六原因码全落 cybercloud_calls；双路全故障降级文案）。
+
+  - **可观测三件套**：chat 响应 verify/dataSource 元数据；meta/data-source-status 探活（60s 缓存，errorDomain gateway/auth/agent）；cybercloud_calls 表（migrations/004）双路调用记录 + IntentLogPage「数据查询监控」卡片（MtKpiRow 双路成功率/延迟 + 明细表）。
+
+  - **前端**：ChatPage VerifyBadge 轮询标签（MtStatusTag tone 七态语义映射，divergent 可展开智能体原文，2s 轮询终态/404 停止）。
+
+  - **测试**：服务端新增 7 测试文件（compare/calls.repo/cybercloud.service 增例/direct-query/verify-task/chat.dual.e2e 三终态/meta.probe），前端 2 文件（ChatPage.verify/IntentLogPage.calls）；chat.dual.e2e 覆盖 consistent/divergent/agent_failed/双路全故障/notApplicable 回退五场景（桩开关 CYBERCLOUD_STUB_AGENT_ANSWER/CYBERCLOUD_STUB_DIRECT_APPLICABLE）。
+
+  - **子代理驱动开发（0 bug loop）**：10 任务全部实现者+规格审查+质量审查三段制；审查揪出并当场修复 4 个真问题——C1 迟到终态双写库（verify registry then 无守卫）、C1' 双路全故障裸 502（违反降级矩阵）、I1 取值兜底可静默取错列、I1' notApplicable 不落库（可用率指标失真）；1 例实现者声明失实被 git 取证纠正（Task 8 前端 VerifyResult 实为本提交新建）。
+
+  - **待办**：①ChatPage/IntentLogPage 视觉基线合并前重生成（worktree 无服务环境未跑）；②testcybercloud-dev 真环境验收（spec §13 清单：探活全绿/真实指标命中/直连<10s/divergent 差异标签/响应字段名落定）；③changeset 迭代日志；④PR 走 Version 三件套。
+
 - **UI v2.2 页面级组件已合并 main（2026-09-08，PR #51 squash 合并 31dda02）**：
 
   - **背景**：PR #47 完成了 v2/v2.1「底座」（tokens/双外壳/质感），但同批入库的 `ui_kits/dashboard/` 组件驾驶舱与 6 组件契约中的页面级规范未兑现到子项目——存量代码仍有 38 处 AntD Tag 预设色（违反 ui-spec §二 v2-1）、3 处 Empty 简笔画、全仓唯一 Statistic 组（意图日志页）。
