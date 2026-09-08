@@ -31,6 +31,18 @@ export interface ClarifyOption {
   intent: string;
 }
 
+export interface VerifyInfo {
+  taskId?: string;
+  status: "pending" | "consistent" | "divergent" | "unverifiable" | "agent_failed" | "agent_timeout" | "not_applicable";
+}
+
+export interface VerifyResult {
+  status: VerifyInfo["status"];
+  verdict?: { directValue: number; agentNumbers: number[]; diffPct?: number };
+  agentReply?: string;
+  expired?: boolean;
+}
+
 export interface ChatResponse {
   sessionId: string;
   reply: string;
@@ -41,6 +53,8 @@ export interface ChatResponse {
   clarifyOptions?: ClarifyOption[];
   citations: Citation[];
   actionResult?: Record<string, unknown>;
+  verify?: VerifyInfo;
+  dataSource?: Record<string, unknown>;
 }
 
 export interface IntentLog {
@@ -70,12 +84,23 @@ export interface Message {
   actionResult?: Record<string, unknown>;
   clarifying?: boolean;
   clarifyOptions?: ClarifyOption[];
+  verify?: VerifyInfo;
   createdAt: string;
 }
 
 export const api = {
   chat: (input: { sessionId?: string; message: string }) =>
     request<ChatResponse>("/chat", { method: "POST", body: JSON.stringify(input) }),
+  getVerify: (taskId: string): Promise<VerifyResult> =>
+    fetch(BASE + "/chat/verify/" + taskId, { headers: { "Content-Type": "application/json" } }).then(async (res) => {
+      if (res.status === 404) {
+        return { status: "agent_timeout", expired: true };
+      }
+      if (!res.ok) {
+        throw new Error("请求失败 " + res.status);
+      }
+      return res.json() as Promise<VerifyResult>;
+    }),
   listConversations: () => request<Conversation[]>("/conversations"),
   getMessages: (id: string) => request<Message[]>("/conversations/" + id + "/messages"),
   deleteConversation: (id: string) => request<{ deleted: boolean }>("/conversations/" + id, { method: "DELETE" }),
