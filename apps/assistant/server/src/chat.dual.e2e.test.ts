@@ -2,7 +2,7 @@ import { INestApplication } from "@nestjs/common";
 import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { AppModule } from "./app.module";
-import { ensureDatabase, migrate } from "./db";
+import { ensureDatabase, migrate, pool } from "./db";
 
 let available = false;
 let app: INestApplication | null = null;
@@ -64,6 +64,9 @@ async function runScenario(agentAnswer: string | undefined, expected: string): P
     if (expected === "divergent") {
       expect(verify.verdict?.directValue).toBe(12345);
       expect(verify.agentReply).toContain("99999");
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      const rows = await pool.query("SELECT route, ok, detail FROM cybercloud_calls WHERE detail->>'verify_status' = 'divergent' ORDER BY created_at DESC LIMIT 1");
+      expect(rows.rows[0]?.route).toBe("agent");
     }
   } finally {
     await app.close();
@@ -95,5 +98,46 @@ describe("chat 双路编排 e2e", () => {
       return;
     }
     await runScenario("__FAIL__", "agent_failed");
+  }, 30000);
+
+  it("双路全故障 → 降级文案而非 502", async (ctx) => {
+    if (!available) {
+      ctx.skip();
+      return;
+    }
+    process.env.CYBERCLOUD_STUB_DIRECT_APPLICABLE = "0";
+    process.env.CYBERCLOUD_STUB_AGENT_ANSWER = "__FAIL__";
+    const instance = await appFor();
+    try {
+      const chat = await request(instance.getHttpServer() as never).post("/api/assistant/chat").send({ message: "查询本月销售额多少" }).expect(201);
+      expect(chat.body.intent).toBe("data_query");
+      expect(chat.body.verify.status).toBe("not_applicable");
+      expect(chat.body.dataSource.mode).toBe("both-failed");
+      expect(chat.body.reply).toContain("暂未配置");
+      expect(chat.body.reply).toContain("智能体异常");
+    } finally {
+      delete process.env.CYBERCLOUD_STUB_DIRECT_APPLICABLE;
+      delete process.env.CYBERCLOUD_STUB_AGENT_ANSWER;
+      await instance.close();
+    }
+  }, 30000);
+
+  it("直连不适用 → 阻塞回退智能体应答", async (ctx) => {
+    if (!available) {
+      ctx.skip();
+      return;
+    }
+    process.env.CYBERCLOUD_STUB_DIRECT_APPLICABLE = "0";
+    const instance = await appFor();
+    try {
+      const chat = await request(instance.getHttpServer() as never).post("/api/assistant/chat").send({ message: "查询本月销售额多少" }).expect(201);
+      expect(chat.body.verify.status).toBe("not_applicable");
+      expect(chat.body.dataSource.mode).toBe("dual");
+      expect(chat.body.dataSource.direct.reasonCode).toBe("no_match");
+      expect(chat.body.reply).toContain("12345");
+    } finally {
+      delete process.env.CYBERCLOUD_STUB_DIRECT_APPLICABLE;
+      await instance.close();
+    }
   }, 30000);
 });

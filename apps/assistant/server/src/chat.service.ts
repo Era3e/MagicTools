@@ -192,10 +192,16 @@ export class ChatService {
               dataSource = { mode: "direct", direct: directMeta };
             }
           } else {
-            const agentRes = await (agentPromise ?? this.cybercloud.query(message));
-            reply = agentRes.reply;
+            void insertCybercloudCall({ route: "direct", endpoint: "pipeline", ok: false, latencyMs: direct.latencyMs, error: direct.reasonCode, detail: { reason_code: direct.reasonCode } }).catch(() => undefined);
+            try {
+              const agentRes = await (agentPromise ?? this.cybercloud.query(message));
+              reply = agentRes.reply;
+              dataSource = { mode: mode === "direct" ? "direct-fallback-agent" : "dual", direct: directMeta, agent: { ...agentRes.meta, error: agentRes.meta.error ?? null } };
+            } catch (err) {
+              reply = DATA_QUERY_DEGRADE + "（智能体异常：" + (err instanceof Error ? err.message : String(err)) + "）";
+              dataSource = { mode: "both-failed", direct: directMeta, agent: { error: err instanceof Error ? err.message : String(err) } };
+            }
             verify = { status: "not_applicable" };
-            dataSource = { mode: mode === "direct" ? "direct-fallback-agent" : "dual", direct: directMeta, agent: { ...agentRes.meta, error: agentRes.meta.error ?? null } };
           }
         }
       } else {

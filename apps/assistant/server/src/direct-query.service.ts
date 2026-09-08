@@ -45,6 +45,9 @@ export class DirectQueryService {
     const finish = (r: DirectFinishPayload): DirectResult => ({ ...r, latencyMs: Date.now() - started });
     if (!this.configured() && process.env.CYBERCLOUD_STUB !== "1") return finish({ applicable: false, reasonCode: "unconfigured" });
     if (process.env.CYBERCLOUD_STUB === "1") {
+      if (process.env.CYBERCLOUD_STUB_DIRECT_APPLICABLE === "0") {
+        return finish({ applicable: false, reasonCode: "no_match" });
+      }
       return finish({ applicable: true, reply: "「本月销售额」本月为 12345 元（直连实时查询）", metricName: "本月销售额", value: 12345, unit: "元", timeFilter: "THIS_MONTH", endpoint: "stub" });
     }
     const timeoutMs = Number(process.env.CYBERCLOUD_DIRECT_TIMEOUT_MS ?? "8000");

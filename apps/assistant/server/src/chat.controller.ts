@@ -14,7 +14,7 @@ export class ChatController {
   getVerify(@Param("taskId") taskId: string) {
     const task = this.service.getVerify(taskId);
     if (!task) throw new NotFoundException("核验任务不存在或已过期");
-    return task;
+    return { ...task };
   }
 
   @Get("conversations")
