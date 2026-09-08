@@ -12,6 +12,10 @@ function sleep(ms: number): Promise<void> {
 function resolveModel(provider: ModelProviderConfig, options: ChatOptions): string {
   if (options.model) return options.model;
   if (options.vision && provider.visionModel) return provider.visionModel;
+  if (provider.envModelKey) {
+    const fromEnv = process.env[provider.envModelKey];
+    if (fromEnv) return fromEnv;
+  }
   return provider.defaultModel;
 }
 
