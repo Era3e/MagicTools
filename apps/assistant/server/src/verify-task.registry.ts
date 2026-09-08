@@ -5,8 +5,16 @@ import type { AgentMeta } from "./cybercloud.service";
 import { insertCybercloudCall, markVerifyStatus } from "./cybercloud-calls.repo";
 
 const TTL_MS = 10 * 60 * 1000;
-const VERIFY_TIMEOUT_MS = Number(process.env.CYBERCLOUD_VERIFY_TIMEOUT_MS ?? "60000");
-const TOLERANCE = Number(process.env.CYBERCLOUD_COMPARE_TOLERANCE ?? "0.01");
+
+function verifyTimeoutMs(): number {
+  const t = Number(process.env.CYBERCLOUD_VERIFY_TIMEOUT_MS || "60000");
+  return Number.isFinite(t) && t > 0 ? t : 60000;
+}
+
+function tolerance(): number {
+  const t = Number(process.env.CYBERCLOUD_COMPARE_TOLERANCE || "0.01");
+  return Number.isFinite(t) && t >= 0 ? t : 0.01;
+}
 
 export type VerifyStatus = "pending" | "consistent" | "divergent" | "unverifiable" | "agent_failed" | "agent_timeout";
 
@@ -36,9 +44,10 @@ export class VerifyTaskRegistry {
         task.status = "agent_timeout";
         this.finalize(task, { ok: false, verifyStatus: "agent_timeout" });
       }
-    }, VERIFY_TIMEOUT_MS);
+    }, verifyTimeoutMs());
     input.agentPromise
       .then((res) => {
+        if (task.status !== "pending") return;
         clearTimeout(timeout);
         task.dataSource = { mode: "dual", agent: res.meta };
         if (res.meta.sseType === "ERROR") {
@@ -49,13 +58,14 @@ export class VerifyTaskRegistry {
         }
         const directValue = input.directResult.applicable ? input.directResult.value : 0;
         const numbers = extractNumbers(res.reply);
-        const cmp = compareValues(directValue, numbers, TOLERANCE);
+        const cmp = compareValues(directValue, numbers, tolerance());
         task.status = cmp.status;
         task.verdict = { directValue, agentNumbers: cmp.agentNumbers, ...(cmp.diffPct !== undefined ? { diffPct: cmp.diffPct } : {}) };
         task.agentReply = res.reply;
         this.finalize(task, { ok: true, verifyStatus: cmp.status, ...(cmp.diffPct !== undefined ? { diffPct: cmp.diffPct } : {}) });
       })
       .catch(() => {
+        if (task.status !== "pending") return;
         clearTimeout(timeout);
         task.status = "agent_failed";
         this.finalize(task, { ok: false, verifyStatus: "agent_failed" });
@@ -75,6 +85,7 @@ export class VerifyTaskRegistry {
     })
       .then((row) => markVerifyStatus(row.id, call.verifyStatus, call.diffPct))
       .catch((e) => console.error("[verify] calls 写库失败", e));
+    setTimeout(() => this.tasks.delete(task.taskId), TTL_MS).unref();
   }
 
   get(taskId: string): VerifyTask | null {

@@ -60,4 +60,32 @@ describe("VerifyTaskRegistry", () => {
   it("未知 taskId → null", () => {
     expect(new VerifyTaskRegistry().get("nope")).toBeNull();
   });
+
+  it("超时后迟到的智能体返回不覆盖终态（不双写）", async () => {
+    vi.stubEnv("CYBERCLOUD_VERIFY_TIMEOUT_MS", "30");
+    let lateResolve: (v: { reply: string; meta: { sseType: string; latencyMs: number; agentId: string } }) => void = () => {};
+    const agentPromise = new Promise<{ reply: string; meta: { sseType: string; latencyMs: number; agentId: string } }>((resolve) => {
+      lateResolve = resolve;
+    });
+    const reg = new VerifyTaskRegistry();
+    const task = reg.create({ directResult: DIRECT_OK, agentPromise });
+    await vi.waitFor(() => expect(reg.get(task.taskId)?.status).toBe("agent_timeout"), { timeout: 2000 });
+    lateResolve({ reply: "本月销售额 12345 元", meta: { sseType: "MARKDOWN", latencyMs: 100, agentId: "a1" } });
+    await new Promise((r) => setTimeout(r, 50));
+    expect(reg.get(task.taskId)?.status).toBe("agent_timeout");
+  });
+
+  it("TTL 过期后 get 返回 null", async () => {
+    vi.useFakeTimers();
+    try {
+      const reg = new VerifyTaskRegistry();
+      const task = reg.create({ directResult: DIRECT_OK, agentPromise: agentOk("本月销售额 12345 元") });
+      await vi.advanceTimersByTimeAsync(9 * 60 * 1000);
+      expect(reg.get(task.taskId)?.status).toBe("consistent");
+      await vi.advanceTimersByTimeAsync(2 * 60 * 1000);
+      expect(reg.get(task.taskId)).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });
