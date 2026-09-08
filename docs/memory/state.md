@@ -20,7 +20,9 @@
 
   - **子代理驱动开发（0 bug loop）**：10 任务全部实现者+规格审查+质量审查三段制；审查揪出并当场修复 4 个真问题——C1 迟到终态双写库（verify registry then 无守卫）、C1' 双路全故障裸 502（违反降级矩阵）、I1 取值兜底可静默取错列、I1' notApplicable 不落库（可用率指标失真）；1 例实现者声明失实被 git 取证纠正（Task 8 前端 VerifyResult 实为本提交新建）。
 
-  - **待办**：①ChatPage/IntentLogPage 视觉基线合并前重生成（worktree 无服务环境未跑）；②testcybercloud-dev 真环境验收（spec §13 清单：探活全绿/真实指标命中/直连<10s/divergent 差异标签/响应字段名落定）；③changeset 迭代日志；④PR 走 Version 三件套。
+  - **视觉基线已重生成（2026-09-08，随本分支提交）**：16 张 win32 基线全量重生成并 16/16 验证通过。**重要发现**：①assistant 两页（front-assistant-chat/back-assistant-feedback-admin）在数据漂移环境实测仍 PASS——VerifyBadge 仅有消息时渲染（空态截图无差异）、IntentLogPage 不在 16 页基线清单；②首跑 8 失败页全为本分支未触碰的应用（applicant/scholar/manager/gatherer），根因双源——test --force 写库致 applicant.positions 58 行等数据漂移 + PR #51 的旧基线本身在脏数据态生成（scholar 空库实测与旧基线差 46%）；③处置：pg_dump 全库备份至 .db-backup-20260908（仓库外）→ TRUNCATE 8 库恢复空库态（与 CI 视觉比对口径永久对齐）→ e2e:visual:update 重生成 16 张 → e2e:visual 16/16 全绿。**教训：基线生成前必须清库**（旧基线把"示例需求"等种子数据固化进了像素，属 PR #51 遗留瑕疵，本次根治）。
+
+  - **待办**：①testcybercloud-dev 真环境验收（spec §13 清单：探活全绿/真实指标命中/直连<10s/divergent 差异标签/响应字段名落定）；②changeset 迭代日志；③PR 走 Version 三件套；④linux 视觉基线随 PR #51 既有的 visual-baseline workflow 流程重生成（win32 已随本分支更新）。
 
 - **UI v2.2 页面级组件已合并 main（2026-09-08，PR #51 squash 合并 31dda02）**：
 
