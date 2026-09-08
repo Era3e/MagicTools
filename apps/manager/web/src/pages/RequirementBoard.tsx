@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Empty, Skeleton, Tag, message } from "antd";
-import { tokens, useTheme } from "@mt/ui";
+import { Skeleton, message } from "antd";
+import { MtStatusTag, MtEmptyState, tokens, useTheme } from "@mt/ui";
 import { api, type Requirement } from "../api";
 
 const LANES: Array<{ key: string; label: string; code: string }> = [
@@ -113,7 +113,7 @@ export default function RequirementBoard() {
                         <span style={{ fontFamily: DECK.mono, fontSize: 10, color: priorityColor(r.priority, DECK.muted) }}>
                           {r.priority}
                         </span>
-                        {r.prUrl ? <Tag color="blue" style={{ fontSize: 10, margin: 0, paddingInline: 4 }}>PR</Tag> : null}
+                        {r.prUrl ? <MtStatusTag tone="info" mono>PR</MtStatusTag> : null}
                       </div>
                     </Link>
                   ))
@@ -125,7 +125,9 @@ export default function RequirementBoard() {
       )}
 
       {items !== null && items.length === 0 ? (
-        <Empty description={<span style={{ color: DECK.muted }}>暂无在轨需求——去后台拉取收件箱</span>} style={{ marginTop: 48 }} />
+        <div style={{ marginTop: 48 }}>
+          <MtEmptyState title="暂无在轨需求" description="去后台拉取收件箱" />
+        </div>
       ) : null}
     </div>
   );

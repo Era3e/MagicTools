@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { Button, message, Tag } from "antd";
+import { Button, message } from "antd";
 import { Graph } from "@antv/g6";
 import type { IEvent } from "@antv/g6";
-import { tokens, useTheme } from "@mt/ui";
+import { MtStatusTag, tokens, useTheme } from "@mt/ui";
 import { api, type GraphEdge, type GraphNode } from "../api";
 
 /** 从 G6 事件对象中安全提取目标元素 ID */
@@ -237,8 +237,8 @@ function SelectedNodePanel({ node, edges, onClose }: { node: SelectedNode; edges
         <Button size="small" type="text" onClick={onClose} style={{ fontSize: 11, padding: "0 4px" }}>×</Button>
       </div>
       <div style={{ marginBottom: 10 }}>
-        <Tag color="green" style={{ marginRight: 6 }}>{node.type || "未分类"}</Tag>
-        <span style={{ color: c.muted, fontSize: 12 }}>藏书 {node.entryCount} 卷</span>
+        <MtStatusTag tone="success" mono>{node.type || "未分类"}</MtStatusTag>
+        <span style={{ color: c.muted, fontSize: 12, marginLeft: 6 }}>藏书 {node.entryCount} 卷</span>
       </div>
       <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6, color: c.ink }}>关联关系 ({related.length})</div>
       {related.length === 0 ? (
@@ -271,9 +271,9 @@ function SelectedEdgePanel({ edge, onClose }: { edge: SelectedEdge; onClose: () 
         <Button size="small" type="text" onClick={onClose} style={{ fontSize: 11, padding: "0 4px" }}>×</Button>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
-        <Tag color="green">{edge.from}</Tag>
+        <MtStatusTag tone="success" mono>{edge.from}</MtStatusTag>
         <span style={{ color: c.muted }}>—{edge.label}→</span>
-        <Tag color="blue">{edge.to}</Tag>
+        <MtStatusTag tone="info" mono>{edge.to}</MtStatusTag>
       </div>
       <div style={{ marginTop: 10, fontSize: 12, color: c.muted }}>
         该关系描述 <b>{edge.from}</b> 与 <b>{edge.to}</b> 之间的 <i>{edge.label}</i> 语义关联。

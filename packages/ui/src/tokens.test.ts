@@ -76,4 +76,9 @@ describe("v2 品牌令牌（墨蓝石墨·工房感）", () => {
     expect(tokens.font.body).toContain("Noto Sans SC");
     expect(tokens.font.mono).toContain("JetBrains Mono");
   });
+
+  it("状态标签实心态令牌（v2.2 MtStatusTag solid 变体）就位", () => {
+    expect(tokens.tagSolid.bg).toBe("#2c4a6e");
+    expect(tokens.tagSolid.fg).toBe("#ffffff");
+  });
 });

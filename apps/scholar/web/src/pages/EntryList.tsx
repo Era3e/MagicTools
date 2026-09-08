@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { Button, Empty, Form, Input, Modal, Select, Skeleton, Tag, message } from "antd";
-import { tokens, useTheme } from "@mt/ui";
+import { Button, Form, Input, Modal, Select, Skeleton, message } from "antd";
+import { MtStatusTag, MtEmptyState, tokens, useTheme } from "@mt/ui";
 import { api, type Entry } from "../api";
 
 const SOURCE_LABEL: Record<string, string> = { gatherer: "采集入藏", manual: "手稿", obsidian: "黑曜石笔记" };
@@ -106,7 +106,7 @@ export default function EntryList() {
       {entries === null ? (
         <Skeleton active paragraph={{ rows: 6 }} />
       ) : entries.length === 0 ? (
-        <Empty description={<span style={{ color: CATALOG.muted }}>书架空空——先收录一卷吧</span>} />
+        <MtEmptyState title="书架空空" description="先收录一卷吧" />
       ) : (
         <div data-testid="entry-rows">
           {entries.map((e) => (
@@ -124,9 +124,9 @@ export default function EntryList() {
             <div>
               <h3 style={{ fontFamily: CATALOG.display, fontSize: 16, margin: "0 0 4px" }}>{e.title}</h3>
               <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                <Tag style={{ borderRadius: 0 }} color="green">
+                <MtStatusTag tone="success" mono>
                   {SOURCE_LABEL[e.source] ?? e.source}
-                </Tag>
+                </MtStatusTag>
                 {e.category ? <span style={{ color: CATALOG.muted, fontSize: 12 }}>〔{e.category}〕</span> : null}
                 {e.tags.map((t) => (
                   <span key={t} style={{ color: CATALOG.muted, fontSize: 12 }}>#{t}</span>

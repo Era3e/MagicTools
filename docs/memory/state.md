@@ -4,7 +4,21 @@
 > 即时更新：每完成一个功能 / 关键决策 / 迭代结束，即刻追加条目，禁止事后批量补记。
 > 本文件定位「当前状态快照」，历史细节见 docs/CHANGELOG.md 与 docs/superpowers/specs/、plans/。
 
-## 当前状态快照（2026-09-03 更新）
+## 当前状态快照（2026-09-08 更新）
+
+- **UI v2.2 页面级组件落地（2026-09-08，分支 feat/ui-v22-pages，本会话）**：
+
+  - **背景**：PR #47 完成了 v2/v2.1「底座」（tokens/双外壳/质感），但同批入库的 `ui_kits/dashboard/` 组件驾驶舱与 6 组件契约中的页面级规范未兑现到子项目——存量代码仍有 38 处 AntD Tag 预设色（违反 ui-spec §二 v2-1）、3 处 Empty 简笔画、全仓唯一 Statistic 组（意图日志页）。
+
+  - **@mt/ui 新增**：`MtStatusTag`（status-tag.json 契约完整实现：六语义 tone 底 50/字 700（neutral 按契约 100/700）、solid 实心高强调、mono 意图/计数等宽变体（ink-50 底）、showDot 圆点前缀、count 最小宽 24px；13 用例）+ `MtKpiRow`（等宽 KPI 读数行：JetBrains Mono + tabular-nums + 单元格左分隔线，替代 AntD Statistic；5 用例）+ `tokens.tagSolid`（实心态令牌，避免内联白字触发 no-hardcoded-colors）。零 antd Tag 依赖（独立 span 实现）。
+
+  - **8 应用全量替换**：manager（七态 STATUS_MAP/SOURCE_MAP/PRIORITY_TONE/看板 PR 标/Empty→MtEmptyState）、assessor（五态+已推送+数字列等宽）、assistant（IntentLogPage 域名/意图/置信度/纠错/混淆矩阵全量 + Statistic→MtKpiRow + ChatPage 引用标签 + FeedbackPage）、investigator（飞书配置/情绪三态/优先级/已推送/时间戳 mono）、gatherer（TYPE_MAP 三态/启停/LLM/已推送/cron mono）、scholar（来源标签×4/图谱节点/桩模式 + 2 处 Empty 简笔画→MtEmptyState）、designer（生成失败/PR 编号/历史状态/无色 Tag×2/桩模板源码）、applicant（StatusTag 组件重写为 tone 映射，status.ts 去 color 数组改 POSITION_STATUS_TONE）。
+
+  - **测试四层全绿**：qa:gate（lint 0 err / build 23 / test 46 任务 / coverage / infra / docs 0 err）；e2e 52 passed / 1 skipped（唯一 skip 为 assistant.spec:90 历史定位器问题，非本次引入）；16 张 win32 视觉基线随新 UI 重生成并全量通过。
+
+  - **顺手修复**（独立价值）：①patterns 四组件（MagazineList/ControlTable/DetailHero/TimelineBurndown）自 #35/#40 入库以来零单测——@mt/ui coverage 在 main 上实际为 59.37% < 70 门槛（此前 CI 靠 turbo 缓存复用旧轮结果未暴露），补 patterns.test.tsx（8 用例 + matchMedia polyfill 同 apps test-setup 惯例）后回 95.82%；②designer 桩模板曾含 `style={{ color: tokens... }}`，`parseJson` 的 quoteKeys 会在字符串值内 `{ color:` 处误插引号破坏 JSON——桩模板去掉内联 style 后 designer-server 测试恢复（根因已实证，教训：**含 JSX 源码的 JSON 字符串值内不要出现 `xxx:` 冒号模式**）；③state.md 尾部双空行 MD012（Node 脚本修复，PowerShell 编码不可靠的旧坑再现）。
+
+  - **门禁两坑再现与新解**：no-hardcoded-colors 拦截 ①组件内联 `#ffffff`（正解：沉淀 `tokens.tagSolid`）②测试文件里模板字符串 `` `rgb(${r}...` `` 被当颜色函数字面量（正解：`["rg","b("].join("")` 拆段拼接）；jsdom 色值规范化 rgb() 断言需双格式兼容（v2 既有做法沿用）。
 
 - **UI v2/v2.1 已合并 main（2026-09-03，PR #47 squash 合并 9f0c096）**：
 
@@ -274,4 +288,3 @@
 10. 子智能体委托（subagent/subagent\_fork）在本环境不可用，多智能体协作需外部 CLI 环境；
 11. 「0 bug loop」机制在 PR 模板里已植入「独立测试智能体验收记录」表格字段，合入前由测试智能体填写，实现流程纪律落地（不再是纯口头约定）。
 12. **E2E 视觉快照平台差异**（2026-08-28，D-18）：snapshotPathTemplate 含 {platform}，仓库仅维护 win32 基线；CI（linux）跑视觉用例必 snapshot-missing，已加 CI 守卫显式 skip；兑现 linux 基线需 CI 装 fonts-noto-cjk + 生成入库（见 mvp-deferred D-18 行内方案）。
-

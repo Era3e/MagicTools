@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Button, Card, Table, Tag, message } from "antd";
+import { Button, Card, Table, message } from "antd";
+import { MtStatusTag } from "@mt/ui";
 import { api, type Feedback } from "../api";
 
 export default function FeedbackPage() {
@@ -39,7 +40,7 @@ export default function FeedbackPage() {
             title: "来源",
             dataIndex: "contact",
             width: 120,
-            render: (v: string) => (v ? <Tag>{v}</Tag> : <Tag color="blue">助手对话</Tag>),
+            render: (v: string) => (v ? <MtStatusTag tone="neutral" mono>{v}</MtStatusTag> : <MtStatusTag tone="info">助手对话</MtStatusTag>),
           },
           {
             title: "操作",

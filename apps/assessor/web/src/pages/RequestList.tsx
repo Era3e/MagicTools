@@ -1,14 +1,15 @@
-import { Button, Card, Select, Space, Table, Tag, message } from "antd";
+import { Button, Card, Select, Space, Table, message } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { MtStatusTag, tokens, type MtStatusTagTone } from "@mt/ui";
 import { api, type AnalysisRequest } from "../api";
 
-const STATUS_MAP: Record<string, { label: string; color: string }> = {
-  pending: { label: "待处理", color: "default" },
-  draft: { label: "草稿", color: "blue" },
-  review: { label: "待审核", color: "orange" },
-  approved: { label: "已通过", color: "green" },
-  rejected: { label: "已驳回", color: "red" },
+const STATUS_MAP: Record<string, { label: string; tone: MtStatusTagTone }> = {
+  pending: { label: "待处理", tone: "neutral" },
+  draft: { label: "草稿", tone: "info" },
+  review: { label: "待审核", tone: "warning" },
+  approved: { label: "已通过", tone: "success" },
+  rejected: { label: "已驳回", tone: "error" },
 };
 
 export default function RequestList() {
@@ -65,8 +66,8 @@ export default function RequestList() {
         pagination={{ pageSize: 10 }}
         columns={[
           { title: "调研来源", dataIndex: "surveyName", render: (v: string, row) => <Link to={"/requests/" + row.id}>{v || "未命名"}</Link> },
-          { title: "状态", dataIndex: "status", width: 100, render: (v: string) => <Tag color={STATUS_MAP[v]?.color}>{STATUS_MAP[v]?.label ?? v}</Tag> },
-          { title: "数据条数", dataIndex: "sourceEventIds", width: 100, render: (v: string[]) => v.length },
+          { title: "状态", dataIndex: "status", width: 100, render: (v: string) => <MtStatusTag tone={STATUS_MAP[v]?.tone ?? "neutral"}>{STATUS_MAP[v]?.label ?? v}</MtStatusTag> },
+          { title: "数据条数", dataIndex: "sourceEventIds", width: 100, align: "right", render: (v: string[]) => <span style={{ fontFamily: tokens.font.mono, fontVariantNumeric: "tabular-nums" }}>{v.length}</span> },
           { title: "仓库", dataIndex: "repoUrl", width: 200, render: (v: string) => v || "-" },
           { title: "更新时间", dataIndex: "updatedAt", width: 180, render: (v: string) => new Date(v).toLocaleString() },
         ]}

@@ -1,5 +1,6 @@
-import { Button, Card, List, Space, Tag, Typography } from "antd";
+import { Button, Card, List, Space, Typography } from "antd";
 import { Link } from "react-router-dom";
+import { MtStatusTag } from "@mt/ui";
 import type { InterviewAnalysis } from "../api";
 
 export function AnalysisView(props: {
@@ -30,7 +31,7 @@ export function AnalysisView(props: {
             <List.Item>
               <Space direction="vertical" size={0}>
                 <Space>
-                  <Tag>{q.category}</Tag>
+                  <MtStatusTag tone="neutral" mono>{q.category}</MtStatusTag>
                   <Typography.Text strong>{q.question}</Typography.Text>
                 </Space>
                 <Typography.Text type="secondary">{q.comment}</Typography.Text>

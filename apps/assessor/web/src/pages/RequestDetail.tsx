@@ -1,14 +1,15 @@
-import { Button, Card, Descriptions, Form, Input, Space, Tag, message } from "antd";
+import { Button, Card, Descriptions, Form, Input, Space, message } from "antd";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { MtStatusTag, type MtStatusTagTone } from "@mt/ui";
 import { api, type AnalysisRequest } from "../api";
 
-const STATUS_MAP: Record<string, { label: string; color: string }> = {
-  pending: { label: "待处理", color: "default" },
-  draft: { label: "草稿", color: "blue" },
-  review: { label: "待审核", color: "orange" },
-  approved: { label: "已通过", color: "green" },
-  rejected: { label: "已驳回", color: "red" },
+const STATUS_MAP: Record<string, { label: string; tone: MtStatusTagTone }> = {
+  pending: { label: "待处理", tone: "neutral" },
+  draft: { label: "草稿", tone: "info" },
+  review: { label: "待审核", tone: "warning" },
+  approved: { label: "已通过", tone: "success" },
+  rejected: { label: "已驳回", tone: "error" },
 };
 
 export default function RequestDetail() {
@@ -55,14 +56,14 @@ export default function RequestDetail() {
       title={"分析请求 · " + (item.surveyName || "未命名")}
       extra={
         <Space>
-          <Tag color={s?.color}>{s?.label}</Tag>
+          <MtStatusTag tone={s?.tone ?? "neutral"}>{s?.label ?? item.status}</MtStatusTag>
           <Button onClick={() => navigate(-1)}>返回</Button>
         </Space>
       }
     >
       <Descriptions column={2} size="small" style={{ marginBottom: 16 }}>
         <Descriptions.Item label="仓库">{item.repoUrl || "-"}</Descriptions.Item>
-        <Descriptions.Item label="推送状态">{item.pushedAt ? <Tag color="green">已推送</Tag> : <Tag>未推送</Tag>}</Descriptions.Item>
+        <Descriptions.Item label="推送状态">{item.pushedAt ? <MtStatusTag tone="success" showDot>已推送</MtStatusTag> : <MtStatusTag tone="neutral">未推送</MtStatusTag>}</Descriptions.Item>
         {item.reviewComment ? <Descriptions.Item label="审核意见" span={2}>{item.reviewComment}</Descriptions.Item> : null}
       </Descriptions>
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Button, Card, Table, Tag, message } from "antd";
+import { Button, Card, Table, message } from "antd";
+import { MtStatusTag } from "@mt/ui";
 import { api, downloadText, type Generation } from "../api";
 
 export default function HistoryList() {
@@ -24,7 +25,7 @@ export default function HistoryList() {
             title: "状态",
             dataIndex: "status",
             width: 100,
-            render: (v: string) => <Tag color={v === "ok" ? "green" : "red"}>{v === "ok" ? "成功" : "失败"}</Tag>,
+            render: (v: string) => <MtStatusTag tone={v === "ok" ? "success" : "error"}>{v === "ok" ? "成功" : "失败"}</MtStatusTag>,
           },
           {
             title: "时间",

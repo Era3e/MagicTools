@@ -94,13 +94,15 @@ v2 新增：
 
 ## 六、落地迁移清单（另起任务执行）
 
-- [ ] tokens.ts 按 v2 CSS 重写（亮/暗双色板）+ theme.test 断言更新；
-- [ ] MtThemeProvider 扩展注入（surface / shadow / font / motion token 进 AntD ConfigProvider）；
-- [ ] AdminShell 切 v2 深色派生；UserShell 八主题常量按派生口径重算；
-- [ ] patterns（ControlTable / MagazineList / DetailHero / TimelineBurndown）表面与表格规则更新；
-- [ ] MtEmptyState 品牌化（去 AntD 简笔画）；
-- [ ] 业务页 11 个前台页 useTheme 键名对齐新派生层；
-- [ ] ESLint no-hardcoded-colors 豁免清单复核（tokens.ts / 主题常量 / 双外壳）；
-- [ ] e2e 视觉基线 16 张重生成（win32 + dispatch visual-baseline 产 linux）。
+- [x] tokens.ts 按 v2 CSS 重写（亮/暗双色板）+ theme.test 断言更新；
+- [x] MtThemeProvider 扩展注入（surface / shadow / font / motion token 进 AntD ConfigProvider）；
+- [x] AdminShell 切 v2 深色派生；UserShell 八主题常量按派生口径重算；
+- [x] patterns（ControlTable / MagazineList / DetailHero / TimelineBurndown）表面与表格规则更新；
+- [x] MtEmptyState 品牌化（去 AntD 简笔画）；
+- [x] 业务页 11 个前台页 useTheme 键名对齐新派生层；
+- [x] ESLint no-hardcoded-colors 豁免清单复核（tokens.ts / 主题常量 / 双外壳）；
+- [x] e2e 视觉基线 16 张重生成（win32 + dispatch visual-baseline 产 linux）。
+
+> 前四项 + 基线随 PR #47 落地；v2.2（feat/ui-v22-pages）补齐最后一公里——MtStatusTag/MtKpiRow 沉淀入 @mt/ui 并替换 8 应用全部 AntD Tag 预设色（38 处）、Empty 简笔画（3 处）与 Statistic（1 组），patterns 四组件补齐单测（coverage 回 95.8%），win32 基线再次重生成。
 
 注：UI Checklist（PR 模板）增加 v2 强制规则勾选项。

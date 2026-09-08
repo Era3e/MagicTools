@@ -1,6 +1,7 @@
-import { Button, Card, Space, Table, Tag, message } from "antd";
+import { Button, Card, Space, Table, message } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { MtStatusTag } from "@mt/ui";
 import { api, type Item } from "../api";
 
 export default function ItemList() {
@@ -57,10 +58,10 @@ export default function ItemList() {
         pagination={{ pageSize: 10 }}
         columns={[
           { title: "标题", dataIndex: "title", ellipsis: true, render: (v: string, row) => (row.url ? <a href={row.url} target="_blank" rel="noreferrer">{v}</a> : v) },
-          { title: "分类", dataIndex: "category", width: 120, render: (v: string) => (v ? <Tag>{v}</Tag> : "-") },
+          { title: "分类", dataIndex: "category", width: 120, render: (v: string) => (v ? <MtStatusTag tone="neutral" mono>{v}</MtStatusTag> : "-") },
           { title: "关键词", dataIndex: "keywords", width: 220, render: (v: string[]) => (v ?? []).slice(0, 3).join("、") || "-" },
-          { title: "富化", dataIndex: "llmEnriched", width: 80, render: (v: boolean) => (v ? <Tag color="blue">LLM</Tag> : <Tag>基础</Tag>) },
-          { title: "已推送", dataIndex: "pushedAt", width: 100, render: (v: string | null) => (v ? <Tag color="green">已推送</Tag> : <Tag>未推送</Tag>) },
+          { title: "富化", dataIndex: "llmEnriched", width: 80, render: (v: boolean) => (v ? <MtStatusTag tone="info" mono>LLM</MtStatusTag> : <MtStatusTag tone="neutral">基础</MtStatusTag>) },
+          { title: "已推送", dataIndex: "pushedAt", width: 100, render: (v: string | null) => (v ? <MtStatusTag tone="success" showDot>已推送</MtStatusTag> : <MtStatusTag tone="neutral">未推送</MtStatusTag>) },
         ]}
         expandable={{
           expandedRowRender: (row) => (
