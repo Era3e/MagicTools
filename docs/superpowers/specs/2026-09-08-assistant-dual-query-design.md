@@ -331,7 +331,28 @@ CYBERCLOUD_COMPARE_TOLERANCE=0.01     # 比对容差
 | 智能体 60s 核验超时占满事件循环担忧 | promise 并发 + 超时截断，Nest 默认无阻塞 |
 | cybercloud 侧报表结构变更破坏直连 | 结构解析失败 → notApplicable(structure_invalid) 优雅降级，不白屏不硬造 |
 
-## 12. 验收标准（阶段一）
+## 12. 异常检测与优化闭环
+
+### 12.1 发现：三道检测线
+
+1. **实时逐题检测**：CompareEngine 每问一题给出终态判定（consistent/divergent/unverifiable/agent_failed/agent_timeout），用户可见；
+2. **数据底座**：cybercloud_calls 记录双路每次调用（verify_status/diffPct/agentReply 原文/timeFilter），可统计分歧率、直连不可用率、双路延迟趋势——区分「偶发 vs 系统性」；
+3. **平台探活**：data-source-status 的 errorDomain（gateway/auth/agent）先排除平台故障，避免把故障误判为质量差。
+
+### 12.2 优化：按根因分流
+
+| 异常 | 根因归属 | 优化动作 |
+|------|---------|---------|
+| agent_failed / timeout、探活红 | cybercloud 平台/凭据/智能体未发布 | 运维修 cybercloud 侧；期间 CYBERCLOUD_MODE=direct 保命 |
+| divergent 系统性出现在某指标 | 智能体侧配置（工具挂错/prompt 引导错/用预设值当实时值） | 用 cybercloud_calls 分歧记录（智能体原文 vs 直连值）为证据，去 cybercloud 控制台修该智能体 |
+| divergent 但复查直连错 | 直连侧（时间过滤语义/结构解析） | detail 记录 timeFilter/endpoint 可精确复现；修复前可 mode=agent 临时切回 |
+| 直连 no_match / low_confidence 率高 | 指标目录覆盖不足 / LLM 匹配弱 | cybercloud 侧补配指标；low_confidence 样本沉淀 few-shot（复用 D-09 纠错闭环模式）；覆盖不到的类型推进阶段二 |
+| unverifiable 多 | 智能体回答不带数字 | 改智能体 prompt 要求给出具体数值（cybercloud 侧） |
+| no_date_field | 报表结构缺日期过滤 | cybercloud 报表配置侧补字段 |
+
+**职责边界**：MagicTools 侧负责「绝不静默给错数 + 提供可定位的证据」；数据质量根因大多在 cybercloud 侧配置，修复动作也在那边，监控数据为修复指路。
+
+## 13. 验收标准（阶段一）
 
 1. chat e2e 三终态场景全绿（stub）；
 2. testcybercloud-dev 真环境：指标列表命中 ≥1 真实指标、直连查询返回真值、双路对比端到端 <10s 直连先行、divergent 场景差异标签正确；
