@@ -1,8 +1,8 @@
-import { Tag } from "antd";
-import { tokens } from "@mt/ui";
-import { POSITION_STATUSES } from "../status";
+import { MtStatusTag, type MtStatusTagTone } from "@mt/ui";
+import { POSITION_STATUSES, POSITION_STATUS_TONE } from "../status";
 
 export function StatusTag(props: { status: string }) {
   const item = POSITION_STATUSES.find((s) => s.value === props.status);
-  return <Tag color={item?.color ?? tokens.color.textSecondary}>{item?.label ?? props.status}</Tag>;
+  const tone: MtStatusTagTone = POSITION_STATUS_TONE[props.status] ?? "neutral";
+  return <MtStatusTag tone={tone}>{item?.label ?? props.status}</MtStatusTag>;
 }

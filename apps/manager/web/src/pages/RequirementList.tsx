@@ -1,24 +1,27 @@
-import { Button, Card, Form, Input, Modal, Select, Space, Table, Tag, message } from "antd";
+import { Button, Card, Form, Input, Modal, Select, Space, Table, message } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { MtStatusTag, type MtStatusTagTone } from "@mt/ui";
 import { api, type Requirement } from "../api";
 
-const STATUS_MAP: Record<string, { label: string; color: string }> = {
-  waiting: { label: "待分析", color: "default" },
-  designing: { label: "设计中", color: "blue" },
-  todo: { label: "待开发", color: "cyan" },
-  developing: { label: "开发中", color: "processing" },
-  testing: { label: "测试中", color: "orange" },
-  accepting: { label: "待验收", color: "gold" },
-  done: { label: "已完成", color: "green" },
+const STATUS_MAP: Record<string, { label: string; tone: MtStatusTagTone }> = {
+  waiting: { label: "待分析", tone: "neutral" },
+  designing: { label: "设计中", tone: "info" },
+  todo: { label: "待开发", tone: "info" },
+  developing: { label: "开发中", tone: "accent" },
+  testing: { label: "测试中", tone: "warning" },
+  accepting: { label: "待验收", tone: "accent" },
+  done: { label: "已完成", tone: "success" },
 };
 
-const SOURCE_MAP: Record<string, { label: string; color: string }> = {
-  assessor: { label: "Assessor", color: "geekblue" },
-  manual: { label: "手动", color: "default" },
-  github: { label: "GitHub", color: "purple" },
-  cybercloud: { label: "cybercloud", color: "magenta" },
+const SOURCE_MAP: Record<string, { label: string }> = {
+  assessor: { label: "Assessor" },
+  manual: { label: "手动" },
+  github: { label: "GitHub" },
+  cybercloud: { label: "cybercloud" },
 };
+
+const PRIORITY_TONE: Record<string, MtStatusTagTone> = { P0: "error", P1: "warning", P2: "neutral" };
 
 export default function RequirementList() {
   const [items, setItems] = useState<Requirement[]>([]);
@@ -83,9 +86,9 @@ export default function RequirementList() {
         pagination={{ pageSize: 10 }}
         columns={[
           { title: "标题", dataIndex: "title", render: (v: string, row) => <Link to={"/requirements/" + row.id}>{v}</Link> },
-          { title: "状态", dataIndex: "status", width: 100, render: (v: string) => <Tag color={STATUS_MAP[v]?.color}>{STATUS_MAP[v]?.label ?? v}</Tag> },
-          { title: "来源", dataIndex: "source", width: 110, render: (v: string) => <Tag color={SOURCE_MAP[v]?.color}>{SOURCE_MAP[v]?.label ?? v}</Tag> },
-          { title: "优先级", dataIndex: "priority", width: 90, render: (v: string) => <Tag color={v === "P0" ? "red" : v === "P1" ? "orange" : "default"}>{v}</Tag> },
+          { title: "状态", dataIndex: "status", width: 100, render: (v: string) => <MtStatusTag tone={STATUS_MAP[v]?.tone ?? "neutral"}>{STATUS_MAP[v]?.label ?? v}</MtStatusTag> },
+          { title: "来源", dataIndex: "source", width: 110, render: (v: string) => <MtStatusTag tone="neutral" mono>{SOURCE_MAP[v]?.label ?? v}</MtStatusTag> },
+          { title: "优先级", dataIndex: "priority", width: 90, render: (v: string) => <MtStatusTag tone={PRIORITY_TONE[v] ?? "neutral"} mono>{v}</MtStatusTag> },
           { title: "PR", dataIndex: "prUrl", width: 140, render: (v: string) => (v ? <a href={v} target="_blank" rel="noreferrer">查看 PR</a> : "-") },
           { title: "更新时间", dataIndex: "updatedAt", width: 170, render: (v: string) => new Date(v).toLocaleString() },
         ]}

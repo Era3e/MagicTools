@@ -1,12 +1,13 @@
-import { Button, Card, Form, Input, Modal, Select, Table, Tag, message } from "antd";
+import { Button, Card, Form, Input, Modal, Select, Table, message } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { MtStatusTag, tokens, type MtStatusTagTone } from "@mt/ui";
 import { api, type Source } from "../api";
 
-const TYPE_MAP: Record<string, { label: string; color: string }> = {
-  rss: { label: "RSS", color: "green" },
-  json_api: { label: "JSON API", color: "blue" },
-  web: { label: "网页", color: "purple" },
+const TYPE_MAP: Record<string, { label: string; tone: MtStatusTagTone }> = {
+  rss: { label: "RSS", tone: "success" },
+  json_api: { label: "JSON API", tone: "info" },
+  web: { label: "网页", tone: "accent" },
 };
 
 export default function SourceList() {
@@ -42,9 +43,9 @@ export default function SourceList() {
         pagination={{ pageSize: 10 }}
         columns={[
           { title: "名称", dataIndex: "name", render: (v: string, row) => <Link to={"/sources/" + row.id}>{v}</Link> },
-          { title: "类型", dataIndex: "type", width: 110, render: (v: string) => <Tag color={TYPE_MAP[v]?.color}>{TYPE_MAP[v]?.label ?? v}</Tag> },
-          { title: "状态", dataIndex: "status", width: 90, render: (v: string) => <Tag color={v === "active" ? "green" : "default"}>{v === "active" ? "启用" : "暂停"}</Tag> },
-          { title: "cron", dataIndex: "cron", width: 120, render: (v: string) => v || "-" },
+          { title: "类型", dataIndex: "type", width: 110, render: (v: string) => <MtStatusTag tone={TYPE_MAP[v]?.tone ?? "neutral"} mono>{TYPE_MAP[v]?.label ?? v}</MtStatusTag> },
+          { title: "状态", dataIndex: "status", width: 90, render: (v: string) => <MtStatusTag tone={v === "active" ? "success" : "neutral"} showDot={v === "active"}>{v === "active" ? "启用" : "暂停"}</MtStatusTag> },
+          { title: "cron", dataIndex: "cron", width: 120, render: (v: string) => <span style={{ fontFamily: tokens.font.mono, fontSize: 12 }}>{v || "-"}</span> },
           { title: "最近采集", dataIndex: "lastRunAt", width: 170, render: (v: string | null) => (v ? new Date(v).toLocaleString() : "-") },
           {
             title: "操作",

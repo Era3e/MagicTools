@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Button, Input, Tag, message } from "antd";
+import { Button, Input, message } from "antd";
 import { api, downloadText, type GenerateResult } from "../api";
-import { useTheme } from "@mt/ui";
+import { MtStatusTag, useTheme } from "@mt/ui";
 
 export default function GeneratePage() {
   const theme = useTheme();
@@ -131,7 +131,7 @@ export default function GeneratePage() {
           </div>
         ) : (
           <div style={{ border: "1px dashed " + GALLERY.accent, padding: 24, textAlign: "center", color: GALLERY.accent }}>
-            <Tag color="red">生成失败</Tag>
+            <MtStatusTag tone="error">生成失败</MtStatusTag>
             <div style={{ marginTop: 8, fontSize: 13 }}>{result.error ?? "未知错误"}</div>
           </div>
         )

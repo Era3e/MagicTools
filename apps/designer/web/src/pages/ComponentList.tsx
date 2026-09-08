@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { Button, Card, Modal, Space, Table, Tag, Typography, message, Tooltip } from "antd";
+import { Button, Card, Modal, Space, Table, Typography, message, Tooltip } from "antd";
 import { api, downloadText, type ComponentItem } from "../api";
-import { tokens } from "@mt/ui";
+import { MtStatusTag, tokens } from "@mt/ui";
 
 export default function ComponentList() {
   const [items, setItems] = useState<ComponentItem[]>([]);
@@ -83,7 +83,7 @@ export default function ComponentList() {
         <Modal title={viewing?.name} open={Boolean(viewing)} onCancel={() => setViewing(null)} footer={null} width={720}>
           {viewing ? (
             <>
-              <Tag>{viewing.description || "无描述"}</Tag>
+              <MtStatusTag tone="neutral" mono>{viewing.description || "无描述"}</MtStatusTag>
               <pre style={{ maxHeight: 420, overflow: "auto", background: tokens.color.bgUser, padding: 12, borderRadius: 6, fontFamily: tokens.font.mono, fontSize: 12 }}>
                 {viewing.code}
               </pre>
@@ -107,7 +107,7 @@ export default function ComponentList() {
               <Typography.Text strong>组件已成功提交到 @mt/ui 主仓！</Typography.Text>
             </Typography.Paragraph>
             <Typography.Paragraph>
-              PR 编号：<Tag color="blue">#{prResult.prNumber}</Tag>
+              PR 编号：<MtStatusTag tone="info" mono>#{prResult.prNumber}</MtStatusTag>
             </Typography.Paragraph>
             <Typography.Paragraph>
               <Typography.Link href={prResult.prUrl} target="_blank" rel="noreferrer">

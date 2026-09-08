@@ -148,6 +148,8 @@ export const tokens = {
   },
   // ---------- v2 扩展：圆角细则 ----------
   radiusTokens: { sm: 4, md: 6, lg: 10, full: 9999 },
+  // ---------- v2.2 扩展：状态标签实心态（ink-600 底 + 纯白字，MtStatusTag solid 变体） ----------
+  tagSolid: { bg: "#2c4a6e", fg: "#ffffff", dot: "#ffffff" },
 } as const;
 
 export type Tokens = typeof tokens;

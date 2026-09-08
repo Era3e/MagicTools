@@ -1,12 +1,13 @@
-import { Alert, Button, Card, Descriptions, Select, Space, Table, Tag, message } from "antd";
+import { Alert, Button, Card, Descriptions, Select, Space, Table, message } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { MtStatusTag, type MtStatusTagTone } from "@mt/ui";
 import { api, type ResponseItem, type Survey } from "../api";
 
-const SENTIMENT_MAP: Record<string, { label: string; color: string }> = {
-  positive: { label: "正向", color: "green" },
-  neutral: { label: "中性", color: "blue" },
-  negative: { label: "负向", color: "red" },
+const SENTIMENT_MAP: Record<string, { label: string; tone: MtStatusTagTone }> = {
+  positive: { label: "正向", tone: "success" },
+  neutral: { label: "中性", tone: "info" },
+  negative: { label: "负向", tone: "error" },
 };
 
 export default function SurveyDetail() {
@@ -139,8 +140,8 @@ export default function SurveyDetail() {
         rowSelection={{ selectedRowKeys: selectedIds, onChange: (keys) => setSelectedIds(keys as string[]) }}
         pagination={{ pageSize: 10 }}
         columns={[
-          { title: "情绪", dataIndex: "sentiment", width: 90, render: (v: string) => <Tag color={SENTIMENT_MAP[v]?.color}>{SENTIMENT_MAP[v]?.label ?? v}</Tag> },
-          { title: "优先级", dataIndex: "priority", width: 90, render: (v: string) => <Tag>{v}</Tag> },
+          { title: "情绪", dataIndex: "sentiment", width: 90, render: (v: string) => <MtStatusTag tone={SENTIMENT_MAP[v]?.tone ?? "neutral"}>{SENTIMENT_MAP[v]?.label ?? v}</MtStatusTag> },
+          { title: "优先级", dataIndex: "priority", width: 90, render: (v: string) => <MtStatusTag tone={v === "P0" ? "error" : v === "P1" ? "warning" : "neutral"} mono>{v}</MtStatusTag> },
           { title: "摘要", dataIndex: "summary", ellipsis: true },
           {
             title: "需求点",
@@ -150,7 +151,7 @@ export default function SurveyDetail() {
               return reqs.slice(0, 3).join("、") || "-";
             },
           },
-          { title: "已推送", dataIndex: "pushedAt", width: 110, render: (v: string | null) => (v ? <Tag color="green">已推送</Tag> : <Tag>未推送</Tag>) },
+          { title: "已推送", dataIndex: "pushedAt", width: 110, render: (v: string | null) => (v ? <MtStatusTag tone="success" showDot>已推送</MtStatusTag> : <MtStatusTag tone="neutral">未推送</MtStatusTag>) },
         ]}
         expandable={{
           expandedRowRender: (row) => (

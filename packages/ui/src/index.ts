@@ -1,6 +1,10 @@
 export { tokens } from "./tokens";
 export { MtThemeProvider, useTheme } from "./theme";
 export { MtEmptyState } from "./MtEmptyState";
+export { MtStatusTag } from "./MtStatusTag";
+export type { MtStatusTagProps, MtStatusTagTone } from "./MtStatusTag";
+export { MtKpiRow } from "./MtKpiRow";
+export type { MtKpiRowProps, MtKpiItem } from "./MtKpiRow";
 export { AppShell } from "./AppShell";
 export type { AppShellProps, NavItem } from "./AppShell";
 export { UserShell, MAGAZINE_THEME } from "./UserShell";

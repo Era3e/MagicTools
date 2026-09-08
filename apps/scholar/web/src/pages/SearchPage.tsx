@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Button, Empty, Input, Radio, Skeleton, Tag } from "antd";
-import { tokens, useTheme } from "@mt/ui";
+import { Button, Input, Radio, Skeleton } from "antd";
+import { MtStatusTag, MtEmptyState, tokens, useTheme } from "@mt/ui";
 import { api, type SearchHit } from "../api";
 
 const SOURCE_LABEL: Record<string, string> = { gatherer: "采集入藏", manual: "手稿", obsidian: "黑曜石笔记" };
@@ -91,7 +91,7 @@ export default function SearchPage() {
           <Skeleton active paragraph={{ rows: 6 }} />
         ) : hits.length === 0 ? (
           searched ? (
-            <Empty description={<span style={{ color: CATALOG.muted }}>馆内未检出此条目——换个说法试试</span>} />
+            <MtEmptyState title="馆内未检出此条目" description="换个说法试试" />
           ) : (
             <p style={{ textAlign: "center", color: CATALOG.muted, fontStyle: "italic", marginTop: 48 }}>
               输入关键词，在馆藏中寻书
@@ -131,9 +131,9 @@ export default function SearchPage() {
                     {h.title}
                   </h3>
                   <div style={{ marginBottom: 6, display: "flex", gap: 8, alignItems: "center" }}>
-                    <Tag style={{ borderRadius: 0, fontFamily: CATALOG.body }} color="green">
+                    <MtStatusTag tone="success" mono>
                       {SOURCE_LABEL[h.source] ?? h.source}
-                    </Tag>
+                    </MtStatusTag>
                     {h.category ? (
                       <span style={{ color: CATALOG.muted, fontSize: 12 }}>〔{h.category}〕</span>
                     ) : null}

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { Button, Card, Descriptions, Input, Space, Tag, Modal, Table, message } from "antd";
+import { Button, Card, Descriptions, Input, Space, Modal, Table, message } from "antd";
 import { EditOutlined } from "@ant-design/icons";
-import { useTheme } from "@mt/ui";
+import { MtStatusTag, useTheme } from "@mt/ui";
 import { api, type ConflictInfo } from "../api";
 
 interface EmbeddingStatus {
@@ -142,7 +142,7 @@ export default function SettingsPage() {
           title={
             <Space>
               <span>待解决冲突</span>
-              <Tag color="orange">{conflicts.length} 条</Tag>
+              <MtStatusTag tone="warning" mono count>{conflicts.length} 条</MtStatusTag>
             </Space>
           }
         >
@@ -162,7 +162,7 @@ export default function SettingsPage() {
           <Descriptions.Item label="供应商">{status?.provider ?? "-"}</Descriptions.Item>
           <Descriptions.Item label="模型">{status?.model ?? "-"}</Descriptions.Item>
           <Descriptions.Item label="模式">
-            {status ? <Tag color={status.stub ? "orange" : "green"}>{status.stub ? "桩模式" : "真实调用"}</Tag> : "-"}
+            {status ? <MtStatusTag tone={status.stub ? "warning" : "success"} showDot>{status.stub ? "桩模式" : "真实调用"}</MtStatusTag> : "-"}
           </Descriptions.Item>
           <Descriptions.Item label="API Key">{status?.apiKeyConfigured ? "已配置" : "未配置"}</Descriptions.Item>
         </Descriptions>

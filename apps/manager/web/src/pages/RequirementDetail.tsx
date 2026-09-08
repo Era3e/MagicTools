@@ -1,7 +1,7 @@
-import { Button, Input, Select, Tag, message } from "antd";
+import { Button, Input, Select, message } from "antd";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { tokens, useTheme } from "@mt/ui";
+import { MtStatusTag, tokens, useTheme } from "@mt/ui";
 import { api, type Requirement, type RequirementStatus } from "../api";
 
 const STATUS_OPTIONS: Array<{ value: RequirementStatus; label: string }> = [
@@ -94,7 +94,7 @@ export default function RequirementDetail() {
         <span style={{ fontFamily: DECK.mono, fontSize: 12, color: priorityColor(item.priority, DECK.muted) }}>
           {item.priority}
         </span>
-        <Tag style={{ borderRadius: 0 }}>{item.source}</Tag>
+        <MtStatusTag tone="neutral" mono>{item.source}</MtStatusTag>
         {(item.labels ?? []).map((l) => (
           <span key={l} style={{ fontFamily: DECK.mono, fontSize: 11, color: DECK.muted }}>#{l}</span>
         ))}

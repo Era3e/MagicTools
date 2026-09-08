@@ -1,7 +1,7 @@
-import { Button, Form, Input, Select, Tag, Typography, message } from "antd";
+import { Button, Form, Input, Select, Typography, message } from "antd";
 import { useEffect, useState } from "react";
 import { api, type Position, type Resume } from "../api";
-import { useTheme } from "@mt/ui";
+import { MtStatusTag, useTheme } from "@mt/ui";
 
 interface QuotaInfo {
   configured: boolean;
@@ -121,9 +121,9 @@ export default function ResumeCenter() {
                 版本 {r.version} · 来源 {r.source}
               </span>
               {r.lastAnalysis ? (
-                <Tag style={{ marginLeft: 10, borderRadius: 0, fontSize: 11 }}>
+                <MtStatusTag tone="neutral" mono style={{ marginLeft: 10 }}>
                   上次分析 via {(r.lastAnalysis as { via?: string }).via ?? "?"}
-                </Tag>
+                </MtStatusTag>
               ) : null}
             </div>
             <div style={{ display: "flex", gap: 8, flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>

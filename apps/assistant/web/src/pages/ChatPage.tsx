@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { Button, Input, Tag, message } from "antd";
+import { Button, Input, message } from "antd";
 import { api, type Conversation, type Message } from "../api";
-import { useTheme } from "@mt/ui";
+import { MtStatusTag, useTheme } from "@mt/ui";
 
 const INTENT_LABEL: Record<string, string> = {
   product_inquiry: "知识问答",
@@ -198,7 +198,7 @@ export default function ChatPage() {
                       {(m.citations ?? []).map((c) => (
                         <a key={c.id} href="/scholar/entries" target="_blank" rel="noreferrer" style={{ display: "block", fontSize: 12, color: QUIET.muted, marginBottom: 2 }}>
                           📖 <span>{c.title}</span>
-                          <Tag style={{ marginLeft: 6, fontSize: 11 }}>{c.source} · {c.score.toFixed(2)}</Tag>
+                          <MtStatusTag mono style={{ marginLeft: 6 }}>{c.source} · {c.score.toFixed(2)}</MtStatusTag>
                         </a>
                       ))}
                     </div>

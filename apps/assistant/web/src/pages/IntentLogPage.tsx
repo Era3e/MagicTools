@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
-import { Button, Card, Modal, Select, Space, Statistic, Table, Tag, Typography, message, theme as antdTheme } from "antd";
+import { Button, Card, Modal, Select, Space, Table, Typography, message } from "antd";
 import { DownloadOutlined, FileSearchOutlined, PlayCircleOutlined } from "@ant-design/icons";
+import { MtStatusTag, MtKpiRow } from "@mt/ui";
 import { api, type IntentLog } from "../api";
 
-const DOMAIN_LABEL: Record<string, { label: string; color: string }> = {
-  cybercloud: { label: "cybercloud", color: "geekblue-inverse" },
-  magictools: { label: "MagicTools", color: "processing-inverse" },
-  chitchat: { label: "闲聊", color: "default" },
+const DOMAIN_LABEL: Record<string, { label: string }> = {
+  cybercloud: { label: "cybercloud" },
+  magictools: { label: "MagicTools" },
+  chitchat: { label: "闲聊" },
 };
 
 const DOMAINS = ["cybercloud", "magictools", "chitchat"];
@@ -33,7 +34,6 @@ interface ReplayData {
 }
 
 export default function IntentLogPage() {
-  const { token: themeUseToken } = antdTheme.useToken();
   const [items, setItems] = useState<IntentLog[]>([]);
   const [domain, setDomain] = useState<string | undefined>();
   const [intent, setIntent] = useState<string | undefined>();
@@ -127,7 +127,7 @@ export default function IntentLogPage() {
 
   return (
     <Space direction="vertical" style={{ width: "100%" }} size="middle">
-      <Card title="路由评估（D-09 在线学习）" extra={<Tag color="blue">纠错样本 {evaluation?.confusion.total ?? 0} 条</Tag>}>
+      <Card title="路由评估（D-09 在线学习）" extra={<MtStatusTag tone="info" mono>纠错样本 {evaluation?.confusion.total ?? 0} 条</MtStatusTag>}>
         <Space wrap style={{ marginBottom: 16 }}>
           <Button icon={<PlayCircleOutlined />} loading={replaying} onClick={runReplay}>
             回放评估
@@ -138,18 +138,23 @@ export default function IntentLogPage() {
           <Button icon={<FileSearchOutlined />} onClick={previewDataset}>
             数据集预览
           </Button>
-          {datasetCount !== null && <Tag color="green">可导出 {datasetCount} 条 JSONL</Tag>}
+          {datasetCount !== null && <MtStatusTag tone="success">可导出 {datasetCount} 条 JSONL</MtStatusTag>}
         </Space>
         {replay && (
-          <Space wrap style={{ marginBottom: 16 }}>
-            <Statistic title="回放样本" value={replay.total} />
-            <Statistic title="命中" value={replay.hits} />
-            <Statistic
-              title="命中率"
-              value={Math.round(replay.accuracy * 100) + "%"}
-              valueStyle={replay.accuracy >= 0.8 ? { color: themeUseToken.colorSuccess } : { color: themeUseToken.colorWarning }}
+          <div style={{ marginBottom: 16 }}>
+            <MtKpiRow
+              items={[
+                { label: "回放样本", value: replay.total, unit: "条" },
+                { label: "命中", value: replay.hits, unit: "条" },
+                {
+                  label: "命中率",
+                  value: Math.round(replay.accuracy * 100) + "%",
+                  delta: replay.accuracy >= 0.8 ? "达标" : "低于阈值 80%",
+                  deltaTone: replay.accuracy >= 0.8 ? "up" : "flat",
+                },
+              ]}
             />
-          </Space>
+          </div>
         )}
         <Typography.Paragraph type="secondary" style={{ fontSize: 12 }}>
           混淆矩阵：行 = 原判定意图，列 = 纠错后真实意图（仅统计已纠错样本）。few-shot 每次纠错后自动吸收新样本注入分类提示词。
@@ -167,7 +172,8 @@ export default function IntentLogPage() {
                 title: "数量",
                 dataIndex: "count",
                 width: 100,
-                render: (v: number) => <Tag color={v >= 3 ? "red" : "orange"}>{v}</Tag>,
+                align: "right",
+                render: (v: number) => <MtStatusTag tone={v >= 3 ? "error" : "warning"} mono>{v}</MtStatusTag>,
               },
             ]}
           />
@@ -185,7 +191,7 @@ export default function IntentLogPage() {
               columns={[
                 { title: "消息", dataIndex: "message", ellipsis: true },
                 { title: "当前判定", dataIndex: "predicted", width: 180 },
-                { title: "应为", dataIndex: "actual", width: 180, render: (v: string) => <Tag color="red">{v}</Tag> },
+                { title: "应为", dataIndex: "actual", width: 180, render: (v: string) => <MtStatusTag tone="error" mono>{v}</MtStatusTag> },
               ]}
             />
           </>
@@ -222,20 +228,21 @@ export default function IntentLogPage() {
               title: "系统",
               dataIndex: "domain",
               width: 120,
-              render: (v: string) => <Tag color={DOMAIN_LABEL[v]?.color}>{DOMAIN_LABEL[v]?.label ?? v}</Tag>,
+              render: (v: string) => <MtStatusTag tone={v === "cybercloud" ? "accent" : v === "magictools" ? "info" : "neutral"} mono>{DOMAIN_LABEL[v]?.label ?? v}</MtStatusTag>,
             },
-            { title: "意图", dataIndex: "intent", width: 180 },
+            { title: "意图", dataIndex: "intent", width: 180, render: (v: string) => <MtStatusTag mono>{v}</MtStatusTag> },
             {
               title: "置信度",
               dataIndex: "confidence",
               width: 90,
-              render: (v: number) => (v < 0.6 ? <Tag color="orange">{v}</Tag> : <Tag color="green">{v}</Tag>),
+              align: "right",
+              render: (v: number) => <MtStatusTag tone={v < 0.6 ? "warning" : "success"} mono>{v}</MtStatusTag>,
             },
             {
               title: "纠错",
               dataIndex: "correctedIntent",
               width: 180,
-              render: (v: string | null) => (v ? <Tag color="red">{v}</Tag> : "-"),
+              render: (v: string | null) => (v ? <MtStatusTag tone="error" mono>{v}</MtStatusTag> : "-"),
             },
             {
               title: "操作",

@@ -1,6 +1,6 @@
-﻿import { Button, Card, Form, Input, List, Spin, Tag, message } from "antd";
+import { Button, Card, Form, Input, List, Spin, message } from "antd";
 import { useEffect, useState } from "react";
-import { TimelineBurndown, useTheme, tokens } from "@mt/ui";
+import { MtStatusTag, TimelineBurndown, useTheme, tokens } from "@mt/ui";
 import { api, type Iteration, type Requirement } from "../api";
 
 export default function IterationList() {
@@ -84,7 +84,7 @@ export default function IterationList() {
                       </span>
                     }
                   />
-                  <Tag color={isActive ? "green" : "default"}>迭代</Tag>
+                  <MtStatusTag tone={isActive ? "success" : "neutral"}>迭代</MtStatusTag>
                 </List.Item>
               );
             }}
