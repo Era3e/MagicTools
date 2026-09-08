@@ -22,7 +22,7 @@
 
   - **视觉基线已重生成（2026-09-08，随本分支提交）**：16 张 win32 基线全量重生成并 16/16 验证通过。**重要发现**：①assistant 两页（front-assistant-chat/back-assistant-feedback-admin）在数据漂移环境实测仍 PASS——VerifyBadge 仅有消息时渲染（空态截图无差异）、IntentLogPage 不在 16 页基线清单；②首跑 8 失败页全为本分支未触碰的应用（applicant/scholar/manager/gatherer），根因双源——test --force 写库致 applicant.positions 58 行等数据漂移 + PR #51 的旧基线本身在脏数据态生成（scholar 空库实测与旧基线差 46%）；③处置：pg_dump 全库备份至 .db-backup-20260908（仓库外）→ TRUNCATE 8 库恢复空库态（与 CI 视觉比对口径永久对齐）→ e2e:visual:update 重生成 16 张 → e2e:visual 16/16 全绿。**教训：基线生成前必须清库**（旧基线把"示例需求"等种子数据固化进了像素，属 PR #51 遗留瑕疵，本次根治）。
 
-  - **真环境验收完成（2026-09-09，testcybercloud-dev）**：探活全绿（gatewayOk/authOk/agentsReachable，10 智能体，1.1s）→ **直连先行 7.1s 返回真值 52888.9184rmb** → verify 26.9s 终态 **divergent（diffPct=83%）**——智能体拿 metric.value=500 预设值当答案被双路对比当场抓获（正是 spec 立项的核心场景）。**验收即校准出四处真契约偏差并修复（提交 a851a68，140/140 测试全绿）**：①日期字段真实位置在 outline.groups.rows（type=date/datetime，userFilters/filters 为空）——探测链扩展行分组兜底；②queryByStructure 响应为包裹对象 {data,rows,grandTotals,...}（非裸数组）——取值改走 .data[0]；③取值键精确构造 {summarize}_{table}_{code}（多列并存时唯一 sum_ 兜底会撞 _cbc_calculation_N 计算列）；④时间窗无数据时 sum 列整体省略只剩 count_*=0——「查询成功但无数据」回答 0 而非 query_failed；⑤LLM 输出无关字段为 null（zod optional() 拒绝 null）——schema 改 nullish。另：glm-4-flash 意图分类会把数据查询误判 chitchat（模型能力问题），意图纠错 few-shot 闭环 60s 生效后正确路由——已验证在线学习闭环真实可用。
+  - **真环境验收完成（2026-09-09，testcybercloud-dev）**：探活全绿（gatewayOk/authOk/agentsReachable，10 智能体，1.1s）→ **直连先行 7.1s 返回真值 52888.9184rmb** → verify 26.9s 终态 **divergent（diffPct=83%）**——智能体拿 metric.value=500 预设值当答案被双路对比当场抓获（正是 spec 立项的核心场景）。**验收即校准出四处真契约偏差并修复（提交 a851a68，140/140 测试全绿）**：①日期字段真实位置在 outline.groups.rows（type=date/datetime，userFilters/filters 为空）——探测链扩展行分组兜底；②queryByStructure 响应为包裹对象 {data,rows,grandTotals,...}（非裸数组）——取值改走 .data[0]；③取值键精确构造 {summarize}_{table}_{code}（多列并存时唯一「sum」兜底会撞 _cbc_calculation_N 计算列）；④时间窗无数据时 sum 列整体省略只剩 count_*=0——「查询成功但无数据」回答 0 而非 query_failed；⑤LLM 输出无关字段为 null（zod optional() 拒绝 null）——schema 改 nullish。另：glm-4-flash 意图分类会把数据查询误判 chitchat（模型能力问题），意图纠错 few-shot 闭环 60s 生效后正确路由——已验证在线学习闭环真实可用。
 
   - **待办**：①changeset 迭代日志；②PR 走 Version 三件套；③linux 视觉基线随 PR #51 既有的 visual-baseline workflow 流程重生成（win32 已随本分支更新）；④glm-4-flash 意图分类能力弱（建议配 DEEPSEEK_API_KEY 或升级智谱模型档位，spec §12.2 low_confidence 样本沉淀路径已就绪）。
 
@@ -132,7 +132,7 @@
 
 - **Release/changesets 链路修复→闭环（2026-08-29，Version PR #46 已合并 main a83fa40）**：
 
-  - **根因一（mixed changeset）**：`all-apps-dual-shell` 等 8 个 changeset 同时含发布包（packages/*）与被忽略的 private 包（apps/* 全部 private:true）→ `changeset version` 报 "Mixed changesets not allowed" exit 1 → Release workflow 全天红（10/10）；修法：8 个剔除私有包行、11 个纯私有包 changeset 直接删除（发布流程里本就不参与）；
+  - **根因一（mixed changeset）**：`all-apps-dual-shell` 等 8 个 changeset 同时含发布包（`packages/*`）与被忽略的 private 包（`apps/*` 全部 private:true）→ `changeset version` 报 _Mixed changesets not allowed_ exit 1 → Release workflow _全天红_（10/10）；修法：8 个剔除私有包行、11 个纯私有包 changeset 直接删除（发布流程里本就不参与）；
 
   - **根因二（仓库设置）**：changesets/action 需 `Settings → Actions → General → Workflow permissions` 勾选 "Allow GitHub Actions to create and approve pull requests"（用户已配置）；修后 Release attempt=2 转绿，Version PR #46（@mt/ui、@mt/model-client minor + @mt/db patch）自动开出；
 
