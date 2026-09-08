@@ -5,7 +5,7 @@ import { DirectQueryService } from "./direct-query.service";
 const PAYLOAD_JSON = '{"code":"t1"}';
 
 function stubAuthFetch(indicators: unknown, structure: unknown, queryData: unknown) {
-  return vi.fn(async (url: string) => {
+  return vi.fn(async (url: string, _init?: RequestInit) => {
     if (String(url).includes("/userByApiKey")) {
       return new Response(JSON.stringify({ code: "0", data: { payload: PAYLOAD_JSON } }), { status: 200 });
     }
@@ -47,6 +47,7 @@ describe("DirectQueryService", () => {
     const svc = new DirectQueryService(new CybercloudService());
     const res = await svc.run("本月销售额多少");
     expect(res.applicable).toBe(true);
+    if (!res.applicable) throw new Error("expected applicable, got " + res.reasonCode);
     expect(res.value).toBe(12345);
     expect(res.reply).toContain("12345");
   });
@@ -61,11 +62,12 @@ describe("DirectQueryService", () => {
     const svc = new DirectQueryService(new CybercloudService());
     const res = await svc.run("本月销售额多少");
     expect(res.applicable).toBe(true);
+    if (!res.applicable) throw new Error("expected applicable, got " + res.reasonCode);
     expect(res.value).toBe(12345);
     expect(res.metricName).toBe("本月销售额");
     expect(res.timeFilter).toBe("THIS_MONTH");
     const qCall = fetchMock.mock.calls.find((c) => String(c[0]).includes("queryByStructure"));
-    const body = JSON.parse(String((qCall as unknown as [string, RequestInit])[1].body));
+    const body = JSON.parse(String((qCall?.[1] as RequestInit).body));
     expect(body.outline.groups.rows).toEqual([]);
     expect(body.outline.groups.columns).toEqual([]);
     const dateFilter = body.userFilters.find((f: { code: string }) => f.code === "created");
@@ -82,6 +84,7 @@ describe("DirectQueryService", () => {
     const svc = new DirectQueryService(new CybercloudService());
     const res = await svc.run("本月销售额多少");
     expect(res.applicable).toBe(true);
+    if (!res.applicable) throw new Error("expected applicable, got " + res.reasonCode);
     expect(res.value).toBe(22222);
   });
 
@@ -94,6 +97,7 @@ describe("DirectQueryService", () => {
     const svc = new DirectQueryService(new CybercloudService());
     const res = await svc.run("随便问");
     expect(res.applicable).toBe(false);
+    if (res.applicable) throw new Error("expected not applicable");
     expect(res.reasonCode).toBe("no_match");
   });
 
@@ -108,12 +112,36 @@ describe("DirectQueryService", () => {
     const svc = new DirectQueryService(new CybercloudService());
     const res = await svc.run("本月销售额多少");
     expect(res.applicable).toBe(false);
+    if (res.applicable) throw new Error("expected not applicable");
     expect(res.reasonCode).toBe("no_date_field");
+  });
+
+  it("流水线超时 → notApplicable(timeout)", async () => {
+    vi.stubEnv("CYBERCLOUD_BASE_URL", "https://cyber.example");
+    vi.stubEnv("CYBERCLOUD_API_KEY", "key-123");
+    vi.stubEnv("CYBERCLOUD_JWT", "jwt-1");
+    vi.stubEnv("MT_LLM_STUB", "1");
+    vi.stubEnv("CYBERCLOUD_DIRECT_TIMEOUT_MS", "1");
+    const slowFetch = vi.fn(async (url: string) => {
+      if (String(url).includes("/userByApiKey")) {
+        return new Response(JSON.stringify({ code: "0", data: { payload: PAYLOAD_JSON } }), { status: 200 });
+      }
+      await new Promise((r) => setTimeout(r, 50));
+      return new Response(JSON.stringify({ code: "0", data: [] }), { status: 200 });
+    });
+    vi.stubGlobal("fetch", slowFetch);
+    const svc = new DirectQueryService(new CybercloudService());
+    const res = await svc.run("本月销售额多少");
+    expect(res.applicable).toBe(false);
+    if (res.applicable) throw new Error("expected not applicable");
+    expect(res.reasonCode).toBe("timeout");
   });
 
   it("未配置 → notApplicable(unconfigured)", async () => {
     const svc = new DirectQueryService(new CybercloudService());
     const res = await svc.run("问");
+    expect(res.applicable).toBe(false);
+    if (res.applicable) throw new Error("expected not applicable");
     expect(res.reasonCode).toBe("unconfigured");
   });
 });

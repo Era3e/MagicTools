@@ -20,17 +20,15 @@ const TIME_PHRASE: Record<string, string> = {
   TODAY: "今日", PAST_7_DAYS: "近7天", PAST_30_DAYS: "近30天", THIS_YEAR: "今年", PRE_YEAR: "去年",
 };
 
-export interface DirectResult {
-  applicable: boolean;
-  reply?: string;
-  reasonCode?: "no_match" | "low_confidence" | "no_date_field" | "structure_invalid" | "query_failed" | "timeout" | "unconfigured";
-  metricName?: string;
-  value?: number;
-  unit?: string;
-  timeFilter?: string;
-  endpoint?: string;
-  latencyMs: number;
-}
+export type DirectReasonCode = "no_match" | "low_confidence" | "no_date_field" | "structure_invalid" | "query_failed" | "timeout" | "unconfigured";
+
+export type DirectResult =
+  | { applicable: true; reply: string; metricName: string; value: number; unit?: string; timeFilter?: string; endpoint?: string; latencyMs: number }
+  | { applicable: false; reasonCode: DirectReasonCode; latencyMs: number };
+
+type DirectFinishPayload =
+  | Omit<Extract<DirectResult, { applicable: true }>, "latencyMs">
+  | Omit<Extract<DirectResult, { applicable: false }>, "latencyMs">;
 
 @Injectable()
 export class DirectQueryService {
@@ -44,7 +42,7 @@ export class DirectQueryService {
 
   async run(message: string): Promise<DirectResult> {
     const started = Date.now();
-    const finish = (r: Omit<DirectResult, "latencyMs">): DirectResult => ({ ...r, latencyMs: Date.now() - started });
+    const finish = (r: DirectFinishPayload): DirectResult => ({ ...r, latencyMs: Date.now() - started });
     if (!this.configured() && process.env.CYBERCLOUD_STUB !== "1") return finish({ applicable: false, reasonCode: "unconfigured" });
     if (process.env.CYBERCLOUD_STUB === "1") {
       return finish({ applicable: true, reply: "「本月销售额」本月为 12345 元（直连实时查询）", metricName: "本月销售额", value: 12345, unit: "元", timeFilter: "THIS_MONTH", endpoint: "stub" });
@@ -56,7 +54,7 @@ export class DirectQueryService {
     return Promise.race([this.pipeline(message, finish), timeout]);
   }
 
-  private async pipeline(message: string, finish: (r: Omit<DirectResult, "latencyMs">) => DirectResult): Promise<DirectResult> {
+  private async pipeline(message: string, finish: (r: DirectFinishPayload) => DirectResult): Promise<DirectResult> {
     try {
       const indicators = await this.listIndicators();
       if (indicators.length === 0) return finish({ applicable: false, reasonCode: "no_match" });
@@ -97,7 +95,9 @@ export class DirectQueryService {
       const rowList = Array.isArray(rows) ? rows : ((rows as { list?: unknown[] } | null | undefined)?.list ?? []);
       const first = (rowList[0] ?? {}) as Record<string, unknown>;
       const alisa = String(column.alisaName ?? column.name ?? "");
-      const raw = first[alisa] ?? Object.entries(first).find(([k, v]) => k.startsWith("sum_") || typeof v === "number")?.[1];
+      const directHit = first[alisa];
+      const sumCandidates = Object.entries(first).filter(([k]) => k.startsWith("sum_"));
+      const raw = directHit !== undefined ? directHit : sumCandidates.length === 1 ? sumCandidates[0][1] : undefined;
       const value = Number(raw);
       if (!Number.isFinite(value)) return finish({ applicable: false, reasonCode: "query_failed" });
       const timePhrase = match.timeFilter.mode === "semantic"
