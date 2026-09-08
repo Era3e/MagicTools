@@ -46,7 +46,7 @@ function mockCybercloudFlow() {
         { status: 200 }
       );
     }
-    return new Response(JSON.stringify({ code: "1", message: "未知接口" }), { status: 200 });
+    return new Response(JSON.stringify({ code: "0", data: [{ id: "agent-1" }] }), { status: 200 });
   });
   return { fetchMock, urls, headers, getPayloadCalls: () => payloadCalls };
 }
@@ -130,5 +130,68 @@ describe("CybercloudService（真实契约）", () => {
     vi.stubGlobal("fetch", fetchMock);
     const svc = new CybercloudService();
     await expect(svc.query("查询")).rejects.toThrow();
+  });
+
+  it("query 返回结构化元数据（sseType/latencyMs/agentId）", async () => {
+    vi.stubEnv("CYBERCLOUD_BASE_URL", "https://cyber.example");
+    vi.stubEnv("CYBERCLOUD_API_KEY", "key-123");
+    vi.stubEnv("CYBERCLOUD_JWT", "jwt-1");
+    const { fetchMock } = mockCybercloudFlow();
+    vi.stubGlobal("fetch", fetchMock);
+    const svc = new CybercloudService();
+    const res = await svc.query("本月销售额多少");
+    expect(res.meta.sseType).toBe("MARKDOWN");
+    expect(res.meta.agentId).toBe("agent-1");
+    expect(res.meta.latencyMs).toBeGreaterThanOrEqual(0);
+  });
+
+  it("SSE ERROR 保留错误标记不降维（meta.sseType=ERROR）", async () => {
+    vi.stubEnv("CYBERCLOUD_BASE_URL", "https://cyber.example");
+    vi.stubEnv("CYBERCLOUD_API_KEY", "key-123");
+    vi.stubEnv("CYBERCLOUD_JWT", "jwt-1");
+    const fetchMock = vi.fn(async (url: string) => {
+      if (String(url).includes("/userByApiKey")) {
+        return new Response(JSON.stringify({ code: "0", data: { payload: PAYLOAD_JSON } }), { status: 200 });
+      }
+      if (String(url).includes("/agents")) {
+        return new Response(JSON.stringify({ code: "0", data: [{ id: "agent-1", name: "A", status: "PUBLISHED", enabled: true }] }), { status: 200 });
+      }
+      if (String(url).includes("/session/create")) {
+        return new Response(JSON.stringify({ code: "0", data: { code: "sess-1" } }), { status: 200 });
+      }
+      return new Response(JSON.stringify({ code: "0", data: { type: "ERROR", data: "工具执行失败" } }), { status: 200 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const svc = new CybercloudService();
+    const res = await svc.query("查询");
+    expect(res.meta.sseType).toBe("ERROR");
+    expect(res.reply).toContain("工具执行失败");
+  });
+
+  it("桩模式智能体答由 CYBERCLOUD_STUB_AGENT_ANSWER 控制", async () => {
+    vi.stubEnv("CYBERCLOUD_STUB", "1");
+    const svc = new CybercloudService();
+    const ok = await svc.query("问");
+    expect(ok.meta.sseType).toBe("MARKDOWN");
+    vi.stubEnv("CYBERCLOUD_STUB_AGENT_ANSWER", "99999");
+    const diff = await svc.query("问");
+    expect(diff.reply).toContain("99999");
+    vi.stubEnv("CYBERCLOUD_STUB_AGENT_ANSWER", "__FAIL__");
+    await expect(svc.query("问")).rejects.toThrow();
+  });
+
+  it("postApi 供直连复用（带 jwt+payload 头）", async () => {
+    vi.stubEnv("CYBERCLOUD_BASE_URL", "https://cyber.example");
+    vi.stubEnv("CYBERCLOUD_API_KEY", "key-123");
+    vi.stubEnv("CYBERCLOUD_JWT", "jwt-1");
+    const { fetchMock, urls, headers } = mockCybercloudFlow();
+    vi.stubGlobal("fetch", fetchMock);
+    const svc = new CybercloudService();
+    const res = await svc.postApi<Array<unknown>>("/api/setup/report/indicators/list", {});
+    expect(res).toEqual([{ id: "agent-1" }]);
+    const i = urls.findIndex((u) => u.includes("indicators/list"));
+    expect(i).toBeGreaterThanOrEqual(0);
+    expect(headers[i].jwt).toBe("jwt-1");
+    expect(headers[i].payload).toBe(encodeURIComponent(PAYLOAD_JSON));
   });
 });

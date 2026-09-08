@@ -7,6 +7,13 @@ import { answerSchema } from "./schemas";
 const PAYLOAD_TTL_MS = 30 * 60 * 1000;
 const JWT_TTL_MS = 100 * 60 * 1000;
 
+export interface AgentMeta {
+  sseType: string;
+  latencyMs: number;
+  agentId: string;
+  error?: string;
+}
+
 interface CyberResponse<T> {
   code: string;
   message?: string;
@@ -71,9 +78,12 @@ export class CybercloudService {
     return (process.env.CYBERCLOUD_BASE_URL ?? "").replace(/\/+$/, "");
   }
 
-  async query(message: string): Promise<{ reply: string }> {
+  async query(message: string): Promise<{ reply: string; meta: AgentMeta }> {
+    const started = Date.now();
     if (process.env.CYBERCLOUD_STUB === "1") {
-      return { reply: "桩数据查询结果：本月销售额 12345 元（CYBERCLOUD_STUB 桩模式）" };
+      const stubAnswer = process.env.CYBERCLOUD_STUB_AGENT_ANSWER ?? "本月销售额 12345 元";
+      if (stubAnswer === "__FAIL__") throw new BadGatewayException("cybercloud 智能体桩故障");
+      return { reply: stubAnswer, meta: { sseType: "MARKDOWN", latencyMs: 0, agentId: "stub-agent" } };
     }
     const agentId = process.env.CYBERCLOUD_AGENT_ID || (await this.resolveAgentId());
     const sessionCode = await this.resolveSession(agentId);
@@ -82,7 +92,15 @@ export class CybercloudService {
       sessionCode,
       temperature: 0.3,
     });
-    return { reply: this.formatSse(res.data) };
+    return {
+      reply: this.formatSse(res.data),
+      meta: {
+        sseType: res.data?.type ?? "UNKNOWN",
+        latencyMs: Date.now() - started,
+        agentId,
+        error: res.data?.type === "ERROR" ? String(res.data.data ?? "") : undefined,
+      },
+    };
   }
 
   private async ensureJwt(): Promise<string> {
@@ -165,6 +183,12 @@ export class CybercloudService {
 
   private async post<T>(path: string, body: unknown): Promise<CyberResponse<T>> {
     return this.postRaw<T>(path, body);
+  }
+
+  /** 直连数据 API 复用入口：带 jwt+payload 头与 401 重登（spec §3.8 同源同权） */
+  async postApi<T>(path: string, body: unknown): Promise<T | undefined> {
+    const res = await this.postRaw<T>(path, body);
+    return res.data;
   }
 
   private async postRaw<T>(
