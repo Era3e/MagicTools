@@ -7,123 +7,232 @@
 ## 当前状态快照（2026-09-03 更新）
 
 - **UI v2/v2.1 已合并 main（2026-09-03，PR #47 squash 合并 9f0c096）**：
+
   - 分支 feat-ui-v2-migrate-mtui 已清理（远端自动回收 + 本地删除），本地/远端仅剩 main；
-  - **待办一（用户操作）**：dispatch visual-baseline workflow 重生成 linux 基线（需先配 Secret `VISUAL_BASELINE_TOKEN`，PAT: contents:write + pull_request）——win32 16 张已随 PR 更新，linux 旧基线已删除、平台守卫当前显式 skip linux 视觉用例；
+
+  - **待办一（用户操作）**：dispatch visual-baseline workflow 重生成 linux 基线（需先配 Secret `VISUAL_BASELINE_TOKEN`，PAT: contents:write + pull\_request）——win32 16 张已随 PR 更新，linux 旧基线已删除、平台守卫当前显式 skip linux 视觉用例；
+
   - **待办二**：Version PR（changesets 自动开）合并三件套——body 补 0 bug loop 勾选 → close/reopen 触发 CI → 三段绿后 squash；@mt/ui minor changeset 在队列中；
+
   - **待办三（经验）**：v2.1 噪点/环境光/双层投影已进视觉基线像素；下次前端 token 级变更合并前，本地需重跑 `pnpm e2e:visual:update` 再推（本轮 CI 恰好未拦是因为 linux skip + win32 基线已在 PR 内重生成）；
+
   - **工作流洞察（用户提出，待沉淀入 ui-spec）**：存量系统调优时，真实 dev server（vite HMR + 浏览器自动化截图对比）比设计画布更有效；设计画布适合从零探索新页面。验证闭环应扩展为「UI Kit 规范页 + 真实后台页截图」双层；
-  - **推送降级链路（本轮四验证）**：git push 代理挂死（HTTP/1.1 强制 + LOW_SPEED 均无效）→ 小文件走 MCP push_files → 大文件（>30KB）走 GH_TOKEN + Contents API（blob sha 与本地 git hash-object 比对，逐字节一致校验）；环境变量 GH_TOKEN 在沙箱可用；
+
+  - **推送降级链路（本轮四验证）**：git push 代理挂死（HTTP/1.1 强制 + LOW\_SPEED 均无效）→ 小文件走 MCP push\_files → 大文件（>30KB）走 GH\_TOKEN + Contents API（blob sha 与本地 git hash-object 比对，逐字节一致校验）；环境变量 GH\_TOKEN 在沙箱可用；
+
   - **CI 门禁两坑**：①no-hardcoded-colors 会拦 theme.tsx 内联 rgba——正确修法是沉淀为 tokens（dark.tableHeaderBg 等 7 个 tint 令牌）而非 eslint-disable；②API 分段推送拼接 state.md 丢尾换行 → MD047，用 Node 补 `\n`（PowerShell Add-Content 编码不可靠）。
+
 - **UI v2.1 质感升级 @mt/ui（2026-09-02，已随 PR #47 合并）**：
+
   - **背景**：用户反馈"UI 还是没啥质感"，要求参考头部科技公司现有产品 UI 优化。
+
   - **研究**：深度逆向分析 Linear/Stripe/Vercel/GitHub/Notion 五家公司的"质感密码"——提取 10 项可复用 CSS 技法（含具体 hex/rgba 值、SVG 参数、阴影配方）。
+
   - **六维度升级**：①Linear 四级表面亮度阶梯（surface0-4：#14181f→#2d3848，替代投影承载层级）；②Stripe 双层投影系统（近距小模糊+远距大模糊+inset 顶部高光）；③GitHub 发丝边框（rgba 白 7%/12%/16% 三档）+ 表格 hover 重音条（inset 2px accent）；④Linear 噪点纹理升级（feTurbulence 0.65/3 octaves + mix-blend-mode overlay/4.5%）；⑤Vercel 透明度文字层级（95%/65%/40%/28% 四档）+ tabular-nums；⑥暗色光学修正（字重降一档 350/500 + 负字距 -0.01em）。
-  - **新增 token**：shadow.darkCard/DarkCardHover/DarkDropdown/DarkModal/focusRing、craft.glowDarkSecondary/cardBorderGradient/hoverSpotlight/noiseOpacity、dark.surface3/surface4/textPrimary/textTertiary/textFaint/textDisabled/hairline/hairlineHover、font.weightBodyDark/weightHeadingDark/letterSpacingBodyDark/letterSpacingHeadingSm/Lg。
+
+  - **新增 token**：shadow\.darkCard/DarkCardHover/DarkDropdown/DarkModal/focusRing、craft.glowDarkSecondary/cardBorderGradient/hoverSpotlight/noiseOpacity、dark.surface3/surface4/textPrimary/textTertiary/textFaint/textDisabled/hairline/hairlineHover、font.weightBodyDark/weightHeadingDark/letterSpacingBodyDark/letterSpacingHeadingSm/Lg。
+
   - **AdminShell 落地**：注入全局 CSS（.mt-admin-shell 焦点环/表格发丝线+hover 重音条/卡片双层投影+hover 加深/按钮内描边+hover 辉光+active 缩放/字重光学修正/tabular-nums）；多层环境光（主氛围光+琥珀色副氛围光）；噪点 overlay 混合模式；侧栏顶部高光+右缘发丝线；顶栏毛玻璃+底部高光。
+
   - **AdminDarkThemeProvider**：补齐 Menu（itemSelectedBg 透明度）/Input（surface0 底+focusRing）/Select/Tag/Modal（surface3）组件级暗色注入。
-  - **视觉参考页**：`.design_library/magictools/ui_kits/premium-reference/index.html`（54KB，含 AdminShell 实机演示+5 组 BEFORE/AFTER 对照+组件展示+排版规范），预览 http://localhost:4180。
+
+  - **视觉参考页**：`.design_library/magictools/ui_kits/premium-reference/index.html`（54KB，含 AdminShell 实机演示+5 组 BEFORE/AFTER 对照+组件展示+排版规范），预览 <http://localhost:4180。>
+
   - **测试**：@mt/ui 22/22 pass、lint 0 err、build 通过。tokens.test.ts 和 AdminShell.test.tsx 断言已更新匹配新值。
-  - **设计库同步**：colors_and_type.css 暗色块全量更新（四级表面/双层投影/透明度文字/噪点升级/环境光/渐变描边/焦点环）。
+
+  - **设计库同步**：colors\_and\_type.css 暗色块全量更新（四级表面/双层投影/透明度文字/噪点升级/环境光/渐变描边/焦点环）。
+
 - **UI v2 落地 @mt/ui（2026-09-02，已随 PR #47 合并）**：
+
   - **改造策略**：tokens.ts 保持 v1 键结构（color/spacing/fontSize/radius）值全换 v2 色板——业务代码零改动；新增 scale（7 组 10 阶）/dark/admin/shadow/motion/size/font/radiusTokens 扩展块；
+
   - **主题真注入**：MtThemeProvider 全量注入 AntD（36 控件高/品牌字体/表头石墨底/墨调浮层影）+ 品牌字体 link 幂等注入（id=mt-brand-fonts）；AdminShell 经内部 AdminDarkThemeProvider（darkAlgorithm + tokens.admin 锚点）整体深色——**后台 AntD 表格/表单/Modal 全部跟随深色**；UserShell 嵌套 ConfigProvider 让前台分页/输入/按钮跟随应用 accent；
+
   - **测试**：@mt/ui 20 用例（探针组件读 antdTheme.useToken() 断言注入结果；darkAlgorithm 会把种子 #6e8bad 微调为 #617996、inline 色值被规范化为 rgb()——断言按色彩族+双格式兼容）；全仓 46/46、lint 0 err、e2e 全量 52 passed/1 skipped（含视觉基线 16 张重生成）；
+
   - **门禁教训**：ESLint 白名单需补 card/brick 主题扩展键；后台页直引 tokens.color 亮色值在暗色 AdminShell 下不可读（designer pre 块/assistant Statistic 已改 useToken()/bgUser 自适应）——后续后台页一律 useToken() 或语义底色；
+
   - 八应用主题常量已按 v2 派生口径重算（applicant 砖红 #a8522e / scholar 馆藏绿 #2f5a3b / assistant 瓷青墨蓝 #4a688c / manager 驾驶舱蓝 #3a5f84 / gatherer 藏青 #1f3a5c / investigator 铜金 #8a6a3b / assessor 深赭 #6e3b28 / designer 墨黑 #1c2530），display 字体统一进品牌栈（Noto Serif SC / JetBrains Mono 优先）。
+
   - **PR #47 已开出**（head a37fba4 + 8ec3345）：linux 旧基线已随 PR 移除（旧 UI 像素必不匹配，平台感知守卫会显式 skip linux 视觉用例），**合并后需手动 dispatch visual-baseline workflow 重生成 linux 基线**（Ubuntu CJK 环境跑真实新 UI）；push 曾因代理抖动挂死一轮，恢复全局代理配置（127.0.0.1:7890）后一次通过——直连 443 不通。
+
 - **UI「塑料感」评审 + v2 设计规范定稿（2026-09-02，本会话）**：
+
   - **评审结论（四根源）**：①tokens.ts 原样照搬 AntD 出厂值（#2f54eb/#52c41a/radius 6 等，从未被设计）；②外壳有个性、内脏默认件——MtThemeProvider 只注入 5 个基础 token，前台八主题内的分页器/搜索框/Tag/Empty 仍是 AntD 默认蓝与简笔画（风格断裂主因）；③无质感体系（仅 2 个灰、无中性阶/海拔分级/表面材质）；④字体廉价（OS 自带字体角色扮演）+ 字号仅 4 档 + 无动效 token。
+
   - **用户拍板**：统一底座 + 八主题真注入 / 墨蓝石墨·工房感基调 / 暗色纳入本期 / 先规范后落地（代码改造另起任务走分支流程）；并要求八主题贴合各子项目真实业务受众。
-  - **交付**：设计系统 `.design_library/magictools/`（colors_and_type.css 191 变量：墨蓝 ink 十阶锚定 600 #2c4a6e、石墨中性十阶、琥珀强调、四语义色各十阶、surface-0/1/2 三级表面亮暗两套、shadow 1-5 墨调、duration/ease motion、字体三层 Noto Serif SC+Source Serif 4 / Noto Sans SC / JetBrains Mono）+ 6 组件契约（button/surface-card/data-table/input/shell-nav/status-tag）与预览 + UI Kit 展示页 + SKILL.md/README.md；质量门禁 10 文件 0 失败。
+
+  - **交付**：设计系统 `.design_library/magictools/`（colors\_and\_type.css 191 变量：墨蓝 ink 十阶锚定 600 #2c4a6e、石墨中性十阶、琥珀强调、四语义色各十阶、surface-0/1/2 三级表面亮暗两套、shadow 1-5 墨调、duration/ease motion、字体三层 Noto Serif SC+Source Serif 4 / Noto Sans SC / JetBrains Mono）+ 6 组件契约（button/surface-card/data-table/input/shell-nav/status-tag）与预览 + UI Kit 展示页 + SKILL.md/README.md；质量门禁 10 文件 0 失败。
+
   - **文档**：docs/ui-spec.md 重写为 v2（令牌唯一来源声明、强制规则 11 条、双外壳延续 + 八主题 v2 派生口径表、暗色模式章节、落地迁移清单 8 项）；本 CHANGELOG 追加条目。
-  - **待办**：落地迁移按 ui-spec §六清单另起任务（分支 feat-ui-v2-*，走 worktree + TDD + 视觉基线重生成流程）。
+
+  - **待办**：落地迁移按 ui-spec §六清单另起任务（分支 feat-ui-v2-\*，走 worktree + TDD + 视觉基线重生成流程）。
+
 - **用户验收测试全绿（2026-09-01）**：四层测试 + 实机抽查全部通过——①单测/集成 `pnpm test` 46/46 任务成功；②`pnpm lint` 0 错误；③E2E 功能 36 passed / 1 skipped / 0 failed；④视觉快照 16/16（win32 基线）；⑤Playwright 实机抽查 13 页零 console/page 错误（经网关访问 8 应用前后台 + `/status` 仪表盘 + `/api/health` 聚合 up）。
-  - **唯一 skip 取证**：`assistant.spec.ts:90` 在前台 Chat 页找「反馈」导航入口——按双外壳 IA 设计前台 USER_NAV 仅「对话」，反馈入口为页脚「管理后台」（UserShell adminPath 默认文案），属**测试定位器与 IA 不符的历史校准缺陷**（非功能缺失）；反馈页/意图日志页功能已被 assistant-routing:32、assistant-intents:30 两条 PASS 用例覆盖。待后续修定位器（改走页脚「管理后台」入口或 adminLabel 定制）。
-  - **stale dist 踩坑（重要）**：验收首跑发现网关 `/status`、`/api/health` 404——源码与 dist 均含路由（`pnpm test` 触发 turbo 重编 dist 至 11:44），但运行中 gateway 进程（11:39 启动）加载的是上次全量构建（停于 08-27、早于 D-10 合并）的旧产物。**教训：启动项目前先 `pnpm build`（或核对 dist 时间戳晚于最近合并提交），再 start-services；改代码后必须重启进程才生效**。
+
+  - **唯一 skip 取证**：`assistant.spec.ts:90` 在前台 Chat 页找「反馈」导航入口——按双外壳 IA 设计前台 USER\_NAV 仅「对话」，反馈入口为页脚「管理后台」（UserShell adminPath 默认文案），属**测试定位器与 IA 不符的历史校准缺陷**（非功能缺失）；反馈页/意图日志页功能已被 assistant-routing:32、assistant-intents:30 两条 PASS 用例覆盖。待后续修定位器（改走页脚「管理后台」入口或 adminLabel 定制）。
+
+  - **stale dist 踩坑（重要）**：验收首跑发现网关 `/status`、`/api/health` 404——源码与 dist 均含路由（`pnpm test` 触发 turbo 重编 dist 至 11:44），但运行中 gateway 进程（11:39 启动）加载的是上次全量构建（停于 08-27、早于 D-10 合并）的旧产物。**教训：启动项目前先** **`pnpm build`（或核对 dist 时间戳晚于最近合并提交），再 start-services；改代码后必须重启进程才生效**。
+
 - **交付状态**：8 子项目全部交付。需求主线三环（Investigator → Assessor → Manager）、知识主线（Gatherer → Scholar → Assistant）、Designer（降级版）均完成；Assistant 意图路由扩至 6 类并完成 cybercloud 真实对接（testcybercloud-dev 实测打通）。
+
 - **工程化基座**：Monorepo（pnpm + turbo）+ 网关 + outbox + 幂等 + CI/CD + Docker 部署链路；main 分支保护（required checks: quality/smoke/e2e）。
+
 - **D-18 跨平台视觉基线全链路收官（2026-08-29，PR #45 已合并 main 3e674d4）**：
+
   - **平台感知守卫**：`_visual.spec.ts` 按「运行平台 `-<platform>.png` 后缀计数 ≥16」判定基线齐备，win32/linux 独立互不干扰；`PLAYWRIGHT_UPDATE=1` 为生成模式旁路；
+
   - **基线生成 workflow**（`visual-baseline.yml`，手动 dispatch）：ubuntu-24.04（与 ci.yml e2e 同口径钉版本，防 latest 滚动漂移）+ fonts-noto-cjk + 全桩服务 → `--update-snapshots` 生成 16 张 → REST 回传分支并复用/开 PR；
-  - **回传脚本三轮踩坑链**（infra/scripts/push-visual-baseline.mjs，均已修复并上 main）：①Trees API entry 级 `encoding:"base64"` 是**不存在的字段，被静默忽略**——content 里的 base64 被当 UTF-8 文本原样入库（PNG 变 39KB ASCII，CI 解析必挂，两轮 blob sha 相同即为铁证）；②正确姿势 = **Blobs API 逐张建 blob（官方 base64 语义）→ tree 以 sha 引用**，并加自校验「API sha ≠ 本地 git hash-object 即中止」防再静默坏档；③PR 复用查询 `head` 参数格式必须是**`用户:分支`**（如 `Era3e:feat/x`）而非 `owner/repo:分支`——后者不报错但永远查空 → 误判无 PR → 新建撞 422；
+
+  - **回传脚本三轮踩坑链**（infra/scripts/push-visual-baseline.mjs，均已修复并上 main）：①Trees API entry 级 `encoding:"base64"` 是**不存在的字段，被静默忽略**——content 里的 base64 被当 UTF-8 文本原样入库（PNG 变 39KB ASCII，CI 解析必挂，两轮 blob sha 相同即为铁证）；②正确姿势 = **Blobs API 逐张建 blob（官方 base64 语义）→ tree 以 sha 引用**，并加自校验「API sha ≠ 本地 git hash-object 即中止」防再静默坏档；③PR 复用查询 `head` 参数格式必须是\*\*`用户:分支`\*\*（如 `Era3e:feat/x`）而非 `owner/repo:分支`——后者不报错但永远查空 → 误判无 PR → 新建撞 422；
+
   - **验收**：PR #45（16 张真二进制 linux 基线）CI 三段全绿——**视觉用例首次在 linux 真跑通过**，win32/linux 双平台像素比对闭环打通；基线分支由「自动删除 head」回收，下轮重生成时脚本自动重建；
+
   - **e2e 两阶段执行**（ci.yml）：视觉快照先在「空库态」单独跑（与基线生成同口径），功能用例 `--grep-invert "视觉快照"` 后跑——消除并发 spec 写库导致的像素漂移假阳性。
+
 - **Release/changesets 链路修复→闭环（2026-08-29，Version PR #46 已合并 main a83fa40）**：
+
   - **根因一（mixed changeset）**：`all-apps-dual-shell` 等 8 个 changeset 同时含发布包（packages/*）与被忽略的 private 包（apps/* 全部 private:true）→ `changeset version` 报 "Mixed changesets not allowed" exit 1 → Release workflow 全天红（10/10）；修法：8 个剔除私有包行、11 个纯私有包 changeset 直接删除（发布流程里本就不参与）；
+
   - **根因二（仓库设置）**：changesets/action 需 `Settings → Actions → General → Workflow permissions` 勾选 "Allow GitHub Actions to create and approve pull requests"（用户已配置）；修后 Release attempt=2 转绿，Version PR #46（@mt/ui、@mt/model-client minor + @mt/db patch）自动开出；
-  - **Version PR 合并三件套**：body 补 0 bug loop 勾选（changesets 生成的 body 无勾选框，quality 门禁必拦）→ close/reopen 触发 CI（GITHUB_TOKEN 的 push 不自动触发 workflow）→ 三段绿后 squash 合并；
+
+  - **Version PR 合并三件套**：body 补 0 bug loop 勾选（changesets 生成的 body 无勾选框，quality 门禁必拦）→ close/reopen 触发 CI（GITHUB\_TOKEN 的 push 不自动触发 workflow）→ 三段绿后 squash 合并；
+
   - **根因三（publish 缺失）**：Version PR 合并后无待消费 changeset，action 仍走「开 Version PR」路径 → 分支与 main 无差异 → 422 "No commits between main and changeset-release/main"；修法：release.yml 加 `publish: pnpm release:tag`（= `changeset tag`，私有 monorepo 只打 git tag 不发 npm，ba16032）；
+
   - **根因四（gateway 残留）**：`gateway-landing.md` 纯私有包 changeset 残留——此前 16 包清理清单只列了 8 应用 web/server，漏了 gateway；其存在使 action 误判「有待处理 changeset」→ 删除（8a7ceac）后 Release 转绿；
-  - **结果**：`changeset tag` 自动打出 6 个 tag（@mt/ui@0.1.0、@mt/model-client@0.1.0、@mt/db@0.0.1 + 3 个 0.0.0 初始补打，0.0.0 无副作用）；全链路 = changeset 文件 → Release 自动开 Version PR → 人工合并（补勾选）→ 自动打 tag；
+
+  - **结果**：`changeset tag` 自动打出 6 个 tag（@mt/ui\@0.1.0、@mt/model-client\@0.1.0、@mt/db\@0.0.1 + 3 个 0.0.0 初始补打，0.0.0 无副作用）；全链路 = changeset 文件 → Release 自动开 Version PR → 人工合并（补勾选）→ 自动打 tag；
+
   - **分支终态（2026-08-29 收尾清理）**：`changeset-release/main` 经取证（ba16032 为 main 祖先、无独有提交、无挂载 PR）后删除——远端/本地仅剩 main；该分支为 changesets/action 工作分支，下有待发布 changeset 时自动重建，删除无损失；
+
   - **本地教训**：`pnpm release`（=changeset version）是**CI 消费型命令**——本地误跑会把全部 changeset 消费掉（生成 CHANGELOG + 版本号），需 git checkout 整体回滚；验证 changeset 合法性用只读的 `changeset status`。
-- **网络与推送经验（本机代理 127.0.0.1:7890 间歇抖动）**：git push/POST 认证请求常挂死（设 GIT_HTTP_LOW_SPEED_LIMIT/TIME 让其快速失败重试），匿名 GET 大多可用；MCP GitHub 通道（push_files/merge 等）全程稳定，为推送降级首选；workflow 触发须**新建 dispatch**（Re-run 会 checkout 旧 commit 跑旧脚本）。
+
+- **网络与推送经验（本机代理 127.0.0.1:7890 间歇抖动）**：git push/POST 认证请求常挂死（设 GIT\_HTTP\_LOW\_SPEED\_LIMIT/TIME 让其快速失败重试），匿名 GET 大多可用；MCP GitHub 通道（push\_files/merge 等）全程稳定，为推送降级首选；workflow 触发须**新建 dispatch**（Re-run 会 checkout 旧 commit 跑旧脚本）。
+
 - **本轮改造（2026-08-28，分支 feat-investigator-cron-d11-d16-d17）**：
+
   - **D-07 P0 兑现**：Investigator 增加 node-cron 定时调度——migrations 003 给 surveys 加 cron 列、package.json 加 node-cron + @types/node-cron、scheduler.ts（参考 gatherer 模式，cron 校验 + 注册 active 调研自动 sync + 状态查询）、main.ts listen 后 startScheduler(app.get(SurveyService))、SurveyService.create/update 校验 cron 合法性、controller 新增 GET meta/scheduler-status API、scheduler.test.ts 3 用例；本地 lint 0 err + test 10/19 pass/skip；
+
   - **D-11 P0 兑现**：CI quality job 开头新增条件 step（仅 PR 事件触发）检查 0 bug loop 验收记录复选框是否勾选——未勾选则阻断 CI 并提示；PR 模板原已含复选框，此次补自动检测形成闭环；
-  - **D-16 P2 兑现**：Designer 前台 USER_NAV 加「组件馆藏」入口 + Route 从 Navigate 改为直接渲染 ComponentList；tsc --noEmit 通过；
-  - **D-17 P2 确认已修复**：Assistant ADMIN_NAV 已有「意图日志」菜单（/admin/intent-logs + IntentLogPage 路由存在），2026-08-27 显式 skip 后代码已补齐，无需额外改动；
+
+  - **D-16 P2 兑现**：Designer 前台 USER\_NAV 加「组件馆藏」入口 + Route 从 Navigate 改为直接渲染 ComponentList；tsc --noEmit 通过；
+
+  - **D-17 P2 确认已修复**：Assistant ADMIN\_NAV 已有「意图日志」菜单（/admin/intent-logs + IntentLogPage 路由存在），2026-08-27 显式 skip 后代码已补齐，无需额外改动；
+
   - 本地验证：pnpm lint 0 err（2 any warning 遗留）、pnpm test:affected 10/10 成功。
 
 - **交付状态**：8 子项目全部交付。需求主线三环（Investigator → Assessor → Manager）、知识主线（Gatherer → Scholar → Assistant）、Designer（降级版）均完成；Assistant 意图路由扩至 6 类并完成 cybercloud 真实对接（testcybercloud-dev 实测打通）。
+
 - **工程化基座**：Monorepo（pnpm + turbo）+ 网关 + outbox + 幂等 + CI/CD + Docker 部署链路；main 分支保护（required checks: quality/smoke/e2e）。
+
 - **本轮改造（2026-08-22，PR #26，已合并 main 8c4c045）**：
+
   - 前端统一外壳 `@mt/ui` 的 `AppShell`（侧边导航 + 顶栏 + 跨应用切换），8 子项目全部接入，替换原先 3 处重复的深色 Menu 外壳与 5 处裸 Card；
+
   - 前端交互补全：9 页 loading/空态/错误态，合并 applicant 冗余 api 层，ChatPage 自动滚动，清理硬编码色值，修复简历改写误作用首份简历与 gatherer/scholar e2e 文案撞车；
+
   - 测试可信度：接入 ESLint（typescript-eslint + react-hooks）、覆盖率门槛（`@vitest/coverage-v8`，5 个 DB 无关公共包 70/70/70/50）、统一 scholar e2e skip 守卫；
+
   - 后端健壮性：`@mt/model-client` 新增健壮 `parseJson`（容错无引号键/代码围栏/夹杂文字），5 服务替换裸 `JSON.parse`；`@mt/db` outbox 失败达上限进入 dead 终态；
+
   - 工程化：CI 合并重复 build 步骤并缓存 turbo 构建（`.turbo`）；新增 `pnpm test:affected`（`turbo run test --affected`）补齐「回归层」；
+
   - 文档：README 重写、memory 去重、AGENTS.md 对齐。
+
 - **网关首页导航（2026-08-25，PR #27，已合并 main 5e65a36）**：根路径新增 landingPage()，8 应用卡片（名称+简介），替代裸反代的 Cannot GET /。
-- **前后台双外壳打样（2026-08-25，PR #28，已合并 main d12386d）**：`@mt/ui` 新增 UserShell（前台，杂志风默认主题 MAGAZINE_THEME，主题可按应用定制）与 AdminShell（后台，统一控制台风 ADMIN_TOKENS）；applicant 前台改杂志风岗位墙 PositionWall，表格管理挪至 /admin/positions；e2e 补前后台路由拆分覆盖；ui-spec 增补双外壳规范。方向已确认：前台各异、后台统一。
-- **双外壳铺开（2026-08-25，PR #29，已合并 main 668c8e9）**：其余 7 应用全部接入双外壳（主题见 ui-spec 对照表）；管理页统一 /admin/* 路由，旧路径 redirect 兼容；gatherer/investigator/assessor 无前台形态默认直跳后台；UserShell 新增 footerNote；8 应用信息架构「前台各异、后台统一」全部落地。
+
+- **前后台双外壳打样（2026-08-25，PR #28，已合并 main d12386d）**：`@mt/ui` 新增 UserShell（前台，杂志风默认主题 MAGAZINE\_THEME，主题可按应用定制）与 AdminShell（后台，统一控制台风 ADMIN\_TOKENS）；applicant 前台改杂志风岗位墙 PositionWall，表格管理挪至 /admin/positions；e2e 补前后台路由拆分覆盖；ui-spec 增补双外壳规范。方向已确认：前台各异、后台统一。
+
+- **双外壳铺开（2026-08-25，PR #29，已合并 main 668c8e9）**：其余 7 应用全部接入双外壳（主题见 ui-spec 对照表）；管理页统一 /admin/\* 路由，旧路径 redirect 兼容；gatherer/investigator/assessor 无前台形态默认直跳后台；UserShell 新增 footerNote；8 应用信息架构「前台各异、后台统一」全部落地。
+
 - **前台内容页深度设计（2026-08-25，PR #30，已合并 main ee4239d）**：scholar 书目检索（图书馆目录卡片）、assistant ChatPage（极简双栏气泡）、manager 前台需求台（FLIGHT DECK 七泳道看板）、designer 定制生成（画廊委托单+展品展位）；四页主题化深度设计落地。
+
 - **剩余前台页主题化收官（2026-08-25，PR #31，已合并 main 7f25a9e）**：scholar EntryList 馆藏目录（书卷列表+书签式圈定）/GraphPage 类目卡片墙、manager RequirementDetail 飞行日志、applicant PositionDetail 特稿版式/InterviewPage 对开复盘/ResumeCenter 工坊。**8 应用前台主题化全部完成**。
+
 - **操作闭环补齐 D1/D3（2026-08-25，分支 fix-d1-d3-push-editing）**：
+
   - D1 推送去向可见：gatherer ItemList 推送成功提示至 Scholar 收件箱（knowledge.item.collected）并说明拉取步骤；investigator SurveyDetail 推送成功提示至 Assessor 收件箱（researcher.response.push）并说明拉取步骤；assessor RequestDetail 推送 Manager 文案补收件箱（requirement.created）与拉取步骤；
+
   - D3 编辑入口补齐：gatherer SourceList 新增「编辑」列与 Modal（PATCH /sources/:id）；investigator SurveyList 新增「编辑」列，SurveyForm 扩展 initialValues/title 支持编辑模式；scholar EntryList 馆藏条目右侧新增「编辑」按钮与 Modal，覆盖 title/summary/content/category/tags 五项（PATCH /entries/:id 前端字段扩展）；
+
   - 本地构建 lint + 四应用单测全部通过（scholar 9/9、gatherer 3/3、investigator 3/3、assessor 3/3）；changeset 已加 fix-d1-d3-push-to-edit.md。
+
 - **质量三角闭环（2026-08-25→2026-08-27，PR #35，已合并 main acae500）**：
+
   - **低阶 Bug 防御线**：E2E 新增 4 类副作用断言（URL 跳转 / Modal 开关 / 列表增改 / 接口请求拦截 URL+method）+ 16 页视觉快照基线 `_visual.spec.ts`（Playwright toHaveScreenshot，阈值 0.02）；package.json 新 `pnpm e2e:visual:update` / `pnpm e2e:visual` 脚本；PR 模板新增 UI Checklist + 0 bug loop 智能体验收记录两段；
+
     - 2026-08-27 基线更新：`infra/scripts/start-services.mjs` 修复 Windows 下「父脚本 process.exit 连带杀死 shell:true 子进程」的根因（移除强制 exit，shell 仅用于 .cmd/.bat），全量重启服务 17 进程、smoke 17/17 PASS，执行 `pnpm e2e:visual:update` → 16/16 视觉快照全部生成写入 `e2e/snapshots/`，随后 `pnpm e2e:visual` 验证 16/16 PASS；
+
   - **功能缺口可追溯**：新增 `docs/superpowers/coverage-matrix.md`（规格-代码-测试三维映射，跨 8 子项目）与 `docs/memory/mvp-deferred.md`（明确写 MVP 有意推迟项、原因、重启触发条件）——区分「未实现」vs「不做」；
-  - **UI 规范工程化**：`@mt/ui` 新增三种页面模式（MagazineList/ControlTable/DetailHero）+ `ThemeContext` 与 `useTheme` 钩子；`infra/eslint/rules/no-hardcoded-colors.mjs` 自定义 ESLint 规则生效——禁止业务页硬编码色值（仅豁免 tokens.ts、应用顶层 *_THEME、AdminShell/UserShell 专用键）；5 子项目共 11 个前台页（manager RequirementBoard/Detail、scholar EntryList/SearchPage/GraphPage、applicant PositionWall/PositionDetail/InterviewPage/ResumeCenter、assistant ChatPage、designer GeneratePage）全部迁移 `useTheme()` 取色；applicant 新增 `APPLICANT_THEME` 显式传入 UserShell，assistant/designer 扩展主题键；
-  - 本地验证：`pnpm lint` 0 err（仅 2 any warning）、`pnpm test:affected` 24/24 任务通过、MtEmptyState 扩展 description 兼容 patterns 类型、scholar API 经 gw POST 201（修复根 .env 全局 DATABASE_URL 覆盖导致的服务错连库问题）。
+
+  - **UI 规范工程化**：`@mt/ui` 新增三种页面模式（MagazineList/ControlTable/DetailHero）+ `ThemeContext` 与 `useTheme` 钩子；`infra/eslint/rules/no-hardcoded-colors.mjs` 自定义 ESLint 规则生效——禁止业务页硬编码色值（仅豁免 tokens.ts、应用顶层 \*\_THEME、AdminShell/UserShell 专用键）；5 子项目共 11 个前台页（manager RequirementBoard/Detail、scholar EntryList/SearchPage/GraphPage、applicant PositionWall/PositionDetail/InterviewPage/ResumeCenter、assistant ChatPage、designer GeneratePage）全部迁移 `useTheme()` 取色；applicant 新增 `APPLICANT_THEME` 显式传入 UserShell，assistant/designer 扩展主题键；
+
+  - 本地验证：`pnpm lint` 0 err（仅 2 any warning）、`pnpm test:affected` 24/24 任务通过、MtEmptyState 扩展 description 兼容 patterns 类型、scholar API 经 gw POST 201（修复根 .env 全局 DATABASE\_URL 覆盖导致的服务错连库问题）。
+
 - **P1 全量 e2e 清零（2026-08-27，PR #35）**：三轮迭代从 38/53 → 41/53 → 45/53 → 51 passed / 2 skipped / 0 failed（10 workers 并发）。根因与修法（全部按「先取证再修」流程）：
-  - **A 桩环境缺失（8 条 API 链路）**：本地 start-services.mjs 未带 CI 同款桩开关，gatherer 真拉 RSS（404/500）、investigator 真调飞书（502，下游 assessor×3/manager 三环 resps[0] undefined 全是连锁）、assistant data_query 返回「未配置」。修法：SERVER_ENV 按 ci.yml:86-98 对齐（FEED_STUB/FEISHU_STUB/GITHUB_STUB/CYBERCLOUD_STUB/ACTION_STUB/CLARIFY_STUB_CONFIDENCE + MT_LLM_STUB），spawn 显式注入 env。验证：gatherer test 201/collect new=2、investigator sync fetched=2、assistant 桩回复含 12345；
-  - **B 测试缺陷（12 处）**：① strict mode 双命中（manager 看板「交付驾驶舱」h1+span、applicant Modal 标题+label）→ 收敛为 heading 角色/精确文案；② assistant 输入框 disabled 竞态（会话列表加载中回车被吞）→ toBeEnabled 前置等待；③ 气泡计数 selector 匹配不到纯内联样式 div → 改断言唯一 marker 文本渲染；④ designer 按钮名「生 成」带字间空格 → 正则 \s*；⑤ manager/assessor 后台列表链接实际指向前台详情 → 修正 URL 期望；⑥ manager 第 3 步在前台详情页找迭代菜单 → 先回后台；⑦ assessor 列表展示 surveyName 非 title；⑧ gatherer items 真实路由是 /sources/:id/items（/admin/* 会重定向）+ 推送需先勾选行 + 按钮文案「推送选中（N）」；⑨ investigator 详情标题「调研 · 名」+ 推送需勾选；⑩ assistant-routing logBody[0] 被并发插队 → 按 sessionId 查找；
+
+  - **A 桩环境缺失（8 条 API 链路）**：本地 start-services.mjs 未带 CI 同款桩开关，gatherer 真拉 RSS（404/500）、investigator 真调飞书（502，下游 assessor×3/manager 三环 resps\[0] undefined 全是连锁）、assistant data\_query 返回「未配置」。修法：SERVER\_ENV 按 ci.yml:86-98 对齐（FEED\_STUB/FEISHU\_STUB/GITHUB\_STUB/CYBERCLOUD\_STUB/ACTION\_STUB/CLARIFY\_STUB\_CONFIDENCE + MT\_LLM\_STUB），spawn 显式注入 env。验证：gatherer test 201/collect new=2、investigator sync fetched=2、assistant 桩回复含 12345；
+
+  - **B 测试缺陷（12 处）**：① strict mode 双命中（manager 看板「交付驾驶舱」h1+span、applicant Modal 标题+label）→ 收敛为 heading 角色/精确文案；② assistant 输入框 disabled 竞态（会话列表加载中回车被吞）→ toBeEnabled 前置等待；③ 气泡计数 selector 匹配不到纯内联样式 div → 改断言唯一 marker 文本渲染；④ designer 按钮名「生 成」带字间空格 → 正则 \s\*；⑤ manager/assessor 后台列表链接实际指向前台详情 → 修正 URL 期望；⑥ manager 第 3 步在前台详情页找迭代菜单 → 先回后台；⑦ assessor 列表展示 surveyName 非 title；⑧ gatherer items 真实路由是 /sources/:id/items（/admin/\* 会重定向）+ 推送需先勾选行 + 按钮文案「推送选中（N）」；⑨ investigator 详情标题「调研 · 名」+ 推送需勾选；⑩ assistant-routing logBody\[0] 被并发插队 → 按 sessionId 查找；
+
   - **C 视觉快照稳定性（5 条）**：fullPage 画布高度=页面高度，动态列表行数随并发写库而变 → 画布尺寸不同必失败；计数文本（在册 N 卷/TOTAL N）在 mask 外。修法：改视口截图（1440x900 与页高解耦）+ mask 扩展（board-lanes/board-total/entry-rows/entry-count/requirement-table/source-table 六个 data-testid 锚点），基线 16/16 重生成；
+
   - **经验沉淀**：视觉基线更新流程 = 改前端→rebuild→带桩重启→pnpm e2e:visual:update→全量验证；spec 里「if count==0 则 return」的防御式跳过会掩盖按钮文案/路由失配（本轮 gatherer/investigator 编辑按钮的 warn 就是信号，功能存在但定位失败）。
+
 - **空转绿治理（2026-08-27 第二轮，PR #35）**：**51 passed / 2 skipped / 0 failed**（skip 显式计入汇总）。
+
   - **探针实证空转绿根因**：Playwright 无头浏览器直查 DOM——gatherer/investigator 表格行内按钮真实存在，accessible name 为「编 辑」（AntD 双字按钮字间空格），`/编辑/` 命不中 → guard-skip 静默 pass，**这两个 D3 用例自诞生起从未真正验证过**（与 designer「生 成」同源缺陷）；
+
   - **guard-skip 全面清零**：8 个 spec 约 20 处 `if(count==0) return` 全部改为 `test.skip(cond, "原因")`——skip 计入汇总行、HTML 报告可查、CI 可见，定位失败从「日志里的 warn」升级为「报告里的一等公民」；
+
   - **显式 skip 立刻暴露 2 个真缺口**（记入 mvp-deferred D-16/D-17）：designer 前台无「组件馆藏」导航入口、assistant 反馈页侧栏无「意图日志」菜单——这两个用例在「53/53 全绿」轮其实是空转绿，是 skip 治理让它们现形；
-  - **顺带修复 3 个测试契约**：gatherer/investigator 编辑 Modal 走 AntD onOk（页脚「确 定」而非表单内「保 存」）、investigator Modal 标题+label strict 双命中（收敛 .ant-modal-title 锚点）、manager 详情页「FLIGHT LOG」是 span 非 heading、assistant-routing 改用唯一 message 文本匹配日志行（intent_logs 表无 sessionId 列）；
-  - **AGENTS.md 硬性约定 8（E2E 校准纪律）**：新交互用例必须读组件源码或 codegen 校准；双字按钮正则一律 \s* 形式；禁止静默跳过；副作用断言等完成事件；并发禁 [0] 位置断言；批量用例首跑逐条核对 skip/warn。
+
+  - **顺带修复 3 个测试契约**：gatherer/investigator 编辑 Modal 走 AntD onOk（页脚「确 定」而非表单内「保 存」）、investigator Modal 标题+label strict 双命中（收敛 .ant-modal-title 锚点）、manager 详情页「FLIGHT LOG」是 span 非 heading、assistant-routing 改用唯一 message 文本匹配日志行（intent\_logs 表无 sessionId 列）；
+
+  - **AGENTS.md 硬性约定 8（E2E 校准纪律）**：新交互用例必须读组件源码或 codegen 校准；双字按钮正则一律 \s\* 形式；禁止静默跳过；副作用断言等完成事件；并发禁 \[0] 位置断言；批量用例首跑逐条核对 skip/warn。
+
 - **PR #35 合并与分支清理（2026-08-28，已合并 main acae500）**：
+
   - CI 首跑 e2e 失败根因：snapshotPathTemplate 含 {platform}，仓库仅有本机生成的 **win32** 基线，linux CI 找 `-linux.png` 必 snapshot-missing——修法为 `_visual.spec.ts` 加 CI 守卫（`test.skip(isCi, ...)`，本地实测 CI=1 时 16 条全部显式 skip、不设则照常跑），跨平台像素基线记 **mvp-deferred D-18**（linux 基线生成路径已写入行内）；修后 CI 三段全绿（quality/smoke/e2e）；
-  - 推送降级链路再次验证：git push 挂起（代理抖动）→ MCP push_files 走 GitHub API 分批提交（28fcfaf 守卫 + a931ea7 D-18 文档），内容与本地一致；
+
+  - 推送降级链路再次验证：git push 挂起（代理抖动）→ MCP push\_files 走 GitHub API 分批提交（28fcfaf 守卫 + a931ea7 D-18 文档），内容与本地一致；
+
   - 分支清理：PR squash 合并后远程分支由「自动删除 head branches」回收；本地 5 个历史分支（feat-all-apps-dual-shell / feat-frontend-content-pages / feat-remaining-front-pages / fix-admin-front-path / fix-d1-d3-push-editing）**逐一内容级取证后删除**——squash 合并使 `--merged` 判定全部失效，改用「main 中验证功能存在 + 三点 diff 为空/分支侧文件皆已进入 main」判定（fix-d1-d3 的编辑列已在 main，深度设计四页在 main，PR #30/31/32 皆为 squash 后的本地遗留）；`fetch --prune` 清掉 5 个陈旧跟踪引用，最终本地/远程仅剩 main（acae500）。
 
 ## 关键决策
 
 - 全栈 TypeScript（React+NestJS+PostgreSQL+pgvector），pnpm Monorepo + Turborepo；
+
 - 8 子项目 + gateway，端口唯一来源 infra/ports.yaml；
+
 - LLM 统一入口 @mt/model-client（DeepSeek + 智谱，OpenAI 兼容协议）；
+
 - 数据交互：网关 + 同步 REST + outbox + 幂等键；
+
 - 数据库 ORM 选型：原生 SQL + Zod 校验（不引入 TypeORM/Prisma），兼顾 pgvector 向量操作、全文检索 FTS 支持最直接，零黑盒、迁移可控；
+
 - 部署：单台阿里云 ECS + Docker Compose；
+
 - 分支绑任务不绑对话，四层清理机制；
+
 - LLM 解析统一走 `@mt/model-client` 的 `parseJson`（逐级降级容错），禁止服务内裸 `JSON.parse`；
+
 - outbox 失败达 `maxAttempts` 进入 `dead` 终态（status 为无约束文本列，无需迁移）；
+
 - 四层测试的「回归层」由 `turbo run test --affected` 实现，不另造轮子；
+
 - CI 用 `actions/cache` 缓存 `.turbo`，smoke/e2e 的 16 条 build 合并为 `pnpm build`。
+
 - 前端信息架构走「前后台双外壳」：用户前台每应用独立审美主题（UserShell + UserShellTheme，默认杂志风），配置后台全平台统一控制台风（AdminShell）；路由以 `/admin` 前缀划分，前后台经页脚/侧栏互跳；AppShell 保留为单一形态应用的过渡外壳。
+
 - 前台色值取用统一走 `ThemeContext` + `useTheme()`：应用主题仅在各自 `App.tsx` 顶层 `*_THEME` 常量中定义（含扩展键），`@mt/ui tokens.ts` 为状态/语义色唯一来源；业务页禁止硬编码色值，由 `@mt/rules/no-hardcoded-colors` ESLint 工程化门禁保障。
+
 - 质量治理三角机制（长期有效）：
-  1) E2E 「副作用断言 + 视觉快照」双保险，捕获样式/交互退化；
-  2) coverage-matrix + mvp-deferred 文档体系，消除「功能缺失」歧义；
-  3) 可复用 UI 模式 + 主题上下文 + ESLint 硬编码拦截，确保 ui-spec 落地不退化。
+
+  1. E2E 「副作用断言 + 视觉快照」双保险，捕获样式/交互退化；
+  2. coverage-matrix + mvp-deferred 文档体系，消除「功能缺失」歧义；
+  3. 可复用 UI 模式 + 主题上下文 + ESLint 硬编码拦截，确保 ui-spec 落地不退化。
 
 ## 关键事件契约
 
@@ -134,13 +243,21 @@
 ## 进行中任务
 
 - 已完成（PR #35，acae500）：质量三角机制全部落地合并 main（E2E 副作用断言+视觉基线+空转绿治理、coverage-matrix/mvp-deferred 追溯体系、UI 规范工程化）；CI 全绿后 squash 合并，分支已清理（本地/远程仅剩 main）；
+
 - **D-09 意图路由在线学习落地（2026-08-28，PR #43 已合并 main 5eae2a3）**：三层闭环——① few-shot 在线注入（IntentService 从纠错样本均衡采样构造示例注入 system prompt，每意图 3 条/总数 12 封顶、60s TTL 缓存、纠错落库即清缓存即时生效）；② 评估闭环（EvaluationService：混淆矩阵 + 回放评估命中率，`GET /intent-logs/evaluation[/replay]`）；③ 数据集导出（OpenAI 兼容 JSONL，`GET /intent-logs/export` + 前端 Blob 下载）。前端 IntentLogPage 新增「路由评估」卡片。真 LoRA 微调继续延期（导出格式已就绪）。同批含 D-06/D-08/D-12/D-13。**CI 修复两轮**：① obsidian.controller D-06 重写时丢失显式 @Inject（vitest/esbuild 不产装饰器元数据，隐式构造注入在测试内 DI 失败）——已恢复并本地真实执行验证（scholar 29/29、gatherer 19/19）；② 误移除视觉快照 CI 守卫（linux 无 -linux.png 基线必 snapshot-missing，装 CJK 字体≠有基线）——已恢复守卫。教训：turbo 缓存会复用「DB 未启动时的 skip 轮」结果，e2e 类改动必须本地起库真实执行后再推。squash 合并后分支已清理（内容级验证：evaluation.service/useResponsive 等关键文件在 main）；
+
 - **D-07/D-11/D-16/D-17 兑现（2026-08-28，PR #36 已合并 main 2934264）**：Investigator node-cron 自动调度（scheduler.ts + surveys.cron 列 + startScheduler 挂载 + meta/scheduler-status API + 3 单测）；CI quality job 新增 0 bug loop 验收记录复选框检测（仅 PR 事件触发）；Designer 前台「组件馆藏」导航入口（/components 直达 ComponentList）；D-17 经核实 main 已含意图日志入口（确认已修复）。**分支更新三轮**：merge main 解 state.md 冲突；修 mvp-deferred 表格列数 MD056（9 列→8 列）；designer e2e 断言收敛唯一锚点「组件库」（D-16 直渲染后宽正则 strict mode 3 元素冲突——E2E 校准纪律的典型场景）；
-- **D-10 兑现（2026-08-28，PR #37 已合并 main d3481f3）**：Gateway 统一健康监控仪表盘——probeAllServices 聚合探测（3s 超时容错）+ `GET /api/health` 聚合 JSON + `GET /status` Chart.js 暗色仪表盘（服务健康表/延迟柱状图/可用性趋势，5s 轮询）+ 2 单测。分支更新走服务端零冲突路径（mergeable_state: behind → update_pull_request_branch 一键 merge），对比 #36 的本地三轮修复——「behind 可服务端更新 vs conflict 须本地解」成为剩余 PR 的快速通道判据；
-- **D-03/D-14/D-05 三连合并（2026-08-28，PR #41 → c9d43fa / #40 → 248ba8f / #38 → 58a3e97）**：分支更新流程已成熟成三条路径——① 服务端一键（mergeable_state: behind 且零冲突，#37/#41/#38）；② 本地 merge 解冲突（mvp-deferred/state.md 语义合并，#36/#40）；③ 竞态救援（close/reopen PR 触发 reopened 事件重跑 CI，#40）。关键纪律：**更新分支前先补 PR body 的 0 bug loop 勾选**（#36 引入的 CI 检测正则 `\[x\]\s*\*\*0 bug loop 验收记录\*\*`，旧格式 body 必被拦）。#40 顺带统一了 mvp-deferred 完成标记格式并修正错误 PR 号引用（D-10 实为 #37 非 #35）；
-- **D-04 兑现（2026-08-29，PR #42 已合并 main 5a940ff）**：Designer 组件一键 PR 到 @mt/ui——GitHubClient 三步流（createBranch/createFile/createPr，PAT + GITHUB_STUB 桩）+ publish.service（4 单测）+ `POST /components/:id/publish` + ComponentList「一键 PR」按钮/结果 Modal。分支更新服务端零冲突一次到位（body 先补勾选 + merge 40d06fa + designer-server 26/26 + web 7/7 + CI 三段全绿）。**mvp-deferred 18 项至此 16 项兑现合并**，仅剩 D-01/D-02（Designer 拖拽编辑器，P2）、D-09 LoRA 层（P3）、D-15（投递日历，P2）、D-18（linux 视觉基线，P1）四项真延期（触发条件见 mvp-deferred 各行）；
-- **D-18 链路落地（2026-08-29，PR #44 已合并 main 03711c4）**：视觉快照跨平台基线三件套——① 守卫改**平台基线感知**（递归扫 snapshots 按 `-<platform>.png` 后缀计数 ≥16；废弃 `!!CI` 环境硬编码。踩坑记录：Playwright sanitize 测试名（空格/中括号→'-'）致拼路径探测全 skip，改后缀计数法修复，本地 16/16 真跑验证）；② `visual-baseline.yml` 手动生成 workflow（已在 main 生效 id 345049578）；③ `push-visual-baseline.mjs` REST 回传（tree→commit→分支→PR，gh CLI 缺失可用）。附带：win32 manager 双页基线更新（D-14 布局变更欠账，真跑暴露，精确更新 2 张其余 14 张零误伤）。**剩余一步（用户操作）**：配 Secret `VISUAL_BASELINE_TOKEN`（PAT：contents:write + pull_request）→ Actions 触发 visual-baseline → 合入自动开的基线 PR → CI 视觉用例闭环真跑；
+
+- **D-10 兑现（2026-08-28，PR #37 已合并 main d3481f3）**：Gateway 统一健康监控仪表盘——probeAllServices 聚合探测（3s 超时容错）+ `GET /api/health` 聚合 JSON + `GET /status` Chart.js 暗色仪表盘（服务健康表/延迟柱状图/可用性趋势，5s 轮询）+ 2 单测。分支更新走服务端零冲突路径（mergeable\_state: behind → update\_pull\_request\_branch 一键 merge），对比 #36 的本地三轮修复——「behind 可服务端更新 vs conflict 须本地解」成为剩余 PR 的快速通道判据；
+
+- **D-03/D-14/D-05 三连合并（2026-08-28，PR #41 → c9d43fa / #40 → 248ba8f / #38 → 58a3e97）**：分支更新流程已成熟成三条路径——① 服务端一键（mergeable\_state: behind 且零冲突，#37/#41/#38）；② 本地 merge 解冲突（mvp-deferred/state.md 语义合并，#36/#40）；③ 竞态救援（close/reopen PR 触发 reopened 事件重跑 CI，#40）。关键纪律：**更新分支前先补 PR body 的 0 bug loop 勾选**（#36 引入的 CI 检测正则 `\[x\]\s*\*\*0 bug loop 验收记录\*\*`，旧格式 body 必被拦）。#40 顺带统一了 mvp-deferred 完成标记格式并修正错误 PR 号引用（D-10 实为 #37 非 #35）；
+
+- **D-04 兑现（2026-08-29，PR #42 已合并 main 5a940ff）**：Designer 组件一键 PR 到 @mt/ui——GitHubClient 三步流（createBranch/createFile/createPr，PAT + GITHUB\_STUB 桩）+ publish.service（4 单测）+ `POST /components/:id/publish` + ComponentList「一键 PR」按钮/结果 Modal。分支更新服务端零冲突一次到位（body 先补勾选 + merge 40d06fa + designer-server 26/26 + web 7/7 + CI 三段全绿）。**mvp-deferred 18 项至此 16 项兑现合并**，仅剩 D-01/D-02（Designer 拖拽编辑器，P2）、D-09 LoRA 层（P3）、D-15（投递日历，P2）、D-18（linux 视觉基线，P1）四项真延期（触发条件见 mvp-deferred 各行）；
+
+- **D-18 链路落地（2026-08-29，PR #44 已合并 main 03711c4）**：视觉快照跨平台基线三件套——① 守卫改**平台基线感知**（递归扫 snapshots 按 `-<platform>.png` 后缀计数 ≥16；废弃 `!!CI` 环境硬编码。踩坑记录：Playwright sanitize 测试名（空格/中括号→'-'）致拼路径探测全 skip，改后缀计数法修复，本地 16/16 真跑验证）；② `visual-baseline.yml` 手动生成 workflow（已在 main 生效 id 345049578）；③ `push-visual-baseline.mjs` REST 回传（tree→commit→分支→PR，gh CLI 缺失可用）。附带：win32 manager 双页基线更新（D-14 布局变更欠账，真跑暴露，精确更新 2 张其余 14 张零误伤）。**剩余一步（用户操作）**：配 Secret `VISUAL_BASELINE_TOKEN`（PAT：contents:write + pull\_request）→ Actions 触发 visual-baseline → 合入自动开的基线 PR → CI 视觉用例闭环真跑；
+
 - 候选（mvp-deferred 未兑现项）：D-15（Applicant 投递日历）；#37-#42 对应的 D-10/D-05/D-16 重复项/D-14/D-03/D-04 已在各自 PR 实现待合并；
+
 - 候选：部署上线（需 GitHub Secrets）、Designer 可视化编辑器、智谱 Key 更新。
 
 ## 已知问题
@@ -148,12 +265,13 @@
 1. 本机 PowerShell 执行策略限制：pnpm/npx 一律用 pnpm.cmd；
 2. **服务启动脚本**（2026-08-27 修正）：`infra/scripts/start-services.mjs` 必须 **不** 使用 `process.exit()` 强制退出——Windows 上 `spawn({shell:true})` 父进程终止会连带 kill 子服务进程树；shell 选项只对 `.cmd` / `.bat` 开启（pnpm.cmd 必须走 shell），`node` 命令走 `shell:false`。符合本约束即可 17 进程稳定常驻，smoke 全绿；
 3. **根目录 .env**（2026-08-27 修正）：不得设置全局 `DATABASE_URL`，否则会覆盖 8 服务自己的默认同名数据库（scholar/applicant/...），导致服务启动不报任何错但业务表查不到、API 500；需要覆盖某单服务时应写成 `<SERVICE>_DATABASE_URL` 或在应用子目录 .env 配置；
-4. 网络代理不稳定：沙箱代理与直连两种模式都可能失效，git 推送失败时两种都试；git 需同时配置 http.proxy 与 https.proxy（只配 http 会卡死推送）；本地网络完全中断时改走 GitHub API（MCP push_files）分批推送，内容以本地 git 提交为准；gh CLI 未安装，CI 状态查 GitHub App 的 pull_request_read(get_check_runs)，Actions 日志经 REST API 下载（job logs 需 admin 权限，公开 annotations 接口可用）；
+4. 网络代理不稳定：沙箱代理与直连两种模式都可能失效，git 推送失败时两种都试；git 需同时配置 http.proxy 与 https.proxy（只配 http 会卡死推送）；本地网络完全中断时改走 GitHub API（MCP push\_files）分批推送，内容以本地 git 提交为准；gh CLI 未安装，CI 状态查 GitHub App 的 pull\_request\_read(get\_check\_runs)，Actions 日志经 REST API 下载（job logs 需 admin 权限，公开 annotations 接口可用）；
 5. 本地 .env 在仓库根（从 .env.template 复制，gitignore 忽略），各服务经 @mt/config 的 loadRootEnv 自动加载，无需 export；
-6. Docker Desktop 需手动启动（引擎就绪后 compose 正常）；本地已有 pgvector/pgvector:pg16 容器（9 库：8 业务 + mt_test），本地可跑全量测试与 smoke，不再是无 DB 环境；
-7. 镜像推送需先在 GitHub 配置 Secrets（REGISTRY_HOST/USERNAME/PASSWORD），未配置时 images job 自动跳过；
-8. 智谱 ZHIPU_API_KEY 过期（401）时真实 LLM 功能受影响，本地以桩模式（MT_LLM_STUB）运行，待更新 Key 后恢复；
+6. Docker Desktop 需手动启动（引擎就绪后 compose 正常）；本地已有 pgvector/pgvector:pg16 容器（9 库：8 业务 + mt\_test），本地可跑全量测试与 smoke，不再是无 DB 环境；
+7. 镜像推送需先在 GitHub 配置 Secrets（REGISTRY\_HOST/USERNAME/PASSWORD），未配置时 images job 自动跳过；
+8. 智谱 ZHIPU\_API\_KEY 过期（401）时真实 LLM 功能受影响，本地以桩模式（MT\_LLM\_STUB）运行，待更新 Key 后恢复；
 9. Node20/OpenSSL3 禁用 PKCS1 私钥解密，测试避免依赖私钥解密；
-10. 子智能体委托（subagent/subagent_fork）在本环境不可用，多智能体协作需外部 CLI 环境；
+10. 子智能体委托（subagent/subagent\_fork）在本环境不可用，多智能体协作需外部 CLI 环境；
 11. 「0 bug loop」机制在 PR 模板里已植入「独立测试智能体验收记录」表格字段，合入前由测试智能体填写，实现流程纪律落地（不再是纯口头约定）。
 12. **E2E 视觉快照平台差异**（2026-08-28，D-18）：snapshotPathTemplate 含 {platform}，仓库仅维护 win32 基线；CI（linux）跑视觉用例必 snapshot-missing，已加 CI 守卫显式 skip；兑现 linux 基线需 CI 装 fonts-noto-cjk + 生成入库（见 mvp-deferred D-18 行内方案）。
+
