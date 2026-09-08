@@ -14,7 +14,7 @@
 
 ---
 
-### Task 1: CompareEngine 纯函数
+## Task 1: CompareEngine 纯函数
 
 **Files:**
 - Create: `apps/assistant/server/src/compare.service.ts`
@@ -120,7 +120,7 @@ git commit -m "新增双路数值比对引擎 CompareEngine"
 
 ---
 
-### Task 2: cybercloud_calls 表与 repo
+## Task 2: cybercloud_calls 表与 repo
 
 **Files:**
 - Create: `apps/assistant/server/migrations/004_assistant_cybercloud_calls.sql`
@@ -255,7 +255,7 @@ git commit -m "新增 cybercloud 调用监控表与 repo"
 
 ---
 
-### Task 3: CybercloudService 改造（元数据/ERROR 不降维/postApi/探活/桩答控制）
+## Task 3: CybercloudService 改造（元数据/ERROR 不降维/postApi/探活/桩答控制）
 
 **Files:**
 - Modify: `apps/assistant/server/src/cybercloud.service.ts`
@@ -395,7 +395,7 @@ git commit -m "改造 cybercloud 服务返回元数据并暴露直连接口"
 
 ---
 
-### Task 4: DirectQueryService 直连流水线（含 llm stub 分支与 schema）
+## Task 4: DirectQueryService 直连流水线（含 llm stub 分支与 schema）
 
 **Files:**
 - Modify: `apps/assistant/server/src/llm.ts`（stubPayloadFor 加分支）
@@ -695,7 +695,7 @@ git commit -m "新增直连取数流水线 DirectQueryService"
 
 ---
 
-### Task 5: VerifyTaskRegistry 核验任务注册表
+## Task 5: VerifyTaskRegistry 核验任务注册表
 
 **Files:**
 - Create: `apps/assistant/server/src/verify-task.registry.ts`
@@ -860,7 +860,7 @@ git commit -m "新增核验任务注册表与终态编排"
 
 ---
 
-### Task 6: ChatService 双路编排 + verify 端点 + app.module 注册
+## Task 6: ChatService 双路编排 + verify 端点 + app.module 注册
 
 **Files:**
 - Modify: `apps/assistant/server/src/chat.service.ts`（executeBranch 的 data_query 分支与返回类型）
@@ -959,6 +959,7 @@ Expected: FAIL（无 verify 字段/端点）
 ```ts
     @Inject(DirectQueryService) private readonly directQuery: DirectQueryService,
 ```
+
 ```ts
   private readonly verifyRegistry = new VerifyTaskRegistry();
 ```
@@ -1057,7 +1058,7 @@ git commit -m "实现 data_query 双路编排与核验端点"
 
 ---
 
-### Task 7: meta 探活升级 + calls 查询 API
+## Task 7: meta 探活升级 + calls 查询 API
 
 **Files:**
 - Modify: `apps/assistant/server/src/cybercloud.service.ts`（probe 方法）
@@ -1204,7 +1205,7 @@ git commit -m "升级数据源探活与调用查询接口"
 
 ---
 
-### Task 8: 前端 verify 轮询标签（api.ts + ChatPage）
+## Task 8: 前端 verify 轮询标签（api.ts + ChatPage）
 
 **Files:**
 - Modify: `apps/assistant/web/src/api.ts`
@@ -1336,7 +1337,7 @@ git commit -m "前端新增核验标签与轮询终态展示"
 
 ---
 
-### Task 9: IntentLogPage 数据查询监控卡片
+## Task 9: IntentLogPage 数据查询监控卡片
 
 **Files:**
 - Modify: `apps/assistant/web/src/api.ts`（listCybercloudCalls）
@@ -1414,7 +1415,7 @@ git commit -m "意图日志页新增数据查询监控卡片"
 
 ---
 
-### Task 10: env 模板、e2e 视觉回归、收尾
+## Task 10: env 模板、e2e 视觉回归、收尾
 
 **Files:**
 - Modify: `.env.template`
