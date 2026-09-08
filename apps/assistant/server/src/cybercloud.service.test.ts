@@ -166,6 +166,7 @@ describe("CybercloudService（真实契约）", () => {
     const res = await svc.query("查询");
     expect(res.meta.sseType).toBe("ERROR");
     expect(res.reply).toContain("工具执行失败");
+    expect(res.meta.error).toContain("工具执行失败");
   });
 
   it("桩模式智能体答由 CYBERCLOUD_STUB_AGENT_ANSWER 控制", async () => {

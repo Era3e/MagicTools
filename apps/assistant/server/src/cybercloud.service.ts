@@ -98,7 +98,7 @@ export class CybercloudService {
         sseType: res.data?.type ?? "UNKNOWN",
         latencyMs: Date.now() - started,
         agentId,
-        error: res.data?.type === "ERROR" ? String(res.data.data ?? "") : undefined,
+        error: res.data?.type === "ERROR" ? String(res.data.data ?? "未知错误") : undefined,
       },
     };
   }
@@ -185,7 +185,7 @@ export class CybercloudService {
     return this.postRaw<T>(path, body);
   }
 
-  /** 直连数据 API 复用入口：带 jwt+payload 头与 401 重登（spec §3.8 同源同权） */
+  /** 直连数据 API 复用入口：带 jwt+payload 头与 401 重登（spec §3.8 同源同权）。返回 undefined 仅表示 code=0 但响应无 data 字段；非 0 业务码与 HTTP 错误已在底层抛出 */
   async postApi<T>(path: string, body: unknown): Promise<T | undefined> {
     const res = await this.postRaw<T>(path, body);
     return res.data;
