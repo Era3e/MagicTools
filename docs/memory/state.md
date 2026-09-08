@@ -6,6 +6,26 @@
 
 ## 当前状态快照（2026-09-08 更新）
 
+- **Assistant 双路数据查询与质量兜底落地（2026-09-08，分支 feat/assistant-dual-query，阶段一）**：
+
+  - **背景**：data_query 单路依赖 cybercloud 智能体，故障域不可分、回答不准不可控。spec docs/superpowers/specs/2026-09-08-assistant-dual-query-design.md（含从 cloud-meta 源码逆向的直连 API 契约与两个关键修正：indicatorValue 是预设值禁用作实时答案、queryById userFilters 整体替换语义）。
+
+  - **双路架构**：direct-query.service（五步流水线：indicators/list 缓存10min → LLM 匹配+时间解析 → getReportStructure 字符串防御解析 → 列匹配（指标名+描述双等值）→ 去分组 queryByStructure 单值聚合）+ verify-task.registry（五终态状态机，60s 核验超时+10min TTL+迟到终态守卫）+ compare.service（数值提取万/亿/k/% 归一+1% 容差）+ chat.service 双路编排（CYBERCLOUD_MODE=dual 默认；直连先行秒回+智能体后台核验；notApplicable 六原因码全落 cybercloud_calls；双路全故障降级文案）。
+
+  - **可观测三件套**：chat 响应 verify/dataSource 元数据；meta/data-source-status 探活（60s 缓存，errorDomain gateway/auth/agent）；cybercloud_calls 表（migrations/004）双路调用记录 + IntentLogPage「数据查询监控」卡片（MtKpiRow 双路成功率/延迟 + 明细表）。
+
+  - **前端**：ChatPage VerifyBadge 轮询标签（MtStatusTag tone 七态语义映射，divergent 可展开智能体原文，2s 轮询终态/404 停止）。
+
+  - **测试**：服务端新增 7 测试文件（compare/calls.repo/cybercloud.service 增例/direct-query/verify-task/chat.dual.e2e 三终态/meta.probe），前端 2 文件（ChatPage.verify/IntentLogPage.calls）；chat.dual.e2e 覆盖 consistent/divergent/agent_failed/双路全故障/notApplicable 回退五场景（桩开关 CYBERCLOUD_STUB_AGENT_ANSWER/CYBERCLOUD_STUB_DIRECT_APPLICABLE）。
+
+  - **子代理驱动开发（0 bug loop）**：10 任务全部实现者+规格审查+质量审查三段制；审查揪出并当场修复 4 个真问题——C1 迟到终态双写库（verify registry then 无守卫）、C1' 双路全故障裸 502（违反降级矩阵）、I1 取值兜底可静默取错列、I1' notApplicable 不落库（可用率指标失真）；1 例实现者声明失实被 git 取证纠正（Task 8 前端 VerifyResult 实为本提交新建）。
+
+  - **视觉基线已重生成（2026-09-08，随本分支提交）**：16 张 win32 基线全量重生成并 16/16 验证通过。**重要发现**：①assistant 两页（front-assistant-chat/back-assistant-feedback-admin）在数据漂移环境实测仍 PASS——VerifyBadge 仅有消息时渲染（空态截图无差异）、IntentLogPage 不在 16 页基线清单；②首跑 8 失败页全为本分支未触碰的应用（applicant/scholar/manager/gatherer），根因双源——test --force 写库致 applicant.positions 58 行等数据漂移 + PR #51 的旧基线本身在脏数据态生成（scholar 空库实测与旧基线差 46%）；③处置：pg_dump 全库备份至 .db-backup-20260908（仓库外）→ TRUNCATE 8 库恢复空库态（与 CI 视觉比对口径永久对齐）→ e2e:visual:update 重生成 16 张 → e2e:visual 16/16 全绿。**教训：基线生成前必须清库**（旧基线把"示例需求"等种子数据固化进了像素，属 PR #51 遗留瑕疵，本次根治）。
+
+  - **真环境验收完成（2026-09-09，testcybercloud-dev）**：探活全绿（gatewayOk/authOk/agentsReachable，10 智能体，1.1s）→ **直连先行 7.1s 返回真值 52888.9184rmb** → verify 26.9s 终态 **divergent（diffPct=83%）**——智能体拿 metric.value=500 预设值当答案被双路对比当场抓获（正是 spec 立项的核心场景）。**验收即校准出四处真契约偏差并修复（提交 a851a68，140/140 测试全绿）**：①日期字段真实位置在 outline.groups.rows（type=date/datetime，userFilters/filters 为空）——探测链扩展行分组兜底；②queryByStructure 响应为包裹对象 {data,rows,grandTotals,...}（非裸数组）——取值改走 .data[0]；③取值键精确构造 {summarize}_{table}_{code}（多列并存时唯一「sum」兜底会撞 _cbc_calculation_N 计算列）；④时间窗无数据时 sum 列整体省略只剩 count_*=0——「查询成功但无数据」回答 0 而非 query_failed；⑤LLM 输出无关字段为 null（zod optional() 拒绝 null）——schema 改 nullish。另：glm-4-flash 意图分类会把数据查询误判 chitchat（模型能力问题），意图纠错 few-shot 闭环 60s 生效后正确路由——已验证在线学习闭环真实可用。
+
+  - **待办**：①changeset 迭代日志；②PR 走 Version 三件套；③linux 视觉基线随 PR #51 既有的 visual-baseline workflow 流程重生成（win32 已随本分支更新）；④**glm-5.3 已实测（2026-09-09）**：@mt/model-client 新增 envModelKey 机制（ZHIPU_MODEL=glm-5.3 免改代码切档，提交 76222bf）——意图分类显著提升（4-flash 误判 chitchat 的问句 5.3 直达 data_query 0.98）；代价是指标匹配 5~19s 波动（CYBERCLOUD_DIRECT_TIMEOUT_MS 提至 45000）+ 指标目录外问题会诚实 low_confidence 降级（合理）。**testcybercloud-dev 的智能体 block 对话本身 30~60s**（远端网络），60s 核验超时下 verify 常态 agent_timeout——生产同城部署会改善；双路架构下用户仍 14s 拿到直连答案，不受智能体慢拖累。
+
 - **UI v2.2 页面级组件已合并 main（2026-09-08，PR #51 squash 合并 31dda02）**：
 
   - **背景**：PR #47 完成了 v2/v2.1「底座」（tokens/双外壳/质感），但同批入库的 `ui_kits/dashboard/` 组件驾驶舱与 6 组件契约中的页面级规范未兑现到子项目——存量代码仍有 38 处 AntD Tag 预设色（违反 ui-spec §二 v2-1）、3 处 Empty 简笔画、全仓唯一 Statistic 组（意图日志页）。
@@ -112,7 +132,7 @@
 
 - **Release/changesets 链路修复→闭环（2026-08-29，Version PR #46 已合并 main a83fa40）**：
 
-  - **根因一（mixed changeset）**：`all-apps-dual-shell` 等 8 个 changeset 同时含发布包（packages/*）与被忽略的 private 包（apps/* 全部 private:true）→ `changeset version` 报 "Mixed changesets not allowed" exit 1 → Release workflow 全天红（10/10）；修法：8 个剔除私有包行、11 个纯私有包 changeset 直接删除（发布流程里本就不参与）；
+  - **根因一（mixed changeset）**：`all-apps-dual-shell` 等 8 个 changeset 同时含发布包（`packages/*`）与被忽略的 private 包（`apps/*` 全部 private:true）→ `changeset version` 报 _Mixed changesets not allowed_ exit 1 → Release workflow _全天红_（10/10）；修法：8 个剔除私有包行、11 个纯私有包 changeset 直接删除（发布流程里本就不参与）；
 
   - **根因二（仓库设置）**：changesets/action 需 `Settings → Actions → General → Workflow permissions` 勾选 "Allow GitHub Actions to create and approve pull requests"（用户已配置）；修后 Release attempt=2 转绿，Version PR #46（@mt/ui、@mt/model-client minor + @mt/db patch）自动开出；
 

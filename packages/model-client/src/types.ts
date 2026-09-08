@@ -28,6 +28,8 @@ export interface ModelProviderConfig {
   baseUrl: string;
   apiKeyEnv: string;
   defaultModel: string;
+  /** 环境变量模型覆盖键（如 ZHIPU_MODEL）——设置时优先于 defaultModel，免改代码切模型档位 */
+  envModelKey?: string;
   visionModel?: string;
   embeddingModel?: string;
 }

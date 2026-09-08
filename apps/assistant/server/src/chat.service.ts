@@ -10,7 +10,9 @@ import {
   listMessages,
   touchConversation,
 } from "./conversation.repo";
+import { insertCybercloudCall } from "./cybercloud-calls.repo";
 import { CybercloudService } from "./cybercloud.service";
+import { DirectQueryService } from "./direct-query.service";
 import { FeedbackService } from "./feedback.service";
 import { correctIntentLog, insertIntentLog } from "./intent-log.repo";
 import type { Intent } from "./llm";
@@ -18,6 +20,7 @@ import { IntentService } from "./intent.service";
 import { KnowledgeService } from "./knowledge.service";
 import { chatInputSchema } from "./schemas";
 import { TroubleService } from "./trouble.service";
+import { VerifyTaskRegistry } from "./verify-task.registry";
 
 const INTENT_LABEL: Record<string, string> = {
   product_inquiry: "知识问答",
@@ -56,11 +59,13 @@ interface PendingClarify {
 @Injectable()
 export class ChatService {
   private readonly pendingClarify = new Map<string, PendingClarify>();
+  private readonly verifyRegistry = new VerifyTaskRegistry();
 
   constructor(
     @Inject(IntentService) private readonly intentService: IntentService,
     @Inject(KnowledgeService) private readonly knowledge: KnowledgeService,
     @Inject(CybercloudService) private readonly cybercloud: CybercloudService,
+    @Inject(DirectQueryService) private readonly directQuery: DirectQueryService,
     @Inject(ActionService) private readonly actions: ActionService,
     @Inject(TroubleService) private readonly trouble: TroubleService,
     @Inject(FeedbackService) private readonly feedback: FeedbackService
@@ -98,6 +103,8 @@ export class ChatService {
           clarifying: false,
           citations: result.citations,
           actionResult: result.actionResult,
+          verify: result.verify,
+          dataSource: result.dataSource,
         };
       }
       this.pendingClarify.delete(conversationId);
@@ -136,17 +143,19 @@ export class ChatService {
     const actionResult = result.actionResult;
     await insertMessage({ conversationId, role: "assistant", content: reply, intent, citations });
     await touchConversation(conversationId);
-    return { sessionId: conversationId, reply, intent, domain: route.domain, confidence: route.confidence, clarifying: false, citations, actionResult };
+    return { sessionId: conversationId, reply, intent, domain: route.domain, confidence: route.confidence, clarifying: false, citations, actionResult, verify: result.verify, dataSource: result.dataSource };
   }
 
   private async executeBranch(
     intent: Intent,
     message: string,
     history: Array<{ role: "user" | "assistant"; content: string }>
-  ): Promise<{ reply: string; citations: Citation[]; actionResult: Record<string, unknown> }> {
+  ): Promise<{ reply: string; citations: Citation[]; actionResult: Record<string, unknown>; verify?: { taskId?: string; status: string }; dataSource?: Record<string, unknown> }> {
     let reply = "";
     let citations: Citation[] = [];
     let actionResult: Record<string, unknown> = {};
+    let verify: { taskId?: string; status: string } | undefined;
+    let dataSource: Record<string, unknown> | undefined;
     if (intent === "product_inquiry") {
       // 检索时带上最近用户消息，帮助指代消解（如「那它有什么动作呢」）
       const searchQuery = [
@@ -159,9 +168,45 @@ export class ChatService {
     } else if (intent === "data_query") {
       const ds = this.cybercloud.status();
       if (ds.stub || ds.configured) {
-        reply = (await this.cybercloud.query(message)).reply;
+        const mode = process.env.CYBERCLOUD_MODE || "dual";
+        if (mode === "agent") {
+          const res = await this.cybercloud.query(message);
+          reply = res.reply;
+          dataSource = { mode: "agent", agent: res.meta };
+        } else {
+          const directPromise = this.directQuery.run(message);
+          const agentPromise = mode === "dual" ? this.cybercloud.query(message) : null;
+          const direct = await directPromise;
+          const directMeta: Record<string, unknown> = direct.applicable
+            ? { applicable: true, metricName: direct.metricName, value: direct.value, unit: direct.unit, latencyMs: direct.latencyMs, endpoint: direct.endpoint, timeFilter: direct.timeFilter }
+            : { applicable: false, reasonCode: direct.reasonCode, latencyMs: direct.latencyMs };
+          if (direct.applicable) {
+            reply = direct.reply;
+            void insertCybercloudCall({ route: "direct", endpoint: direct.endpoint ?? "", ok: true, latencyMs: direct.latencyMs, detail: { metric_name: direct.metricName, value: direct.value, time_filter: direct.timeFilter } }).catch(() => undefined);
+            if (agentPromise) {
+              const task = this.verifyRegistry.create({ directResult: direct, agentPromise });
+              verify = { taskId: task.taskId, status: "pending" };
+              dataSource = { mode: "dual", direct: directMeta };
+            } else {
+              verify = { status: "not_applicable" };
+              dataSource = { mode: "direct", direct: directMeta };
+            }
+          } else {
+            void insertCybercloudCall({ route: "direct", endpoint: "pipeline", ok: false, latencyMs: direct.latencyMs, error: direct.reasonCode, detail: { reason_code: direct.reasonCode } }).catch(() => undefined);
+            try {
+              const agentRes = await (agentPromise ?? this.cybercloud.query(message));
+              reply = agentRes.reply;
+              dataSource = { mode: mode === "direct" ? "direct-fallback-agent" : "dual", direct: directMeta, agent: { ...agentRes.meta, error: agentRes.meta.error ?? null } };
+            } catch (err) {
+              reply = DATA_QUERY_DEGRADE + "（智能体异常：" + (err instanceof Error ? err.message : String(err)) + "）";
+              dataSource = { mode: "both-failed", direct: directMeta, agent: { error: err instanceof Error ? err.message : String(err) } };
+            }
+            verify = { status: "not_applicable" };
+          }
+        }
       } else {
         reply = DATA_QUERY_DEGRADE;
+        dataSource = { mode: "degrade", direct: { applicable: false, reasonCode: "unconfigured" } };
       }
     } else if (intent === "process_execution") {
       const result = await this.actions.execute(message);
@@ -174,7 +219,11 @@ export class ChatService {
     } else {
       reply = CHITCHAT_REPLY;
     }
-    return { reply, citations, actionResult };
+    return { reply, citations, actionResult, verify, dataSource };
+  }
+
+  getVerify(taskId: string) {
+    return this.verifyRegistry.get(taskId);
   }
 
   listConversations() {

@@ -12,6 +12,7 @@ export const ZHIPU: ModelProviderConfig = {
   baseUrl: "https://open.bigmodel.cn/api/paas/v4",
   apiKeyEnv: "ZHIPU_API_KEY",
   defaultModel: "glm-4-flash",
+  envModelKey: "ZHIPU_MODEL",
   visionModel: "glm-4v-flash",
   embeddingModel: "embedding-2",
 };

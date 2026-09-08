@@ -59,3 +59,16 @@ export const actionSchema = z.object({
     })
     .default({}),
 });
+
+export const directMatchSchema = z.object({
+  metricId: z.string().nullable(),
+  confidence: z.number(),
+  timeFilter: z.object({
+    mode: z.enum(["semantic", "explicit", "none"]),
+    // 真环境实证：LLM 对无关字段会输出 null（z.string().optional() 拒绝 null 导致整包校验失败）
+    enumValue: z.string().nullish(),
+    from: z.string().nullish(),
+    to: z.string().nullish(),
+  }),
+});
+export type DirectMatch = z.infer<typeof directMatchSchema>;

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button, Input, message } from "antd";
-import { api, type Conversation, type Message } from "../api";
-import { MtStatusTag, useTheme } from "@mt/ui";
+import { api, type Conversation, type Message, type VerifyResult } from "../api";
+import { MtStatusTag, useTheme, type MtStatusTagTone } from "@mt/ui";
 
 const INTENT_LABEL: Record<string, string> = {
   product_inquiry: "知识问答",
@@ -10,6 +10,28 @@ const INTENT_LABEL: Record<string, string> = {
   process_execution: "流程执行",
   trouble_shooting: "故障排查",
   complaint_feedback: "反馈",
+};
+
+export const VERIFY_POLL_MS = 2000;
+
+const VERIFY_LABEL: Record<string, string> = {
+  pending: "直连数据 · 核验中",
+  consistent: "已核验 · 智能体一致",
+  divergent: "智能体回答不一致 · 已采用直连",
+  unverifiable: "智能体未给出可比数值 · 已采用直连",
+  agent_failed: "智能体故障 · 已采用直连",
+  agent_timeout: "智能体超时 · 已采用直连",
+  not_applicable: "来自智能体 · 直连不适用",
+};
+
+const VERIFY_TONE: Record<string, MtStatusTagTone> = {
+  pending: "neutral",
+  consistent: "success",
+  divergent: "warning",
+  unverifiable: "neutral",
+  agent_failed: "error",
+  agent_timeout: "error",
+  not_applicable: "info",
 };
 
 export default function ChatPage() {
@@ -59,7 +81,7 @@ export default function ChatPage() {
       setMessages((prev) => [
         ...prev,
         { id: "local-u" + Date.now(), conversationId: res.sessionId, role: "user", content: text, intent: "", citations: [], createdAt: new Date().toISOString() },
-        { id: "local-a" + Date.now(), conversationId: res.sessionId, role: "assistant", content: res.reply, intent: res.intent, citations: res.citations, actionResult: res.actionResult, clarifying: res.clarifying, clarifyOptions: res.clarifyOptions, createdAt: new Date().toISOString() },
+        { id: "local-a" + Date.now(), conversationId: res.sessionId, role: "assistant", content: res.reply, intent: res.intent, citations: res.citations, actionResult: res.actionResult, clarifying: res.clarifying, clarifyOptions: res.clarifyOptions, verify: res.verify, createdAt: new Date().toISOString() },
       ]);
       refreshConversations();
     } catch (err) {
@@ -179,6 +201,7 @@ export default function ChatPage() {
                       <span style={{ fontSize: 11, color: QUIET.accent }}>— {INTENT_LABEL[m.intent] ?? m.intent}</span>
                     </div>
                   ) : null}
+                  {m.role === "assistant" && m.verify ? <VerifyBadge verify={m.verify} /> : null}
                   {m.role === "assistant" && m.actionResult?.ok ? (
                     <div style={{ marginTop: 4, fontSize: 11, color: QUIET.muted }}>
                       动作已执行：{String(m.actionResult.action ?? "")}
@@ -229,6 +252,51 @@ export default function ChatPage() {
           </Button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function VerifyBadge({ verify }: { verify: NonNullable<Message["verify"]> }) {
+  const [state, setState] = useState<VerifyResult>({ status: verify.status });
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    if (!verify.taskId || state.status !== "pending") return;
+    let stopped = false;
+    const timer = setInterval(async () => {
+      if (stopped) return;
+      try {
+        const r = await api.getVerify(verify.taskId!);
+        if (!stopped) setState(r);
+      } catch {
+        if (!stopped) setState((s) => ({ ...s, status: "agent_timeout" }));
+      }
+    }, VERIFY_POLL_MS);
+    return () => {
+      stopped = true;
+      clearInterval(timer);
+    };
+  }, [verify.taskId, state.status]);
+
+  const label = VERIFY_LABEL[state.status] ?? state.status;
+  const diffSuffix =
+    state.status === "divergent" && state.verdict?.diffPct !== undefined ? `（差 ${state.verdict.diffPct}%）` : "";
+  return (
+    <div style={{ marginTop: 4 }}>
+      <MtStatusTag
+        tone={VERIFY_TONE[state.status] ?? "neutral"}
+        showDot={state.status === "pending"}
+        onClick={state.status === "divergent" ? () => setExpanded((v) => !v) : undefined}
+      >
+        {label}
+        {diffSuffix}
+      </MtStatusTag>
+      {expanded && state.status === "divergent" && state.agentReply ? (
+        <div style={{ marginTop: 4, fontSize: 12, opacity: 0.75, whiteSpace: "pre-wrap" }}>
+          智能体原文：{state.agentReply}
+          {state.verdict?.agentNumbers?.length ? `（智能体数值：${state.verdict.agentNumbers.join("、")}）` : ""}
+        </div>
+      ) : null}
     </div>
   );
 }

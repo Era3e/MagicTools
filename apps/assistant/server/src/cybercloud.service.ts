@@ -7,6 +7,23 @@ import { answerSchema } from "./schemas";
 const PAYLOAD_TTL_MS = 30 * 60 * 1000;
 const JWT_TTL_MS = 100 * 60 * 1000;
 
+export interface AgentMeta {
+  sseType: string;
+  latencyMs: number;
+  agentId: string;
+  error?: string;
+}
+
+export interface ProbeResult {
+  at: string;
+  gatewayOk: boolean;
+  authOk: boolean;
+  agentsReachable: boolean;
+  agentCount: number;
+  latencyMs: number;
+  errorDomain: "gateway" | "auth" | "agent" | null;
+}
+
 interface CyberResponse<T> {
   code: string;
   message?: string;
@@ -54,6 +71,7 @@ export class CybercloudService {
   private payloadCache: { payload: string; at: number } | null = null;
   private sessionCache: { agentId: string; code: string } | null = null;
   private jwtCache: { jwt: string; at: number } | null = null;
+  private probeCache: { at: number; result: ProbeResult } | null = null;
 
   status() {
     return {
@@ -67,13 +85,53 @@ export class CybercloudService {
     };
   }
 
+  /** 数据源真实探活（60s 缓存）：登录→换 payload→列智能体，定位故障域 gateway/auth/agent（spec §6.2） */
+  async probe(): Promise<ProbeResult> {
+    if (process.env.CYBERCLOUD_STUB === "1") {
+      return { at: new Date().toISOString(), gatewayOk: true, authOk: true, agentsReachable: true, agentCount: 1, latencyMs: 0, errorDomain: null };
+    }
+    if (this.probeCache && Date.now() - this.probeCache.at < 60 * 1000) return this.probeCache.result;
+    const started = Date.now();
+    const result: ProbeResult = { at: new Date().toISOString(), gatewayOk: false, authOk: false, agentsReachable: false, agentCount: 0, latencyMs: 0, errorDomain: null };
+    const finish = (): ProbeResult => {
+      result.latencyMs = Date.now() - started;
+      this.probeCache = { at: Date.now(), result };
+      return result;
+    };
+    try {
+      await this.ensureJwt();
+      result.gatewayOk = true;
+    } catch {
+      result.errorDomain = "gateway";
+      return finish();
+    }
+    try {
+      await this.ensurePayload();
+      result.authOk = true;
+    } catch {
+      result.errorDomain = "auth";
+      return finish();
+    }
+    try {
+      const agents = await this.post<AgentItem[]>("/api/setup/agent/chat/agents", { from: "Setup" });
+      result.agentCount = (agents.data ?? []).length;
+      result.agentsReachable = true;
+    } catch {
+      result.errorDomain = "agent";
+    }
+    return finish();
+  }
+
   private base(): string {
     return (process.env.CYBERCLOUD_BASE_URL ?? "").replace(/\/+$/, "");
   }
 
-  async query(message: string): Promise<{ reply: string }> {
+  async query(message: string): Promise<{ reply: string; meta: AgentMeta }> {
+    const started = Date.now();
     if (process.env.CYBERCLOUD_STUB === "1") {
-      return { reply: "桩数据查询结果：本月销售额 12345 元（CYBERCLOUD_STUB 桩模式）" };
+      const stubAnswer = process.env.CYBERCLOUD_STUB_AGENT_ANSWER ?? "本月销售额 12345 元";
+      if (stubAnswer === "__FAIL__") throw new BadGatewayException("cybercloud 智能体桩故障");
+      return { reply: stubAnswer, meta: { sseType: "MARKDOWN", latencyMs: 0, agentId: "stub-agent" } };
     }
     const agentId = process.env.CYBERCLOUD_AGENT_ID || (await this.resolveAgentId());
     const sessionCode = await this.resolveSession(agentId);
@@ -82,7 +140,15 @@ export class CybercloudService {
       sessionCode,
       temperature: 0.3,
     });
-    return { reply: this.formatSse(res.data) };
+    return {
+      reply: this.formatSse(res.data),
+      meta: {
+        sseType: res.data?.type ?? "UNKNOWN",
+        latencyMs: Date.now() - started,
+        agentId,
+        error: res.data?.type === "ERROR" ? String(res.data.data ?? "未知错误") : undefined,
+      },
+    };
   }
 
   private async ensureJwt(): Promise<string> {
@@ -165,6 +231,12 @@ export class CybercloudService {
 
   private async post<T>(path: string, body: unknown): Promise<CyberResponse<T>> {
     return this.postRaw<T>(path, body);
+  }
+
+  /** 直连数据 API 复用入口：带 jwt+payload 头与 401 重登（spec §3.8 同源同权）。返回 undefined 仅表示 code=0 但响应无 data 字段；非 0 业务码与 HTTP 错误已在底层抛出 */
+  async postApi<T>(path: string, body: unknown): Promise<T | undefined> {
+    const res = await this.postRaw<T>(path, body);
+    return res.data;
   }
 
   private async postRaw<T>(

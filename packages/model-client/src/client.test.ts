@@ -10,6 +10,19 @@ const okResponse = {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("model-client", () => {
+  it("ZHIPU_MODEL 环境变量覆盖默认模型档位", async () => {
+    vi.stubEnv("ZHIPU_MODEL", "glm-5.3");
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify({ choices: [{ message: { content: "ok" } }], usage: { prompt_tokens: 1, completion_tokens: 1 } }), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const client = createModelClient(ZHIPU, () => {});
+    await client.chat([{ role: "user", content: "hi" }]);
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toContain("bigmodel.cn");
+    const body = JSON.parse(String(init.body));
+    expect(body.model).toBe("glm-5.3");
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
   it("chat 使用 OpenAI 兼容协议调用并返回内容", async () => {
     const fetchMock = vi.fn(async () => new Response(JSON.stringify(okResponse), { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
