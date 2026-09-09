@@ -15,7 +15,7 @@ describe("App", () => {
       return new Response("[]", { status: 200 });
     }));
     render(<App />);
-    expect(await screen.findByText("ADMIN CONSOLE")).toBeTruthy();
+    expect(await screen.findByText("INVESTIGATOR · CONTROL")).toBeTruthy();
   });
 
   it("后台路由渲染控制台外壳与主题档案管理", async () => {
@@ -25,7 +25,7 @@ describe("App", () => {
       return new Response("[]", { status: 200 });
     }));
     render(<App />);
-    expect(screen.getByText("ADMIN CONSOLE")).toBeTruthy();
+    expect(screen.getByText("INVESTIGATOR · CONTROL")).toBeTruthy();
     expect(await screen.findByText("调研主题")).toBeTruthy();
   });
 });

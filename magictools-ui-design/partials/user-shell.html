@@ -1,0 +1,320 @@
+<!-- ============ UserShell 共享片段（用户前台外壳）· 叶子页面从此开始组装 ============ -->
+<!-- 组装契约：
+     1. 本片段不含 <html>/<head>/<body>，仅 body 级结构（header + 内容插槽 + footer）。
+     2. 叶子替换槽位（完整保留注释标记）：appAccentVar / appEyebrow / appName / navItems / navCta / content / footerNote。
+     3. navItems 注入格式：<a data-nav-key="键名" data-active="true|false" href="目标页">导航名</a>
+        （.us-nav 内的 <a> 自动获得外壳导航样式；激活态仅由 data-active="true" 驱动，几何不变）。
+     4. navCta 槽位默认内容为其后的「后台管理」按钮；叶子如替换，必须保留 data-dom-id="link-admin" 与 us-admin-btn 类。
+     5. accent 切换：替换 header 根元素 style 中的 --app-accent 值（如 var(--app-scholar) / var(--app-designer)）。 -->
+<style id="us-shell-style">
+  /* ===== UserShell 外壳静态布局 CSS（us-*）——墨蓝石墨·工房感，报头式水平导航 ===== */
+  .us-masthead {
+    --app-accent: var(--mt-ink-600); /* 兜底值，叶子经 header style 覆盖为 var(--app-xxx) */
+    position: relative;
+    background: var(--background);
+    border-bottom: 1px solid var(--mt-hairline); /* 发丝线，不用投影 */
+  }
+  .us-masthead-inner {
+    max-width: 1080px;
+    min-height: 72px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .us-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: none;
+    min-width: 0;
+  }
+  .us-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .us-appname {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--text-strong);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .us-nav {
+    display: flex;
+    align-items: center;
+    gap: 26px;
+    margin-inline: auto;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+  .us-nav a {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1.4;
+    color: var(--text-muted);
+    text-decoration: none;
+    white-space: nowrap;
+    flex: none;
+    padding: 4px 1px 6px;
+    border-bottom: 2px solid transparent; /* 占位几何：非激活透明，激活仅变色 */
+    transition:
+      color var(--duration-fast) var(--ease-standard),
+      border-color var(--duration-fast) var(--ease-standard);
+  }
+  .us-nav a:hover {
+    color: var(--mt-ink-700);
+  }
+  .us-nav a[data-active="true"] {
+    color: var(--app-accent, var(--mt-ink-600));
+    border-bottom-color: var(--app-accent, var(--mt-ink-600));
+  }
+  .us-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: none;
+  }
+  .us-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--text-muted);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color var(--duration-fast) var(--ease-standard);
+  }
+  .us-back-link:hover {
+    color: var(--mt-ink-700);
+  }
+  .us-back-link svg {
+    width: 14px;
+    height: 14px;
+    flex: none;
+  }
+  .us-admin-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 16px;
+    background: var(--surface-1);
+    border: 1px solid var(--mt-amber-500);
+    border-radius: var(--radius-md);
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--mt-amber-600);
+    text-decoration: none;
+    white-space: nowrap;
+    transition:
+      border-color var(--duration-fast) var(--ease-standard),
+      background-color var(--duration-fast) var(--ease-standard),
+      color var(--duration-fast) var(--ease-standard);
+  }
+  .us-admin-btn:hover {
+    border-color: var(--mt-amber-600);
+    background: var(--surface-0);
+  }
+  .us-admin-btn:active {
+    background: var(--surface-2);
+  }
+  .us-admin-btn svg {
+    width: 15px;
+    height: 15px;
+    flex: none;
+  }
+  .us-nav a:focus-visible,
+  .us-back-link:focus-visible,
+  .us-footer-admin:focus-visible {
+    outline: 2px solid var(--mt-ink-500);
+    outline-offset: 2px;
+  }
+  .us-admin-btn:focus-visible {
+    outline: 2px solid var(--mt-amber-600);
+    outline-offset: 2px;
+  }
+  .us-main {
+    max-width: 1080px;
+    min-height: 320px;
+    margin: 0 auto;
+    padding: 32px 24px 64px;
+  }
+  .us-footer {
+    background: var(--background);
+    border-top: 1px solid var(--mt-hairline);
+  }
+  .us-footer-inner {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .us-footer-note {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: 0.02em;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+  .us-footer-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    flex: none;
+  }
+  .us-footer-admin {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--text-muted);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color var(--duration-fast) var(--ease-standard);
+  }
+  .us-footer-admin:hover {
+    color: var(--mt-ink-700);
+  }
+  .us-footer-admin svg {
+    width: 13px;
+    height: 13px;
+    flex: none;
+  }
+  .us-footer-copy {
+    font-family: var(--font-body);
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  @media (max-width: 920px) {
+    .us-masthead-inner {
+      flex-wrap: wrap;
+      align-content: center;
+      min-height: 0;
+      padding: 12px 16px 0;
+      row-gap: 2px;
+    }
+    .us-nav {
+      order: 3;
+      flex: 1 1 100%;
+      margin-inline: 0;
+      gap: 20px;
+      padding: 2px 0 10px;
+    }
+    .us-actions {
+      margin-left: auto;
+    }
+    .us-main {
+      padding: 20px 16px 48px;
+    }
+  }
+  @media (max-width: 640px) {
+    .us-brand {
+      max-width: 58%;
+    }
+    .us-actions {
+      gap: 10px;
+    }
+    .us-admin-btn {
+      padding: 0 12px;
+    }
+    .us-footer-inner {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 14px 16px;
+    }
+    .us-footer-meta {
+      align-items: flex-start;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .us-nav a,
+    .us-back-link,
+    .us-admin-btn,
+    .us-footer-admin {
+      transition: none;
+    }
+  }
+</style>
+
+<!-- SLOT: appAccentVar -->
+<header class="us-masthead" style="--app-accent: var(--app-assistant)">
+  <div class="us-masthead-inner">
+    <div class="us-brand">
+      <div class="us-eyebrow"><!-- SLOT: appEyebrow --></div>
+      <div class="us-appname"><!-- SLOT: appName --></div>
+    </div>
+    <nav class="us-nav" aria-label="主导航"><!-- SLOT: navItems --></nav>
+    <div class="us-actions">
+      <a class="us-back-link" data-dom-id="back-platform" href="./index.html">
+        <i data-lucide="arrow-left" aria-hidden="true"></i><span>返回总览</span>
+      </a>
+      <!-- SLOT: navCta -->
+      <a class="us-admin-btn" data-dom-id="link-admin" href="#">
+        <i data-lucide="wrench" aria-hidden="true"></i><span>后台管理</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<main class="us-main">
+  <!-- SLOT: content -->
+</main>
+
+<footer class="us-footer">
+  <div class="us-footer-inner">
+    <div class="us-footer-note"><!-- SLOT: footerNote --></div>
+    <div class="us-footer-meta">
+      <a class="us-footer-admin" href="#">管理后台<i data-lucide="arrow-right" aria-hidden="true"></i></a>
+      <div class="us-footer-copy">© 2026 MagicTools · 墨蓝石墨工房</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    function init() {
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  })();
+</script>

@@ -43,15 +43,13 @@ describe("MtThemeProvider（v2 全量注入）", () => {
     expect(probe.getAttribute("data-font")).toContain("Noto Sans SC");
   });
 
-  it("注入品牌字体样式表（Google Fonts，幂等单例）", () => {
+  it("不再注入 Google Fonts CDN link（v2.2 字体本地化，走 @mt/ui/fonts.css）", () => {
     render(
       <MtThemeProvider>
         <div>fonts</div>
       </MtThemeProvider>
     );
-    const link = document.getElementById("mt-brand-fonts");
-    expect(link).toBeTruthy();
-    expect(link?.getAttribute("href")).toContain("Noto+Serif+SC");
-    expect(link?.getAttribute("href")).toContain("JetBrains+Mono");
+    expect(document.getElementById("mt-brand-fonts")).toBeNull();
+    expect(document.querySelectorAll('link[href*="fonts.googleapis"]').length).toBe(0);
   });
 });

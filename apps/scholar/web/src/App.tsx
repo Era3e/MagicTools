@@ -1,23 +1,28 @@
 import { Navigate, Route, BrowserRouter, Routes, useLocation, useNavigate } from "react-router-dom";
-import { AdminShell, UserShell } from "@mt/ui";
+import { AdminShell, UserShell, appAccent } from "@mt/ui";
 import EntryList from "./pages/EntryList";
 import SearchPage from "./pages/SearchPage";
 import GraphPage from "./pages/GraphPage";
 import SettingsPage from "./pages/SettingsPage";
 
+const ACCENT = appAccent("scholar");
+
 const LIBRARY_THEME = {
-  // UserShellTheme 标准字段（v2 派生口径：品牌衬线 + 馆藏绿 + 羊皮纸）
+  // UserShellTheme 标准字段（v2.3 派生口径：品牌衬线 + 馆藏绿 + 设计稿亮色锚点）
   primary: "#2f5a3b",
-  background: "#f2efe5",
+  background: "#f4f6f8",
   ink: "#1f2a1d",
-  muted: "#75816e",
+  muted: "#5f6c7c",
   displayFont: '"Noto Serif SC", "Source Serif 4", "Palatino Linotype", serif',
   bodyFont: '"Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif',
   // Scholar 馆藏扩展色板（页面通过 useTheme() 访问）
+  accent: "#2f5a3b",
+  tint: "#ecf2ea",
+  panel: "#ffffff",
   green: "#2f5a3b",
-  rule: "#ccc4ad",
+  rule: "#d9dde3",
   paper: "#eae6d8",
-  card: "#faf8f1",
+  card: "#ffffff",
   display: '"Noto Serif SC", "Source Serif 4", "Palatino Linotype", serif',
   link: "#2f5a3b",     // 强调链接色（馆藏绿）
   chipBg: "#eae6d8",   // 关系列表 chip 背景
@@ -53,7 +58,7 @@ function AdminRoutes() {
     <Routes>
       <Route path="/admin" element={<Navigate to="/admin/settings" replace />} />
       <Route path="/admin/settings" element={<SettingsPage />} />
-      <Route path="/admin/entries" element={<EntryList />} />
+      <Route path="/admin/entries" element={<EntryList admin />} />
     </Routes>
   );
 }
@@ -67,11 +72,12 @@ function Shell() {
     const selected = ADMIN_NAV.find((m) => location.pathname.startsWith(m.key))?.key ?? "/admin/settings";
     return (
       <AdminShell
-        title="知识"
+        title="学者书库"
         navItems={ADMIN_NAV}
         selectedKey={selected}
         onNavigate={(key) => navigate(key)}
         frontPath="/entries"
+        eyebrow={ACCENT.controlEyebrow ?? ACCENT.controlKey}
       >
         <AdminRoutes />
       </AdminShell>
@@ -81,8 +87,9 @@ function Shell() {
   const selected = USER_NAV.find((m) => location.pathname.startsWith(m.key))?.key ?? "/entries";
   return (
     <UserShell
-      title="知识书院"
-      subtitle="每一则知识，皆入馆藏"
+      title="学者书库"
+      subtitle={ACCENT.subtitle}
+      eyebrow={ACCENT.frontEyebrow}
       navItems={USER_NAV}
       selectedKey={selected}
       onNavigate={(key) => navigate(key)}

@@ -1,18 +1,22 @@
 import { Navigate, Route, BrowserRouter, Routes, useLocation, useNavigate } from "react-router-dom";
-import { AdminShell, UserShell } from "@mt/ui";
+import { AdminShell, UserShell, appAccent } from "@mt/ui";
 import ChatPage from "./pages/ChatPage";
 import FeedbackPage from "./pages/FeedbackPage";
 import IntentLogPage from "./pages/IntentLogPage";
 
+const ACCENT = appAccent("assistant");
+
 const QUIET_THEME = {
   primary: "#4a688c",
-  background: "#f8f9fa",
+  background: "#f4f6f8",
   ink: "#1c2530",
   muted: "#5f6c7c",
-  displayFont: '"Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif',
+  displayFont: '"Noto Serif SC", "Source Serif 4", "Songti SC", serif',
   bodyFont: '"Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif',
   accent: "#4a688c",
-  bubbleUser: "#eef1f5",
+  tint: "#edf1f6",
+  panel: "#ffffff",
+  bubbleUser: "#edf1f6",
   bubbleBot: "#ffffff",
   border: "#d9dde3",
 };
@@ -55,11 +59,12 @@ function Shell() {
     const selected = ADMIN_NAV.find((m) => location.pathname.startsWith(m.key))?.key ?? "/admin/feedback";
     return (
       <AdminShell
-        title="助手"
+        title="智能助手"
         navItems={ADMIN_NAV}
         selectedKey={selected}
         onNavigate={(key) => navigate(key)}
         frontPath="/chat"
+        eyebrow={ACCENT.controlEyebrow ?? ACCENT.controlKey}
       >
         <AdminRoutes />
       </AdminShell>
@@ -69,7 +74,8 @@ function Shell() {
   return (
     <UserShell
       title="智能助手"
-      subtitle="有问题，就直接问"
+      subtitle={ACCENT.subtitle}
+      eyebrow={ACCENT.frontEyebrow}
       navItems={USER_NAV}
       selectedKey="/chat"
       onNavigate={(key) => navigate(key)}

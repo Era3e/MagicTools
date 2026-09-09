@@ -39,6 +39,7 @@ export interface ComponentItem {
   description: string;
   code: string;
   createdAt: string;
+  status?: string;
 }
 
 export const api = {

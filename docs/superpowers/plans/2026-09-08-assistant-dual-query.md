@@ -14,7 +14,9 @@
 
 ---
 
-## Task 1: CompareEngine 纯函数
+## Tasks
+
+### Task 1: CompareEngine 纯函数
 
 **Files:**
 - Create: `apps/assistant/server/src/compare.service.ts`

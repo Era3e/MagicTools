@@ -1,5 +1,5 @@
 import { ConfigProvider, theme as antdTheme } from "antd";
-import { createContext, useContext, useEffect } from "react";
+import { createContext, useContext } from "react";
 import type { ReactNode } from "react";
 import { tokens } from "./tokens";
 import { MAGAZINE_THEME, type UserShellTheme } from "./UserShell";
@@ -18,27 +18,20 @@ export function useTheme(): UserShellTheme {
 /** @internal 仅由 UserShell/AdminShell 内部使用 */
 export const ThemeProvider = ThemeContext.Provider;
 
-const BRAND_FONTS_HREF =
-  "https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Noto+Sans+SC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap";
-
-/** 注入品牌字体样式表（幂等单例，离线环境静默降级到系统衬线/黑体/等宽栈） */
-function useBrandFonts(): void {
-  useEffect(() => {
-    if (document.getElementById("mt-brand-fonts")) return;
-    const link = document.createElement("link");
-    link.id = "mt-brand-fonts";
-    link.rel = "stylesheet";
-    link.href = BRAND_FONTS_HREF;
-    document.head.appendChild(link);
-  }, []);
-}
+/**
+ * v2.2 字体本地化说明：
+ *   - 品牌 woff2 已随包分发（packages/ui/fonts/），经 `@mt/ui/fonts.css` 由各应用入口 import，
+ *     Vite 负责按应用 base 打包与预览——零 CDN 依赖（离线/内网环境观感不再降级）。
+ *   - 中文子集体积过大（数 MB/字重），继续走系统栈（PingFang/雅黑/宋体）；
+ *     unicode-range 限定 latin——英文/数字（等宽读数、衬线标题）命中本地 woff2，中文命中系统栈。
+ *   - 本组件不再注入任何字体 link（原 Google Fonts CDN 注入已移除）。
+ */
 
 /**
  * v2 全量主题注入：除主色/语义色外，补齐控件高度、正文字体、
  * 圆角、边框、浮层阴影与动效时长，消灭 AntD 出厂默认观感。
  */
 export function MtThemeProvider(props: { children: ReactNode }) {
-  useBrandFonts();
   return (
     <ConfigProvider
       theme={{

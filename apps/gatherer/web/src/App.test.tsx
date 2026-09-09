@@ -12,14 +12,14 @@ describe("App", () => {
     window.history.pushState({}, "", "/gatherer/");
     vi.stubGlobal("fetch", vi.fn(async () => new Response("[]", { status: 200 })));
     render(<App />);
-    expect(await screen.findByText("ADMIN CONSOLE")).toBeTruthy();
+    expect(await screen.findByText("GATHERER · CONTROL")).toBeTruthy();
   });
 
   it("后台路由渲染控制台外壳与信息源管理", async () => {
     window.history.pushState({}, "", "/gatherer/admin/sources");
     vi.stubGlobal("fetch", vi.fn(async () => new Response("[]", { status: 200 })));
     render(<App />);
-    expect(screen.getByText("ADMIN CONSOLE")).toBeTruthy();
-    expect(await screen.findByText("新建源")).toBeTruthy();
+    expect(screen.getByText("GATHERER · CONTROL")).toBeTruthy();
+    expect(await screen.findByText("新增采集源")).toBeTruthy();
   });
 });

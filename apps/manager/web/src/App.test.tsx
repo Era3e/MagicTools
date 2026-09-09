@@ -13,8 +13,8 @@ describe("App", () => {
     vi.stubGlobal("fetch", vi.fn(async () => new Response("[]", { status: 200 })));
     render(<App />);
     expect(await screen.findByText("FLIGHT DECK · 需求在轨")).toBeTruthy();
-    expect(screen.getByText("需求在轨，交付有期")).toBeTruthy();
-    expect(screen.queryByText("ADMIN CONSOLE")).toBeNull();
+    expect(screen.getByText("需求在轨，交付有期。七态生命周期在此同屏巡航。")).toBeTruthy();
+    expect(screen.queryByText("MANAGER · CONTROL")).toBeNull();
   });
 
   it("前台看板渲染需求卡片", async () => {
@@ -38,7 +38,7 @@ describe("App", () => {
     window.history.pushState({}, "", "/manager/admin/iterations");
     vi.stubGlobal("fetch", vi.fn(async () => new Response("[]", { status: 200 })));
     render(<App />);
-    expect(screen.getByText("ADMIN CONSOLE")).toBeTruthy();
+    expect(screen.getByText("MANAGER · CONTROL")).toBeTruthy();
     expect(await screen.findByText("新建迭代")).toBeTruthy();
   });
 });

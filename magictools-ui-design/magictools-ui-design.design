@@ -1,0 +1,402 @@
+{
+  "data": [
+    {
+      "id": "page-index",
+      "title": "平台总览 · 网关",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1788846500000,
+      "canvasData": {
+        "x": 0,
+        "y": 0,
+        "group": 0,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1288,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-38089369",
+          "measuredAt": 1788923887719
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/index.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-applicant-front",
+      "title": "求职前台 · 岗位墙",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1788846500100,
+      "canvasData": {
+        "x": 0,
+        "y": 486,
+        "group": 1,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1296,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-5ec1caea",
+          "measuredAt": 1788923887719
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/applicant-front.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-applicant-admin",
+      "title": "求职后台 · 岗位管理",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1788846500200,
+      "canvasData": {
+        "x": 480,
+        "y": 486,
+        "group": 1,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1020,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-a2b93b29",
+          "measuredAt": 1788923887719
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/applicant-admin.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-scholar-front",
+      "title": "书库前台 · 馆藏检索",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1788846500300,
+      "canvasData": {
+        "x": 0,
+        "y": 974,
+        "group": 2,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1380,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-05a2d7ce",
+          "measuredAt": 1788923887719
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/scholar-front.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-scholar-admin",
+      "title": "书库后台 · 馆藏管理",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1788846500400,
+      "canvasData": {
+        "x": 480,
+        "y": 974,
+        "group": 2,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1020,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-c5fa1f38",
+          "measuredAt": 1788923887719
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/scholar-admin.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-assistant-front",
+      "title": "助手前台 · 智能对话",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1788846500500,
+      "canvasData": {
+        "x": 0,
+        "y": 1487,
+        "group": 3,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 900,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-4311d1af",
+          "measuredAt": 1788870327217
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/assistant-front.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-assistant-retry-demo",
+      "title": "重试演示 · AI 回复失败恢复流",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1788869000000,
+      "canvasData": {
+        "x": 480,
+        "y": 1487,
+        "group": 3,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1223,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-2621c729",
+          "measuredAt": 1788923887719
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/assistant-retry-demo.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-assistant-admin",
+      "title": "助手后台 · 意图日志",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1788846500600,
+      "canvasData": {
+        "x": 960,
+        "y": 1487,
+        "group": 3,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1242,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-f9836058",
+          "measuredAt": 1788923887719
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/assistant-admin.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-manager-front",
+      "title": "交付前台 · 需求看板",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1788846500700,
+      "canvasData": {
+        "x": 0,
+        "y": 1959,
+        "group": 4,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1211,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-ce2eb356",
+          "measuredAt": 1788923887719
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/manager-front.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-manager-admin",
+      "title": "交付后台 · 需求驾驶舱",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1788846500800,
+      "canvasData": {
+        "x": 480,
+        "y": 1959,
+        "group": 4,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1036,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-7a0f8387",
+          "measuredAt": 1788923887719
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/manager-admin.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-designer-front",
+      "title": "工坊前台 · 组件画廊",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1788846500900,
+      "canvasData": {
+        "x": 0,
+        "y": 2422,
+        "group": 5,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1431,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-42a4e349",
+          "measuredAt": 1788924302626
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/designer-front.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-designer-admin",
+      "title": "工坊后台 · 组件馆藏",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1788846501000,
+      "canvasData": {
+        "x": 480,
+        "y": 2422,
+        "group": 5,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1042,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-5947d946",
+          "measuredAt": 1788924302626
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/designer-admin.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-gatherer-admin",
+      "title": "采集后台 · 采集源管理",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1788846501100,
+      "canvasData": {
+        "x": 0,
+        "y": 2948,
+        "group": 6,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1015,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-3ef47310",
+          "measuredAt": 1788924302626
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/gatherer-admin.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-investigator-admin",
+      "title": "调研后台 · 调研管理",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1788846501200,
+      "canvasData": {
+        "x": 0,
+        "y": 3435,
+        "group": 7,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1015,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-0f5c14d9",
+          "measuredAt": 1788924302626
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/investigator-admin.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-assessor-admin",
+      "title": "评审后台 · 评审请求",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1788846501300,
+      "canvasData": {
+        "x": 0,
+        "y": 3839,
+        "group": 8,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1128,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-ca724187",
+          "measuredAt": 1788924302626
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/assessor-admin.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-gatherer-pause-demo",
+      "title": "失败演示 · 采集源自动暂停",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1788870000000,
+      "canvasData": {
+        "x": 480,
+        "y": 2948,
+        "group": 6,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1302,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-1df172b4",
+          "measuredAt": 1788924302626
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/gatherer-pause-demo.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-assessor-batch-demo",
+      "title": "批量演示 · 部分成功反馈",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1788870000100,
+      "canvasData": {
+        "x": 480,
+        "y": 3839,
+        "group": 8,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 936,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-e5b5a5bb",
+          "measuredAt": 1788924302626
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/assessor-batch-demo.html",
+        "interactions": []
+      }
+    }
+  ],
+  "config": {
+    "autoLayout": true,
+    "deviceType": "desktop",
+    "projectName": "MagicTools 全线 UI/UE 设计图",
+    "designLibrary": null,
+    "visualEditorEnabled": false
+  }
+}

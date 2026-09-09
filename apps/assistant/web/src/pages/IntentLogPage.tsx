@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
-import { Button, Card, Modal, Select, Space, Table, Typography, message } from "antd";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Button, Modal, Select, Table, Typography, message } from "antd";
 import { DownloadOutlined, FileSearchOutlined, PlayCircleOutlined } from "@ant-design/icons";
-import { MtStatusTag, MtKpiRow, MtEmptyState } from "@mt/ui";
+import { AdminPageHead, MtStatusTag, MtKpiRow, MtEmptyState, tokens } from "@mt/ui";
 import { api, type IntentLog, type CybercloudCall } from "../api";
 
 const DOMAIN_LABEL: Record<string, { label: string }> = {
@@ -147,46 +147,114 @@ export default function IntentLogPage() {
   const agentStats = callStats(calls, "agent");
   const directStats = callStats(calls, "direct");
 
+  const intentDist = useMemo(() => {
+    const byKey = new Map<string, number>();
+    for (const it of items) byKey.set(it.intent, (byKey.get(it.intent) ?? 0) + 1);
+    const total = items.length || 1;
+    return [...byKey.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 4)
+      .map(([name, n]) => ({
+        name,
+        n,
+        pct: Math.round((n / total) * 100),
+      }));
+  }, [items]);
+
+  const lowConf = useMemo(() => items.filter((i) => i.confidence < 0.6).length, [items]);
+  const correctedCount = items.filter((i) => i.correctedIntent).length;
+
   return (
-    <Space direction="vertical" style={{ width: "100%" }} size="middle">
-      <Card title="路由评估（D-09 在线学习）" extra={<MtStatusTag tone="info" mono>纠错样本 {evaluation?.confusion.total ?? 0} 条</MtStatusTag>}>
-        <Space wrap style={{ marginBottom: 16 }}>
-          <Button icon={<PlayCircleOutlined />} loading={replaying} onClick={runReplay}>
-            回放评估
-          </Button>
-          <Button icon={<DownloadOutlined />} onClick={downloadDataset}>
-            导出数据集
-          </Button>
-          <Button icon={<FileSearchOutlined />} onClick={previewDataset}>
-            数据集预览
-          </Button>
-          {datasetCount !== null && <MtStatusTag tone="success">可导出 {datasetCount} 条 JSONL</MtStatusTag>}
-        </Space>
-        {replay && (
-          <div style={{ marginBottom: 16 }}>
-            <MtKpiRow
-              items={[
-                { label: "回放样本", value: replay.total, unit: "条" },
-                { label: "命中", value: replay.hits, unit: "条" },
-                {
-                  label: "命中率",
-                  value: Math.round(replay.accuracy * 100) + "%",
-                  delta: replay.accuracy >= 0.8 ? "达标" : "低于阈值 80%",
-                  deltaTone: replay.accuracy >= 0.8 ? "up" : "flat",
-                },
-              ]}
-            />
+    <div>
+      <AdminPageHead
+        eyebrow="ADMIN · INTENT"
+        title="意图日志 · 路由评估"
+        badges={<MtStatusTag tone={evaluation ? "success" : "neutral"} showDot>{evaluation ? "在线学习已启用" : "评估待生成"}</MtStatusTag>}
+        description="纠错样本自动注入 few-shot · 回放评估与 JSONL 数据集导出（D-09）"
+        actions={
+          <>
+            <Button icon={<PlayCircleOutlined />} loading={replaying} onClick={runReplay}>回放评估</Button>
+            <Button icon={<DownloadOutlined />} onClick={downloadDataset}>导出数据集</Button>
+            <Button icon={<FileSearchOutlined />} onClick={previewDataset}>数据集预览</Button>
+          </>
+        }
+        kpi={
+          <MtKpiRow
+            items={[
+              { label: "本页样本", value: items.length, unit: "条" },
+              { label: "低置信（<0.6）", value: lowConf, unit: "条" },
+              { label: "已纠错", value: correctedCount, unit: "条" },
+              ...(replay
+                ? [
+                    {
+                      label: "回放命中率",
+                      value: Math.round(replay.accuracy * 100) + "%",
+                      delta: replay.accuracy >= 0.8 ? "达标" : "低于阈值 80%",
+                      deltaTone: (replay.accuracy >= 0.8 ? "up" : "flat") as "up" | "flat",
+                    },
+                  ]
+                : []),
+            ]}
+          />
+        }
+      />
+
+      {intentDist.length > 0 && (
+        <div style={{ marginBottom: tokens.spacing.md }}>
+          <div style={{ fontFamily: tokens.font.mono, fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: tokens.color.textSecondary, marginBottom: tokens.spacing.sm }}>
+            INTENT · 本页意图分布
           </div>
-        )}
+          <div style={{ display: "grid", gap: tokens.spacing.sm }}>
+            {intentDist.map((d) => (
+              <div key={d.name} style={{ display: "flex", alignItems: "center", gap: tokens.spacing.sm }}>
+                <MtStatusTag mono style={{ minWidth: 220 }}>{d.name}</MtStatusTag>
+                <div style={{ flex: 1, height: 4, background: tokens.color.bgUser, borderRadius: tokens.radiusTokens.full, overflow: "hidden", minWidth: 0 }}>
+                  <div style={{ width: d.pct + "%", height: "100%", background: tokens.color.primary, borderRadius: tokens.radiusTokens.full }} />
+                </div>
+                <span style={{ fontFamily: tokens.font.mono, fontSize: 12, color: tokens.color.textSecondary, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
+                  {d.n} · {d.pct}%
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {datasetCount !== null && (
+        <div style={{ marginBottom: tokens.spacing.md }}>
+          <MtStatusTag tone="success">可导出 {datasetCount} 条 JSONL</MtStatusTag>
+        </div>
+      )}
+
+      {replay && (
+        <div style={{ marginBottom: tokens.spacing.md }}>
+          <Typography.Paragraph style={{ marginTop: 0, fontSize: 12, fontWeight: 600, marginBottom: tokens.spacing.sm }}>
+            回放读数 · 样本 {replay.total} / 命中 {replay.hits}
+          </Typography.Paragraph>
+          <MtKpiRow
+            items={[
+              { label: "回放样本", value: replay.total, unit: "条" },
+              { label: "命中", value: replay.hits, unit: "条" },
+              {
+                label: "命中率",
+                value: Math.round(replay.accuracy * 100) + "%",
+                delta: replay.accuracy >= 0.8 ? "达标" : "低于阈值 80%",
+                deltaTone: replay.accuracy >= 0.8 ? "up" : "flat",
+              },
+            ]}
+          />
+        </div>
+      )}
         <Typography.Paragraph type="secondary" style={{ fontSize: 12 }}>
-          混淆矩阵：行 = 原判定意图，列 = 纠错后真实意图（仅统计已纠错样本）。few-shot 每次纠错后自动吸收新样本注入分类提示词。
-        </Typography.Paragraph>
+            混淆矩阵：行 = 原判定意图，列 = 纠错后真实意图（仅统计已纠错样本）。few-shot 每次纠错后自动吸收新样本注入分类提示词。
+          </Typography.Paragraph>
         {confusionPairs.length > 0 ? (
           <Table
             rowKey={(r) => r.predicted + "-" + r.actual}
             size="small"
             dataSource={confusionPairs}
             pagination={false}
+            style={{ marginBottom: tokens.spacing.md }}
             columns={[
               { title: "原判定", dataIndex: "predicted", width: 200 },
               { title: "真实意图", dataIndex: "actual", width: 200 },
@@ -200,11 +268,11 @@ export default function IntentLogPage() {
             ]}
           />
         ) : (
-          <Typography.Text type="secondary">暂无纠错样本，先在下表对误判消息执行纠错。</Typography.Text>
+          <Typography.Text type="secondary" style={{ display: "block", marginBottom: tokens.spacing.md }}>暂无纠错样本，先在下表对误判消息执行纠错。</Typography.Text>
         )}
         {replay && replay.misses.length > 0 && (
-          <>
-            <Typography.Paragraph style={{ marginTop: 16, fontSize: 12, fontWeight: 600 }}>回放未命中明细（前 50）</Typography.Paragraph>
+          <div style={{ marginBottom: tokens.spacing.md }}>
+            <Typography.Paragraph style={{ marginTop: 0, fontSize: 12, fontWeight: 600 }}>回放未命中明细（前 50）</Typography.Paragraph>
             <Table
               rowKey={(r) => r.message}
               size="small"
@@ -216,12 +284,10 @@ export default function IntentLogPage() {
                 { title: "应为", dataIndex: "actual", width: 180, render: (v: string) => <MtStatusTag tone="error" mono>{v}</MtStatusTag> },
               ]}
             />
-          </>
+          </div>
         )}
-      </Card>
 
-      <Card title="意图日志">
-        <Space style={{ marginBottom: 16 }}>
+      <div style={{ display: "flex", gap: tokens.spacing.sm, marginBottom: tokens.spacing.md, flexWrap: "wrap", alignItems: "center" }}>
           <Select
             allowClear
             placeholder="系统筛选"
@@ -238,7 +304,10 @@ export default function IntentLogPage() {
             onChange={(v) => setIntent(v)}
             options={INTENT_OPTIONS}
           />
-        </Space>
+          <span style={{ marginLeft: "auto", fontFamily: tokens.font.mono, fontSize: 12, color: tokens.color.textSecondary }}>
+            本页 {items.length} 条 · 每页 10 条
+          </span>
+        </div>
         <Table<IntentLog>
           rowKey="id"
           dataSource={items}
@@ -284,7 +353,7 @@ export default function IntentLogPage() {
           ]}
         />
         <Modal title="纠错意图" open={Boolean(correcting)} onCancel={() => setCorrecting(null)} footer={null}>
-          <Space direction="vertical" style={{ width: "100%" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: tokens.spacing.md }}>
             <Select
               style={{ width: "100%" }}
               placeholder="选择正确意图"
@@ -295,69 +364,67 @@ export default function IntentLogPage() {
             <Button type="primary" onClick={submitCorrect}>
               确定
             </Button>
-          </Space>
+          </div>
         </Modal>
-      </Card>
-
-      <Card
-        title="数据查询监控"
-        extra={<MtStatusTag tone="info" mono>近 {calls.length} 条调用</MtStatusTag>}
-      >
-        <div style={{ marginBottom: 16 }}>
-          <MtKpiRow
-            items={[
-              { label: "agent 成功率", value: agentStats.rate },
-              { label: "agent 平均延迟", value: agentStats.avg, unit: agentStats.avg === "--" ? undefined : "ms" },
-              { label: "direct 成功率", value: directStats.rate },
-              { label: "direct 平均延迟", value: directStats.avg, unit: directStats.avg === "--" ? undefined : "ms" },
-            ]}
-          />
-        </div>
-        {calls.length > 0 ? (
-          <Table<CybercloudCall>
-            rowKey="id"
-            size="small"
-            dataSource={calls}
-            pagination={{ pageSize: 10 }}
-            columns={[
-              {
-                title: "时间",
-                dataIndex: "createdAt",
-                width: 180,
-                render: (v: string) => <MtStatusTag mono>{v.replace("T", " ").replace("Z", "")}</MtStatusTag>,
-              },
-              {
-                title: "路由",
-                dataIndex: "route",
-                width: 100,
-                render: (v: string) => <MtStatusTag mono>{v}</MtStatusTag>,
-              },
-              { title: "endpoint", dataIndex: "endpoint", render: (v: string) => <MtStatusTag mono>{v}</MtStatusTag> },
-              {
-                title: "状态",
-                dataIndex: "ok",
-                width: 90,
-                render: (v: boolean) => (v ? <MtStatusTag tone="success">成功</MtStatusTag> : <MtStatusTag tone="error">失败</MtStatusTag>),
-              },
-              {
-                title: "延迟",
-                dataIndex: "latencyMs",
-                width: 110,
-                align: "right",
-                render: (v: number) => <MtStatusTag mono>{v} ms</MtStatusTag>,
-              },
-              {
-                title: "error",
-                dataIndex: "error",
-                ellipsis: true,
-                render: (v: string | null) => (v ? <MtStatusTag tone="error" mono>{v}</MtStatusTag> : "-"),
-              },
-            ]}
-          />
-        ) : (
-          <MtEmptyState title="暂无数据查询调用" description="对话页发起数据查询后，双路（agent/direct）调用会在此记录。" />
-        )}
-      </Card>
-    </Space>
+      <div style={{ marginTop: tokens.spacing.xl }}>
+          <div style={{ fontFamily: tokens.font.mono, fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: tokens.color.textSecondary, marginBottom: tokens.spacing.md }}>
+            DATA · 数据查询监控（近 {calls.length} 条调用）
+          </div>
+          <div style={{ marginBottom: 16 }}>
+            <MtKpiRow
+              items={[
+                { label: "agent 成功率", value: agentStats.rate },
+                { label: "agent 平均延迟", value: agentStats.avg, unit: agentStats.avg === "--" ? undefined : "ms" },
+                { label: "direct 成功率", value: directStats.rate },
+                { label: "direct 平均延迟", value: directStats.avg, unit: directStats.avg === "--" ? undefined : "ms" },
+              ]}
+            />
+          </div>
+          {calls.length > 0 ? (
+            <Table<CybercloudCall>
+              rowKey="id"
+              size="small"
+              dataSource={calls}
+              pagination={{ pageSize: 10 }}
+              columns={[
+                {
+                  title: "时间",
+                  dataIndex: "createdAt",
+                  width: 180,
+                  render: (v: string) => <MtStatusTag mono>{v.replace("T", " ").replace("Z", "")}</MtStatusTag>,
+                },
+                {
+                  title: "路由",
+                  dataIndex: "route",
+                  width: 100,
+                  render: (v: string) => <MtStatusTag mono>{v}</MtStatusTag>,
+                },
+                { title: "endpoint", dataIndex: "endpoint", render: (v: string) => <MtStatusTag mono>{v}</MtStatusTag> },
+                {
+                  title: "状态",
+                  dataIndex: "ok",
+                  width: 90,
+                  render: (v: boolean) => (v ? <MtStatusTag tone="success">成功</MtStatusTag> : <MtStatusTag tone="error">失败</MtStatusTag>),
+                },
+                {
+                  title: "延迟",
+                  dataIndex: "latencyMs",
+                  width: 110,
+                  align: "right",
+                  render: (v: number) => <MtStatusTag mono>{v} ms</MtStatusTag>,
+                },
+                {
+                  title: "error",
+                  dataIndex: "error",
+                  ellipsis: true,
+                  render: (v: string | null) => (v ? <MtStatusTag tone="error" mono>{v}</MtStatusTag> : "-"),
+                },
+              ]}
+            />
+          ) : (
+            <MtEmptyState title="暂无数据查询调用" description="对话页发起数据查询后，双路（agent/direct）调用会在此记录。" />
+          )}
+      </div>
+    </div>
   );
 }

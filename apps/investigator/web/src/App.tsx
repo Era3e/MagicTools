@@ -1,15 +1,20 @@
 import { Navigate, Route, BrowserRouter, Routes, useLocation, useNavigate } from "react-router-dom";
-import { AdminShell, UserShell } from "@mt/ui";
+import { AdminShell, UserShell, appAccent } from "@mt/ui";
 import SurveyList from "./pages/SurveyList";
 import SurveyDetail from "./pages/SurveyDetail";
 
+const ACCENT = appAccent("investigator");
+
 const ARCHIVE_THEME = {
   primary: "#8a6a3b",
-  background: "#f5f1e8",
+  background: "#f4f6f8",
   ink: "#28241c",
-  muted: "#7d7466",
-  displayFont: '"JetBrains Mono", "Cascadia Mono", Consolas, "Noto Serif SC", monospace',
+  muted: "#5f6c7c",
+  displayFont: '"Noto Serif SC", "Source Serif 4", "Songti SC", serif',
   bodyFont: '"Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif',
+  accent: "#8a6a3b",
+  tint: "#f5efe4",
+  panel: "#ffffff",
 };
 
 const ADMIN_NAV = [{ key: "/admin/surveys", label: "主题档案管理" }];
@@ -32,10 +37,11 @@ function Shell() {
   if (isAdmin) {
     return (
       <AdminShell
-        title="调研"
+        title="调研工坊"
         navItems={ADMIN_NAV}
         selectedKey="/admin/surveys"
         onNavigate={(key) => navigate(key)}
+        eyebrow={ACCENT.controlEyebrow ?? ACCENT.controlKey}
       >
         <AdminRoutes />
       </AdminShell>
@@ -44,8 +50,9 @@ function Shell() {
 
   return (
     <UserShell
-      title="调研档案馆"
-      subtitle="每一次寻访，都立卷归档"
+      title="调研工坊"
+      subtitle={ACCENT.subtitle}
+      eyebrow={ACCENT.frontEyebrow}
       navItems={[]}
       selectedKey="/admin/surveys"
       onNavigate={(key) => navigate(key)}

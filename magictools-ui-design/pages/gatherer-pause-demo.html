@@ -1,0 +1,1691 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style id="theme-vars">
+/* MagicTools UI 设计图 — 墨蓝石墨·工房感（令牌来源 .design_library/magictools/colors_and_type.css v2.2，补齐语义别名与八应用 accent 派生） */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Source+Serif+4:wght@8..60,400;8..60,600;8..60,700&family=Noto+Sans+SC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+:root {
+  /* primary mt-ink 墨蓝十阶 */
+  --mt-ink-50: #f3f6fa; --mt-ink-100: #e3eaf2; --mt-ink-200: #c6d4e3; --mt-ink-300: #9db3ca; --mt-ink-400: #6e8bad;
+  --mt-ink-500: #4a688c; --mt-ink-600: #2c4a6e; --mt-ink-700: #233c5a; --mt-ink-800: #1b2e45; --mt-ink-900: #142130;
+  /* graphite 石墨十阶 */
+  --mt-graphite-50: #f6f7f9; --mt-graphite-100: #eceef1; --mt-graphite-200: #d9dde3; --mt-graphite-300: #bcc3cd; --mt-graphite-400: #96a0ad;
+  --mt-graphite-500: #74808f; --mt-graphite-600: #5a6573; --mt-graphite-700: #454f5b; --mt-graphite-800: #333c46; --mt-graphite-900: #232b33;
+  /* amber 琥珀十阶 */
+  --mt-amber-50: #fbf6ec; --mt-amber-100: #f5ebd3; --mt-amber-200: #ead5a6; --mt-amber-300: #dcbb74; --mt-amber-400: #cfa04c;
+  --mt-amber-500: #c08a35; --mt-amber-600: #a06f2a; --mt-amber-700: #7f5724; --mt-amber-800: #5f411f; --mt-amber-900: #47301a;
+  /* 语义色十阶 */
+  --mt-success-50: #f0f7f1; --mt-success-100: #dcecdf; --mt-success-500: #4a8a5d; --mt-success-600: #3a7049; --mt-success-700: #2f5a3b; --mt-success-800: #25462f;
+  --mt-warning-50: #fbf6ea; --mt-warning-100: #f5e9cd; --mt-warning-600: #9a6a25; --mt-warning-700: #7a531f;
+  --mt-error-50: #faf1f0; --mt-error-100: #f4dedb; --mt-error-600: #943d35; --mt-error-700: #76312b;
+  --mt-info-50: #eff5fa; --mt-info-100: #dce9f3; --mt-info-600: #3a5f84; --mt-info-700: #2f4c69;
+  /* 语义色 400（暗色用） */
+  --mt-success-400: #6db884; --mt-warning-400: #e3c78d; --mt-error-400: #d68a82; --mt-info-400: #7ba3c4;
+  /* 八应用前台 accent 派生（ui-spec §三 v2 派生口径） */
+  --app-applicant: #a8522e; --app-applicant-tint: #f7ece6; --app-applicant-ink: #6f3013;
+  --app-scholar: #2f5a3b; --app-scholar-tint: #ecf2ea; --app-scholar-ink: #1f3d27;
+  --app-assistant: #4a688c; --app-assistant-tint: #edf1f6; --app-assistant-ink: #2c4a6e;
+  --app-manager: #3a5f84; --app-manager-tint: #e9eef4; --app-manager-ink: #233c5a;
+  --app-gatherer: #1f3a5c; --app-gatherer-tint: #e8ecf2; --app-gatherer-ink: #12233b;
+  --app-investigator: #8a6a3b; --app-investigator-tint: #f5efe4; --app-investigator-ink: #5c4423;
+  --app-assessor: #6e3b28; --app-assessor-tint: #f2e9e4; --app-assessor-ink: #4a2418;
+  --app-designer: #1c2530; --app-designer-tint: #eef0f3; --app-designer-ink: #0d141c;
+  /* 语义状态 */
+  --state-success: var(--mt-success-600); --state-success-bg: var(--mt-success-50); --state-success-text: var(--mt-success-700);
+  --state-warning: var(--mt-warning-600); --state-warning-bg: var(--mt-warning-50); --state-warning-text: var(--mt-warning-700);
+  --state-error: var(--mt-error-600); --state-error-bg: var(--mt-error-50); --state-error-text: var(--mt-error-700);
+  --state-info: var(--mt-info-600); --state-info-bg: var(--mt-info-50); --state-info-text: var(--mt-info-700);
+  /* 文本 */
+  --text-strong: #1c2530; --text-body: #2e3a48; --text-muted: #5f6c7c; --text-faint: #8b98a8; --text-inverse: #f2f5f9;
+  /* 表面（亮） */
+  --background: #f4f6f8; --surface-0: #fbfcfd; --surface-1: #ffffff; --surface-2: #eef1f5;
+  /* 语义别名（前台亮色锚点） */
+  --primary: var(--mt-ink-600); --primary-foreground: #ffffff; --primary-hover: var(--mt-ink-700);
+  --accent: var(--mt-amber-500); --accent-foreground: #ffffff; --accent-hover: var(--mt-amber-600);
+  --foreground: var(--text-body); --card: #ffffff; --card-foreground: var(--text-body);
+  --popover: #ffffff; --popover-foreground: var(--text-body);
+  --muted: var(--mt-graphite-100); --muted-foreground: var(--text-muted);
+  --border: var(--mt-graphite-200); --input: var(--mt-graphite-300); --ring: var(--mt-ink-500);
+  --link: var(--mt-ink-600);
+  /* 字体 */
+  --font-display: 'Noto Serif SC', 'Source Serif 4', serif; --font-heading: 'Noto Serif SC', 'Source Serif 4', serif;
+  --font-body: 'Noto Sans SC', sans-serif; --font-mono: 'JetBrains Mono', monospace;
+  --font-size-display-lg: 44px; --font-size-display: 36px; --font-size-display-sm: 28px; --font-size-h1: 28px;
+  --font-size-h2: 22px; --font-size-h3: 18px; --font-size-h4: 15px; --font-size-body: 14px;
+  --font-size-lead: 16px; --font-size-caption: 12px; --font-size-eyebrow: 11px; --font-size-mono: 13px;
+  /* 间距/尺寸 */
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 24px; --space-6: 32px; --space-7: 48px; --space-8: 64px;
+  --size-icon-sm: 16px; --size-icon-md: 20px; --size-icon-lg: 24px;
+  --size-button-sm: 32px; --size-button-md: 36px; --size-button-lg: 44px; --size-input-height: 36px;
+  /* 圆角/投影 */
+  --radius-sm: 4px; --radius-md: 6px; --radius-lg: 10px; --radius-full: 9999px;
+  --radius-small: 4px; --radius-medium: 6px; --radius-large: 10px;
+  --mt-radius-sm: 4px; --mt-radius-md: 6px; --mt-radius-lg: 10px;
+  --mt-radius-small: 4px; --mt-radius-medium: 6px; --mt-radius-large: 10px;
+  --mt-background: #f4f6f8; --mt-foreground: var(--text-body); --mt-card: #ffffff; --mt-card-foreground: var(--text-body);
+  --mt-popover: #ffffff; --mt-popover-foreground: var(--text-body); --mt-primary: var(--mt-ink-600); --mt-primary-foreground: #ffffff;
+  --mt-muted: var(--mt-graphite-100); --mt-muted-foreground: var(--text-muted); --mt-border: var(--mt-graphite-200);
+  --mt-input: var(--mt-graphite-300); --mt-ring: var(--mt-ink-500);
+  --shadow-1: inset 0 1px 0 rgba(255,255,255,0.6), 0 1px 2px rgba(27,46,69,0.07), 0 1px 1px rgba(27,46,69,0.04);
+  --shadow-2: inset 0 1px 0 rgba(255,255,255,0.65), 0 2px 6px -1px rgba(27,46,69,0.10), 0 1px 2px rgba(27,46,69,0.06);
+  --shadow-3: 0 0 0 1px rgba(27,46,69,0.05), 0 8px 20px -6px rgba(27,46,69,0.16), 0 2px 6px -2px rgba(27,46,69,0.08);
+  --shadow-4: 0 16px 36px -12px rgba(20,33,48,0.22), 0 4px 10px -4px rgba(20,33,48,0.10);
+  --shadow-5: 0 24px 56px -20px rgba(20,33,48,0.30), 0 8px 18px -8px rgba(20,33,48,0.14);
+  /* 工房质感 */
+  --mt-hairline: rgba(20,33,48,0.08); --mt-hairline-strong: rgba(20,33,48,0.14);
+  --mt-glow-light: radial-gradient(1100px 380px at 50% -100px, rgba(44,74,110,0.05), transparent 70%);
+  --mt-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  /* 动效 */
+  --duration-fast: 120ms; --duration-base: 200ms; --duration-slow: 320ms;
+  --ease-standard: cubic-bezier(0.4,0,0.2,1); --ease-entrance: cubic-bezier(0,0,0.2,1);
+}
+/* 暗色（后台 AdminShell 锚点，v2.1 四级表面阶梯） */
+.dark {
+  --primary: var(--mt-ink-400); --primary-foreground: #0d141c; --primary-hover: var(--mt-ink-300);
+  --link: var(--mt-ink-300); --accent: var(--mt-amber-400); --accent-hover: var(--mt-amber-300); --accent-foreground: #0d141c;
+  --state-success: var(--mt-success-400); --state-success-bg: #1e2a22; --state-success-text: #a8d4b3;
+  --state-warning: var(--mt-warning-400); --state-warning-bg: #2d2519; --state-warning-text: #e3c78d;
+  --state-error: var(--mt-error-400); --state-error-bg: #2f1f1d; --state-error-text: #e0a89f;
+  --state-info: var(--mt-info-400); --state-info-bg: #1d2833; --state-info-text: #a9c3da;
+  --text-strong: rgba(245,247,250,0.95); --text-body: rgba(245,247,250,0.85); --text-muted: rgba(245,247,250,0.65);
+  --text-faint: rgba(245,247,250,0.40); --text-inverse: #1c2530;
+  --foreground: var(--text-body);
+  --background: #0e1218; --surface-0: #14181f; --surface-1: #181d26; --surface-2: #1e2530; --surface-3: #252e3b; --surface-4: #2d3848;
+  --card: #181d26; --card-foreground: var(--text-body); --popover: #252e3b; --popover-foreground: var(--text-body);
+  --muted: var(--mt-graphite-800); --muted-foreground: var(--text-muted);
+  --border: #2a3340; --input: #2d3848; --ring: var(--mt-ink-400);
+  --shadow-1: inset 0 1px 0 rgba(255,255,255,0.04), 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-2: inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 8px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.2);
+  --shadow-3: inset 0 1px 0 rgba(255,255,255,0.05), 0 8px 24px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.25);
+  --shadow-4: inset 0 1px 0 rgba(255,255,255,0.06), 0 16px 48px rgba(0,0,0,0.5), 0 8px 24px rgba(0,0,0,0.3);
+  --shadow-5: inset 0 1px 0 rgba(255,255,255,0.06), 0 24px 56px rgba(0,0,0,0.6), 0 12px 28px rgba(0,0,0,0.4);
+  --shadow-focus: 0 0 0 3px rgba(110,139,173,0.4);
+  --mt-hairline: rgba(255,255,255,0.07); --mt-hairline-strong: rgba(255,255,255,0.12);
+  --mt-glow-dark: radial-gradient(900px 420px at 50% -120px, rgba(110,139,173,0.10), transparent 70%);
+  --mt-glow-dark-secondary: radial-gradient(600px 300px at 85% 15%, rgba(207,160,76,0.05), transparent 60%);
+  --mt-sider-grad: linear-gradient(180deg, #161b24 0%, #121620 40%, #0e1218 100%);
+  --mt-header-glass: rgba(14,18,24,0.82);
+}
+/* 排版类 */
+.mt-display-lg { font-family: var(--font-display); font-size: 2.75rem; font-weight: 600; line-height: 1.15; letter-spacing: -0.015em; }
+.mt-display    { font-family: var(--font-display); font-size: 2.25rem; font-weight: 600; line-height: 1.2; letter-spacing: -0.01em; }
+.mt-display-sm { font-family: var(--font-display); font-size: 1.75rem; font-weight: 600; line-height: 1.25; }
+.mt-h1 { font-family: var(--font-heading); font-size: 1.75rem; font-weight: 600; line-height: 1.3; }
+.mt-h2 { font-family: var(--font-heading); font-size: 1.375rem; font-weight: 600; line-height: 1.35; }
+.mt-h3 { font-family: var(--font-heading); font-size: 1.125rem; font-weight: 600; line-height: 1.45; }
+.mt-h4 { font-family: var(--font-body); font-size: 0.9375rem; font-weight: 600; line-height: 1.5; }
+.mt-body { font-family: var(--font-body); font-size: 0.875rem; font-weight: 400; line-height: 1.65; }
+.mt-lead { font-family: var(--font-body); font-size: 1rem; font-weight: 400; line-height: 1.7; }
+.mt-caption { font-family: var(--font-body); font-size: 0.75rem; font-weight: 400; line-height: 1.5; color: var(--text-muted); }
+.mt-eyebrow { font-family: var(--font-mono); font-size: 0.6875rem; font-weight: 600; line-height: 1.4; letter-spacing: 0.08em; text-transform: uppercase; }
+.mt-mono { font-family: var(--font-mono); font-size: 0.8125rem; font-weight: 500; line-height: 1.6; font-variant-numeric: tabular-nums; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+    <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+  @theme inline {
+    --color-background: var(--mt-background);
+    --color-foreground: var(--mt-foreground);
+    --color-card: var(--mt-card);
+    --color-card-foreground: var(--mt-card-foreground);
+    --color-popover: var(--mt-popover);
+    --color-popover-foreground: var(--mt-popover-foreground);
+    --color-primary: var(--mt-primary);
+    --color-primary-foreground: var(--mt-primary-foreground);
+    --color-muted: var(--mt-muted);
+    --color-muted-foreground: var(--mt-muted-foreground);
+    --color-border: var(--mt-border);
+    --color-input: var(--mt-input);
+    --color-ring: var(--mt-ring);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --radius-sm: var(--mt-radius-sm);
+    --radius-md: var(--mt-radius-md);
+    --radius-lg: var(--mt-radius-lg);
+  }
+  @layer base {
+    body { background: var(--mt-background); color: var(--mt-foreground); }
+    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
+    th { @apply whitespace-nowrap; }
+  }
+    </style>
+    <style id="semantic-token-fallback">
+      .bg-background { background-color: var(--mt-background); }
+      .text-background { color: var(--mt-background); }
+      .border-background { border-color: var(--mt-background); }
+      .ring-background { --tw-ring-color: var(--mt-background); }
+      .bg-foreground { background-color: var(--mt-foreground); }
+      .text-foreground { color: var(--mt-foreground); }
+      .border-foreground { border-color: var(--mt-foreground); }
+      .ring-foreground { --tw-ring-color: var(--mt-foreground); }
+      .bg-card { background-color: var(--mt-card); }
+      .text-card { color: var(--mt-card); }
+      .border-card { border-color: var(--mt-card); }
+      .ring-card { --tw-ring-color: var(--mt-card); }
+      .bg-card-foreground { background-color: var(--mt-card-foreground); }
+      .text-card-foreground { color: var(--mt-card-foreground); }
+      .border-card-foreground { border-color: var(--mt-card-foreground); }
+      .ring-card-foreground { --tw-ring-color: var(--mt-card-foreground); }
+      .bg-popover { background-color: var(--mt-popover); }
+      .text-popover { color: var(--mt-popover); }
+      .border-popover { border-color: var(--mt-popover); }
+      .ring-popover { --tw-ring-color: var(--mt-popover); }
+      .bg-popover-foreground { background-color: var(--mt-popover-foreground); }
+      .text-popover-foreground { color: var(--mt-popover-foreground); }
+      .border-popover-foreground { border-color: var(--mt-popover-foreground); }
+      .ring-popover-foreground { --tw-ring-color: var(--mt-popover-foreground); }
+      .bg-primary { background-color: var(--mt-primary); }
+      .text-primary { color: var(--mt-primary); }
+      .border-primary { border-color: var(--mt-primary); }
+      .ring-primary { --tw-ring-color: var(--mt-primary); }
+      .bg-primary-foreground { background-color: var(--mt-primary-foreground); }
+      .text-primary-foreground { color: var(--mt-primary-foreground); }
+      .border-primary-foreground { border-color: var(--mt-primary-foreground); }
+      .ring-primary-foreground { --tw-ring-color: var(--mt-primary-foreground); }
+      .bg-muted { background-color: var(--mt-muted); }
+      .text-muted { color: var(--mt-muted); }
+      .border-muted { border-color: var(--mt-muted); }
+      .ring-muted { --tw-ring-color: var(--mt-muted); }
+      .bg-muted-foreground { background-color: var(--mt-muted-foreground); }
+      .text-muted-foreground { color: var(--mt-muted-foreground); }
+      .border-muted-foreground { border-color: var(--mt-muted-foreground); }
+      .ring-muted-foreground { --tw-ring-color: var(--mt-muted-foreground); }
+      .bg-border { background-color: var(--mt-border); }
+      .text-border { color: var(--mt-border); }
+      .border-border { border-color: var(--mt-border); }
+      .ring-border { --tw-ring-color: var(--mt-border); }
+      .bg-input { background-color: var(--mt-input); }
+      .text-input { color: var(--mt-input); }
+      .border-input { border-color: var(--mt-input); }
+      .ring-input { --tw-ring-color: var(--mt-input); }
+      .bg-ring { background-color: var(--mt-ring); }
+      .text-ring { color: var(--mt-ring); }
+      .border-ring { border-color: var(--mt-ring); }
+      .ring-ring { --tw-ring-color: var(--mt-ring); }
+      .bg-accent { background-color: var(--accent); }
+      .text-accent { color: var(--accent); }
+      .border-accent { border-color: var(--accent); }
+      .ring-accent { --tw-ring-color: var(--accent); }
+      .bg-accent-foreground { background-color: var(--accent-foreground); }
+      .text-accent-foreground { color: var(--accent-foreground); }
+      .border-accent-foreground { border-color: var(--accent-foreground); }
+      .ring-accent-foreground { --tw-ring-color: var(--accent-foreground); }
+    </style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+    </style>
+    <title>失败演示 · 采集源自动暂停</title>
+</head>
+<body class="min-h-screen font-sans antialiased">
+<style>
+  /* ---------- AdminShell 布局骨架（复用 gatherer-admin.html） ---------- */
+  .as-layout {
+    display: flex;
+    min-height: 100vh;
+    background: var(--surface-0);
+    color: var(--text-body);
+    font-family: var(--font-body);
+    font-size: 14px;
+  }
+  .as-sider {
+    width: 240px;
+    flex: none;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--mt-sider-grad);
+    border-right: 1px solid var(--mt-hairline);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+  .as-brand {
+    padding: 18px 20px 16px;
+    border-bottom: 1px solid var(--mt-hairline);
+  }
+  .as-brand-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--mt-ink-300);
+  }
+  .as-brand-name {
+    margin-top: 7px;
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--text-strong);
+  }
+  .as-nav {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px 12px 16px;
+  }
+  .as-nav-group {
+    margin: 14px 8px 6px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+  .as-nav-group:first-child { margin-top: 2px; }
+  .as-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 36px;
+    padding: 0 10px 0 12px;
+    border-radius: var(--radius-md);
+    font-size: 13.5px;
+    line-height: 1;
+    color: var(--text-muted);
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 120ms ease, background-color 120ms ease, box-shadow 120ms ease;
+  }
+  .as-nav-item i, .as-nav-item svg { width: 16px; height: 16px; flex: none; }
+  .as-nav-item:hover { color: var(--text-body); background: var(--surface-2); }
+  .as-nav-item[data-active="true"] {
+    color: var(--text-strong);
+    box-shadow: inset 2px 0 0 var(--mt-amber-400);
+  }
+  .as-sider-foot {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px;
+    border-top: 1px solid var(--mt-hairline);
+  }
+  .as-foot-link {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    height: 32px;
+    padding: 0 10px;
+    border: none;
+    border-radius: var(--radius-md);
+    background: transparent;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    text-align: left;
+    cursor: pointer;
+    transition: color 120ms ease, background-color 120ms ease;
+  }
+  .as-foot-link i { width: 14px; height: 14px; flex: none; }
+  .as-foot-link:hover { color: var(--text-strong); background: var(--surface-2); }
+  .as-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .as-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    height: 52px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 0 24px;
+    background: var(--mt-header-glass);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--mt-hairline);
+  }
+  .as-crumbs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+  }
+  .as-crumb-root { color: var(--text-faint); }
+  .as-crumb-sep { color: var(--text-faint); }
+  .as-crumb-current { color: var(--text-body); }
+  .as-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: none;
+  }
+  .as-version {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: var(--text-faint);
+  }
+  .as-env-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 22px;
+    padding: 0 9px;
+    border: 1px solid var(--mt-hairline);
+    border-radius: var(--radius-md);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .as-env-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 9999px;
+    background: var(--text-faint);
+  }
+  .as-content {
+    flex: 1;
+    min-width: 0;
+    background-color: var(--surface-0);
+    background-image: var(--mt-glow-dark);
+    background-repeat: no-repeat;
+  }
+  .as-pagehead {
+    padding: 20px 24px 0;
+    border-bottom: 1px solid var(--mt-hairline);
+  }
+  .as-pagehead-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px 24px;
+    flex-wrap: wrap;
+  }
+  .as-pagehead-main { min-width: 0; }
+  .as-page-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--mt-ink-300);
+  }
+  .as-page-title {
+    margin: 8px 0 0;
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--text-strong);
+  }
+  .as-page-badges {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .as-page-desc {
+    margin: 8px 0 0;
+    max-width: 640px;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--text-muted);
+  }
+  .as-page-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: none;
+    padding-bottom: 3px;
+  }
+  .as-kpirow {
+    margin-top: 18px;
+    margin-bottom: 20px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background: var(--surface-1);
+    border: 1px solid var(--mt-hairline);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-1);
+    overflow: hidden;
+  }
+  .as-kpi {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px 18px;
+    transition: background-color 120ms ease;
+  }
+  .as-kpi:hover { background: var(--surface-2); }
+  .as-kpi + .as-kpi { border-left: 1px solid var(--mt-hairline); }
+  .as-kpi-label { font-size: 12px; line-height: 1.4; color: var(--text-muted); }
+  .as-kpi-value {
+    font-family: var(--font-mono);
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--text-strong);
+    font-variant-numeric: tabular-nums;
+  }
+  .as-content-body { padding: 24px; }
+  .as-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    height: 36px;
+    padding: 0 16px;
+    border-radius: var(--radius-md);
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease;
+  }
+  .as-btn i { width: 15px; height: 15px; flex: none; }
+  .as-btn-primary {
+    background: var(--mt-ink-400);
+    border: 1px solid var(--mt-ink-400);
+    color: var(--surface-0);
+  }
+  .as-btn-primary:hover {
+    background: var(--mt-ink-300);
+    border-color: var(--mt-ink-300);
+    color: var(--surface-0);
+  }
+  .as-btn-ghost {
+    background: transparent;
+    border: 1px solid var(--mt-hairline);
+    color: var(--text-body);
+  }
+  .as-btn-ghost:hover {
+    background: var(--surface-2);
+    border-color: var(--mt-hairline);
+    color: var(--text-strong);
+  }
+  .as-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 22px;
+    padding: 0 9px;
+    border: 1px solid var(--mt-hairline);
+    border-radius: var(--radius-md);
+    background: var(--surface-1);
+    font-size: 11.5px;
+    font-weight: 500;
+    line-height: 1;
+    color: var(--text-muted);
+    transition: color 120ms ease, border-color 120ms ease;
+  }
+  .as-badge[data-tone="success"] { color: var(--state-success); border-color: var(--state-success); background: transparent; }
+  .as-badge[data-tone="warning"] { color: var(--state-warning); border-color: var(--state-warning); background: transparent; }
+  .as-badge[data-tone="error"]   { color: var(--state-error);   border-color: var(--state-error);   background: transparent; }
+  .as-badge[data-tone="info"]    { color: var(--state-info);    border-color: var(--state-info);    background: transparent; }
+  .as-panel {
+    background: var(--surface-1);
+    border: 1px solid var(--mt-hairline);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-1);
+  }
+  .as-nav-item:focus-visible,
+  .as-foot-link:focus-visible,
+  .as-btn:focus-visible {
+    outline: 1px solid var(--mt-ink-300);
+    outline-offset: 2px;
+  }
+  @media (max-width: 960px) {
+    .as-kpirow { grid-template-columns: repeat(2, 1fr); }
+    .as-kpi + .as-kpi { border-left: none; }
+    .as-kpi:nth-child(even) { border-left: 1px solid var(--mt-hairline); }
+    .as-kpi:nth-child(n + 3) { border-top: 1px solid var(--mt-hairline); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .as-nav-item, .as-foot-link, .as-btn, .as-badge, .as-kpi { transition: none; }
+  }
+</style>
+<style>
+  /* ---------- 表格 / 开关 / 操作链接（复用 gatherer-admin.html） ---------- */
+  .as-table-wrap {
+    background: var(--surface-1);
+    border: 1px solid var(--mt-hairline);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    overflow-x: auto;
+  }
+  .as-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    font-family: var(--font-body);
+    min-width: 880px;
+  }
+  .as-table thead th {
+    padding: 11px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--mt-hairline);
+    white-space: nowrap;
+  }
+  .as-table tbody td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--mt-hairline);
+    color: var(--text-body);
+    vertical-align: middle;
+  }
+  .as-table tbody tr:last-child td { border-bottom: none; }
+  .as-table tbody tr { transition: background-color var(--duration-fast) var(--ease-standard); }
+  .as-table tbody tr:hover { background: var(--surface-2); }
+  .as-table .col-mono {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--mt-ink-300);
+    white-space: nowrap;
+  }
+  .as-table .col-count {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-strong);
+    font-variant-numeric: tabular-nums;
+  }
+  .as-table .col-time {
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  /* 启停开关（纯 CSS checkbox hack，38×20，回弹 = 移除 checked 后 120ms transform 过渡） */
+  .as-toggle {
+    position: relative;
+    display: inline-block;
+    width: 38px;
+    height: 20px;
+    flex: none;
+    cursor: pointer;
+    vertical-align: middle;
+  }
+  .as-toggle input {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    cursor: pointer;
+    z-index: 2;
+  }
+  .as-toggle-track {
+    position: absolute;
+    inset: 0;
+    background: var(--surface-4);
+    border-radius: 9999px;
+    transition: background-color var(--duration-fast) var(--ease-standard);
+  }
+  .as-toggle-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    background: var(--text-faint);
+    border-radius: 9999px;
+    transition: transform var(--duration-fast) var(--ease-standard), background-color var(--duration-fast) var(--ease-standard);
+  }
+  .as-toggle input:checked ~ .as-toggle-track { background: var(--state-success); }
+  .as-toggle input:checked ~ .as-toggle-track .as-toggle-thumb {
+    transform: translateX(18px);
+    background: var(--surface-0);
+  }
+  .as-toggle input:focus-visible ~ .as-toggle-track {
+    box-shadow: 0 0 0 3px rgba(110,139,173,0.4);
+  }
+
+  /* 操作链接 */
+  .as-action-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 7px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-family: var(--font-body);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    transition: color var(--duration-fast) var(--ease-standard), background-color var(--duration-fast) var(--ease-standard);
+  }
+  .as-action-link:hover { color: var(--mt-ink-300); background: var(--surface-3); }
+  .as-action-link i { width: 13px; height: 13px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .as-toggle-track, .as-toggle-thumb, .as-action-link, .as-table tbody tr { transition: none; }
+  }
+</style>
+<style>
+  /* ---------- 演示页私有（pd-*）：两栏布局 + 导演台 + 行错误态 + toast ---------- */
+  .pd-lab {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 20px;
+    align-items: start;
+  }
+
+  /* 左栏 · 演示表格区 */
+  .pd-stage {
+    background: var(--surface-1);
+    border: 1px solid var(--mt-hairline);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-1);
+    overflow: hidden;
+  }
+  .pd-stage .as-table-wrap { border: none; border-radius: 0; }
+  .pd-stage .as-table { min-width: 780px; }
+  .pd-stage-bar {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--mt-hairline);
+  }
+  .pd-stage-title {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--text-strong);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+  .pd-stage-id {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--text-faint);
+    white-space: nowrap;
+    flex: none;
+  }
+  .pd-stage-note {
+    padding: 10px 16px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-muted);
+    border-top: 1px solid var(--mt-hairline);
+  }
+
+  /* 行内错误态 */
+  .pd-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+    color: var(--text-strong);
+  }
+  .pd-rowhead { display: inline-flex; flex: none; }
+  .pd-rowhead svg { width: 14px; height: 14px; color: var(--state-error); }
+  .as-table tbody tr.is-autopaused,
+  .as-table tbody tr.is-autopaused:hover {
+    background: var(--state-error-bg);
+    background: color-mix(in srgb, var(--state-error-bg) 65%, transparent);
+    box-shadow: inset 2px 0 0 var(--state-error);
+  }
+  .pd-status-cell { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .pd-fail-cell { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .pd-fail-num {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .pd-fail-num.is-warn { color: var(--state-warning-text); }
+  .pd-fail-num.is-err { color: var(--state-error-text); }
+  .pd-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 6px;
+    border: 1px solid var(--mt-hairline-strong);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1.5;
+    letter-spacing: 0.02em;
+    color: var(--text-muted);
+  }
+  .pd-chip.is-warn { color: var(--state-warning-text); border-color: var(--state-warning); }
+  .pd-chip.is-err { color: var(--state-error-text); border-color: var(--state-error); }
+  .pd-last {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .pd-last.is-err { color: var(--state-error-text); }
+  .pd-last.is-ok { color: var(--state-success-text); }
+
+  /* 右栏 · 导演台控制台（sticky） */
+  .pd-console {
+    position: sticky;
+    top: 68px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    background: var(--surface-1);
+    border: 1px solid var(--mt-hairline);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-1);
+  }
+  .pd-console-head {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--font-heading);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--text-strong);
+  }
+  .pd-console-head svg { width: 15px; height: 15px; flex: none; color: var(--accent); }
+  .pd-console-tip { margin: 0; font-size: 12px; line-height: 1.6; color: var(--text-muted); }
+  .pd-console-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    line-height: 1.4;
+    color: var(--text-faint);
+    padding-top: 2px;
+  }
+  .pd-scenes { display: flex; flex-direction: column; gap: 6px; }
+  .pd-scene {
+    display: block;
+    width: 100%;
+    padding: 8px 10px;
+    text-align: left;
+    background: var(--surface-1);
+    border: 1px solid var(--mt-hairline-strong);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: border-color var(--duration-fast) var(--ease-standard), background-color var(--duration-fast) var(--ease-standard);
+  }
+  .pd-scene:hover { border-color: var(--mt-ink-300); }
+  .pd-scene:focus-visible { outline: 1px solid var(--mt-ink-300); outline-offset: 2px; }
+  .pd-scene:disabled { opacity: 0.55; cursor: not-allowed; }
+  .pd-scene[aria-pressed="true"] { border-color: var(--accent); background: var(--surface-2); }
+  .pd-scene-row { display: flex; align-items: center; gap: 8px; }
+  .pd-scene-id {
+    flex: none;
+    padding: 1px 5px;
+    border: 1px solid var(--mt-hairline-strong);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--text-faint);
+  }
+  .pd-scene[aria-pressed="true"] .pd-scene-id { color: var(--accent); border-color: var(--accent); }
+  .pd-scene-name { font-size: 12.5px; font-weight: 600; line-height: 1.45; color: var(--text-body); }
+  .pd-scene[aria-pressed="true"] .pd-scene-name { color: var(--text-strong); }
+  .pd-scene-desc { display: block; margin-top: 3px; font-size: 11px; line-height: 1.5; color: var(--text-faint); }
+  .pd-hint {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.6;
+    color: var(--text-muted);
+    background: var(--surface-2);
+    border-radius: var(--radius-md);
+    padding: 6px 10px;
+  }
+  .pd-readout {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 12px;
+    background: var(--surface-2);
+    border-radius: var(--radius-md);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+  .pd-readout-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    line-height: 1.8;
+  }
+  .pd-readout-key { color: var(--text-faint); }
+  .pd-readout-val { color: var(--text-strong); font-weight: 600; }
+  .pd-readout-val.is-warn { color: var(--state-warning-text); }
+  .pd-readout-val.is-err { color: var(--state-error-text); }
+  .pd-readout-val.is-busy { color: var(--state-info-text); }
+  .pd-console-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--link);
+    text-decoration: none;
+  }
+  .pd-console-link:hover { text-decoration: underline; }
+  .pd-console-link svg { width: 13px; height: 13px; }
+  .pd-spec-brief {
+    border: 1px solid var(--mt-hairline);
+    border-radius: var(--radius-md);
+    background: var(--surface-1);
+  }
+  .pd-spec-brief summary {
+    padding: 8px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-body);
+    cursor: pointer;
+    list-style: none;
+  }
+  .pd-spec-brief summary::-webkit-details-marker { display: none; }
+  .pd-spec-brief summary::before { content: '▸ '; color: var(--text-faint); }
+  .pd-spec-brief[open] summary::before { content: '▾ '; }
+  .pd-sm {
+    margin: 0;
+    padding: 0 10px 10px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    line-height: 1.7;
+    color: var(--text-muted);
+    white-space: pre;
+    overflow-x: auto;
+  }
+  .pd-rules { margin: 0; padding: 0 10px 10px; display: flex; flex-direction: column; gap: 3px; }
+  .pd-rules li {
+    font-size: 11.5px;
+    line-height: 1.6;
+    color: var(--text-muted);
+    list-style: none;
+    padding-left: 12px;
+    position: relative;
+  }
+  .pd-rules li::before { content: '·'; position: absolute; left: 2px; color: var(--text-faint); }
+  .pd-reset { width: 100%; }
+
+  /* 底部规格说明 */
+  .pd-spec {
+    margin-top: 20px;
+    padding: 20px;
+    background: var(--surface-1);
+    border: 1px solid var(--mt-hairline);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-1);
+  }
+  .pd-spec .mt-h3 { margin: 0 0 8px; color: var(--text-strong); }
+  .pd-spec .mt-body { color: var(--text-muted); }
+  .pd-spec .pd-rules { padding: 8px 0 0; gap: 4px; }
+  .pd-spec .pd-rules li { font-size: 13px; color: var(--text-body); }
+  .pd-spec a { color: var(--link); }
+
+  /* 错误 toast（右上角固定容器，3s 淡出移除） */
+  .pd-toasts {
+    position: fixed;
+    top: 64px;
+    right: 16px;
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: min(320px, calc(100vw - 32px));
+  }
+  .pd-toast {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    padding: 10px 12px 10px 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--mt-hairline-strong);
+    border-left: 3px solid var(--state-error);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-3);
+    animation: pd-toast-in var(--duration-base) var(--ease-entrance);
+    transition: opacity var(--duration-base) var(--ease-standard), transform var(--duration-base) var(--ease-standard);
+  }
+  @keyframes pd-toast-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .pd-toast.is-out { opacity: 0; transform: translateY(-4px); }
+  .pd-toast > svg { width: 14px; height: 14px; flex: none; margin-top: 1px; color: var(--state-error); }
+  .pd-toast-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .pd-toast-title { font-size: 12.5px; font-weight: 600; line-height: 1.5; color: var(--text-strong); }
+  .pd-toast-code { font-family: var(--font-mono); font-size: 11px; color: var(--state-error-text); }
+  .pd-toast-time { flex: none; margin-top: 2px; font-family: var(--font-mono); font-size: 10.5px; color: var(--text-faint); }
+
+  @media (max-width: 960px) {
+    .pd-lab { grid-template-columns: 1fr; }
+    .pd-console { position: static; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pd-toast { animation: none; transition: none; }
+    .pd-scene { transition: none; }
+  }
+
+  /* ---- R5 修正：窄屏侧栏降级（≤720px 收窄为 56px 图标列） ---- */
+  @media (max-width: 720px) {
+    .as-sider { width: 56px; }
+    .as-brand { padding: 14px 8px 12px; }
+    .as-brand-eyebrow { display: none; }
+    .as-brand-name { font-size: 0; }
+    .as-brand-name::first-letter { font-size: 17px; }
+    .as-nav { padding: 10px 6px 12px; }
+    .as-nav-group { font-size: 0; }
+    .as-nav-group::first-letter { font-size: 10px; }
+    .as-nav-item { justify-content: center; padding: 0; }
+    .as-nav-item span { display: none; }
+    .as-foot-link { justify-content: center; padding: 0; }
+    .as-foot-link span { display: none; }
+    .as-topbar { padding: 0 14px; }
+    .as-pagehead { padding: 16px 14px 0; }
+    .as-content-body { padding: 16px 14px; }
+    .as-crumbs .as-crumb-root,
+    .as-crumbs .as-crumb-sep { display: none; }
+  }
+
+</style>
+
+<div class="as-layout">
+  <aside class="as-sider">
+    <div class="as-brand">
+      <div class="as-brand-eyebrow">GATHERER · FAIL LAB</div>
+      <div class="as-brand-name">失败演示</div>
+    </div>
+    <nav class="as-nav" aria-label="后台主导航">
+      <div class="as-nav-group">控制台</div>
+      <a class="as-nav-item" data-nav-key="overview" data-active="true" href="./gatherer-admin.html">
+        <i data-lucide="layout-dashboard" aria-hidden="true"></i><span>总览</span>
+      </a>
+      <a class="as-nav-item" data-nav-key="settings" href="#">
+        <i data-lucide="settings" aria-hidden="true"></i><span>系统设置</span>
+      </a>
+      <a class="as-nav-item" data-nav-key="audit" href="#">
+        <i data-lucide="scroll-text" aria-hidden="true"></i><span>访问日志</span>
+      </a>
+      <div class="as-nav-group">业务</div>
+      <a class="as-nav-item" data-nav-key="sources" data-active="true" href="./gatherer-admin.html">
+        <i data-lucide="database" aria-hidden="true"></i><span>采集源</span>
+      </a>
+      <a class="as-nav-item" data-nav-key="tasks" href="#">
+        <i data-lucide="list-todo" aria-hidden="true"></i><span>采集任务</span>
+      </a>
+      <a class="as-nav-item" data-nav-key="history" href="#">
+        <i data-lucide="history" aria-hidden="true"></i><span>入库历史</span>
+      </a>
+    </nav>
+    <div class="as-sider-foot">
+      <button type="button" class="as-foot-link" data-dom-id="back-front">
+        <i data-lucide="arrow-left" aria-hidden="true"></i><span>返回前台</span>
+      </button>
+      <button type="button" class="as-foot-link" data-dom-id="back-platform">
+        <i data-lucide="layout-grid" aria-hidden="true"></i><span>返回总览</span>
+      </button>
+    </div>
+  </aside>
+  <div class="as-body">
+    <header class="as-topbar">
+      <div class="as-crumbs">
+        <span class="as-crumb-root">采集后台</span>
+        <span class="as-crumb-sep">/</span>
+        <span class="as-crumb-current">失败演示</span>
+      </div>
+      <div class="as-topbar-right">
+        <span class="as-version">V2.2</span>
+        <span class="as-env-badge"><span class="as-env-dot"></span>ENV · DEMO</span>
+      </div>
+    </header>
+    <main class="as-content">
+      <div class="as-pagehead">
+        <div class="as-pagehead-row">
+          <div class="as-pagehead-main">
+            <div class="as-page-eyebrow">DEMO · AUTO-PAUSE</div>
+            <h1 class="as-page-title">采集失败自动暂停</h1>
+            <div class="as-page-badges">
+              <span class="as-badge" data-tone="success">演示环境</span>
+            </div>
+            <p class="as-page-desc">演示采集任务连续失败 3 次后的自动暂停规则与开关回弹反馈。</p>
+          </div>
+          <div class="as-page-actions">
+            <a class="as-btn as-btn-ghost" href="./gatherer-admin.html">
+              <i data-lucide="arrow-left" aria-hidden="true"></i><span>采集源管理</span>
+            </a>
+          </div>
+        </div>
+        <div class="as-kpirow">
+          <div class="as-kpi"><span class="as-kpi-label">活跃采集源</span><span class="as-kpi-value">32</span></div>
+          <div class="as-kpi"><span class="as-kpi-label">连续失败阈值</span><span class="as-kpi-value">3</span></div>
+          <div class="as-kpi"><span class="as-kpi-label">已自动暂停</span><span class="as-kpi-value" id="pd-kpi-paused">0</span></div>
+          <div class="as-kpi"><span class="as-kpi-label">失败重试</span><span class="as-kpi-value" id="pd-kpi-retry">0</span></div>
+        </div>
+      </div>
+      <div class="as-content-body">
+
+        <div class="pd-lab" aria-label="自动暂停演示工作区">
+
+          <!-- 左栏 · 演示表格区 -->
+          <section class="pd-stage" aria-label="采集源演示表格">
+            <header class="pd-stage-bar">
+              <h2 class="pd-stage-title">采集源 · 演示数据</h2>
+              <span class="pd-stage-id">SRC-DEMO · N=5</span>
+            </header>
+            <div class="as-table-wrap">
+              <table class="as-table">
+                <thead>
+                  <tr>
+                    <th>源名称</th>
+                    <th>类型</th>
+                    <th>状态</th>
+                    <th>连续失败</th>
+                    <th>最后采集</th>
+                    <th>今日条数</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- 行 1 · 正常运行 -->
+                  <tr>
+                    <td class="pd-name-cell"><span>科技博客聚合</span></td>
+                    <td><span class="as-badge" data-tone="info">RSS</span></td>
+                    <td>
+                      <label class="as-toggle" title="运行中">
+                        <input type="checkbox" checked data-demo-toggle data-init-checked="true">
+                        <span class="as-toggle-track"><span class="as-toggle-thumb"></span></span>
+                      </label>
+                    </td>
+                    <td><span class="pd-fail-cell"><span class="pd-fail-num">0</span></span></td>
+                    <td class="pd-last">32 分钟前</td>
+                    <td class="col-count">18</td>
+                    <td>
+                      <button type="button" class="as-action-link" data-extra-action><i data-lucide="pencil" aria-hidden="true"></i>编辑</button>
+                      <button type="button" class="as-action-link" data-extra-action><i data-lucide="pause" aria-hidden="true"></i>暂停</button>
+                      <button type="button" class="as-action-link" data-extra-action><i data-lucide="file-text" aria-hidden="true"></i>日志</button>
+                    </td>
+                  </tr>
+                  <!-- 行 2 · 演示主角「新闻聚合源」 -->
+                  <tr id="pd-hero-row">
+                    <td class="pd-name-cell">
+                      <span class="pd-rowhead" data-hero-alert hidden><i data-lucide="alert-triangle" aria-hidden="true"></i></span>
+                      <span>新闻聚合源</span>
+                    </td>
+                    <td><span class="as-badge" data-tone="info">RSS</span></td>
+                    <td data-hero-status-td>
+                      <span class="pd-status-cell">
+                        <label class="as-toggle" title="运行中">
+                          <input type="checkbox" checked data-hero-toggle>
+                          <span class="as-toggle-track"><span class="as-toggle-thumb"></span></span>
+                        </label>
+                        <span class="as-badge" data-tone="success" data-hero-badge>运行中</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="pd-fail-cell">
+                        <span class="pd-fail-num" data-hero-fail>0</span>
+                        <span class="pd-chip" data-hero-chip hidden>失败中</span>
+                      </span>
+                    </td>
+                    <td class="pd-last" data-hero-last>12 分钟前</td>
+                    <td class="col-count">12</td>
+                    <td>
+                      <button type="button" class="as-action-link" data-extra-action><i data-lucide="pencil" aria-hidden="true"></i>编辑</button>
+                      <button type="button" class="as-action-link" data-hero-pause-btn><i data-lucide="pause" aria-hidden="true"></i>暂停</button>
+                      <button type="button" class="as-action-link" data-hero-enable-btn hidden><i data-lucide="play" aria-hidden="true"></i>启用</button>
+                      <button type="button" class="as-action-link" data-extra-action><i data-lucide="file-text" aria-hidden="true"></i>日志</button>
+                    </td>
+                  </tr>
+                  <!-- 行 3 · P3 目标「行业报告抓取」（初始已暂停） -->
+                  <tr>
+                    <td class="pd-name-cell"><span>行业报告抓取</span></td>
+                    <td><span class="as-badge">网页</span></td>
+                    <td>
+                      <label class="as-toggle" title="已暂停">
+                        <input type="checkbox" id="pd-row3-toggle" data-demo-toggle data-init-checked="false">
+                        <span class="as-toggle-track"><span class="as-toggle-thumb"></span></span>
+                      </label>
+                    </td>
+                    <td><span class="pd-fail-cell"><span class="pd-fail-num">0</span></span></td>
+                    <td class="pd-last">2 小时前</td>
+                    <td class="col-count">0</td>
+                    <td>
+                      <button type="button" class="as-action-link" data-extra-action><i data-lucide="pencil" aria-hidden="true"></i>编辑</button>
+                      <button type="button" class="as-action-link" data-extra-action><i data-lucide="play" aria-hidden="true"></i>启用</button>
+                      <button type="button" class="as-action-link" data-extra-action><i data-lucide="file-text" aria-hidden="true"></i>日志</button>
+                    </td>
+                  </tr>
+                  <!-- 行 4 · 正常运行 -->
+                  <tr>
+                    <td class="pd-name-cell"><span>论文数据接口</span></td>
+                    <td><span class="as-badge" data-tone="success">API</span></td>
+                    <td>
+                      <label class="as-toggle" title="运行中">
+                        <input type="checkbox" checked data-demo-toggle data-init-checked="true">
+                        <span class="as-toggle-track"><span class="as-toggle-thumb"></span></span>
+                      </label>
+                    </td>
+                    <td><span class="pd-fail-cell"><span class="pd-fail-num">0</span></span></td>
+                    <td class="pd-last">5 分钟前</td>
+                    <td class="col-count">42</td>
+                    <td>
+                      <button type="button" class="as-action-link" data-extra-action><i data-lucide="pencil" aria-hidden="true"></i>编辑</button>
+                      <button type="button" class="as-action-link" data-extra-action><i data-lucide="pause" aria-hidden="true"></i>暂停</button>
+                      <button type="button" class="as-action-link" data-extra-action><i data-lucide="file-text" aria-hidden="true"></i>日志</button>
+                    </td>
+                  </tr>
+                  <!-- 行 5 · 正常运行 -->
+                  <tr>
+                    <td class="pd-name-cell"><span>政策法规监控</span></td>
+                    <td><span class="as-badge">网页</span></td>
+                    <td>
+                      <label class="as-toggle" title="运行中">
+                        <input type="checkbox" checked data-demo-toggle data-init-checked="true">
+                        <span class="as-toggle-track"><span class="as-toggle-thumb"></span></span>
+                      </label>
+                    </td>
+                    <td><span class="pd-fail-cell"><span class="pd-fail-num">0</span></span></td>
+                    <td class="pd-last">1 小时前</td>
+                    <td class="col-count">6</td>
+                    <td>
+                      <button type="button" class="as-action-link" data-extra-action><i data-lucide="pencil" aria-hidden="true"></i>编辑</button>
+                      <button type="button" class="as-action-link" data-extra-action><i data-lucide="pause" aria-hidden="true"></i>暂停</button>
+                      <button type="button" class="as-action-link" data-extra-action><i data-lucide="file-text" aria-hidden="true"></i>日志</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="pd-stage-note">主角行「新闻聚合源」：连续失败达阈值 3 次自动暂停；其余行可点击开关体验操作失败回弹（P3）。</div>
+          </section>
+
+          <!-- 右栏 · 导演台控制台 -->
+          <aside class="pd-console" aria-label="导演控制台">
+            <div class="pd-console-head">
+              <i data-lucide="sliders" aria-hidden="true"></i><span>导演台 · 场景注入</span>
+            </div>
+            <p class="pd-console-tip">选择场景，观察主角行「新闻聚合源」的错误态流转。</p>
+
+            <div class="pd-scenes" role="group" aria-label="场景选择">
+              <button class="pd-scene" type="button" data-scene="P1" aria-pressed="false">
+                <span class="pd-scene-row"><span class="pd-scene-id">P1</span><span class="pd-scene-name">单次失败</span></span>
+                <span class="pd-scene-desc">失败 1 次后下次采集成功，计数归零</span>
+              </button>
+              <button class="pd-scene" type="button" data-scene="P2" aria-pressed="false">
+                <span class="pd-scene-row"><span class="pd-scene-id">P2</span><span class="pd-scene-name">连续失败自动暂停</span></span>
+                <span class="pd-scene-desc">1→2→3 递进（间隔 1.2s），第 3 次触发暂停</span>
+              </button>
+              <button class="pd-scene" type="button" data-scene="P3" aria-pressed="false">
+                <span class="pd-scene-row"><span class="pd-scene-id">P3</span><span class="pd-scene-name">开关操作失败回弹</span></span>
+                <span class="pd-scene-desc">其它行开启 → 请求失败 → 120ms 回弹 + 错误提示</span>
+              </button>
+              <button class="pd-scene" type="button" data-scene="P4" aria-pressed="false">
+                <span class="pd-scene-row"><span class="pd-scene-id">P4</span><span class="pd-scene-name">手动恢复</span></span>
+                <span class="pd-scene-desc">已暂停行点击「启用」→ 1s 后恢复运行</span>
+              </button>
+            </div>
+            <div class="pd-hint" id="pd-hint">选择场景注入失败 · 主角行「新闻聚合源」</div>
+
+            <div class="pd-console-label">状态读数</div>
+            <div class="pd-readout" aria-live="polite">
+              <div class="pd-readout-row"><span class="pd-readout-key">source.status</span><span class="pd-readout-val" id="pd-r-status">running</span></div>
+              <div class="pd-readout-row"><span class="pd-readout-key">failCount</span><span class="pd-readout-val" id="pd-r-fail">0/3</span></div>
+              <div class="pd-readout-row"><span class="pd-readout-key">lastErr</span><span class="pd-readout-val" id="pd-r-err">—</span></div>
+            </div>
+
+            <div class="pd-console-label">说明</div>
+            <a class="pd-console-link" href="#spec">完整规格<i data-lucide="arrow-right" aria-hidden="true"></i></a>
+            <details class="pd-spec-brief">
+              <summary>规格要点 · 自动暂停规则</summary>
+              <pre class="pd-sm" aria-label="规则文字版">running ─失败─▶ failing(count+1)
+failing ─成功─▶ running(count=0)
+failing ─count≥3─▶ paused(自动·开关回弹)
+paused ─仅手动启用─▶ recovering ─1s─▶ running</pre>
+              <ul class="pd-rules">
+                <li>阈值：连续失败 3 次</li>
+                <li>暂停后不自动重试</li>
+                <li>手动启用恢复，计数归零</li>
+              </ul>
+            </details>
+
+            <button class="as-btn as-btn-ghost pd-reset" type="button" id="pd-reset">
+              <i data-lucide="refresh-cw" aria-hidden="true"></i><span>重置演示</span>
+            </button>
+          </aside>
+        </div>
+
+        <!-- 底部规格说明（「完整规格」锚点目标） -->
+        <section id="spec" class="pd-spec" aria-label="规格说明">
+          <h2 class="mt-h3">规格说明 · 采集源连续失败自动暂停</h2>
+          <p class="mt-body">采集任务每次失败将递增该源「连续失败」计数（1-2 次以告警色提示，第 3 次转错误色），成功一次即归零；连续失败达到阈值 3 次后，源自动转入「已自动暂停」：整行错误底色、状态徽标转错误态、开关 120ms 回弹至关闭位、行首出现警示图标，操作列提供「启用」入口。</p>
+          <ul class="pd-rules">
+            <li>阈值：连续失败 3 次自动暂停，成功一次计数归零；</li>
+            <li>暂停后不自动重试：调度器跳过该源，不消耗采集配额；</li>
+            <li>手动启用恢复：点击「启用」或开关，约 1s 后回到运行中并清零计数。</li>
+          </ul>
+          <p class="mt-body">基础页面见<a href="./gatherer-admin.html">采集源管理</a>，同构演示范式见<a href="./assistant-retry-demo.html">AI 回复重试演示</a>。</p>
+        </section>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- 错误 toast 固定容器 -->
+<div class="pd-toasts" id="pd-toasts" aria-label="错误提示"></div>
+
+<script>
+  /* ===== 采集源连续失败自动暂停演示（vanilla JS）===== */
+  (function () {
+    'use strict';
+
+    function q(sel, root) { return (root || document).querySelector(sel); }
+    function qa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+
+    var heroRow = document.getElementById('pd-hero-row');
+    var heroToggle = q('[data-hero-toggle]');
+    var heroLabel = heroToggle.closest('.as-toggle');
+    var heroBadge = q('[data-hero-badge]');
+    var heroFailNum = q('[data-hero-fail]');
+    var heroChip = q('[data-hero-chip]');
+    var heroLast = q('[data-hero-last]');
+    var heroAlert = q('[data-hero-alert]');
+    var heroStatusTd = q('[data-hero-status-td]');
+    var heroPauseBtn = q('[data-hero-pause-btn]');
+    var heroEnableBtn = q('[data-hero-enable-btn]');
+    var kpiPaused = document.getElementById('pd-kpi-paused');
+    var kpiRetry = document.getElementById('pd-kpi-retry');
+    var hintEl = document.getElementById('pd-hint');
+    var rStatus = document.getElementById('pd-r-status');
+    var rFail = document.getElementById('pd-r-fail');
+    var rErr = document.getElementById('pd-r-err');
+    var resetBtn = document.getElementById('pd-reset');
+    var toastBox = document.getElementById('pd-toasts');
+    var sceneBtns = qa('.pd-scene');
+    var demoToggles = qa('[data-demo-toggle]');
+    var p3Target = document.getElementById('pd-row3-toggle');
+    var DEFAULT_HINT = '选择场景注入失败 · 主角行「新闻聚合源」';
+
+    var S = { run: 0, flight: false, timers: [], status: 'running', failCount: 0, lastErr: null, autoPaused: false, manualPaused: false };
+
+    /* ---- 基础工具 ---- */
+    function sleep(ms) {
+      return new Promise(function (resolve) {
+        var t = setTimeout(function () { removeTimer(t); resolve(); }, ms);
+        S.timers.push(t);
+      });
+    }
+    function removeTimer(t) { var i = S.timers.indexOf(t); if (i > -1) { S.timers.splice(i, 1); } }
+    function dead(token) { return token !== S.run; }
+    function icons() { if (window.lucide) { window.lucide.createIcons(); } }
+    function timeNow() {
+      var d = new Date();
+      function p(n) { return String(n).padStart(2, '0'); }
+      return p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+    }
+    function hint(text) { hintEl.textContent = text; }
+    function lock() {
+      S.flight = true;
+      sceneBtns.forEach(function (b) { b.disabled = true; });
+      resetBtn.disabled = true;
+    }
+    function unlock() {
+      S.flight = false;
+      sceneBtns.forEach(function (b) { b.disabled = false; });
+      resetBtn.disabled = false;
+    }
+    function bumpKpi(el, delta) {
+      var v = parseInt(el.textContent, 10) || 0;
+      el.textContent = String(Math.max(0, v + delta));
+    }
+
+    /* ---- 状态读数（aria-live） ---- */
+    function syncReadout() {
+      var st = S.status;
+      rStatus.textContent = st;
+      rStatus.className = 'pd-readout-val' + (st === 'paused' ? ' is-err' : st === 'failing' ? ' is-warn' : st === 'recovering' ? ' is-busy' : '');
+      rFail.textContent = S.failCount + '/3';
+      rFail.className = 'pd-readout-val' + (S.failCount >= 3 ? ' is-err' : S.failCount > 0 ? ' is-warn' : '');
+      var hasErr = !!S.lastErr;
+      rErr.textContent = hasErr ? S.lastErr : '—';
+      rErr.className = 'pd-readout-val' + (hasErr ? ' is-err' : '');
+    }
+    function setStatus(st) { S.status = st; syncReadout(); }
+    function setLastErr(code) { S.lastErr = code; syncReadout(); }
+
+    /* ---- 主角行渲染 ---- */
+    function setBadge(tone, text) {
+      heroBadge.setAttribute('data-tone', tone);
+      heroBadge.textContent = text;
+    }
+    function setFailCount(n) {
+      S.failCount = n;
+      heroFailNum.textContent = String(n);
+      heroFailNum.className = 'pd-fail-num' + (n >= 3 ? ' is-err' : n > 0 ? ' is-warn' : '');
+      if (n <= 0) {
+        heroChip.hidden = true;
+      } else if (n < 3) {
+        heroChip.hidden = false;
+        heroChip.className = 'pd-chip is-warn';
+        heroChip.textContent = '失败中';
+      } else {
+        heroChip.hidden = false;
+        heroChip.className = 'pd-chip is-err';
+        heroChip.textContent = '触发暂停';
+      }
+      syncReadout();
+    }
+    function setLast(mode) {
+      if (mode === 'fail') {
+        heroLast.textContent = '失败 · ' + timeNow();
+        heroLast.className = 'pd-last is-err';
+      } else if (mode === 'ok') {
+        heroLast.textContent = '成功 · ' + timeNow();
+        heroLast.className = 'pd-last is-ok';
+      } else {
+        heroLast.textContent = '12 分钟前';
+        heroLast.className = 'pd-last';
+      }
+    }
+    function setActions(paused) {
+      heroPauseBtn.hidden = paused;
+      heroEnableBtn.hidden = !paused;
+    }
+
+    /* ---- 错误 toast（右上角，3s 淡出移除） ---- */
+    function showToast(title, code) {
+      var el = document.createElement('div');
+      el.className = 'pd-toast';
+      el.setAttribute('role', 'alert');
+      el.innerHTML =
+        '<i data-lucide="alert-triangle" aria-hidden="true"></i>' +
+        '<div class="pd-toast-main">' +
+          '<span class="pd-toast-title">' + title + '</span>' +
+          '<span class="pd-toast-code">' + code + '</span>' +
+        '</div>' +
+        '<span class="pd-toast-time">' + timeNow() + '</span>';
+      toastBox.appendChild(el);
+      icons(); /* 动态 DOM 插入后重调 createIcons */
+      var t = setTimeout(function () {
+        removeTimer(t);
+        el.classList.add('is-out');
+        var t2 = setTimeout(function () {
+          removeTimer(t2);
+          if (el.parentNode) { el.parentNode.removeChild(el); }
+        }, 240);
+        S.timers.push(t2);
+      }, 3000);
+      S.timers.push(t);
+    }
+
+    /* ---- 主角行流转 ---- */
+    function heroFail(n, code) {
+      setFailCount(n);
+      setLast('fail');
+      setLastErr(code);
+      setStatus('failing');
+      bumpKpi(kpiRetry, 1);
+    }
+    function applyAutoPause() {
+      S.autoPaused = true;
+      heroRow.classList.add('is-autopaused');
+      heroAlert.hidden = false;
+      heroStatusTd.setAttribute('role', 'alert'); /* 自动暂停发生时状态单元格 role=alert */
+      heroToggle.checked = false; /* 开关 120ms 回弹至关闭位（CSS transform 过渡） */
+      heroLabel.title = '已自动暂停';
+      setBadge('error', '已自动暂停');
+      setActions(true);
+      bumpKpi(kpiPaused, 1);
+    }
+    function clearAutoPause() {
+      S.autoPaused = false;
+      heroRow.classList.remove('is-autopaused');
+      heroAlert.hidden = true;
+      heroStatusTd.removeAttribute('role');
+    }
+    function applyManualPause() {
+      S.manualPaused = true;
+      heroToggle.checked = false;
+      heroLabel.title = '已暂停';
+      setBadge('warning', '已暂停');
+      setActions(true);
+      setStatus('paused');
+    }
+    async function recoverHero() {
+      var token = ++S.run;
+      lock();
+      heroEnableBtn.disabled = true;
+      setStatus('recovering');
+      setBadge('info', '恢复中');
+      heroLabel.title = '恢复中';
+      hint('手动启用 · 正在恢复调度…');
+      await sleep(1000);
+      if (dead(token)) { heroEnableBtn.disabled = false; return; }
+      heroEnableBtn.disabled = false;
+      if (S.autoPaused) { bumpKpi(kpiPaused, -1); }
+      clearAutoPause();
+      S.manualPaused = false;
+      heroToggle.checked = true;
+      heroLabel.title = '运行中';
+      setBadge('success', '运行中');
+      setFailCount(0);
+      setLast('ok');
+      setLastErr(null);
+      setStatus('running');
+      setActions(false);
+      hint('恢复完成 · 连续失败计数已归零');
+      unlock();
+    }
+
+    /* ---- 场景 ---- */
+    async function sceneP1() {
+      var token = ++S.run;
+      lock();
+      hint('P1 · 第 1 次采集失败（计数 1/3）…');
+      heroFail(1, 'ERR-SRC-502');
+      await sleep(1400);
+      if (dead(token)) { return; }
+      hint('P1 · 下次采集成功 · 计数归零');
+      setFailCount(0);
+      setLast('ok');
+      setLastErr(null);
+      setStatus('running');
+      await sleep(700);
+      if (dead(token)) { return; }
+      hint('P1 完成 · 未达阈值不暂停');
+      unlock();
+    }
+    async function sceneP2() {
+      var token = ++S.run;
+      lock();
+      hint('P2 · 连续失败 1/3 …');
+      heroFail(1, 'ERR-SRC-502');
+      await sleep(1200);
+      if (dead(token)) { return; }
+      hint('P2 · 连续失败 2/3 …');
+      heroFail(2, 'ERR-NET-001');
+      await sleep(1200);
+      if (dead(token)) { return; }
+      hint('P2 · 连续失败 3/3 · 达阈值，触发自动暂停');
+      heroFail(3, 'ERR-SRC-502');
+      applyAutoPause();
+      setStatus('paused');
+      await sleep(800);
+      if (dead(token)) { return; }
+      hint('P2 完成 · 已自动暂停 · 暂停后不自动重试');
+      unlock();
+    }
+    async function toggleFailFlow(input, token) {
+      var target = !input.checked;
+      input.checked = target; /* 用户操作视觉先到位 */
+      await sleep(400);
+      if (dead(token)) { return; }
+      input.checked = !target; /* 请求失败 · 120ms 回弹至原位 */
+      setLastErr('ERR-GW-504');
+      showToast('开关操作失败', 'ERR-GW-504');
+    }
+    async function sceneP3() {
+      var token = ++S.run;
+      lock();
+      hint('P3 · 用户开启「行业报告抓取」…');
+      await toggleFailFlow(p3Target, token);
+      if (dead(token)) { return; }
+      hint('P3 完成 · 开关已回弹 · 请求未生效');
+      unlock();
+    }
+
+    function onScene(btn) {
+      var key = btn.getAttribute('data-scene');
+      if (S.flight) { return; }
+      if (key === 'P4' && !S.autoPaused && !S.manualPaused) {
+        hint('P4 前置不满足 · 请先执行 P2 触发自动暂停');
+        return;
+      }
+      if (key === 'P2' && (S.autoPaused || S.manualPaused)) {
+        hint('P2 前置不满足 · 主角行已暂停，请先执行 P4 恢复');
+        return;
+      }
+      sceneBtns.forEach(function (b) { b.setAttribute('aria-pressed', String(b === btn)); });
+      if (key === 'P1') { sceneP1(); }
+      else if (key === 'P2') { sceneP2(); }
+      else if (key === 'P3') { sceneP3(); }
+      else if (key === 'P4') { recoverHero(); }
+    }
+
+    /* ---- 用户直操（主角行开关 / 暂停 / 启用；其它行开关失败回弹） ---- */
+    heroToggle.addEventListener('click', function (e) {
+      e.preventDefault(); /* 状态由演示流统一驱动 */
+      if (S.flight) { return; }
+      if (heroToggle.checked) {
+        applyManualPause();
+        hint('已手动暂停（演示）· 点击开关或「启用」恢复');
+      } else {
+        recoverHero();
+      }
+    });
+    heroPauseBtn.addEventListener('click', function () {
+      if (S.flight || !heroToggle.checked) { return; }
+      applyManualPause();
+      hint('已手动暂停（演示）· 点击开关或「启用」恢复');
+    });
+    heroEnableBtn.addEventListener('click', function () {
+      if (S.flight) { return; }
+      recoverHero();
+    });
+    demoToggles.forEach(function (input) {
+      input.addEventListener('click', function (e) {
+        e.preventDefault();
+        if (S.flight) { return; }
+        var token = ++S.run;
+        lock();
+        hint('开关操作 · 请求中…');
+        toggleFailFlow(input, token).then(function () {
+          if (dead(token)) { return; }
+          hint('开关操作失败 · 已回弹至原状态（ERR-GW-504）');
+          unlock();
+        });
+      });
+    });
+    qa('[data-extra-action]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        hint('演示页 · 该行仅开关参与流转（见 P3），主角行为「新闻聚合源」');
+      });
+    });
+    sceneBtns.forEach(function (b) {
+      b.addEventListener('click', function () { onScene(b); });
+    });
+
+    /* ---- 重置：恢复 5 行初始态与读数归零 ---- */
+    resetBtn.addEventListener('click', function () {
+      S.run += 1; /* 令所有进行中的异步流程失效 */
+      S.timers.forEach(function (t) { clearTimeout(t); clearInterval(t); });
+      S.timers.length = 0;
+      S.flight = false;
+      S.autoPaused = false;
+      S.manualPaused = false;
+      S.failCount = 0;
+      S.lastErr = null;
+      clearAutoPause();
+      heroToggle.checked = true;
+      heroLabel.title = '运行中';
+      setBadge('success', '运行中');
+      setFailCount(0);
+      setLast('init');
+      setLastErr(null);
+      setStatus('running');
+      setActions(false);
+      heroEnableBtn.disabled = false;
+      demoToggles.forEach(function (input) {
+        input.checked = input.getAttribute('data-init-checked') === 'true';
+        var lb = input.closest('.as-toggle');
+        if (lb) { lb.title = input.checked ? '运行中' : '已暂停'; }
+      });
+      kpiPaused.textContent = '0';
+      kpiRetry.textContent = '0';
+      toastBox.innerHTML = '';
+      sceneBtns.forEach(function (b) { b.disabled = false; b.setAttribute('aria-pressed', 'false'); });
+      resetBtn.disabled = false;
+      hint(DEFAULT_HINT);
+    });
+
+    /* ---- 初始化 ---- */
+    setStatus('running');
+    syncReadout();
+    hint(DEFAULT_HINT);
+    icons();
+  })();
+
+  /* 侧栏底部跳转 */
+  var bf = document.querySelector('[data-dom-id="back-front"]');
+  if (bf) { bf.addEventListener('click', function () { location.href = './gatherer-admin.html'; }); }
+  var bp = document.querySelector('[data-dom-id="back-platform"]');
+  if (bp) { bp.addEventListener('click', function () { location.href = './index.html'; }); }
+</script>
+<script>
+  if (window.lucide) { window.lucide.createIcons(); }
+</script>
+</body>
+</html>

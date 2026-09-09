@@ -297,7 +297,7 @@ CYBERCLOUD_COMPARE_TOLERANCE=0.01     # 比对容差
 | 智能体故障/超时 | 直连结果直接终态（agent_failed / agent_timeout） |
 | 直连故障 | 仅智能体，calls 记 error |
 | 双路全故障 | 现有 DATA_QUERY_DEGRADE（补 errorDomain） |
-| CYBERCLOUD_STUB=1 | 双路桩：①固定指标 stub-metric；②LLM 桩固定匹配；④⑤固定 12345；智能体回复由 CYBERCLOUD_STUB_AGENT_ANSWER 控制（默认同值→consistent；改值→divergent；\_\_FAIL\_\_→agent_failed） |
+| CYBERCLOUD_STUB=1 | 双路桩：①固定指标 stub-metric；②LLM 桩固定匹配；④⑤固定 12345；智能体回复由 CYBERCLOUD_STUB_AGENT_ANSWER 控制（默认同值→consistent；改值→divergent；`\_\_FAIL\_\_`→agent_failed） |
 
 ## 9. 阶段划分
 

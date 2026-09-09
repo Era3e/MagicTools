@@ -59,7 +59,7 @@ test("assessor 页面渲染 + 跳转详情 副作用：URL 变化", async ({ pag
 
   // 1. 后台列表渲染
   await page.goto("/assessor/admin/requests");
-  await expect(page.getByRole("main").getByText(/分析请求|评审|Request/i)).toBeVisible();
+  await expect(page.getByRole("heading", { name: "评审请求" })).toBeVisible();
   if (title) await expect(page.getByText(title).first()).toBeVisible();
 
   // 模式 1：点击调研来源链接 → 跳前台 /requests/:id 详情（RequestList 链接指向前台详情）

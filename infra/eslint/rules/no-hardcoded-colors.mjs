@@ -57,7 +57,7 @@ const THEME_WHITELIST_KEYS = new Set([
   "bgLayout",
   "bgContainer",
   "border",
-  // 各应用前台主题常见扩展键（应用间可复用）
+  // 各应用前台主题常见扩展键（应用间可复用；v2.3 补齐设计稿 accent 三件套标准键）
   "panel",
   "rule",
   "paper",
@@ -70,6 +70,7 @@ const THEME_WHITELIST_KEYS = new Set([
   "sans",
   "display",
   "body",
+  "tint",
 ]);
 
 // 顶层色板常量对象命名白名单（变量名中出现）

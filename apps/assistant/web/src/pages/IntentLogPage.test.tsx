@@ -59,14 +59,14 @@ describe("IntentLogPage", () => {
     render(<IntentLogPage />);
     expect(await screen.findByText("帮我创建一个订单业务对象")).toBeTruthy();
     expect(screen.getByText("cybercloud")).toBeTruthy();
-    expect(screen.getByText("data_query")).toBeTruthy();
+    expect(screen.getAllByText("data_query").length).toBeGreaterThan(0);
   });
 
-  it("D-09 渲染路由评估卡片与混淆矩阵空态", async () => {
+  it("D-09 渲染路由评估页头与混淆矩阵空态", async () => {
     render(<IntentLogPage />);
-    expect(await screen.findByText("路由评估（D-09 在线学习）")).toBeTruthy();
+    expect(await screen.findByText("意图日志 · 路由评估")).toBeTruthy();
     expect(await screen.findByText(/暂无纠错样本/)).toBeTruthy();
-    expect(screen.getByText(/纠错样本 0 条/)).toBeTruthy();
+    expect(screen.getByText("在线学习已启用")).toBeTruthy();
   });
 
   it("D-09 回放评估按钮请求 evaluation/replay 并展示命中率", async () => {
@@ -93,7 +93,7 @@ describe("IntentLogPage", () => {
     });
     render(<IntentLogPage />);
     fireEvent.click(await screen.findByRole("button", { name: /回放评估/ }));
-    expect(await screen.findByText("50%")).toBeTruthy();
+    expect((await screen.findAllByText("50%")).length).toBeGreaterThan(0);
     expect(await screen.findByText("查询数据")).toBeTruthy();
   });
 

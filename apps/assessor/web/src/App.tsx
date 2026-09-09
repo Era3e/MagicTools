@@ -1,15 +1,20 @@
 import { Navigate, Route, BrowserRouter, Routes, useLocation, useNavigate } from "react-router-dom";
-import { AdminShell, UserShell } from "@mt/ui";
+import { AdminShell, UserShell, appAccent } from "@mt/ui";
 import RequestList from "./pages/RequestList";
 import RequestDetail from "./pages/RequestDetail";
 
+const ACCENT = appAccent("assessor");
+
 const BRIEF_THEME = {
   primary: "#6e3b28",
-  background: "#f6f2ea",
+  background: "#f4f6f8",
   ink: "#251f1a",
-  muted: "#7a7066",
+  muted: "#5f6c7c",
   displayFont: '"Noto Serif SC", "Source Serif 4", "Songti SC", serif',
   bodyFont: '"Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif',
+  accent: "#6e3b28",
+  tint: "#f2e9e4",
+  panel: "#ffffff",
 };
 
 const ADMIN_NAV = [{ key: "/admin/requests", label: "分析请求审批" }];
@@ -32,10 +37,11 @@ function Shell() {
   if (isAdmin) {
     return (
       <AdminShell
-        title="评审"
+        title="评审工坊"
         navItems={ADMIN_NAV}
         selectedKey="/admin/requests"
         onNavigate={(key) => navigate(key)}
+        eyebrow={ACCENT.controlEyebrow ?? ACCENT.controlKey}
       >
         <AdminRoutes />
       </AdminShell>
@@ -44,8 +50,9 @@ function Shell() {
 
   return (
     <UserShell
-      title="评审文书房"
-      subtitle="每一份方案，都经三读而定"
+      title="评审工坊"
+      subtitle={ACCENT.subtitle}
+      eyebrow={ACCENT.frontEyebrow}
       navItems={[]}
       selectedKey="/admin/requests"
       onNavigate={(key) => navigate(key)}

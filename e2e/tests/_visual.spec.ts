@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import { PAGES } from "../fixtures/pages";
 
 // D-18 跨平台基线：守卫改为「运行平台上是否已存在对应基线文件」——
 // snapshotPathTemplate 含 {platform}，win32/linux 基线独立文件互不干扰。
@@ -12,104 +13,7 @@ import { join } from "node:path";
 const isUpdateMode = process.env.PLAYWRIGHT_UPDATE === "1";
 const platform = process.platform as string;
 
-/**
- * 16 页映射表：[测试名, 访问路径, 页面加载后等待的锚点元素（确保内容渲染完再拍）]
- * - 前台 8 页：带 front- 前缀
- * - 后台 8 页：带 back- 前缀
- */
-const PAGES: Array<{ name: string; path: string; anchor?: string | RegExp; mask?: string }> = [
-  // ---------- 前台首屏 8 页 ----------
-  {
-    name: "front-applicant-position-wall",
-    path: "/applicant/positions",
-    anchor: /岗位博览|每一次投递/,
-  },
-  {
-    name: "front-scholar-entry-list",
-    path: "/scholar/entries",
-    anchor: /知识书院|馆 藏 目 录/,
-    mask: "[data-testid=entry-rows], [data-testid=entry-count]",
-  },
-  {
-    name: "front-manager-requirement-board",
-    path: "/manager/requirements",
-    anchor: /交付驾驶舱|需求在轨/,
-    mask: "[data-testid=board-lanes], [data-testid=board-total]",
-  },
-  {
-    name: "front-assistant-chat",
-    path: "/assistant/chat",
-    anchor: /智能助手|有问题，就直接问/,
-  },
-  {
-    name: "front-designer-generate",
-    path: "/designer/generate",
-    anchor: /组件画廊|定制生成/,
-  },
-  // gatherer / investigator / assessor 三应用前台本无内容，根路径会展示报头后重定向到后台
-  // 这里故意拍「重定向前的报头瞬间」，如果重定向过快，拍到后台也不算错（依然是页面视觉基线）
-  {
-    name: "front-gatherer-header-or-back",
-    path: "/gatherer/",
-    anchor: /知识采集部|信息源管理|ADMIN CONSOLE/,
-    mask: "[data-testid=source-table]",
-  },
-  {
-    name: "front-investigator-header-or-back",
-    path: "/investigator/",
-    anchor: /调研档案馆|主题档案管理|ADMIN CONSOLE/,
-  },
-  {
-    name: "front-assessor-header-or-back",
-    path: "/assessor/",
-    anchor: /评审文书房|分析请求审批|ADMIN CONSOLE/,
-  },
-
-  // ---------- 后台主列表 8 页 ----------
-  {
-    name: "back-applicant-position-list",
-    path: "/applicant/admin/positions",
-    anchor: /ADMIN CONSOLE|岗位列表/,
-  },
-  {
-    name: "back-scholar-entry-admin",
-    path: "/scholar/admin/entries",
-    anchor: /ADMIN CONSOLE|条目编目|馆 藏 目 录/,
-    mask: "[data-testid=entry-rows], [data-testid=entry-count]",
-  },
-  {
-    name: "back-manager-requirement-admin",
-    path: "/manager/admin/requirements",
-    anchor: /ADMIN CONSOLE|需求管理/,
-    mask: "[data-testid=requirement-table]",
-  },
-  {
-    name: "back-assistant-feedback-admin",
-    path: "/assistant/admin/feedback",
-    anchor: /ADMIN CONSOLE|反馈处理|反馈/,
-  },
-  {
-    name: "back-designer-component-admin",
-    path: "/designer/admin/components",
-    anchor: /ADMIN CONSOLE|组件馆藏/,
-  },
-  {
-    name: "back-gatherer-source-admin",
-    path: "/gatherer/admin/sources",
-    anchor: /ADMIN CONSOLE|信息源管理/,
-    mask: "[data-testid=source-table]",
-  },
-  {
-    name: "back-investigator-survey-admin",
-    path: "/investigator/admin/surveys",
-    anchor: /ADMIN CONSOLE|主题档案管理/,
-  },
-  {
-    name: "back-assessor-request-admin",
-    path: "/assessor/admin/requests",
-    anchor: /ADMIN CONSOLE|分析请求审批/,
-  },
-];
+// 16 页映射表（含锚点与 mask）已抽至 ../fixtures/pages，与 responsive.spec 共享唯一来源。
 
 // 基线探测：递归扫 snapshots 目录按平台后缀计数。
 // 不按文件名拼接探测——Playwright 会 sanitize 测试名（空格/中括号→'-'，中文与→保留），
@@ -135,21 +39,31 @@ test.skip(
   `${platform} 平台基线不足（${platformBaselineCount}/${PAGES.length} 张 -${platform}.png），视觉快照跳过；基线生成见 .github/workflows/visual-baseline.yml`
 );
 
-for (const { name, path, anchor, mask } of PAGES) {
+for (const { name, path, anchor, mask, waitFor, settleMs } of PAGES) {
   test(`视觉快照 [${name}] → ${path}`, async ({ page }) => {
     // 1. 进入页面，等待网络空闲 + load 事件
     await page.goto(path, { waitUntil: "networkidle", timeout: 45000 });
 
-    // 2. 如果定义了锚点文案，等它可见（确保数据加载完/外壳挂载完）
+    // 2. 如果定义了锚点文案，等它可见（确保外壳挂载完）。
+    //    fail fast：全页范围内锚点失配立即失败并点名 fixtures——静默降级（main 失败换全页再等 8s）
+    //    会让截图时机不定，产生「基线 update 后比对仍漂移」的疑难杂症（gatherer 5% 漂移事故的根因）。
     if (anchor) {
-      try {
-        await expect(page.getByRole("main").getByText(anchor).first()).toBeVisible({
-          timeout: 8000,
-        });
-      } catch {
-        // 有些页面 main 可能没明确 role，降级为全页搜索
-        await expect(page.getByText(anchor).first()).toBeVisible({ timeout: 8000 });
-      }
+      await expect(
+        page.getByText(anchor).first(),
+        `锚点未命中（文案已重构？请同步 e2e/fixtures/pages.ts 的 anchor）：${anchor}`
+      ).toBeVisible({ timeout: 8000 });
+    }
+
+    // 2.5 数据容器就绪：锚点只保证外壳文案渲染（先于数据），waitFor 等数据请求返回后的
+    //     容器出现（.ant-table 空库也有表头），替代 fail fast 前靠 8s 锚点超时提供的数据缓冲。
+    if (waitFor) {
+      await page.locator(waitFor).first().waitFor({ state: "visible", timeout: 8000 });
+    }
+
+    // 2.6 并发写收尾：与功能用例共享库的页面，等待并发写用例（创建/更新流程）收尾，
+    //     消除 KPI 计数/分页总数的数据竞态。fail fast 前这窗口由 8s 锚点超时隐性提供。
+    if (settleMs) {
+      await page.waitForTimeout(settleMs);
     }
 
     // 3. 给 AntD 组件动画 / 字体渲染 一段缓冲（600ms 远大于默认过渡时间）
