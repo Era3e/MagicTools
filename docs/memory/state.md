@@ -48,7 +48,9 @@
 
   - **教训④（git 分支整理）**：commit 误落 main 后的整理顺序应为「先 stash/commit 未提交改动 → git branch feat/x → main reset --hard → 切 feat」——本轮 state.md 验收记录因在脏工作区直接 reset --hard 丢失重写（与教训①同族：**任何还原性 git 操作前先固化工作区**）。
 
-  - **待办**：push feat/ui-v231-quality-guards 并开 PR（body 补 0 bug loop 勾选）；CI 三段绿后合并；linux 基线随 PR 流程重生成。
+  - **PR #56 CI 三段全绿（2026-09-09）**：https://github.com/Era3e/MagicTools/pull/56（feat/ui-v231-quality-guards，正式 PR 非草稿，mergeable）。**CI 三轮排障史**：①首轮 quality 20s 即死——PR body 未含 CI 门禁要求的精确格式复选框（`[x] **0 bug loop 验收记录**`），改 body + close/reopen 触发重跑；②二轮 e2e 失败——日志取证（**git credential fill 取 PAT + REST API 拉 Actions 日志**，MCP 连接器与匿名 API 均 403 时的可用兜底）定位根因：#55 刚把 v2.2 时代 linux 基线入库，与本 PR v2.3 UI 撞车（merge 预览 = 新 UI + 旧 linux 基线 → 10 张像素必红），且首测盲修的「sleep 10 服务竞态」假设被证伪（健康轮询替换后 e2e 仍红，但该修复本身是普适增强已保留）；③处置：merge origin/main 进分支后显式 git rm 16 张过时 linux 基线（**git core.quotepath=false 处理中文快照路径转义**，默认转义导致 pathspec 不匹配静默失败）→ 第三轮 quality/smoke/e2e 全绿。**两条新经验**：①PR 撞基线竞态是流程性冲突（基线 workflow 与 UI PR 时间差），处置=删旧基线+合并后 dispatch visual-baseline 重生成（同 #55 流程）；②本地代理对 git HTTP/2 CONNECT 隧道有缺陷（读通写断），`git config http.version HTTP/1.1` 固化解决。
+
+  - **待办**：PR #56 合并（用户操作）；合并后 Actions 页 dispatch `visual-baseline` workflow 以 v2.3 重生成 linux 基线（PR body 已注明）；分支清理。
 
 - **Assistant 双路数据查询与质量兜底落地（2026-09-08，分支 feat/assistant-dual-query，阶段一）**：
 
