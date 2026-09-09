@@ -188,7 +188,17 @@ jobs:
           (cd apps/assistant/web && node node_modules/vite/bin/vite.js preview --port 4007 --strictPort --host 127.0.0.1) &
           PORT=5005 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/designer MT_LLM_STUB=1 node apps/designer/server/dist/main.js &
           (cd apps/designer/web && node node_modules/vite/bin/vite.js preview --port 4005 --strictPort --host 127.0.0.1) &
-          sleep 10
+          # 服务就绪探测替代固定 sleep：17 个进程启动有先后（vite preview / Nest migration），
+          # 固定 10s 在 CI 慢启动机器上会让首批用例撞上半就绪服务（responsive 巡检锚点最敏感）。
+          for i in $(seq 1 30); do
+            ok=0
+            curl -sf http://127.0.0.1:3000/health >/dev/null 2>&1 && ok=$((ok+1))
+            curl -sf http://127.0.0.1:4001/sources/ >/dev/null 2>&1 && ok=$((ok+1))
+            curl -sf http://127.0.0.1:4008/positions/ >/dev/null 2>&1 && ok=$((ok+1))
+            if [ "$ok" -ge 3 ]; then echo "all services ready (${i}0s)"; break; fi
+            sleep 10
+          done
+          curl -sf http://127.0.0.1:3000/health || (echo "gateway not ready after 300s"; exit 1)
           # 视觉快照须在「空库态」单独跑（与基线生成 workflow 同口径）：
           # 并发 spec 会与视觉用例同时写库，页面数据行数漂移导致像素比对必失败
           pnpm --filter @mt/e2e exec playwright test _visual.spec.ts
