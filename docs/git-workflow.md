@@ -27,6 +27,8 @@ pnpm ws:cleanup <项目> <任务ID>
 - [ ] PR 合并后 worktree 已清理（pnpm ws:cleanup）
 - [ ] docs/memory/ 已更新
 - [ ] changeset 迭代日志已添加
+- [ ] **docs/CHANGELOG.md 已追加本次迭代条目**（合 main 前；纯重构/文档修订且无平台级影响可豁免，需在 PR 描述说明）
+- [ ] coverage-matrix.md 涉及行已更新（功能变更时；drift guard 用例会校验 ✅ 行声明路径的真实性）
 
 ## 仓库设置操作手册（GitHub 手工配置一次）
 

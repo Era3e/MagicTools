@@ -11,7 +11,7 @@
     "test:affected": "turbo run test --affected",
     "coverage": "turbo run coverage",
     "lint": "eslint .",
-    "test:infra": "node --test infra/scripts/lib/*.test.mjs",
+    "test:infra": "node --test infra/scripts/lib/*.test.mjs && node infra/scripts/lib/docs-guard.mjs",
     "smoke": "node infra/scripts/smoke.mjs",
     "e2e": "pnpm --filter @mt/e2e exec playwright test",
     "e2e:update": "pnpm --filter @mt/e2e exec playwright test --update-snapshots",

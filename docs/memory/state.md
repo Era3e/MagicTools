@@ -6,6 +6,26 @@
 
 ## 当前状态快照（2026-09-09 更新）
 
+- **文档偏移盘点与五文档对齐修复完成（2026-09-09 收尾轮）**：
+
+  - **输入**：用户要求盘点项目代码与文档材料的偏移并修复。全仓取证（grep/LS/Glob 内容级核对，不轻信文档自述）发现 A 级 2 处 + B 级 3 处偏移；同时确认核心契约零偏移（三大事件名三方一致、AGENTS.md 命令全存在、ui-spec 迁移清单 8 项勾选属实、代码零 TODO 占位）。
+
+  - **修复清单**：①CHANGELOG.md 补齐 08-28/08-29/09-03/09-08/09-09 五个缺失日期段（PR #35~#43 质量三角与 D 兑现轮、#44/#45 D-18 基线、#47 v2/v2.1、#51 v2.2、#54 双路、#56 v2.3 五防线、#57~#59 release/基线/flaky，全部标注补记，PR 号与 squash 提交号取自本文件记录）；②CODE_WIKI.md 6.7 Assistant 后端模块表补 DirectQuery/VerifyTask/Compare/CallsRepo 四行 + 前后台路由表纠正（feedback/intent-logs 已迁 /admin/*，补 v2.3 ChatPage/监控卡描述）+ §4.6 外壳描述去 v1 色（#4c7dff→v2.3 石墨+琥珀）+ props 补 eyebrow + 组件族表格（MtStatusTag/MtKpiRow/AdminPageHead/AdminToolbar/patterns）；③coverage-matrix.md 修 I3/M4/D9/C6~C9 六行陈旧状态（代码实证后标 ✅ 并附 PR 号）+ 新增第 10 章 E1~E8 增量行（双路查询/UI v2.x）；④mvp-deferred.md D-04/D-12/D-13 三行补 ✅（代码实证：publish.*/collect.service 退避+dead_letter/responsive.spec）+ 统计摘要改 17/4（原文 17/5 但实际列 15/4，数字本身即错）；⑤本文件已知问题 12 改写为已解决存档（D-18 已闭环、linux 基线在库，原描述还在讲 win32-only 旧世界）。
+
+  - **验证**：pnpm docs:lint 33 文件 0 错误（首轮 MD056 两处——D-12/D-13 兑现行漏「降级说明」列，补齐后过）。**又踩一次 SearchReplace 并发同文件丢改动**（D-04 与 D-12 同批编辑报成功但 D-04 被静默覆盖，读文件才发现）——教训⑤再次实证：同一 markdown 多行编辑必须串行。
+
+  - **根因结论（为什么机制在还会偏移）**：更新义务绑定在「任务完成」时刻，而任务完成的定义只含代码+测试+state.md+changeset；CHANGELOG/CODE_WIKI/coverage-matrix 无强制更新触发点（coverage-matrix 头部维护规则无 CI/PR 模板兜底）——五轮 UI 快速迭代连续 squash 合并时，沉淀层文档欠账滚雪球。详见当轮会话报告；防弊方向：PR 模板补「文档同步」勾选段 + 仿 gateway drift guard 用例做 coverage-matrix ✅ 行文件存在性检测。
+
+  - **待办**：`.design-ref/` 17 页设计稿去留待用户拍板；magictools-ui-design/ 与 .design-ref/ 内容高度重复可收敛；e2e assistant.spec:57-59「发送消息」用例 skip 守卫条件已满足可修（placeholder「输入消息」可命中）。
+
+- **文档偏移防弊机制落地（2026-09-09 收尾轮，三线）**：
+
+  - **落地一·CI 门禁**：PR 模板自检清单新增「**沉淀层文档已同步**」勾选项（CHANGELOG 条目 + CODE_WIKI 涉及章节核对）；ci.yml quality job 的 PR 事件检测段由单项扩为两项（0 bug loop + 沉淀层文档，正则 `\[x\]\s*\*\*沉淀层文档已同步\*\*`，漏勾即 quality 红灯），本地两态模拟验证（勾选匹配 PASS / 未勾选正确拒绝 PASS）。
+  - **落地二·drift guard（TDD 全程）**：新增 `infra/scripts/lib/docs-guard.mjs`（extractDeclaredPaths 只提取仓库顶层前缀全路径 apps|packages|e2e|infra|.githooks——子项目相对简写需章节上下文不可判定，首版正则过宽抓出 56 处误报后收敛）+ checkCoverageMatrix（仅 ✅ 行校验）+ CLI main（漂移即 exit 1）；5 用例（含真实 matrix 活守卫）先红后绿；挂接 `pnpm test:infra` 链尾部（qa:gate 与 CI quality 自动带上）。
+  - **落地三·流程闭环**：git-workflow.md 会话收尾协议补两项（CHANGELOG 追加条目——纯重构可豁免需 PR 说明；coverage-matrix 涉及行更新——drift guard 校验）；AGENTS.md 硬性约定 3 扩充沉淀层文档义务与机器检测入口。
+  - **验证终态**：test:infra 10/10 + CLI 守卫绿；docs:lint 33 文件 0 错误（顺手修存量 MD049 两处：L91/L239 技术下划线 token 改代码 span——**教训：中文散文里写下划线 token 必须代码 span 包裹，否则 markdownlint 报 emphasis-style**；首修时 SearchReplace 撞进原文代码 span 内部产生重复串，二次修正——长行编辑前先看目标上下文）。
+  - **0 bug loop 验收实录（本轮最有价值产出）**：独立测试代理首轮验收**不通过**——抓到 coverage-matrix 六行修复+第10章、mvp-deferred 摘要自纠在早前并行编辑中被静默丢弃（「治理文档偏移的修复自身又发生偏移」，并行编辑丢改动第 N 次命中，且 state.md/CHANGELOG 自述与文件实际状态不符被当场揭穿）；返工后复核通过（⑥⑦ PASS + 活守卫真实纳管 apps/ 路径）。**双重启示**：①0 bug loop 独立验收真拦得住「自证陷阱」——开发者的自述记录不可信，以文件实际状态为准；②返工后 matrix ✅ 行带 apps/ 全路径，drift guard 活守卫从 synthetic 覆盖升级为实战覆盖。
+
 - **五道工程防线落地完成（2026-09-09，UI v2.3.1 质量基建轮）**：
 
   - **输入**：用户要求把巡检发现的五类问题（响应式回归/文案双源/stash 冲突/dist 陈旧/锚点漂移）的防弊方案依次落地为工程基建。
@@ -58,7 +78,7 @@
 
   - **PR #58 linux 基线合入（2026-09-09 20:00）**：v2.3 视觉基线 PR（16 张 ubuntu 基线）处置链：首查 CI 发现 quality 失败（**同源 ComponentList flaky**——分支基于 ef9821d 生成，早于 #59 修复）；update branch 带入 d7c4942 后三段全绿，**e2e 段绿 = 16 张新基线与 v2.3 UI 像素比对真跑通过（跨平台视觉闭环达成）**；squash 合并 `1fb0d48`。至此 PR #56/#57/#58/#59 四连闭环：功能→发布→基线→CI 修复。本地已同步 main 并恢复 state.md 更新。
 
-  - **待办**：清理本地已合并分支（fix/designer-componentlist-flaky、feat/ui-v231-quality-guards、feat/ui-v22-page-patterns 视需要）与远端 feat/visual-baseline-linux；magictools-ui-design/* 后台测量进程回写文件已 checkout 还原（勿误提交）。
+  - **分支清理完成（2026-09-09 收尾轮）**：内容级取证后删除本地 `feat/ui-v231-quality-guards`（5ab341d）与 `feat/ui-v22-page-patterns`（a61a27a）——squash 合并下 `--merged` 判定全失效（只显示 main），改用「直接 tree diff + 关键内容 main 存在性」判定：v231 对 main 仅差 2 个过时 changeset（其消费产物 CHANGELOG/0.4.0 版本号已随 #57 入 main）+ state.md 进度记录（5ab341d 为 main 现版子集）；v22 仅差双路查询 spec/plan 的旧版格式（main 版含 markdownlint 修复，是更新版，1834 行差异全为 `## Tasks`→`### Task N` 标题层级等格式差），两份文档均已在 main。远端 changeset-release/main、feat/ui-v231-quality-guards、fix/designer-componentlist-flaky、feat/visual-baseline-linux 均已被 GitHub 自动回收（PR squash 合并删头 + bot 工作分支机制），`git fetch --prune` 清掉 3 个陈旧跟踪引用（首跑撞 schannel SSL 握手失败，间隔重试即通——代理抖动已知问题的又一实例）。**终态：本地/远端仅剩 main（788fc49），worktree 仅主仓，工作区干净，远端无 open PR**。magictools-ui-design/* 后台测量进程回写文件已 checkout 还原（勿误提交）。
 
 - **Assistant 双路数据查询与质量兜底落地（2026-09-08，分支 feat/assistant-dual-query，阶段一）**：
 
@@ -76,7 +96,7 @@
 
   - **视觉基线已重生成（2026-09-08，随本分支提交）**：16 张 win32 基线全量重生成并 16/16 验证通过。**重要发现**：①assistant 两页（front-assistant-chat/back-assistant-feedback-admin）在数据漂移环境实测仍 PASS——VerifyBadge 仅有消息时渲染（空态截图无差异）、IntentLogPage 不在 16 页基线清单；②首跑 8 失败页全为本分支未触碰的应用（applicant/scholar/manager/gatherer），根因双源——test --force 写库致 applicant.positions 58 行等数据漂移 + PR #51 的旧基线本身在脏数据态生成（scholar 空库实测与旧基线差 46%）；③处置：pg_dump 全库备份至 .db-backup-20260908（仓库外）→ TRUNCATE 8 库恢复空库态（与 CI 视觉比对口径永久对齐）→ e2e:visual:update 重生成 16 张 → e2e:visual 16/16 全绿。**教训：基线生成前必须清库**（旧基线把"示例需求"等种子数据固化进了像素，属 PR #51 遗留瑕疵，本次根治）。
 
-  - **真环境验收完成（2026-09-09，testcybercloud-dev）**：探活全绿（gatewayOk/authOk/agentsReachable，10 智能体，1.1s）→ **直连先行 7.1s 返回真值 52888.9184rmb** → verify 26.9s 终态 **divergent（diffPct=83%）**——智能体拿 metric.value=500 预设值当答案被双路对比当场抓获（正是 spec 立项的核心场景）。**验收即校准出四处真契约偏差并修复（提交 a851a68，140/140 测试全绿）**：①日期字段真实位置在 outline.groups.rows（type=date/datetime，userFilters/filters 为空）——探测链扩展行分组兜底；②queryByStructure 响应为包裹对象 {data,rows,grandTotals,...}（非裸数组）——取值改走 .data[0]；③取值键精确构造 {summarize}_{table}_{code}（多列并存时唯一「sum」兜底会撞 _cbc_calculation_N 计算列）；④时间窗无数据时 sum 列整体省略只剩 count_*=0——「查询成功但无数据」回答 0 而非 query_failed；⑤LLM 输出无关字段为 null（zod optional() 拒绝 null）——schema 改 nullish。另：glm-4-flash 意图分类会把数据查询误判 chitchat（模型能力问题），意图纠错 few-shot 闭环 60s 生效后正确路由——已验证在线学习闭环真实可用。
+  - **真环境验收完成（2026-09-09，testcybercloud-dev）**：探活全绿（gatewayOk/authOk/agentsReachable，10 智能体，1.1s）→ **直连先行 7.1s 返回真值 52888.9184rmb** → verify 26.9s 终态 **divergent（diffPct=83%）**——智能体拿 metric.value=500 预设值当答案被双路对比当场抓获（正是 spec 立项的核心场景）。**验收即校准出四处真契约偏差并修复（提交 a851a68，140/140 测试全绿）**：①日期字段真实位置在 outline.groups.rows（type=date/datetime，userFilters/filters 为空）——探测链扩展行分组兜底；②queryByStructure 响应为包裹对象 {data,rows,grandTotals,...}（非裸数组）——取值改走 .data[0]；③取值键精确构造 `{summarize}_{table}_{code}`（多列并存时唯一「sum」兜底会撞 `_cbc_calculation_N` 计算列）；④时间窗无数据时 sum 列整体省略只剩 `count_*=0`——「查询成功但无数据」回答 0 而非 query_failed；⑤LLM 输出无关字段为 null（zod optional() 拒绝 null）——schema 改 nullish。另：glm-4-flash 意图分类会把数据查询误判 chitchat（模型能力问题），意图纠错 few-shot 闭环 60s 生效后正确路由——已验证在线学习闭环真实可用。
 
   - **发布收官（2026-09-09）**：PR #54 CI 三段全绿一次通过 squash 合并 a924d42；Version PR #52 三件套完成（补 0 bug loop 勾选 → close/reopen 触发 CI 三段绿 → squash 87acaf2），Release 自动打 tag @mt/ui@0.3.0；纯私有包 changeset（assistant 双包）不参与发布，按 #46 经验经 MCP 远端删除（4f3fe21）避免 Release 误判，删除提交触发的 Release 重跑已确认走 tag 路径、open PR 清零；本地 worktree feat/assistant-dual-query 与分支已清理，主仓恢复 main+ui-v22 WIP 现场。**注意：真环境凭据维护在 worktree .env 中已随之清理，主仓 .env 的 CYBERCLOUD_*/ZHIPU_API_KEY/ZHIPU_MODEL 为空——下次真环境联调前需用户重新维护凭据（历史教训：凭据只放主仓根 .env，worktree 从主仓复制）。**
 
@@ -224,7 +244,7 @@
 
 - **Release/changesets 链路修复→闭环（2026-08-29，Version PR #46 已合并 main a83fa40）**：
 
-  - **根因一（mixed changeset）**：`all-apps-dual-shell` 等 8 个 changeset 同时含发布包（`packages/*`）与被忽略的 private 包（`apps/*` 全部 private:true）→ `changeset version` 报 _Mixed changesets not allowed_ exit 1 → Release workflow _全天红_（10/10）；修法：8 个剔除私有包行、11 个纯私有包 changeset 直接删除（发布流程里本就不参与）；
+  - **根因一（mixed changeset）**：`all-apps-dual-shell` 等 8 个 changeset 同时含发布包（`packages/*`）与被忽略的 private 包（`apps/*` 全部 private:true）→ `changeset version` 报 `Mixed changesets not allowed` exit 1 → Release workflow **全天红**（10/10）；修法：8 个剔除私有包行、11 个纯私有包 changeset 直接删除（发布流程里本就不参与）；
 
   - **根因二（仓库设置）**：changesets/action 需 `Settings → Actions → General → Workflow permissions` 勾选 "Allow GitHub Actions to create and approve pull requests"（用户已配置）；修后 Release attempt=2 转绿，Version PR #46（@mt/ui、@mt/model-client minor + @mt/db patch）自动开出；
 
@@ -405,4 +425,4 @@
 9. Node20/OpenSSL3 禁用 PKCS1 私钥解密，测试避免依赖私钥解密；
 10. 子智能体委托（subagent/subagent\_fork）在本环境不可用，多智能体协作需外部 CLI 环境；
 11. 「0 bug loop」机制在 PR 模板里已植入「独立测试智能体验收记录」表格字段，合入前由测试智能体填写，实现流程纪律落地（不再是纯口头约定）。
-12. **E2E 视觉快照平台差异**（2026-08-28，D-18）：snapshotPathTemplate 含 {platform}，仓库仅维护 win32 基线；CI（linux）跑视觉用例必 snapshot-missing，已加 CI 守卫显式 skip；兑现 linux 基线需 CI 装 fonts-noto-cjk + 生成入库（见 mvp-deferred D-18 行内方案）。
+12. **E2E 视觉快照跨平台基线（已解决，存档）**：D-18 已于 2026-08-29 全链路收官（PR #44+#45）——平台基线感知守卫（按 `-<platform>.png` 后缀计数 ≥16 判定齐备）+ visual-baseline.yml 生成 workflow + 16 张 linux 基线入库，win32/linux 双平台像素比对闭环，CI 视觉用例真跑全绿。**现存纪律**：前台视觉/主题改动后需手动 dispatch visual-baseline 重生成 linux 基线（v2.3 轮 PR #58 即按此流程更新）；升级 runner 版本需同步重生成。
