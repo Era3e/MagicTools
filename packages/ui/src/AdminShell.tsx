@@ -1,4 +1,4 @@
-import { Button, Drawer, Dropdown, Layout, Menu, Typography } from "antd";
+import { Button, Drawer, Dropdown, Layout } from "antd";
 import type { MenuProps } from "antd";
 import { useState } from "react";
 import { MenuOutlined } from "@ant-design/icons";
@@ -20,28 +20,73 @@ export interface AdminShellProps {
   onNavigate: (key: string) => void;
   frontPath?: string;
   frontLabel?: string;
+  /** 侧栏 eyebrow（mono 短名，如 SCHOLAR · CONTROL）；缺省 ADMIN CONSOLE */
+  eyebrow?: string;
   children: ReactNode;
 }
 
+/** as-* 后台外壳静态样式（设计稿 v2.3：240 侧栏 + 52 玻璃顶栏 + 琥珀左指示条激活态） */
+const SHELL_CSS = `
+.as-layout { min-height: 100vh; }
+.as-sider { position: sticky; top: 0; height: 100vh; overflow-y: auto; background: ${tokens.craft.siderGrad}; border-right: 1px solid ${tokens.dark.hairline}; box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.03); display: flex; flex-direction: column; }
+.as-brand { padding: 18px 20px 16px; display: flex; flex-direction: column; gap: 3px; border-bottom: 1px solid ${tokens.dark.hairline}; }
+.as-brand-eyebrow { font-family: ${tokens.font.mono}; font-size: 10px; font-weight: 600; line-height: 1.5; letter-spacing: 0.16em; text-transform: uppercase; color: ${tokens.scale.ink[3]}; white-space: nowrap; }
+.as-brand-name { font-family: ${tokens.font.display}; font-size: 19px; font-weight: 600; line-height: 1.3; color: ${tokens.dark.textPrimary}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.as-nav { flex: 1; padding: 14px 12px; display: flex; flex-direction: column; gap: 2px; }
+.as-nav-label { font-family: ${tokens.font.mono}; font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: ${tokens.dark.textFaint}; padding: 0 8px; margin: 10px 0 6px; }
+.as-nav a { display: flex; align-items: center; height: 36px; padding: 0 12px; border-radius: ${tokens.radiusTokens.md}; font-family: ${tokens.font.body}; font-size: 13.5px; font-weight: 500; color: ${tokens.dark.textTertiary}; text-decoration: none; white-space: nowrap; cursor: pointer; transition: color ${tokens.motion.durationFast} ${tokens.motion.easeStandard}, background ${tokens.motion.durationFast} ${tokens.motion.easeStandard}, box-shadow ${tokens.motion.durationFast} ${tokens.motion.easeStandard}; }
+.as-nav a:hover { color: ${tokens.dark.textPrimary}; background: ${tokens.dark.menuHoverBg}; }
+.as-nav a[data-active="true"] { color: ${tokens.dark.textPrimary}; box-shadow: inset 2px 0 0 ${tokens.dark.accent}; font-weight: 600; }
+.as-sider-foot { padding: 12px 16px 16px; border-top: 1px solid ${tokens.dark.hairline}; display: flex; flex-direction: column; gap: 8px; }
+.as-foot-link { display: inline-flex; align-items: center; gap: 5px; height: 32px; font-family: ${tokens.font.mono}; font-size: 11px; font-weight: 500; color: ${tokens.dark.textTertiary}; text-decoration: none; white-space: nowrap; cursor: pointer; transition: color ${tokens.motion.durationFast} ${tokens.motion.easeStandard}; }
+.as-foot-link:hover { color: ${tokens.dark.textPrimary}; }
+.as-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.as-topbar { position: sticky; top: 0; z-index: 20; height: 52px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 20px; background: ${tokens.craft.headerGlass}; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid ${tokens.dark.hairline}; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04); }
+.as-crumb { font-family: ${tokens.font.mono}; font-size: 11px; letter-spacing: 0.04em; color: ${tokens.dark.textFaint}; display: inline-flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.as-crumb-current { color: ${tokens.dark.textTertiary}; }
+.as-topbar-right { display: inline-flex; align-items: center; gap: 10px; flex: none; }
+.as-pill { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px; border: 1px solid ${tokens.dark.hairlineStrong}; border-radius: ${tokens.radiusTokens.full}; font-family: ${tokens.font.mono}; font-size: 11px; font-weight: 500; color: ${tokens.dark.textTertiary}; white-space: nowrap; }
+.as-pill-dot { width: 5px; height: 5px; border-radius: 50%; background: ${tokens.scale.graphite[4]}; }
+.as-content { position: relative; z-index: 2; flex: 1; padding: 24px; background-image: ${tokens.craft.glowDark}; background-repeat: no-repeat; }
+.as-content :focus-visible { outline: 1px solid ${tokens.scale.ink[3]}; outline-offset: 2px; }
+/* v2.3.1 平板/移动端表格兜底：后台表格列多（6-8 列），768 平板即需容器内横滚，
+   否则 table 撑破 as-content 造成页面级横向溢出（responsive.spec 巡检在 768 档抓获） */
+@media (max-width: 960px) {
+  .as-content .ant-table-content { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .as-content .ant-table table { min-width: 640px; }
+}
+@media (max-width: 640px) {
+  .as-content { padding: 16px 12px; }
+  .as-topbar { padding: 0 12px; }
+  /* v2.3 移动端折叠：KPI 行 2 列（偶数项保留左分隔线，n+3 项加顶分隔线）；表格容器内滚 */
+  .mt-kpi-row { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; row-gap: 12px; }
+  .mt-kpi-row > div:nth-child(2n) { border-left: 1px solid ${tokens.dark.hairline}; padding-left: 16px; }
+  .mt-kpi-row > div:nth-child(2n+1) { border-left: none; padding-left: 0; }
+  .mt-kpi-row > div:nth-child(n+3) { border-top: 1px solid ${tokens.dark.hairline}; padding-top: 12px; }
+  /* 双栏演示台（1fr + 320px 导演台）堆叠为单列 */
+  .as-content > div[style*="320px"] { grid-template-columns: minmax(0, 1fr) !important; }
+  .as-content section[style*="320px"] { grid-template-columns: minmax(0, 1fr) !important; }
+  .as-content section > div[style*="320px"], .as-content div[style*="grid-template-columns"][style*="320px"] { grid-template-columns: minmax(0, 1fr) !important; position: static !important; }
+  .as-content aside[aria-label="导演台"] { position: static !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .as-nav a, .as-foot-link { transition: none; }
+}
+`;
+
 /**
- * AdminShell — v2.1 石墨深色控制台外壳（全平台统一，禁止个性化）。
- * 质感升级：Linear 噪点 + 多层环境光 + GitHub 发丝边框 + Vercel 透明度文字层级。
- * 表面色锚点取 tokens.admin / tokens.dark；内容区经 AdminDarkThemeProvider
- * 注入 AntD 暗色算法，后台表格/表单/浮层整体转深色（主题真注入）。
+ * AdminShell — v2.3 石墨深色控制台外壳（设计稿 as-* 复刻）。
+ * 240px 侧栏（渐变底+右发丝线+琥珀左指示条激活）+ 52px 毛玻璃顶栏（mono 面包屑+胶囊）
+ * + surface-0 画布（顶部环境光+噪点）+ p24 内容区；经 AdminDarkThemeProvider 全量暗色注入。
  */
 export function AdminShell(props: AdminShellProps) {
-  const { title, navItems, selectedKey, onNavigate, frontPath, frontLabel = "返回前台", children } = props;
+  const { title, navItems, selectedKey, onNavigate, frontPath, frontLabel = "返回前台", eyebrow, children } = props;
   const { isMobile } = useResponsive();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const switcherItems: MenuProps["items"] = APPS.map((app) => ({
     key: app.key,
     label: <a href={app.path}>{app.label}</a>,
-  }));
-
-  const navMenuItems: MenuProps["items"] = navItems.map((item) => ({
-    key: item.key,
-    label: item.label,
   }));
 
   const handleNav = (key: string) => {
@@ -51,223 +96,102 @@ export function AdminShell(props: AdminShellProps) {
 
   const siderContent = (
     <>
-      <div style={{ padding: "20px 16px 12px", display: "flex", flexDirection: "column", gap: 2 }}>
-        <Typography.Text style={{ color: tokens.admin.textSecondary, fontSize: 11, letterSpacing: 2, fontFamily: tokens.font.mono }}>
-          ADMIN CONSOLE
-        </Typography.Text>
-        <Typography.Text strong style={{ color: tokens.admin.text, fontSize: 16 }}>
-          {title}
-        </Typography.Text>
+      <div className="as-brand">
+        <span className="as-brand-eyebrow">{eyebrow ?? "ADMIN CONSOLE"}</span>
+        <span className="as-brand-name">{title}</span>
       </div>
-      <Menu
-        mode="inline"
-        theme="dark"
-        selectedKeys={[selectedKey]}
-        items={navMenuItems}
-        onClick={(e) => handleNav(e.key)}
-        style={{ background: "transparent", borderInlineEnd: "none", fontSize: 13 }}
-      />
-      {frontPath ? (
-        <div style={{ position: "absolute", bottom: 16, left: 16 }}>
+      <nav className="as-nav" aria-label="后台导航">
+        {navItems.map((item) => (
+          <a key={item.key} data-active={item.key === selectedKey} onClick={() => handleNav(item.key)}>
+            {item.label}
+          </a>
+        ))}
+      </nav>
+      <div className="as-sider-foot">
+        {frontPath ? (
           <a
+            className="as-foot-link"
             href={frontPath}
             onClick={(e) => {
               e.preventDefault();
-              onNavigate(frontPath);
-              setDrawerOpen(false);
+              handleNav(frontPath);
             }}
-            style={{ color: tokens.admin.textSecondary, fontSize: 12 }}
           >
             ← {frontLabel}
           </a>
-        </div>
-      ) : null}
+        ) : null}
+        <a className="as-foot-link" href="/">
+          返回总览
+        </a>
+      </div>
     </>
   );
 
   return (
     <AdminDarkThemeProvider>
       <ThemeProvider value={{ ...MAGAZINE_THEME_STUB }}>
-        {/* 质感 CSS：焦点环 + 表格行悬浮重音条 + 卡片渐变描边 */}
-        <style>{`
-          .mt-admin-shell *:focus-visible {
-            outline: none;
-            box-shadow: ${tokens.shadow.focusRing};
-          }
-          .mt-admin-shell .ant-table-tbody > tr:hover > td {
-            background: rgba(255, 255, 255, 0.035) !important;
-            box-shadow: inset 2px 0 0 ${tokens.admin.accent};
-          }
-          .mt-admin-shell .ant-table-tbody > tr > td {
-            border-bottom: 1px solid ${tokens.dark.hairline};
-            transition: background ${tokens.motion.durationFast} ${tokens.motion.easeStandard};
-          }
-          .mt-admin-shell .ant-table-thead > tr > th {
-            background: rgba(255, 255, 255, 0.03) !important;
-            border-bottom: 1px solid ${tokens.dark.hairlineStrong};
-          }
-          .mt-admin-shell .ant-card {
-            box-shadow: ${tokens.shadow.darkCard};
-            transition: box-shadow ${tokens.motion.durationBase} ${tokens.motion.easeStandard}, border-color ${tokens.motion.durationFast} ${tokens.motion.easeStandard};
-          }
-          .mt-admin-shell .ant-card:hover {
-            box-shadow: ${tokens.shadow.darkCardHover};
-            border-color: ${tokens.dark.hairlineHover};
-          }
-          .mt-admin-shell .ant-btn-primary {
-            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
-          }
-          .mt-admin-shell .ant-btn-primary:hover {
-            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15), 0 0 20px rgba(110, 139, 173, 0.15);
-          }
-          .mt-admin-shell .ant-btn-primary:active {
-            transform: scale(0.98);
-          }
-          .mt-admin-shell .ant-typography {
-            font-variant-numeric: tabular-nums;
-          }
-          /* 暗色光学修正：亮文字在暗底上有"光渗"幻觉 → 字重降一档 */
-          .mt-admin-shell, .mt-admin-shell .ant-typography, .mt-admin-shell .ant-btn, .mt-admin-shell .ant-menu-item {
-            font-weight: 350;
-          }
-          .mt-admin-shell h1, .mt-admin-shell h2, .mt-admin-shell h3,
-          .mt-admin-shell .ant-typography-h1, .mt-admin-shell .ant-typography-h2, .mt-admin-shell .ant-typography-h3 {
-            font-weight: 500;
-            letter-spacing: -0.01em;
-          }
-          .mt-admin-shell h4, .mt-admin-shell .ant-typography-h4 {
-            font-weight: 500;
-          }
-          /* 表格数字列对齐 */
-          .mt-admin-shell .ant-table-cell {
-            font-variant-numeric: tabular-nums;
-          }
-        `}</style>
-        <Layout className="mt-admin-shell" style={{ minHeight: "100vh", background: tokens.admin.contentBg, position: "relative" }}>
-          {/* 质感层：Linear 式多层环境聚光灯 */}
-          <div
-            aria-hidden
-            style={{
-              position: "absolute",
-              inset: "0 0 auto 0",
-              height: 420,
-              background: tokens.craft.glowDark,
-              pointerEvents: "none",
-              zIndex: 0,
-            }}
-          />
-          <div
-            aria-hidden
-            style={{
-              position: "absolute",
-              inset: "0 0 auto 0",
-              height: 300,
-              background: tokens.craft.glowDarkSecondary,
-              pointerEvents: "none",
-              zIndex: 0,
-            }}
-          />
-          {/* 质感层：Linear 式噪点纹理（mix-blend-mode overlay） */}
+        <style>{SHELL_CSS}</style>
+        <Layout className="mt-admin-shell as-layout" style={{ minHeight: "100vh", background: tokens.admin.contentBg, position: "relative" }}>
+          {/* 质感层：多层环境聚光灯 + 噪点 */}
+          <div aria-hidden style={{ position: "absolute", inset: "0 0 auto 0", height: 420, background: tokens.craft.glowDark, pointerEvents: "none", zIndex: 0 }} />
+          <div aria-hidden style={{ position: "absolute", inset: "0 0 auto 0", height: 300, background: tokens.craft.glowDarkSecondary, pointerEvents: "none", zIndex: 0 }} />
           <div
             aria-hidden
             className="mt-noise-layer"
-            style={{
-              position: "absolute",
-              inset: 0,
-              backgroundImage: tokens.craft.noise,
-              backgroundRepeat: "repeat",
-              opacity: tokens.craft.noiseOpacity,
-              mixBlendMode: "overlay" as const,
-              pointerEvents: "none",
-              zIndex: 1,
-            }}
+            style={{ position: "absolute", inset: 0, backgroundImage: tokens.craft.noise, backgroundRepeat: "repeat", opacity: tokens.craft.noiseOpacity, mixBlendMode: "overlay" as const, pointerEvents: "none", zIndex: 1 }}
           />
           {isMobile ? (
-            // 移动端：侧边栏用 Drawer 呈现
-            <Drawer
-              open={drawerOpen}
-              onClose={() => setDrawerOpen(false)}
-              placement="left"
-              width={220}
-              styles={{ body: { padding: 0, background: tokens.admin.siderBg } }}
-            >
-              {siderContent}
-            </Drawer>
-          ) : (
-            // 桌面端：固定侧边栏（纵向渐变 + 右缘发丝线 + 顶部高光）
-            <Layout.Sider
-              width={208}
-              style={{
-                background: tokens.craft.siderGrad,
-                borderRight: "1px solid " + tokens.dark.hairline,
-                boxShadow: "inset 1px 0 0 rgba(255, 255, 255, 0.03)",
-                position: "relative",
-                zIndex: 2,
-              }}
-            >
-              {siderContent}
-            </Layout.Sider>
-          )}
-
-          <Layout>
-            <Layout.Header
-              style={{
-                background: tokens.craft.headerGlass,
-                backdropFilter: "blur(12px)",
-                WebkitBackdropFilter: "blur(12px)",
-                padding: isMobile ? "0 12px" : "0 20px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                borderBottom: "1px solid " + tokens.dark.hairline,
-                boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.04)",
-                height: 52,
-                lineHeight: "52px",
-                position: "sticky",
-                top: 0,
-                zIndex: 3,
-              }}
-            >
-              <span style={{ display: "flex", alignItems: "center", gap: isMobile ? 6 : 8 }}>
-                {isMobile && (
-                  <MenuOutlined
-                    style={{ fontSize: 18, cursor: "pointer", color: tokens.admin.text }}
-                    onClick={() => setDrawerOpen(true)}
-                  />
-                )}
-                <span
-                  style={{
-                    display: "inline-block",
-                    fontSize: 11,
-                    fontWeight: 600,
-                    letterSpacing: 1,
-                    padding: "2px 8px",
-                    borderRadius: tokens.radiusTokens.sm,
-                    color: tokens.dark.accent,
-                    background: "rgba(207, 160, 76, 0.12)",
-                    fontFamily: tokens.font.mono,
-                  }}
-                >
-                  后台
+            <>
+              <div className="as-topbar" style={{ position: "sticky", top: 0 }}>
+                <MenuOutlined aria-label="导航" style={{ fontSize: 18, cursor: "pointer", color: tokens.admin.text }} onClick={() => setDrawerOpen(true)} />
+                <span className="as-pill">
+                  <span className="as-pill-dot" />
+                  {eyebrow ?? "ADMIN CONSOLE"}
                 </span>
-                {!isMobile && (
-                  <Typography.Text style={{ fontSize: 12, color: tokens.admin.textSecondary }}>
-                    {title} · 配置与数据管理
-                  </Typography.Text>
-                )}
-              </span>
-              <Dropdown menu={{ items: switcherItems }}>
-                <Button size="small" ghost>
-                  切换应用
-                </Button>
-              </Dropdown>
-            </Layout.Header>
-            <Layout.Content style={{ padding: isMobile ? 12 : 16, background: "transparent", position: "relative", zIndex: 2 }}>
-              {children}
-            </Layout.Content>
-          </Layout>
+              </div>
+              <Drawer
+                open={drawerOpen}
+                onClose={() => setDrawerOpen(false)}
+                placement="left"
+                width={240}
+                styles={{ body: { padding: 0, background: tokens.craft.siderGrad } }}
+              >
+                {siderContent}
+              </Drawer>
+              <Layout.Content className="as-content">{children}</Layout.Content>
+            </>
+          ) : (
+            <div style={{ display: "flex", flex: 1, minHeight: "100vh", position: "relative", zIndex: 2 }}>
+              <aside className="as-sider" style={{ width: 240, flex: "none" }}>
+                {siderContent}
+              </aside>
+              <div className="as-body">
+                <div className="as-topbar">
+                  <span className="as-crumb">
+                    <span>{title}</span>
+                    <span>/</span>
+                    <span className="as-crumb-current">{navItems.find((m) => m.key === selectedKey)?.label ?? title}</span>
+                  </span>
+                  <span className="as-topbar-right">
+                    <span className="as-pill">
+                      <span className="as-pill-dot" />
+                      V2.3
+                    </span>
+                    <Dropdown menu={{ items: switcherItems }}>
+                      <Button size="small" ghost>
+                        切换应用
+                      </Button>
+                    </Dropdown>
+                  </span>
+                </div>
+                <Layout.Content className="as-content" role="main">
+                  {children}
+                </Layout.Content>
+              </div>
+            </div>
+          )}
         </Layout>
-      </ThemeProvider>
+    </ThemeProvider>
     </AdminDarkThemeProvider>
   );
 }
@@ -278,6 +202,6 @@ const MAGAZINE_THEME_STUB = {
   background: tokens.admin.contentBg,
   ink: tokens.dark.textPrimary,       // 透明度文字（Vercel 风格）
   muted: tokens.dark.textTertiary,    // 透明度三级
-  displayFont: tokens.font.body,
+  displayFont: tokens.font.display,
   bodyFont: tokens.font.body,
 } as const;

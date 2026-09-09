@@ -12,14 +12,14 @@ describe("App", () => {
     window.history.pushState({}, "", "/assessor/");
     vi.stubGlobal("fetch", vi.fn(async () => new Response("[]", { status: 200 })));
     render(<App />);
-    expect(await screen.findByText("ADMIN CONSOLE")).toBeTruthy();
+    expect(await screen.findByText("ASSESSOR · CONTROL")).toBeTruthy();
   });
 
   it("后台路由渲染控制台外壳与分析请求审批", async () => {
     window.history.pushState({}, "", "/assessor/admin/requests");
     vi.stubGlobal("fetch", vi.fn(async () => new Response("[]", { status: 200 })));
     render(<App />);
-    expect(screen.getByText("ADMIN CONSOLE")).toBeTruthy();
-    expect(await screen.findByText("分析请求")).toBeTruthy();
+    expect(screen.getByText("ASSESSOR · CONTROL")).toBeTruthy();
+    expect(await screen.findByText("评审请求")).toBeTruthy();
   });
 });

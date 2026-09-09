@@ -1,0 +1,18 @@
+#!/bin/sh
+# 冲突标记守卫：git diff --check 会对 <<<<<<< / >>>>>>> 冲突标记与冲突空白
+# 直接报错并点名文件（恰好补上 ESLint "Merge conflict marker" 只报行号不报文件名的缺陷）。
+# 背景：stash pop 冲突遗留曾让 lint 报 2 个无文件名的解析错，排查成本高。
+git diff --cached --check
+
+# dist 陈旧守卫：提交里若同时含 @mt/ui 源码与 dist 产物，dist 必须不早于 src 最新修改。
+# 防止「src 改了、dist 忘了重建」的陈旧产物入库（视觉/单测在 CI 用 dist，会测出假结果）。
+STAGED_UI_SRC=$(git diff --cached --name-only --diff-filter=ACMR | grep -E "^packages/ui/src/" || true)
+STAGED_UI_DIST=$(git diff --cached --name-only --diff-filter=ACMR | grep -E "^packages/ui/dist/" || true)
+if [ -n "$STAGED_UI_SRC" ] && [ -n "$STAGED_UI_DIST" ]; then
+  SRC_NEWEST=$(git diff --cached --name-only --diff-filter=ACMR | grep -E "^packages/ui/src/" | xargs -I{} stat -c %Y "{}" 2>/dev/null | sort -rn | head -1)
+  DIST_NEWEST=$(git diff --cached --name-only --diff-filter=ACMR | grep -E "^packages/ui/dist/" | xargs -I{} stat -c %Y "{}" 2>/dev/null | sort -rn | head -1)
+  if [ -n "$SRC_NEWEST" ] && [ -n "$DIST_NEWEST" ] && [ "$DIST_NEWEST" -lt "$SRC_NEWEST" ]; then
+    echo "✖ packages/ui/src 与 dist 同时入暂存，但 dist 早于 src（可能忘了重建）：先跑 pnpm build" >&2
+    exit 1
+  fi
+fi

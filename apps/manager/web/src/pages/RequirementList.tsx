@@ -1,7 +1,7 @@
-import { Button, Card, Form, Input, Modal, Select, Space, Table, message } from "antd";
-import { useCallback, useEffect, useState } from "react";
+import { Button, Form, Input, Modal, Select, Space, Table, message } from "antd";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { MtStatusTag, type MtStatusTagTone } from "@mt/ui";
+import { AdminPageHead, MtStatusTag, MtKpiRow, tokens, type MtStatusTagTone } from "@mt/ui";
 import { api, type Requirement } from "../api";
 
 const STATUS_MAP: Record<string, { label: string; tone: MtStatusTagTone }> = {
@@ -40,6 +40,18 @@ export default function RequirementList() {
     refresh();
   }, [refresh]);
 
+  const stats = useMemo(() => {
+    const done = items.filter((r) => r.status === "done").length;
+    const p0 = items.filter((r) => r.priority === "P0").length;
+    const withPr = items.filter((r) => r.prUrl).length;
+    return [
+      { label: "在轨需求", value: items.length, unit: "条" },
+      { label: "已完成", value: done, unit: "条" },
+      { label: "P0 在轨", value: p0, unit: "条" },
+      { label: "挂 PR", value: withPr, unit: "条" },
+    ];
+  }, [items]);
+
   const poll = async () => {
     try {
       const out = await api.pollInbox();
@@ -64,20 +76,30 @@ export default function RequirementList() {
   };
 
   return (
-    <Card
-      title="需求管理"
-      extra={
-        <Space>
-          <Select allowClear placeholder="状态" style={{ width: 120 }} value={status} onChange={setStatus}
-            options={Object.entries(STATUS_MAP).map(([value, v]) => ({ value, label: v.label }))} />
-          <Select allowClear placeholder="来源" style={{ width: 130 }} value={source} onChange={setSource}
-            options={Object.entries(SOURCE_MAP).map(([value, v]) => ({ value, label: v.label }))} />
-          <Button onClick={poll}>拉取收件箱</Button>
-          <Button loading={syncing} onClick={sync}>同步 GitHub</Button>
-          <Button type="primary" onClick={() => setCreating(true)}>新建需求</Button>
-        </Space>
-      }
-    >
+    <div>
+      <AdminPageHead
+        eyebrow="ADMIN · REQUIREMENTS"
+        title="需求管理"
+        badges={<MtStatusTag tone="info">七态生命周期</MtStatusTag>}
+        description="待分析 → 设计 → 开发 → 测试 → 验收 → 完成 · 数字为等宽读数"
+        actions={
+          <>
+            <Button onClick={poll}>拉取收件箱</Button>
+            <Button loading={syncing} onClick={sync}>同步 GitHub</Button>
+            <Button type="primary" onClick={() => setCreating(true)}>新建需求</Button>
+          </>
+        }
+        kpi={<MtKpiRow items={stats} />}
+      />
+      <div style={{ display: "flex", gap: tokens.spacing.sm, marginBottom: tokens.spacing.md, flexWrap: "wrap", alignItems: "center" }}>
+        <Select allowClear placeholder="状态" style={{ width: 120 }} value={status} onChange={setStatus}
+          options={Object.entries(STATUS_MAP).map(([value, v]) => ({ value, label: v.label }))} />
+        <Select allowClear placeholder="来源" style={{ width: 130 }} value={source} onChange={setSource}
+          options={Object.entries(SOURCE_MAP).map(([value, v]) => ({ value, label: v.label }))} />
+        <span style={{ marginLeft: "auto", fontFamily: tokens.font.mono, fontSize: 12, color: tokens.color.textSecondary }}>
+          共 {items.length} 条 · 每页 10 条
+        </span>
+      </div>
       <Table<Requirement>
         data-testid="requirement-table"
         rowKey="id"
@@ -90,7 +112,7 @@ export default function RequirementList() {
           { title: "来源", dataIndex: "source", width: 110, render: (v: string) => <MtStatusTag tone="neutral" mono>{SOURCE_MAP[v]?.label ?? v}</MtStatusTag> },
           { title: "优先级", dataIndex: "priority", width: 90, render: (v: string) => <MtStatusTag tone={PRIORITY_TONE[v] ?? "neutral"} mono>{v}</MtStatusTag> },
           { title: "PR", dataIndex: "prUrl", width: 140, render: (v: string) => (v ? <a href={v} target="_blank" rel="noreferrer">查看 PR</a> : "-") },
-          { title: "更新时间", dataIndex: "updatedAt", width: 170, render: (v: string) => new Date(v).toLocaleString() },
+          { title: "更新时间", dataIndex: "updatedAt", width: 170, render: (v: string) => <span style={{ fontFamily: tokens.font.mono, fontSize: 12 }}>{new Date(v).toLocaleString()}</span> },
         ]}
       />
       <Modal
@@ -121,9 +143,12 @@ export default function RequirementList() {
           <Form.Item name="priority" label="优先级" initialValue="P2">
             <Select options={[{ value: "P0", label: "P0" }, { value: "P1", label: "P1" }, { value: "P2", label: "P2" }]} />
           </Form.Item>
-          <Button type="primary" htmlType="submit">保存</Button>
+          <Space>
+            <Button onClick={() => setCreating(false)}>取消</Button>
+            <Button type="primary" htmlType="submit">保存</Button>
+          </Space>
         </Form>
       </Modal>
-    </Card>
+    </div>
   );
 }

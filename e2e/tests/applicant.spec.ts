@@ -1,4 +1,5 @@
-import { test, expect } from "@playwright/test";
+﻿import { test, expect } from "@playwright/test";
+import { COPY } from "../fixtures/copy";
 
 const unique = () => "E2E公司" + Date.now();
 
@@ -48,12 +49,12 @@ test("applicant 岗位列表页面渲染与详情跳转", async ({ page, request
 
 test("applicant 前后台双外壳路由拆分", async ({ page }) => {
   await page.goto("/applicant/positions");
-  await expect(page.getByText("每一次投递，都值得被认真对待")).toBeVisible();
-  await expect(page.getByText("ADMIN CONSOLE")).toHaveCount(0);
+  await expect(page.getByText(COPY.applicantHero, { exact: true })).toBeVisible();
+  await expect(page.getByText(/·\s*CONTROL/)).toHaveCount(0);
 
   await page.goto("/applicant/admin/positions");
-  await expect(page.getByText("ADMIN CONSOLE")).toBeVisible();
-  await expect(page.getByText("岗位列表")).toBeVisible();
+  await expect(page.getByText(COPY.applicantControl)).toBeVisible();
+  await expect(page.getByRole("heading", { name: "岗位管理" })).toBeVisible();
 });
 
 // ---------- P0-1b 新增：页面交互 + 副作用断言（4 类模式全覆盖）----------
@@ -72,7 +73,7 @@ test("applicant 前后台互跳 副作用：URL 变化 + 导航断言", async ({
   const navPromise = page.waitForURL(/\/applicant\/admin\/positions/, { timeout: 10000 });
   await adminTrigger.click();
   await navPromise;
-  await expect(page.getByText("ADMIN CONSOLE")).toBeVisible();
+  await expect(page.getByText(COPY.applicantControl)).toBeVisible();
 
   // 后台 AdminShell 侧栏底部「← 返回前台」→ 应跳回 /positions
   const toFront = page.getByRole("link", { name: /返回前台/ }).first();
@@ -87,7 +88,7 @@ test("applicant 前后台互跳 副作用：URL 变化 + 导航断言", async ({
   const backPromise = page.waitForURL(/\/applicant\/positions/, { timeout: 10000 });
   await frontTrigger.click();
   await backPromise;
-  await expect(page.getByText("每一次投递，都值得被认真对待")).toBeVisible();
+  await expect(page.getByText(COPY.applicantHero, { exact: true })).toBeVisible();
 });
 
 test("applicant 后台 新建岗位按钮 副作用：Modal 打开 + 提交后列表新增", async ({ page, request }) => {

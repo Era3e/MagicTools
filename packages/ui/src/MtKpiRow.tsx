@@ -21,6 +21,7 @@ export function MtKpiRow(props: MtKpiRowProps) {
   const { items } = props;
   return (
     <div
+      className="mt-kpi-row"
       style={{
         display: "grid",
         gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))`,

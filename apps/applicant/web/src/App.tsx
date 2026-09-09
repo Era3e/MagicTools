@@ -1,23 +1,28 @@
 import { Navigate, Route, BrowserRouter, Routes, useLocation, useNavigate } from "react-router-dom";
-import { UserShell, AdminShell, type UserShellTheme } from "@mt/ui";
+import { UserShell, AdminShell, appAccent, type UserShellTheme } from "@mt/ui";
 import PositionWall from "./pages/PositionWall";
 import PositionList from "./pages/PositionList";
 import PositionDetail from "./pages/PositionDetail";
 import InterviewPage from "./pages/InterviewPage";
 import ResumeCenter from "./pages/ResumeCenter";
 
+const ACCENT = appAccent("applicant");
+
 const APPLICANT_THEME: UserShellTheme = {
   primary: "#a8522e",
-  background: "#f7f3ec",
+  background: "#f4f6f8",
   ink: "#241f1a",
-  muted: "#857b6f",
+  muted: "#5f6c7c",
   displayFont: '"Noto Serif SC", "Source Serif 4", "Songti SC", serif',
   bodyFont: '"Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif',
+  accent: "#a8522e",
+  tint: "#f7ece6",
+  panel: "#ffffff",
   brick: "#a8522e",
-  paper: "#f7f3ec",
-  rule: "#e0d6c6",
-  card: "#fffdf8",
-  border: "#e6ddcf",
+  paper: "#f7ece6",
+  rule: "#d9dde3",
+  card: "#ffffff",
+  border: "#e3e6ea",
 };
 
 const USER_NAV = [
@@ -58,11 +63,12 @@ function Shell() {
     const selected = ADMIN_NAV.find((m) => location.pathname.startsWith(m.key))?.key ?? "/admin/positions";
     return (
       <AdminShell
-        title="求职"
+        title="求职工坊"
         navItems={ADMIN_NAV}
         selectedKey={selected}
         onNavigate={(key) => navigate(key)}
         frontPath="/positions"
+        eyebrow={ACCENT.controlEyebrow ?? ACCENT.controlKey}
       >
         <AdminRoutes />
       </AdminShell>
@@ -72,8 +78,8 @@ function Shell() {
   const selected = USER_NAV.find((m) => location.pathname.startsWith(m.key))?.key ?? "/positions";
   return (
     <UserShell
-      title="求职"
-      subtitle="每一次投递，都值得被认真对待"
+      title="求职工坊"
+      eyebrow={ACCENT.frontEyebrow}
       navItems={USER_NAV}
       selectedKey={selected}
       onNavigate={(key) => navigate(key)}

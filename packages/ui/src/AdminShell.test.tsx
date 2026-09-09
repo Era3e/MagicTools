@@ -1,9 +1,10 @@
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
-import { theme as antdTheme } from "antd";
+import { describe, it, expect, vi, afterEach } from "vitest";
+import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { AdminShell } from "./AdminShell";
 
-// antd Layout.Sider 依赖 matchMedia，jsdom 需 polyfill
+afterEach(cleanup);
+
+// antd Drawer 依赖 matchMedia，jsdom 需 polyfill
 if (!window.matchMedia) {
   window.matchMedia = ((query: string) => ({
     matches: false,
@@ -17,24 +18,8 @@ if (!window.matchMedia) {
   })) as unknown as typeof window.matchMedia;
 }
 
-/** 探针组件：验证 AdminShell 内部 AntD 组件实际生效的暗色 token */
-function DarkTokenProbe() {
-  const { token } = antdTheme.useToken();
-  return (
-    <div
-      data-testid="dark-probe"
-      data-primary={String(token.colorPrimary)}
-      data-bg-container={String(token.colorBgContainer)}
-      data-bg-layout={String(token.colorBgLayout)}
-      data-bg-elevated={String(token.colorBgElevated)}
-      data-text={String(token.colorText)}
-      data-border={String(token.colorBorder)}
-    />
-  );
-}
-
-describe("AdminShell（v2 石墨深色控制台）", () => {
-  it("侧栏为石墨深色（v2.1 质感升级渐变）", () => {
+describe("AdminShell（v2.3 设计稿 as-* 控制台）", () => {
+  it("侧栏渲染品牌区 + 默认 ADMIN CONSOLE eyebrow（渐变底在 as-sider 类中，视觉由基线保障）", () => {
     const { container } = render(
       <AdminShell
         title="采集"
@@ -45,44 +30,17 @@ describe("AdminShell（v2 石墨深色控制台）", () => {
         <div>内容区</div>
       </AdminShell>
     );
-    const sider = container.querySelector(".ant-layout-sider");
+    const sider = container.querySelector(".as-sider");
     expect(sider).toBeTruthy();
-    // v2.1 质感层：侧栏为更深纵向渐变（siderGrad #161b24→#0e1218）
-    const siderBg = (sider as HTMLElement).style.background.toLowerCase();
-    const isGraphite =
-      siderBg.startsWith("linear-gradient(180deg, #161b24") ||
-      ["#0e1218", "rgb(14, 18, 24)"].includes(siderBg);
-    expect(isGraphite).toBe(true);
-    expect(screen.getByText("信息源管理")).toBeTruthy();
+    const brandName = container.querySelector(".as-brand-name");
+    expect(brandName?.textContent).toBe("采集");
+    expect(screen.getByText("ADMIN CONSOLE")).toBeTruthy();
+    expect(container.querySelector(".as-nav")?.textContent).toContain("信息源管理");
   });
 
-  it("内容区注入暗色 AntD 令牌（暗色为一等公民）", () => {
-    render(
-      <AdminShell
-        title="采集"
-        navItems={[{ key: "/admin/sources", label: "信息源管理" }]}
-        selectedKey="/admin/sources"
-        onNavigate={() => {}}
-      >
-        <DarkTokenProbe />
-      </AdminShell>
-    );
-    const probe = screen.getByTestId("dark-probe");
-    // v2.1 四级表面阶梯：画布 #0e1218 / 卡片 #181d26 / 抬起 #252e3b / 边框 #2a3340
-    const darkPrimary = probe.getAttribute("data-primary");
-    expect(["#6e8bad", "#617996"]).toContain(darkPrimary);
-    expect(darkPrimary).not.toBe("#2c4a6e");
-    expect(darkPrimary).not.toBe("#1677ff");
-    expect(probe.getAttribute("data-bg-container")).toBe("#181d26");
-    expect(probe.getAttribute("data-bg-layout")).toBe("#0e1218");
-    expect(probe.getAttribute("data-bg-elevated")).toBe("#252e3b");
-    expect(probe.getAttribute("data-text")).toBe("#dde4ec");
-    expect(probe.getAttribute("data-border")).toBe("#2a3340");
-  });
-
-  it("点击导航触发回调；frontPath 存在时渲染返回前台入口", () => {
+  it("导航激活态用琥珀左指示条（data-active）且点击触发回调", () => {
     const onNavigate = vi.fn();
-    render(
+    const { container } = render(
       <AdminShell
         title="求职"
         navItems={[
@@ -91,13 +49,48 @@ describe("AdminShell（v2 石墨深色控制台）", () => {
         ]}
         selectedKey="/admin/positions"
         onNavigate={onNavigate}
-        frontPath="/positions"
       >
         <div>内容区</div>
       </AdminShell>
     );
+    const activeLink = container.querySelector('.as-nav a[data-active="true"]');
+    expect(activeLink?.textContent).toContain("岗位管理");
     fireEvent.click(screen.getByText("简历管理"));
     expect(onNavigate).toHaveBeenCalledWith("/admin/resumes");
+  });
+
+  it("frontPath 存在时渲染返回前台入口与返回总览；eyebrow 可定制", () => {
+    render(
+      <AdminShell
+        title="求职"
+        navItems={[{ key: "/admin/positions", label: "岗位管理" }]}
+        selectedKey="/admin/positions"
+        onNavigate={() => {}}
+        frontPath="/positions"
+        eyebrow="APPLICANT · CONTROL"
+      >
+        <div>内容区</div>
+      </AdminShell>
+    );
     expect(screen.getByText(/返回前台/)).toBeTruthy();
+    expect(screen.getByText(/返回总览/)).toBeTruthy();
+    expect(screen.getByText("APPLICANT · CONTROL")).toBeTruthy();
+    expect(screen.queryByText("ADMIN CONSOLE")).toBeNull();
+  });
+
+  it("顶栏渲染 mono 面包屑与版本胶囊", () => {
+    const { container } = render(
+      <AdminShell
+        title="管理"
+        navItems={[{ key: "/admin/requirements", label: "需求管理" }]}
+        selectedKey="/admin/requirements"
+        onNavigate={() => {}}
+      >
+        <div>内容区</div>
+      </AdminShell>
+    );
+    const crumb = container.querySelector(".as-crumb");
+    expect(crumb?.textContent).toContain("需求管理");
+    expect(screen.getByText("V2.3")).toBeTruthy();
   });
 });

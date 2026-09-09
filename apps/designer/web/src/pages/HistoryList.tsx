@@ -1,26 +1,51 @@
-import { useEffect, useState } from "react";
-import { Button, Card, Table, message } from "antd";
-import { MtStatusTag } from "@mt/ui";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Button, Table, message } from "antd";
+import { AdminPageHead, AdminToolbar, AdminToolbarCount, MtKpiRow, MtStatusTag, tokens } from "@mt/ui";
 import { api, downloadText, type Generation } from "../api";
 
 export default function HistoryList() {
   const [items, setItems] = useState<Generation[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const refresh = () => api.listGenerations().then(setItems).catch((err) => message.error(String(err)));
+  const refresh = useCallback(() => {
+    setLoading(true);
+    api.listGenerations().then(setItems).catch((err) => message.error(String(err))).finally(() => setLoading(false));
+  }, []);
 
   useEffect(() => {
     refresh();
-  }, []);
+  }, [refresh]);
+
+  const kpis = useMemo(
+    () => [
+      { label: "生成总数", value: items.length, unit: "次" },
+      { label: "成功", value: items.filter((g) => g.status === "ok").length, unit: "次" },
+      { label: "失败", value: items.filter((g) => g.status !== "ok").length, unit: "次" },
+      { label: "沉淀组件", value: new Set(items.filter((g) => g.componentName).map((g) => g.componentName)).size, unit: "个" },
+    ],
+    [items]
+  );
 
   return (
-    <Card title="生成历史">
+    <div>
+      <AdminPageHead
+        eyebrow="ADMIN · HISTORY"
+        title="生成历史"
+        badges={<MtStatusTag tone="neutral" mono>GEN</MtStatusTag>}
+        description="自然语言到组件的生成流水线记录 · 成功件可下载 TSX 源码"
+        kpi={<MtKpiRow items={kpis} />}
+      />
+      <AdminToolbar>
+        <AdminToolbarCount>共 {items.length} 条 · 生成流水</AdminToolbarCount>
+      </AdminToolbar>
       <Table<Generation>
         rowKey="id"
         dataSource={items}
-        pagination={{ pageSize: 10 }}
+        loading={loading}
+        pagination={{ pageSize: 10, showTotal: (t) => `共 ${t} 条` }}
         columns={[
-          { title: "描述", dataIndex: "prompt", ellipsis: true },
-          { title: "组件", dataIndex: "componentName", width: 180, render: (v: string) => v || "-" },
+          { title: "委托描述", dataIndex: "prompt", ellipsis: true },
+          { title: "组件", dataIndex: "componentName", width: 180, render: (v: string) => <span style={{ fontFamily: tokens.font.mono, fontSize: 12 }}>{v || "—"}</span> },
           {
             title: "状态",
             dataIndex: "status",
@@ -30,19 +55,23 @@ export default function HistoryList() {
           {
             title: "时间",
             dataIndex: "createdAt",
-            width: 180,
-            render: (v: string) => new Date(v).toLocaleString(),
+            width: 170,
+            render: (v: string) => <span style={{ fontFamily: tokens.font.mono, fontSize: 12 }}>{new Date(v).toLocaleString()}</span>,
           },
           {
             title: "操作",
-            width: 120,
+            width: 100,
             render: (_, row) =>
               row.status === "ok" && row.code ? (
-                <Button size="small" onClick={() => downloadText(row.componentName + ".tsx", row.code)}>下载</Button>
-              ) : null,
+                <Button type="link" size="small" style={{ paddingInline: 4 }} onClick={() => downloadText(row.componentName + ".tsx", row.code)}>
+                  下载
+                </Button>
+              ) : (
+                <span style={{ color: tokens.dark.textFaint }}>—</span>
+              ),
           },
         ]}
       />
-    </Card>
+    </div>
   );
 }

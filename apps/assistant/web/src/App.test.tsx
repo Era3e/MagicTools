@@ -27,6 +27,6 @@ describe("App", () => {
       vi.fn(async () => new Response(JSON.stringify([]), { status: 200 }))
     );
     render(<App />);
-    expect(screen.getByText("ADMIN CONSOLE")).toBeTruthy();
+    expect(screen.getByText("ASSISTANT · CONTROL")).toBeTruthy();
   });
 });

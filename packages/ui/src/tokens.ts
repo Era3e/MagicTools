@@ -66,6 +66,7 @@ export const tokens = {
     tableRowHoverBg: "rgba(255, 255, 255, 0.035)",
     rowSelectedBg: "rgba(110, 139, 173, 0.08)",
     rowSelectedHoverBg: "rgba(110, 139, 173, 0.12)",
+    rowErrorBg: "rgba(148, 61, 53, 0.10)", // 错误行底（自动暂停演示的行级 error tint）
     menuSelectedBg: "rgba(110, 139, 173, 0.10)",
     menuHoverBg: "rgba(255, 255, 255, 0.04)",
     tagBg: "rgba(255, 255, 255, 0.04)",

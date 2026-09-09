@@ -1,16 +1,21 @@
 import { Navigate, Route, BrowserRouter, Routes, useLocation, useNavigate } from "react-router-dom";
-import { AdminShell, UserShell } from "@mt/ui";
+import { AdminShell, UserShell, appAccent } from "@mt/ui";
 import SourceList from "./pages/SourceList";
 import SourceDetail from "./pages/SourceDetail";
 import ItemList from "./pages/ItemList";
 
+const ACCENT = appAccent("gatherer");
+
 const PRESS_THEME = {
   primary: "#1f3a5c",
-  background: "#f7f7f4",
+  background: "#f4f6f8",
   ink: "#141a20",
   muted: "#5f6c7c",
-  displayFont: '"JetBrains Mono", "Cascadia Mono", Consolas, "Noto Sans SC", monospace',
+  displayFont: '"Noto Serif SC", "Source Serif 4", "Songti SC", serif',
   bodyFont: '"Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif',
+  accent: "#1f3a5c",
+  tint: "#e8ecf2",
+  panel: "#ffffff",
 };
 
 const ADMIN_NAV = [{ key: "/admin/sources", label: "信息源管理" }];
@@ -33,10 +38,11 @@ function Shell() {
   if (isAdmin) {
     return (
       <AdminShell
-        title="采集"
+        title="采集工坊"
         navItems={ADMIN_NAV}
         selectedKey="/admin/sources"
         onNavigate={(key) => navigate(key)}
+        eyebrow={ACCENT.controlEyebrow ?? ACCENT.controlKey}
       >
         <AdminRoutes />
       </AdminShell>
@@ -45,8 +51,9 @@ function Shell() {
 
   return (
     <UserShell
-      title="知识采集部"
-      subtitle="网络世界的消息，由本报为你搜集"
+      title="采集工坊"
+      subtitle={ACCENT.subtitle}
+      eyebrow={ACCENT.frontEyebrow}
       navItems={[]}
       selectedKey="/admin/sources"
       onNavigate={(key) => navigate(key)}

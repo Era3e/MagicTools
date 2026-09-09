@@ -49,6 +49,6 @@ describe("App", () => {
       vi.fn(async () => new Response("{}", { status: 200 }))
     );
     render(<App />);
-    expect(screen.getByText("ADMIN CONSOLE")).toBeTruthy();
+    expect(screen.getByText("SCHOLAR · CONTROL")).toBeTruthy();
   });
 });

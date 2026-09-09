@@ -26,7 +26,7 @@ test("designer 全流程（生成→预览→沉淀→列表→历史）", async
 
 test("designer 生成页面渲染", async ({ page }) => {
   await page.goto("/designer/generate");
-  await expect(page.getByText(/定制生成/)).toBeVisible();
+  await expect(page.getByText("COMMISSION · 定制生成")).toBeVisible();
 });
 
 // ---------- P0-1b 新增：画廊委托单交互 + 列表跳转副作用断言 ----------
@@ -80,7 +80,6 @@ test("designer 导航跳转 副作用：组件馆藏 / 生成历史 URL 变化",
   );
   await compTrigger.click();
   await expect(page).toHaveURL(/\/designer\/(admin\/)?components/, { timeout: 8000 });
-  // D-16 后 /components 直渲染 ComponentList：h1「组件画廊」/副标题/导航均含「组件」，
-  // 正则宽匹配会 strict mode 多命中——收敛到 Card 标题「组件库」（页面唯一锚点）
-  await expect(page.getByText("组件库")).toBeVisible({ timeout: 8000 });
+  // v2.3 前台 /components 渲染组件表格（front 模式），「组件名」为表头唯一锚点
+  await expect(page.getByText("组件名").first()).toBeVisible({ timeout: 8000 });
 });

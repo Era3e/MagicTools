@@ -24,6 +24,6 @@ describe("SourceList", () => {
       </MemoryRouter>
     );
     expect(await screen.findByText("行业资讯")).toBeTruthy();
-    expect(screen.getByText("RSS")).toBeTruthy();
+    expect(screen.getAllByText("RSS").length).toBeGreaterThanOrEqual(1);
   });
 });

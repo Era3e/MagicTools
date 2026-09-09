@@ -6,6 +6,50 @@
 
 ## 当前状态快照（2026-09-09 更新）
 
+- **五道工程防线落地完成（2026-09-09，UI v2.3.1 质量基建轮）**：
+
+  - **输入**：用户要求把巡检发现的五类问题（响应式回归/文案双源/stash 冲突/dist 陈旧/锚点漂移）的防弊方案依次落地为工程基建。
+
+  - **防线一·响应式溢出巡检**：新增 `e2e/tests/responsive.spec.ts`（375/768 两档 × 16 页 = 32 用例，纯几何断言 scrollWidth ≤ viewport+1，锚点复用 fixtures fail fast）。**首跑即抓出 15 个真实溢出**（768 平板档是此前手测盲区）：①双壳表格横滚只写在 640 断点内 → AdminShell/UserShell 提为 960（`@media 960` 表格容器内滚 + min-width 640/560）；②UserShell `us-main` 920 断点的 `max-width:100%` 上轮编辑丢失重补。全部修复后 32/32 绿。
+
+  - **防线三·pre-commit 钩子**：`.githooks/pre-commit`（git config core.hooksPath .githooks）——`git diff --cached --check` 拦冲突标记（报文件名，补 ESLint 只报行号的缺陷）+ @mt/ui src/dist 同暂存时校验 dist mtime 不早于 src（陈旧构建守卫）。
+
+  - **防线四·双保险**：①turbo.json `test` 依赖 `"build"`→`"^build"`（dry-run 验证 @mt/assistant-web#test 现在自动编排 @mt/ui#build 前置）；②8 个 web 的 vitest.config 全部加 `resolve.alias` 把 `@mt/ui` 指向 `packages/ui/src`——单测直连源码，spike 实证改 src 立即红（无需重建 dist）；dist 仅由 build/smoke 链验证，两轨职责分离。
+
+  - **防线二·文案单源化**：`apps.ts` AppAccentTokens 扩展 `frontEyebrow`/`subtitle?`/`controlEyebrow?` 三字段（八应用文案入库，manager 前台 WORKSPACE/无 subtitle 等应用级差异显式化）；8 个 App.tsx 改 `appAccent(key)` 取用删手写字符串；gateway `APP_ACCENT` 导出 + app.test.ts drift guard 用例（运行时读注册表源码正则比对——**不可跨包 import**，tsc rootDir 不含 packages/ 且 `import.meta` 与 gateway module 配置冲突，另 cwd 会被 turbo 改写到盘根需多候选路径探测）；e2e 文案 fixtures `e2e/fixtures/copy.ts`（applicantHero/applicantControl），gateway/applicant spec 改引常量。
+
+  - **防线五·视觉锚点 fail fast + 时序机制**（本轮最大坑位）：_visual.spec 锚点等待删双重 fallback 改全页断言失配即败；PAGES 表抽 `e2e/fixtures/pages.ts` 与 responsive.spec 共享。**fail fast 揭示三层次生问题**：①6 处锚点还是 v1 文案（ADMIN CONSOLE/调研档案馆等）全量对齐 v2.3（ADMIN · XX eyebrow + 中文标题）；②fail fast 后截图提前 1-2s，数据竞态暴露——新增 `waitFor`（等数据容器）与 `settleMs`（等并发功能用例写库收尾，manager/assistant/investigator/assessor 后台 9000ms）两级时序字段；③三前台重定向页锚点定稿为 `· CONTROL`（重定向完成确定信号，勿用只存在一帧的 masthead 文案）。16 张基线随新时序重生成。
+
+  - **验证终态**：e2e **83 passed / 2 skipped / 0 failed 两轮稳定复现**（功能 51 + responsive 32 + visual 16...实际含 skip 计数微调）；build/lint/test 全绿；smoke 17 服务全 PASS。pnpm test（turbo）确认 ^build 生效。
+
+  - **三个新教训入库**：①**spike 验证用 `git checkout --` 还原会连带吞掉未暂存的正式修改**（apps.ts 扩展曾被还原，测试失败才暴露）——spike 前先 `git add` 目标文件或用 stash；②SearchReplace 并发同文件编辑静默丢改动在本轮又发生 4 次（fixtures 解构/settleMs/waitFor）——**批量改一个文件优先整文件 Write 原子重写**；③`pnpm --filter @mt/e2e e2e:visual:update` 在 e2e 目录下不是合法 script（根目录专属），静默失败导致「update 过了却全红」——目录上下文与 script 归属要对齐。
+
+  - **待办**：提交后由 0 bug loop 测试代理验收（见下方验收记录）。
+
+- **交互与多端适配巡检修复完成（2026-09-09，UI v2.3 收尾轮）**：
+
+  - **输入**：用户要求检查各子项目页面交互逻辑与样式适配问题，并评估设计稿标注缺失的影响。Chrome DevTools 实机巡检 9 页（网关 + 8 应用前后台）。
+
+  - **移动端溢出修复（375px 视口 pageSW=viewport 全收敛）**：@mt/ui 双壳补 640px 折叠规则——MtKpiRow 加 `mt-kpi-row` 类名锚点（AdminShell/UserShell 移动端 KPI 2 列折叠+分隔线重排、表格内横向滚动 min-width 640px、演示导演台 320px 侧栏改单列）；UserShell `us-main` 920px 下 `max-width:100%`（原 1080px 定宽撑出横向滚动）。页面级补断点：PositionWall 860/720px、RequirementBoard 960/640px（泳道区包 `rb-lanes-wrap` 横向滚动容器）、GeneratePage 920/720px、ChatPage 920/640px（会话栏 920px 变横向条带）、EntryList 860/640px。
+
+  - **副标题去重**：applicant/manager App.tsx 删除 UserShell subtitle（页面 Hero 已承载同文案，双显重复）；e2e 三处断言同步校准到 Hero 长句（gateway.spec/applicant.spec×2）。
+
+  - **git stash pop 冲突解 merge（重要）**：上一会话 `stash@{0} ui-v22-fonts-wip` pop 时与 assistant-dual-query 分支工作区冲突遗留 5 文件 UU。**ChatPage/IntentLogPage 双方功能合并保留**（错误码重试演示 ERR_SPECS + 双查询核验 VerifyBadge/数据查询监控卡共存；监控卡从旧 Card 结构适配到 v2.3 div 版式）；state.md 双方进度条目全保留；plans/specs 取 markdownlint 修复侧。**教训：stash pop 冲突标记会让 lint 报 "Merge conflict marker" 解析错且不显示文件名，先 `git status` 找 UU 再逐个解。**
+
+  - **@mt/ui dist 陈旧构建陷阱**：lint 过了但测试报 `AdminPageHead undefined`——src/index.ts 已导出而 dist/index.js 还是 patterns 时代产物（时间戳有欺骗性）。assistant-web 7 测试失败根因即此，重建 @mt/ui 后 18/18 绿。IntentLogPage.calls.test 同步校准 v2.3 结构（.ant-card → 标题文案定位）。
+
+  - **视觉基线 gatherer 漂移根因**：_visual.spec 锚点正则还是旧文案（ADMIN CONSOLE/信息源管理），v2.3 已改 `· CONTROL`/采集源管理——锚点 8s 超时后截图时机不定导致 update 后比对仍漂移 5%。修正锚点正则（采集工坊|采集源管理|· CONTROL）+ 重生成 gatherer 2 张后稳定。
+
+  - **验证终态**：lint 0 err；build/test 全绿（assistant-web 18/18、assistant-server 122/122）；e2e 51 passed / 2 skipped（skip 为已知 assistant.spec:90 历史定位器）+ 视觉 16/16；smoke 17/17（libuv 崩溃为退出阶段已知 bug）。assistant-server 需带桩环境启动（CYBERCLOUD_STUB=1 等，start-services.mjs:65 为准），裸 `node dist/main.js` 会导致 data_query e2e 走降级文案。
+
+  - **结论（用户问题的回答）**：本轮发现的交互/适配问题**主因不是设计稿缺标注**——设计稿 HTML 内嵌完整 CSS（尺寸即真实值），缺的只是「响应式行为规格」（窄屏折叠策略）与「异常态交互规格」（错误码→重试矩阵），前者靠工程惯例（640/860/920/960 断点体系）补齐，后者设计稿已用 3 个演示页明示。真正的问题源是：①双壳历史遗留的 max-width 定宽；②stash 冲突遗留；③dist 陈旧构建；④e2e 锚点未随文案重构同步——四个都是工程侧问题。
+
+- **0 bug loop 测试代理验收通过（2026-09-09，提交 f1120fa@feat/ui-v231-quality-guards）**：独立代理静态取证 5 防线 + 动态复跑（lint 0 err / assistant-web 18 / gateway 14 含 drift guard / responsive 32/32 / e2e 全量 83 passed 2 skipped 0 failed）+ 双篡改测试（apps.ts 文案改字 → alias 直连 src 立即红；UserShell 注入 min-width 900px → 巡检精准红且仅波及 UserShell 前台页），篡改均还原、终态工作区干净。**验收沉淀两条新经验**：①`pnpm --filter X build` 不走 turbo 依赖图——改 @mt/ui src 后单建某 app 的 dist 不含 ui 变更，dist 链路验证必须显式 `--filter @mt/ui build` 或 `turbo run build`（单测有 alias 兜底故日常无感，篡改/spike 才踩）；②`magictools-ui-design/*.design` 会被环境后台 layoutSnapshot 进程按页面渲染持续自动回写（measuredAt/contentHeight），工作区见它"有改动"先怀疑测量进程勿误判人工遗留。另：篡改测试设计教训——block 元素无显式 width 时删 `max-width:100%` 是几何惰性的（不必然复现溢出），篡改用例应注入**必然几何溢出**（如 min-width 定值）。
+
+  - **教训④（git 分支整理）**：commit 误落 main 后的整理顺序应为「先 stash/commit 未提交改动 → git branch feat/x → main reset --hard → 切 feat」——本轮 state.md 验收记录因在脏工作区直接 reset --hard 丢失重写（与教训①同族：**任何还原性 git 操作前先固化工作区**）。
+
+  - **待办**：push feat/ui-v231-quality-guards 并开 PR（body 补 0 bug loop 勾选）；CI 三段绿后合并；linux 基线随 PR 流程重生成。
+
 - **Assistant 双路数据查询与质量兜底落地（2026-09-08，分支 feat/assistant-dual-query，阶段一）**：
 
   - **背景**：data_query 单路依赖 cybercloud 智能体，故障域不可分、回答不准不可控。spec docs/superpowers/specs/2026-09-08-assistant-dual-query-design.md（含从 cloud-meta 源码逆向的直连 API 契约与两个关键修正：indicatorValue 是预设值禁用作实时答案、queryById userFilters 整体替换语义）。
@@ -27,6 +71,42 @@
   - **发布收官（2026-09-09）**：PR #54 CI 三段全绿一次通过 squash 合并 a924d42；Version PR #52 三件套完成（补 0 bug loop 勾选 → close/reopen 触发 CI 三段绿 → squash 87acaf2），Release 自动打 tag @mt/ui@0.3.0；纯私有包 changeset（assistant 双包）不参与发布，按 #46 经验经 MCP 远端删除（4f3fe21）避免 Release 误判，删除提交触发的 Release 重跑已确认走 tag 路径、open PR 清零；本地 worktree feat/assistant-dual-query 与分支已清理，主仓恢复 main+ui-v22 WIP 现场。**注意：真环境凭据维护在 worktree .env 中已随之清理，主仓 .env 的 CYBERCLOUD_*/ZHIPU_API_KEY/ZHIPU_MODEL 为空——下次真环境联调前需用户重新维护凭据（历史教训：凭据只放主仓根 .env，worktree 从主仓复制）。**
 
   - **待办**：①linux 视觉基线（用户在 Actions 页 dispatch visual-baseline workflow，win32 已随 #54 更新）；②**glm-5.3 已实测（2026-09-09）**：@mt/model-client 新增 envModelKey 机制（ZHIPU_MODEL=glm-5.3 免改代码切档，提交 76222bf）——意图分类显著提升（4-flash 误判 chitchat 的问句 5.3 直达 data_query 0.98）；代价是指标匹配 5~19s 波动（CYBERCLOUD_DIRECT_TIMEOUT_MS 提至 45000）+ 指标目录外问题会诚实 low_confidence 降级（合理）。**testcybercloud-dev 的智能体 block 对话本身 30~60s**（远端网络），60s 核验超时下 verify 常态 agent_timeout——生产同城部署会改善；双路架构下用户仍 14s 拿到直连答案，不受智能体慢拖累。
+
+- **UI v2.3 设计稿全量重构完成（分支 feat/ui-v22-page-patterns，未开 PR；基于 v2.2 打样验收后铺开）**：
+
+  - **输入**：用户上传 17 页设计稿 ZIP（`.design-ref/pages/`：8 后台 + 5 前台 + 网关 + 3 交互演示），「墨蓝石墨·工房感」令牌体系 v2.2 与 `us-*`/`as-*` 双外壳、`pg-*` 页面构图全量复刻。
+
+  - **@mt/ui v2.3 基座**：①`apps.ts` 新增 `APP_ACCENT_TOKENS` 八应用 accent 三件套（accent/tint/ink + monoKey/controlKey，ui-spec §三派生口径唯一来源）；②UserShell 重构为报头式水平导航（us-前缀静态 CSS：brand eyebrow+appname / accent 下边框激活导航 / 琥珀描边后台按钮 / 920px 换行 640px 纵排，新增 eyebrow prop）；③AdminShell 重构为 as-* 控制台（240px 侧栏渐变底+右发丝线、**琥珀 inset 2px 左指示条激活态（无底色填充，全后台最具辨识度细节）**、52px 毛玻璃顶栏 mono 面包屑+V2.3 胶囊、侧栏底返回前台/返回总览双链接，新增 eyebrow prop）；④`AdminToolbar` 新组件（surface-1 卡 + mono 分组标签 + 弹性占位 + AdminToolbarCount 读数）；⑤ESLint 白名单补 `tint` 键、tokens 补 `dark.rowErrorBg`。
+
+  - **8 应用接线**：App.tsx 全部接入 eyebrow（前台 `APPLICANT · 求职工坊` 式 / 后台 `APPLICANT · CONTROL` 式）+ accent/tint/panel 主题键；应用名对齐设计稿（学者书库/交付管理/组件工坊/采集工坊/调研工坊/评审工坊/求职工坊/智能助手）。
+
+  - **8 后台页全量铺开**（AdminPageHead eyebrow+标题+徽章+描述+双按钮 actions+MtKpiRow → AdminToolbar 搜索/筛选/计数 → 直铺 Table mono 读数）：applicant 岗位管理、scholar 馆藏管理（EntryList admin prop 拆双形态）、assistant 意图日志（v2.2 已打样）、manager 需求列表（v2.2 已打样）、designer 组件馆藏+生成历史、gatherer 采集源管理（含暂停/启用切换）、investigator 调研管理、assessor 评审请求。
+
+  - **5 前台页重构**：applicant PositionWall 杂志特稿式（tint Hero+双统计栏+胶囊筛选+2 列网格头条跨列）；scholar EntryList 书脊式目录（tint 检索面板+3px 馆藏绿顶边+4px 书脊竖条）；assistant ChatPage 双栏文档流（260 会话栏 accent 竖条激活+消息流舞台+气泡角指向）；manager RequirementBoard FLIGHT DECK（衬线 Hero+行内读数串+4 卡 accent 顶边 KPI+泳道+迭代切换条）；designer GeneratePage 7fr/5fr 非对称（画廊文案+委托单 NO.编号+生成状态条脉冲+三步展位说明）。
+
+  - **Gateway 落地页**：编辑部目录构图（Hero「工具工房，八件套」+mono 读数串+01/02/03 编号小节+八卡 accent 顶边 4px 目录墙+事件流向三行条+服务状态条）；`APP_ACCENT` 服务端内联色板（eslint-disable 注释声明：网关无 @mt/ui 依赖，与 APP_ACCENT_TOKENS 同步）。
+
+  - **3 个交互演示落地**（设计稿演示页复刻）：①ChatPage 重试恢复流（ERR_SPECS 错误码矩阵、错误气泡 role=alert、重试按钮 ATTEMPT n/3 演进、429 倒计时解锁、三次耗尽系统提示条、「换个问法」回填输入框）；②gatherer FailLab 自动暂停（状态机 running→failing→paused、失败计数 1-2 warning/3 触发暂停 error、行级 error tint+左红条、P1-P4 导演台场景注入+竞态令牌取消）；③assessor BatchLab 批量部分成功（逐行 300ms 骨架 shimmer 链、成功徽标/失败堆栈+重试链接、三态收尾反馈、409 不自动重试）。
+
+  - **测试与门禁**：qa:gate 全绿（lint 0 err / build 23 / test 46 / coverage / infra / docs 0 err）；e2e 35 passed / 2 skipped / 0 failed；16 张 win32 视觉基线随新 UI 重生成并全量通过；smoke 17/17。e2e 定位器同步修正 9 处（双命中收敛 exact/heading、锚点文案更新：ADMIN CONSOLE→各应用 CONTROL eyebrow、信息源→采集源管理、组件库→组件名表头、分析请求→评审请求 heading、馆 藏 目 录→馆藏管理 heading、编辑信息源→编辑采集源）。
+
+  - **顺手修复**：assistant-dual-query 文档 5 处 markdownlint 错误（MD001 标题层级补 Tasks、MD031 fence 空行、MD050 `__FAIL__` 转义）。
+
+  - **待办**：用户截图验收 → PR（body 补 0 bug loop 勾选）→ CI 三段绿后合并；合并后 dispatch visual-baseline 重生成 linux 基线（win32 16 张已随本分支更新）；`.design-ref/` 目录（17 页设计稿）暂未入 git（验收后决定去留）。
+
+- **UI v2.2 页面级打样进行中（分支 feat/ui-v22-page-patterns，未开 PR）**：
+
+  - **背景**：用户反馈"共用壳塑料感十足"，诊断结论为页面级设计缺位（壳/组件有规范、占屏 75% 的页面主体仍是 AntD Card+Table CRUD 模板）+ 品牌字体从未真正加载（Google Fonts CDN 在内网静默失败）。用户拍板：先做字体本地化 + manager/assistant 两页打样，验收后全量铺开。
+
+  - **字体本地化（根因一波三折）**：`infra/scripts/fetch-fonts.cjs` 的 `__dirname/..` 少回退一层，9 个 woff2 全下到了 `infra/packages/ui/fonts`（幽灵目录），fonts.css 引用落空 → Vite 静默保留 `url(./fonts/...)` 原样、产物 0 个 woff2。**教训：包 CSS 的 url 不被改写时，先怀疑文件是否真的存在，而不是 Vite 对 workspace 包的处理策略**。修正路径后进一步发现 Google CSS2 对现代 UA 下发的是可变字体（同族三字重 MD5 完全相同）——精简为每族 1 个 woff2（3 文件共 185KB）+ `font-weight: 400 600` 区间声明 + `format('woff2-variations')`。运行时验证：mono/serif/sans 三族 check=true、CDN 0 请求、h1 衬线栈正确（Noto Sans 因 unicode-range 懒加载中文页不触发属正常，`fonts.load()` 强制拉取验证管线完好）。theme.tsx 的 useBrandFonts CDN 注入已删除，8 应用入口 `import "@mt/ui/fonts.css"`。
+
+  - **AdminPageHead 新组件**（@mt/ui，6 用例）：eyebrow（mono 11px 大写字距）/衬线标题 26px/badges/description/actions/kpi 七槽位，页头底部发丝线——替代"Card title"CRUD 模板感的页面级锚点。
+
+  - **打样 1 manager 需求列表**：AdminPageHead（eyebrow "ADMIN CONSOLE · 交付驾驶舱"）+ MtKpiRow（在轨/已完成/P0 在轨/挂 PR，useMemo 计算）+ 工具栏下沉行 + 表格直铺画布 + mono 时间戳。
+
+  - **打样 2 assistant 意图日志**：AdminPageHead + 意图分布进度条（top4 意图 + 占比）+ KPI 行（本页样本/低置信/已纠错/回放命中）+ 混淆矩阵 + 过滤行。坑：新计数变量与既有 state `corrected` 撞名 → correctedCount；重构后 `data_query`/`50%` 多处出现 → getAllByText/findAllByText。
+
+  - **待办**：用户截图验收（.run-logs/after-mgr.png、after-intents.png，对照 mgr-admin.png、live-intents.png）→ qa:gate + e2e + win32 基线重生成 + PR；验收通过后 8 应用全量页面级重设计。
 
 - **UI v2.2 页面级组件已合并 main（2026-09-08，PR #51 squash 合并 31dda02）**：
 

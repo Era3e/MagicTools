@@ -1,17 +1,21 @@
 import { Navigate, Route, BrowserRouter, Routes, useLocation, useNavigate } from "react-router-dom";
-import { AdminShell, UserShell } from "@mt/ui";
+import { AdminShell, UserShell, appAccent } from "@mt/ui";
 import GeneratePage from "./pages/GeneratePage";
 import ComponentList from "./pages/ComponentList";
 import HistoryList from "./pages/HistoryList";
 
+const ACCENT = appAccent("designer");
+
 const GALLERY_THEME = {
   primary: "#1c2530",
-  background: "#fcfcfc",
-  ink: "#1c2530",
+  background: "#f4f6f8",
+  ink: "#0d141c",
   muted: "#8b98a8",
-  displayFont: '"Noto Sans SC", "PingFang SC", "Helvetica Neue", sans-serif',
+  displayFont: '"Noto Serif SC", "Source Serif 4", "Songti SC", serif',
   bodyFont: '"Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif',
-  accent: "#943d35",
+  accent: "#1c2530",
+  tint: "#eef0f3",
+  panel: "#ffffff",
   paper: "#f4f6f8",
   border: "#e3e6ea",
 };
@@ -45,11 +49,12 @@ function Shell() {
     const selected = ADMIN_NAV.find((m) => location.pathname.startsWith(m.key))?.key ?? "/admin/components";
     return (
       <AdminShell
-        title="设计"
+        title="组件工坊"
         navItems={ADMIN_NAV}
         selectedKey={selected}
         onNavigate={(key) => navigate(key)}
         frontPath="/generate"
+        eyebrow={ACCENT.controlEyebrow ?? ACCENT.controlKey}
       >
         <AdminRoutes />
       </AdminShell>
@@ -59,8 +64,9 @@ function Shell() {
   const selected = USER_NAV.find((m) => location.pathname.startsWith(m.key))?.key ?? "/generate";
   return (
     <UserShell
-      title="组件画廊"
-      subtitle="描述你的想象，取走你的组件"
+      title="组件工坊"
+      subtitle={ACCENT.subtitle}
+      eyebrow={ACCENT.frontEyebrow}
       navItems={USER_NAV}
       selectedKey={selected}
       onNavigate={(key) => navigate(key)}
@@ -71,7 +77,7 @@ function Shell() {
       <Routes>
         <Route path="/" element={<Navigate to="/generate" replace />} />
         <Route path="/generate" element={<GeneratePage />} />
-        <Route path="/components" element={<ComponentList />} />
+        <Route path="/components" element={<ComponentList front />} />
         <Route path="/history" element={<Navigate to="/admin/history" replace />} />
         <Route path="/admin/*" element={<Navigate to="/admin/components" replace />} />
       </Routes>

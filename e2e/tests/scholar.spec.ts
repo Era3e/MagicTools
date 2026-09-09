@@ -35,7 +35,7 @@ test("scholar 全流程（录入→双通道检索→圈定→图谱）", async 
 
 test("scholar 条目页面渲染", async ({ page }) => {
   await page.goto("/scholar/admin/entries");
-  await expect(page.getByRole("main").getByText("馆 藏 目 录")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "馆藏管理" })).toBeVisible();
 });
 
 // ---------- P0-1b 新增：页面交互 + 副作用断言 ----------

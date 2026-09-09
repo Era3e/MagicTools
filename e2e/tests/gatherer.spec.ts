@@ -28,7 +28,7 @@ test("gatherer 全流程（建源→试采→采集→去重→推送，双桩�
 test("gatherer 源列表页面渲染", async ({ page, request }) => {
   await request.post("/api/gatherer/sources", { data: { name: "E2E页面源" + Date.now(), type: "rss" } });
   await page.goto("/gatherer/admin/sources");
-  await expect(page.getByRole("main").getByText("信息源")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "采集源管理" })).toBeVisible();
 });
 
 // ---------- P0-1b 新增：D1/D3 闭环交互 + 副作用断言 ----------
@@ -56,10 +56,10 @@ test("gatherer D3 编辑按钮 副作用：点击弹出编辑 Modal + PATCH 请�
     "[gatherer] 未命中行内「编辑」按钮（检查按钮文案/表格结构）"
   );
 
-  // 模式 2：编辑 Modal 打开（标题唯一锚点「编辑信息源 · <名>」）
+  // 模式 2：编辑 Modal 打开（标题唯一锚点「编辑采集源 · <名>」）
   await editBtn.click();
   await expect(
-    page.locator(".ant-modal-title", { hasText: /^编辑信息源 · / })
+    page.locator(".ant-modal-title", { hasText: /^编辑采集源 · / })
   ).toBeVisible({ timeout: 8000 });
 
   // 模式 4：编辑 Modal 走 AntD onOk（页脚「确 定」），非表单内保存按钮

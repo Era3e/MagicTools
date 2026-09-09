@@ -1,22 +1,27 @@
 import { Navigate, Route, BrowserRouter, Routes, useLocation, useNavigate } from "react-router-dom";
-import { AdminShell, UserShell } from "@mt/ui";
+import { AdminShell, UserShell, appAccent } from "@mt/ui";
 import RequirementList from "./pages/RequirementList";
 import RequirementBoard from "./pages/RequirementBoard";
 import RequirementDetail from "./pages/RequirementDetail";
 import IterationList from "./pages/IterationList";
 
+const ACCENT = appAccent("manager");
+
 const COCKPIT_THEME = {
-  // UserShellTheme 标准字段（v2 派生口径：驾驶舱冷蓝 + 品牌等宽/无衬线栈）
+  // UserShellTheme 标准字段（v2.3 派生口径：驾驶舱靛蓝 + 设计稿亮色锚点）
   primary: "#3a5f84",
-  background: "#eef2f6",
+  background: "#f4f6f8",
   ink: "#101a26",
   muted: "#5f6c7c",
-  displayFont: '"JetBrains Mono", "Cascadia Mono", Consolas, "Noto Sans SC", monospace',
+  displayFont: '"Noto Serif SC", "Source Serif 4", "Songti SC", serif',
   bodyFont: '"Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif',
   // Flight Deck 扩展色板（页面通过 useTheme() 访问，避免页面硬编码）
+  accent: "#3a5f84",
+  tint: "#e9eef4",
+  panel: "#ffffff",
   sky: "#3a5f84",
-  panel: "#f7fafc",
-  bg: "#e2e9f0",
+  board: "#fbfcfd",
+  rule: "#d9dde3",
   border: "#c9d4de",
   mono: '"JetBrains Mono", "Cascadia Mono", Consolas, monospace',
   sans: '"Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif',
@@ -61,11 +66,12 @@ function Shell() {
     const selected = ADMIN_NAV.find((m) => location.pathname.startsWith(m.key))?.key ?? "/admin/requirements";
     return (
       <AdminShell
-        title="管理"
+        title="交付管理"
         navItems={ADMIN_NAV}
         selectedKey={selected}
         onNavigate={(key) => navigate(key)}
         frontPath="/requirements"
+        eyebrow={ACCENT.controlEyebrow ?? ACCENT.controlKey}
       >
         <AdminRoutes />
       </AdminShell>
@@ -75,7 +81,7 @@ function Shell() {
   return (
     <UserShell
       title="交付驾驶舱"
-      subtitle="需求在轨，交付有期"
+      eyebrow={ACCENT.frontEyebrow}
       navItems={USER_NAV}
       selectedKey="/requirements"
       onNavigate={(key) => navigate(key)}

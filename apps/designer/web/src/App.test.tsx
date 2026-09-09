@@ -15,7 +15,7 @@ describe("App", () => {
       vi.fn(async () => new Response(JSON.stringify([]), { status: 200 }))
     );
     render(<App />);
-    expect(await screen.findByText(/定制生成/)).toBeTruthy();
+    expect((await screen.findAllByText(/定制生成/)).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("描述你的想象，取走你的组件")).toBeTruthy();
     expect(screen.queryByText("ADMIN CONSOLE")).toBeNull();
   });
@@ -27,6 +27,6 @@ describe("App", () => {
       vi.fn(async () => new Response(JSON.stringify([]), { status: 200 }))
     );
     render(<App />);
-    expect(screen.getByText("ADMIN CONSOLE")).toBeTruthy();
+    expect(screen.getByText("DESIGNER · CONTROL")).toBeTruthy();
   });
 });

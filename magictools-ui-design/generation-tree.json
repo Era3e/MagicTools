@@ -1,0 +1,317 @@
+{
+  "root": {
+    "nodeId": "gen-project-shell",
+    "kind": "project-shell",
+    "pageIds": [],
+    "output": "",
+    "sharedRegions": [
+      "品牌令牌（colors_and_type.css）",
+      "排版阶/圆角/阴影体系",
+      "动效时长规范"
+    ],
+    "privateRegions": [],
+    "mutableSlots": [],
+    "status": "generated",
+    "children": [
+      {
+        "nodeId": "gen-user-shell",
+        "kind": "shared-branch",
+        "pageIds": [
+          "page-index",
+          "page-applicant-front",
+          "page-scholar-front",
+          "page-assistant-front",
+          "page-manager-front",
+          "page-designer-front"
+        ],
+        "output": "partials/user-shell.html",
+        "sharedRegions": [
+          "UserShell 顶栏（报头式：eyebrow 站名 + 水平导航 + 后台入口）",
+          "页脚（footerNote + 管理后台链接）",
+          "亮色纸面 body 背景"
+        ],
+        "privateRegions": [],
+        "mutableSlots": [
+          "<!-- SLOT: appName -->",
+          "<!-- SLOT: appEyebrow -->",
+          "<!-- SLOT: appAccentVar -->",
+          "<!-- SLOT: navItems -->",
+          "<!-- SLOT: navCta -->",
+          "<!-- SLOT: footerNote -->"
+        ],
+        "status": "generated",
+        "children": [
+          {
+            "nodeId": "page-index",
+            "kind": "page-leaf",
+            "pageIds": [
+              "page-index"
+            ],
+            "output": "pages/index.html",
+            "sharedRegions": [],
+            "privateRegions": [
+              "hero 总览",
+              "八应用卡片网格",
+              "三条数据流示意",
+              "服务状态条",
+              "页脚"
+            ],
+            "mutableSlots": [],
+            "status": "planned",
+            "children": []
+          },
+          {
+            "nodeId": "page-applicant-front",
+            "kind": "page-leaf",
+            "pageIds": [
+              "page-applicant-front"
+            ],
+            "output": "pages/applicant-front.html",
+            "sharedRegions": [],
+            "privateRegions": [
+              "特稿 hero",
+              "岗位墙杂志网格",
+              "简历工坊入口卡"
+            ],
+            "mutableSlots": [],
+            "status": "planned",
+            "children": []
+          },
+          {
+            "nodeId": "page-scholar-front",
+            "kind": "page-leaf",
+            "pageIds": [
+              "page-scholar-front"
+            ],
+            "output": "pages/scholar-front.html",
+            "sharedRegions": [],
+            "privateRegions": [
+              "馆藏检索栏",
+              "书目目录卡列表",
+              "图谱入口"
+            ],
+            "mutableSlots": [],
+            "status": "planned",
+            "children": []
+          },
+          {
+            "nodeId": "page-assistant-front",
+            "kind": "page-leaf",
+            "pageIds": [
+              "page-assistant-front"
+            ],
+            "output": "pages/assistant-front.html",
+            "sharedRegions": [],
+            "privateRegions": [
+              "对话区（气泡流 + 引用来源）",
+              "输入区",
+              "会话侧栏"
+            ],
+            "mutableSlots": [],
+            "status": "planned",
+            "children": []
+          },
+          {
+            "nodeId": "page-manager-front",
+            "kind": "page-leaf",
+            "pageIds": [
+              "page-manager-front"
+            ],
+            "output": "pages/manager-front.html",
+            "sharedRegions": [],
+            "privateRegions": [
+              "FLIGHT DECK 泳道看板",
+              "KPI 读数行",
+              "迭代切换"
+            ],
+            "mutableSlots": [],
+            "status": "planned",
+            "children": []
+          },
+          {
+            "nodeId": "page-designer-front",
+            "kind": "page-leaf",
+            "pageIds": [
+              "page-designer-front"
+            ],
+            "output": "pages/designer-front.html",
+            "sharedRegions": [],
+            "privateRegions": [
+              "画廊 hero + 委托表单",
+              "展品（组件）网格",
+              "展位说明"
+            ],
+            "mutableSlots": [],
+            "status": "planned",
+            "children": []
+          }
+        ]
+      },
+      {
+        "nodeId": "gen-admin-shell",
+        "kind": "shared-branch",
+        "pageIds": [
+          "page-applicant-admin",
+          "page-scholar-admin",
+          "page-assistant-admin",
+          "page-manager-admin",
+          "page-designer-admin",
+          "page-gatherer-admin",
+          "page-investigator-admin",
+          "page-assessor-admin"
+        ],
+        "output": "partials/admin-shell.html",
+        "sharedRegions": [
+          "AdminShell 石墨深色侧栏（应用标识 + 垂直导航 + 返回前台）",
+          "顶栏毛玻璃",
+          "暗色四级表面阶梯背景",
+          "AdminPageHead 契约（eyebrow/衬线标题/KPI 槽位）"
+        ],
+        "privateRegions": [],
+        "mutableSlots": [
+          "<!-- SLOT: adminAppName -->",
+          "<!-- SLOT: adminEyebrow -->",
+          "<!-- SLOT: adminNavItems -->",
+          "<!-- SLOT: pageTitle -->",
+          "<!-- SLOT: pageEyebrow -->",
+          "<!-- SLOT: pageBadges -->",
+          "<!-- SLOT: pageDescription -->",
+          "<!-- SLOT: pageActions -->",
+          "<!-- SLOT: kpiRow -->"
+        ],
+        "mutableSlotsNote": "pageEyebrow/pageTitle/pageBadges/pageDescription/pageActions/kpiRow 构成 AdminPageHead 七槽位契约",
+        "status": "generated",
+        "children": [
+          {
+            "nodeId": "page-applicant-admin",
+            "kind": "page-leaf",
+            "pageIds": [
+              "page-applicant-admin"
+            ],
+            "output": "pages/applicant-admin.html",
+            "sharedRegions": [],
+            "privateRegions": [
+              "KPI 行",
+              "筛选工具栏",
+              "岗位 ControlTable"
+            ],
+            "mutableSlots": [],
+            "status": "planned",
+            "children": []
+          },
+          {
+            "nodeId": "page-scholar-admin",
+            "kind": "page-leaf",
+            "pageIds": [
+              "page-scholar-admin"
+            ],
+            "output": "pages/scholar-admin.html",
+            "sharedRegions": [],
+            "privateRegions": [
+              "KPI 行",
+              "馆藏条目表格 + 来源标签"
+            ],
+            "mutableSlots": [],
+            "status": "planned",
+            "children": []
+          },
+          {
+            "nodeId": "page-assistant-admin",
+            "kind": "page-leaf",
+            "pageIds": [
+              "page-assistant-admin"
+            ],
+            "output": "pages/assistant-admin.html",
+            "sharedRegions": [],
+            "privateRegions": [
+              "意图分布条",
+              "KPI 行",
+              "混淆矩阵 + 日志表格"
+            ],
+            "mutableSlots": [],
+            "status": "planned",
+            "children": []
+          },
+          {
+            "nodeId": "page-manager-admin",
+            "kind": "page-leaf",
+            "pageIds": [
+              "page-manager-admin"
+            ],
+            "output": "pages/manager-admin.html",
+            "sharedRegions": [],
+            "privateRegions": [
+              "交付驾驶舱 KPI",
+              "工具栏",
+              "需求 ControlTable"
+            ],
+            "mutableSlots": [],
+            "status": "planned",
+            "children": []
+          },
+          {
+            "nodeId": "page-designer-admin",
+            "kind": "page-leaf",
+            "pageIds": [
+              "page-designer-admin"
+            ],
+            "output": "pages/designer-admin.html",
+            "sharedRegions": [],
+            "privateRegions": [
+              "组件馆藏表格 + 状态标签",
+              "发布动作"
+            ],
+            "mutableSlots": [],
+            "status": "planned",
+            "children": []
+          },
+          {
+            "nodeId": "page-gatherer-admin",
+            "kind": "page-leaf",
+            "pageIds": [
+              "page-gatherer-admin"
+            ],
+            "output": "pages/gatherer-admin.html",
+            "sharedRegions": [],
+            "privateRegions": [
+              "采集源表格 + 启停开关 + cron mono 列"
+            ],
+            "mutableSlots": [],
+            "status": "planned",
+            "children": []
+          },
+          {
+            "nodeId": "page-investigator-admin",
+            "kind": "page-leaf",
+            "pageIds": [
+              "page-investigator-admin"
+            ],
+            "output": "pages/investigator-admin.html",
+            "sharedRegions": [],
+            "privateRegions": [
+              "调研列表 + 调度状态 + 飞书推送列"
+            ],
+            "mutableSlots": [],
+            "status": "planned",
+            "children": []
+          },
+          {
+            "nodeId": "page-assessor-admin",
+            "kind": "page-leaf",
+            "pageIds": [
+              "page-assessor-admin"
+            ],
+            "output": "pages/assessor-admin.html",
+            "sharedRegions": [],
+            "privateRegions": [
+              "评审请求表格 + 分析文档入口"
+            ],
+            "mutableSlots": [],
+            "status": "planned",
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,506 @@
+<!-- ==================================================================
+     AdminShell 共享片段 · MagicTools 配置后台统一外壳（深色控制台）
+     ------------------------------------------------------------------
+     消费方式：8 个后台叶子页面按 SLOT 注释替换以下槽位——
+       adminEyebrow / adminAppName / adminNavItems / breadcrumb /
+       pageEyebrow / pageTitle / pageBadges / pageDescription /
+       pageActions / kpiRow / content
+     运行前提：叶子页 <html class="dark"> 提供暗色令牌域；
+     本壳永远深色，禁止各应用个性化改写。
+     导航激活契约：叶子注入项携带 data-nav-key，激活项置
+       data-active="true"（左 2px 琥珀指示条 + 文字提亮，单一强调）。
+     ================================================================== -->
+<style>
+  /* ---------- 布局骨架 ---------- */
+  .as-layout {
+    display: flex;
+    min-height: 100vh;
+    background: var(--surface-0);
+    color: var(--text-body);
+    font-family: var(--font-body);
+    font-size: 14px;
+  }
+
+  /* ---------- 侧栏（固定 240px，石墨渐变） ---------- */
+  .as-sider {
+    width: 240px;
+    flex: none;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--mt-sider-grad);
+    border-right: 1px solid var(--mt-hairline);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04); /* 顶部 1px 内高光 */
+  }
+
+  .as-brand {
+    padding: 18px 20px 16px;
+    border-bottom: 1px solid var(--mt-hairline);
+  }
+  .as-brand-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--mt-ink-300);
+  }
+  .as-brand-name {
+    margin-top: 7px;
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--text-strong);
+  }
+
+  .as-nav {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px 12px 16px;
+  }
+  .as-nav-group {
+    margin: 14px 8px 6px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+  .as-nav-group:first-child { margin-top: 2px; }
+  .as-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 36px;
+    padding: 0 10px 0 12px;
+    border-radius: var(--radius-md);
+    font-size: 13.5px;
+    line-height: 1;
+    color: var(--text-muted);
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 120ms ease, background-color 120ms ease, box-shadow 120ms ease;
+  }
+  .as-nav-item i, .as-nav-item svg { width: 16px; height: 16px; flex: none; }
+  .as-nav-item:hover { color: var(--text-body); background: var(--surface-2); }
+  .as-nav-item[data-active="true"] {
+    color: var(--text-strong);
+    box-shadow: inset 2px 0 0 var(--mt-amber-400); /* 单一强调：琥珀指示条 + 文字提亮 */
+  }
+
+  .as-sider-foot {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px;
+    border-top: 1px solid var(--mt-hairline);
+  }
+  .as-foot-link {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    height: 32px;
+    padding: 0 10px;
+    border: none;
+    border-radius: var(--radius-md);
+    background: transparent;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    text-align: left;
+    cursor: pointer;
+    transition: color 120ms ease, background-color 120ms ease;
+  }
+  .as-foot-link i { width: 14px; height: 14px; flex: none; }
+  .as-foot-link:hover { color: var(--text-strong); background: var(--surface-2); }
+
+  /* ---------- 右侧内容列 ---------- */
+  .as-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* 顶栏：52px 玻璃拟态 + 底部发丝线 */
+  .as-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    height: 52px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 0 24px;
+    background: var(--mt-header-glass);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--mt-hairline);
+  }
+  .as-crumbs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+  }
+  .as-crumb-root { color: var(--text-faint); }
+  .as-crumb-sep { color: var(--text-faint); }
+  .as-crumb-current { color: var(--text-body); }
+  .as-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: none;
+  }
+  .as-version {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: var(--text-faint);
+  }
+  .as-env-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 22px;
+    padding: 0 9px;
+    border: 1px solid var(--mt-hairline);
+    border-radius: var(--radius-md);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .as-env-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 9999px;
+    background: var(--text-faint); /* 中性灰点，非彩色徽标 */
+  }
+
+  /* 内容区：surface-0 + 顶部环境光 */
+  .as-content {
+    flex: 1;
+    min-width: 0;
+    background-color: var(--surface-0);
+    background-image: var(--mt-glow-dark);
+    background-repeat: no-repeat;
+  }
+
+  /* ---------- AdminPageHead（页头，七槽位容器） ---------- */
+  .as-pagehead {
+    padding: 20px 24px 0;
+    border-bottom: 1px solid var(--mt-hairline);
+  }
+  .as-pagehead-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px 24px;
+    flex-wrap: wrap;
+  }
+  .as-pagehead-main { min-width: 0; }
+  .as-page-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--mt-ink-300);
+  }
+  .as-page-title {
+    margin: 8px 0 0;
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--text-strong);
+  }
+  .as-page-badges {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .as-page-desc {
+    margin: 8px 0 0;
+    max-width: 640px;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--text-muted);
+  }
+  .as-page-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: none;
+    padding-bottom: 3px;
+  }
+
+  /* KPI 读数行：等宽栅格 + 左分隔线 + surface-1 底 */
+  .as-kpirow {
+    margin-top: 18px;
+    margin-bottom: 20px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background: var(--surface-1);
+    border: 1px solid var(--mt-hairline);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-1);
+    overflow: hidden;
+  }
+  .as-kpi {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px 18px;
+    transition: background-color 120ms ease;
+  }
+  .as-kpi:hover { background: var(--surface-2); }
+  .as-kpi + .as-kpi { border-left: 1px solid var(--mt-hairline); }
+  .as-kpi-label { font-size: 12px; line-height: 1.4; color: var(--text-muted); }
+  .as-kpi-value {
+    font-family: var(--font-mono);
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--text-strong);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 内容注入位 */
+  .as-content-body { padding: 24px; }
+
+  /* ---------- 按钮语言（主：ink-400 实心；次：发丝线描边） ---------- */
+  .as-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    height: 36px;
+    padding: 0 16px;
+    border-radius: var(--radius-md);
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease;
+  }
+  .as-btn i { width: 15px; height: 15px; flex: none; }
+  .as-btn-primary {
+    background: var(--mt-ink-400);
+    border: 1px solid var(--mt-ink-400);
+    color: var(--surface-0); /* 暗色文字 */
+  }
+  .as-btn-primary:hover {
+    background: var(--mt-ink-300);
+    border-color: var(--mt-ink-300);
+    color: var(--surface-0);
+  }
+  .as-btn-ghost {
+    background: transparent;
+    border: 1px solid var(--mt-hairline);
+    color: var(--text-body);
+  }
+  .as-btn-ghost:hover {
+    background: var(--surface-2);
+    border-color: var(--mt-hairline);
+    color: var(--text-strong);
+  }
+
+  /* ---------- 状态徽标 ---------- */
+  .as-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 22px;
+    padding: 0 9px;
+    border: 1px solid var(--mt-hairline);
+    border-radius: var(--radius-md);
+    background: var(--surface-1);
+    font-size: 11.5px;
+    font-weight: 500;
+    line-height: 1;
+    color: var(--text-muted);
+    transition: color 120ms ease, border-color 120ms ease;
+  }
+  .as-badge[data-tone="success"] { color: var(--state-success); border-color: var(--state-success); background: transparent; }
+  .as-badge[data-tone="warning"] { color: var(--state-warning); border-color: var(--state-warning); background: transparent; }
+  .as-badge[data-tone="error"]   { color: var(--state-error);   border-color: var(--state-error);   background: transparent; }
+  .as-badge[data-tone="info"]    { color: var(--state-info);    border-color: var(--state-info);    background: transparent; }
+
+  /* ---------- 面板基类（单层，禁止再嵌面板） ---------- */
+  .as-panel {
+    background: var(--surface-1);
+    border: 1px solid var(--mt-hairline);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-1);
+  }
+
+  /* 默认引导态（content 槽默认内容） */
+  .as-start {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 22px 24px;
+  }
+  .as-start-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex: none;
+    border: 1px solid var(--mt-hairline);
+    border-radius: var(--radius-md);
+    background: var(--surface-2);
+    color: var(--mt-ink-300);
+  }
+  .as-start-icon i { width: 18px; height: 18px; }
+  .as-start-title { font-size: 14px; font-weight: 600; line-height: 1.4; color: var(--text-strong); }
+  .as-start-desc { margin: 4px 0 0; font-size: 12.5px; line-height: 1.6; color: var(--text-muted); }
+
+  /* ---------- 焦点与降级 ---------- */
+  .as-nav-item:focus-visible,
+  .as-foot-link:focus-visible,
+  .as-btn:focus-visible {
+    outline: 1px solid var(--mt-ink-300);
+    outline-offset: 2px;
+  }
+  @media (max-width: 960px) {
+    .as-kpirow { grid-template-columns: repeat(2, 1fr); }
+    .as-kpi + .as-kpi { border-left: none; }
+    .as-kpi:nth-child(even) { border-left: 1px solid var(--mt-hairline); }
+    .as-kpi:nth-child(n + 3) { border-top: 1px solid var(--mt-hairline); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .as-nav-item, .as-foot-link, .as-btn, .as-badge, .as-kpi { transition: none; }
+  }
+</style>
+
+<div class="as-layout">
+
+  <!-- ======== 侧栏 ======== -->
+  <aside class="as-sider">
+    <div class="as-brand">
+      <div class="as-brand-eyebrow">MAGICTOOLS · <!-- SLOT: adminEyebrow -->CONTROL</div>
+      <!-- SLOT: adminAppName -->
+      <div class="as-brand-name">管理控制台</div>
+    </div>
+
+    <nav class="as-nav" aria-label="后台主导航">
+      <!-- SLOT: adminNavItems -->
+      <div class="as-nav-group">控制台</div>
+      <a class="as-nav-item" data-nav-key="overview" data-active="true" href="#">
+        <i data-lucide="layout-dashboard"></i><span>总览</span>
+      </a>
+      <a class="as-nav-item" data-nav-key="settings" href="#">
+        <i data-lucide="settings"></i><span>系统设置</span>
+      </a>
+      <a class="as-nav-item" data-nav-key="audit" href="#">
+        <i data-lucide="scroll-text"></i><span>访问日志</span>
+      </a>
+    </nav>
+
+    <div class="as-sider-foot">
+      <button type="button" class="as-foot-link" data-dom-id="back-front">
+        <i data-lucide="arrow-left"></i><span>返回前台</span>
+      </button>
+      <button type="button" class="as-foot-link" data-dom-id="back-platform">
+        <i data-lucide="layout-grid"></i><span>返回总览</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ======== 右侧内容列 ======== -->
+  <div class="as-body">
+
+    <header class="as-topbar">
+      <div class="as-crumbs">
+        <!-- SLOT: breadcrumb -->
+        <span class="as-crumb-root">管理控制台</span>
+        <span class="as-crumb-sep">/</span>
+        <span class="as-crumb-current">当前后台</span>
+      </div>
+      <div class="as-topbar-right">
+        <span class="as-version">V2.2</span>
+        <span class="as-env-badge"><span class="as-env-dot"></span>ENV · PROD</span>
+      </div>
+    </header>
+
+    <main class="as-content">
+
+      <!-- AdminPageHead：七槽位页头 -->
+      <div class="as-pagehead">
+        <div class="as-pagehead-row">
+          <div class="as-pagehead-main">
+            <!-- SLOT: pageEyebrow -->
+            <div class="as-page-eyebrow">ADMIN · CONSOLE</div>
+            <!-- SLOT: pageTitle -->
+            <h1 class="as-page-title">管理控制台</h1>
+            <!-- SLOT: pageBadges -->
+            <div class="as-page-badges">
+              <span class="as-badge" data-tone="success">服务正常</span>
+              <span class="as-badge">V2.2</span>
+            </div>
+            <!-- SLOT: pageDescription -->
+            <p class="as-page-desc">石墨深色控制台 · 统一管理八个业务应用的数据、策略与运行状态。</p>
+          </div>
+          <!-- SLOT: pageActions -->
+          <div class="as-page-actions">
+            <button type="button" class="as-btn as-btn-ghost"><i data-lucide="download"></i><span>导出</span></button>
+            <button type="button" class="as-btn as-btn-primary"><i data-lucide="plus"></i><span>新建</span></button>
+          </div>
+        </div>
+
+        <!-- SLOT: kpiRow -->
+        <div class="as-kpirow">
+          <div class="as-kpi"><span class="as-kpi-label">接入应用</span><span class="as-kpi-value">8</span></div>
+          <div class="as-kpi"><span class="as-kpi-label">今日事件</span><span class="as-kpi-value">1,284</span></div>
+          <div class="as-kpi"><span class="as-kpi-label">运行任务</span><span class="as-kpi-value">36</span></div>
+          <div class="as-kpi"><span class="as-kpi-label">待处理</span><span class="as-kpi-value">5</span></div>
+        </div>
+      </div>
+
+      <!-- ======== 内容注入位 ======== -->
+      <div class="as-content-body">
+        <!-- SLOT: content -->
+        <section class="as-panel as-start" aria-label="配置引导">
+          <span class="as-start-icon"><i data-lucide="mouse-pointer-click"></i></span>
+          <div class="as-start-text">
+            <div class="as-start-title">开始配置</div>
+            <p class="as-start-desc">从左侧导航进入任一模块，管理其数据、策略与运行状态。</p>
+          </div>
+        </section>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+  /* AdminShell 图标初始化（幂等，叶子页重复执行安全） */
+  if (window.lucide) { window.lucide.createIcons(); }
+</script>

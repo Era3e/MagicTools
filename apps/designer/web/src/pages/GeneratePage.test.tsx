@@ -29,7 +29,7 @@ describe("GeneratePage", () => {
 
   it("生成组件并展示展品与 iframe 预览", async () => {
     render(<GeneratePage />);
-    fireEvent.change(screen.getByPlaceholderText("描述你要生成的组件，例如：一个带统计数字的卡片"), { target: { value: "问候卡片" } });
+    fireEvent.change(screen.getByPlaceholderText(/统计数字的深色卡片|描述你要的组件/), { target: { value: "问候卡片" } });
     fireEvent.click(screen.getByRole("button", { name: /生\s*成/ }));
     expect(await screen.findByText("GreetingCard")).toBeTruthy();
     await waitFor(() => {
@@ -43,7 +43,7 @@ describe("GeneratePage", () => {
 
   it("沉淀按钮调用 POST /components", async () => {
     render(<GeneratePage />);
-    fireEvent.change(screen.getByPlaceholderText("描述你要生成的组件，例如：一个带统计数字的卡片"), { target: { value: "问候卡片" } });
+    fireEvent.change(screen.getByPlaceholderText(/统计数字的深色卡片|描述你要的组件/), { target: { value: "问候卡片" } });
     fireEvent.click(screen.getByRole("button", { name: /生\s*成/ }));
     fireEvent.click(await screen.findByRole("button", { name: /收\s*入\s*馆\s*藏/ }));
     await waitFor(() => {
