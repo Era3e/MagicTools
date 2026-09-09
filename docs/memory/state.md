@@ -4,7 +4,7 @@
 > 即时更新：每完成一个功能 / 关键决策 / 迭代结束，即刻追加条目，禁止事后批量补记。
 > 本文件定位「当前状态快照」，历史细节见 docs/CHANGELOG.md 与 docs/superpowers/specs/、plans/。
 
-## 当前状态快照（2026-09-08 更新）
+## 当前状态快照（2026-09-09 更新）
 
 - **Assistant 双路数据查询与质量兜底落地（2026-09-08，分支 feat/assistant-dual-query，阶段一）**：
 
@@ -24,7 +24,9 @@
 
   - **真环境验收完成（2026-09-09，testcybercloud-dev）**：探活全绿（gatewayOk/authOk/agentsReachable，10 智能体，1.1s）→ **直连先行 7.1s 返回真值 52888.9184rmb** → verify 26.9s 终态 **divergent（diffPct=83%）**——智能体拿 metric.value=500 预设值当答案被双路对比当场抓获（正是 spec 立项的核心场景）。**验收即校准出四处真契约偏差并修复（提交 a851a68，140/140 测试全绿）**：①日期字段真实位置在 outline.groups.rows（type=date/datetime，userFilters/filters 为空）——探测链扩展行分组兜底；②queryByStructure 响应为包裹对象 {data,rows,grandTotals,...}（非裸数组）——取值改走 .data[0]；③取值键精确构造 {summarize}_{table}_{code}（多列并存时唯一「sum」兜底会撞 _cbc_calculation_N 计算列）；④时间窗无数据时 sum 列整体省略只剩 count_*=0——「查询成功但无数据」回答 0 而非 query_failed；⑤LLM 输出无关字段为 null（zod optional() 拒绝 null）——schema 改 nullish。另：glm-4-flash 意图分类会把数据查询误判 chitchat（模型能力问题），意图纠错 few-shot 闭环 60s 生效后正确路由——已验证在线学习闭环真实可用。
 
-  - **待办**：①changeset 迭代日志；②PR 走 Version 三件套；③linux 视觉基线随 PR #51 既有的 visual-baseline workflow 流程重生成（win32 已随本分支更新）；④**glm-5.3 已实测（2026-09-09）**：@mt/model-client 新增 envModelKey 机制（ZHIPU_MODEL=glm-5.3 免改代码切档，提交 76222bf）——意图分类显著提升（4-flash 误判 chitchat 的问句 5.3 直达 data_query 0.98）；代价是指标匹配 5~19s 波动（CYBERCLOUD_DIRECT_TIMEOUT_MS 提至 45000）+ 指标目录外问题会诚实 low_confidence 降级（合理）。**testcybercloud-dev 的智能体 block 对话本身 30~60s**（远端网络），60s 核验超时下 verify 常态 agent_timeout——生产同城部署会改善；双路架构下用户仍 14s 拿到直连答案，不受智能体慢拖累。
+  - **发布收官（2026-09-09）**：PR #54 CI 三段全绿一次通过 squash 合并 a924d42；Version PR #52 三件套完成（补 0 bug loop 勾选 → close/reopen 触发 CI 三段绿 → squash 87acaf2），Release 自动打 tag @mt/ui@0.3.0；纯私有包 changeset（assistant 双包）不参与发布，按 #46 经验经 MCP 远端删除（4f3fe21）避免 Release 误判，删除提交触发的 Release 重跑已确认走 tag 路径、open PR 清零；本地 worktree feat/assistant-dual-query 与分支已清理，主仓恢复 main+ui-v22 WIP 现场。**注意：真环境凭据维护在 worktree .env 中已随之清理，主仓 .env 的 CYBERCLOUD_*/ZHIPU_API_KEY/ZHIPU_MODEL 为空——下次真环境联调前需用户重新维护凭据（历史教训：凭据只放主仓根 .env，worktree 从主仓复制）。**
+
+  - **待办**：①linux 视觉基线（用户在 Actions 页 dispatch visual-baseline workflow，win32 已随 #54 更新）；②**glm-5.3 已实测（2026-09-09）**：@mt/model-client 新增 envModelKey 机制（ZHIPU_MODEL=glm-5.3 免改代码切档，提交 76222bf）——意图分类显著提升（4-flash 误判 chitchat 的问句 5.3 直达 data_query 0.98）；代价是指标匹配 5~19s 波动（CYBERCLOUD_DIRECT_TIMEOUT_MS 提至 45000）+ 指标目录外问题会诚实 low_confidence 降级（合理）。**testcybercloud-dev 的智能体 block 对话本身 30~60s**（远端网络），60s 核验超时下 verify 常态 agent_timeout——生产同城部署会改善；双路架构下用户仍 14s 拿到直连答案，不受智能体慢拖累。
 
 - **UI v2.2 页面级组件已合并 main（2026-09-08，PR #51 squash 合并 31dda02）**：
 
@@ -68,7 +70,7 @@
 
   - **研究**：深度逆向分析 Linear/Stripe/Vercel/GitHub/Notion 五家公司的"质感密码"——提取 10 项可复用 CSS 技法（含具体 hex/rgba 值、SVG 参数、阴影配方）。
 
-  - **六维度升级**：①Linear 四级表面亮度阶梯（surface0-4：#14181f→#2d3848，替代投影承载层级）；②Stripe 双层投影系统（近距小模糊+远距大模糊+inset 顶部高光）；③GitHub 发丝边框（rgba 白 7%/12%/16% 三档）+ 表格 hover 重音条（inset 2px accent）；④Linear 噪点纹理升级（feTurbulence 0.65/3 octaves + mix-blend-mode overlay/4.5%）；⑤Vercel 透明度文字层级（95%/65%/40%/28% 四档）+ tabular-nums；⑥暗色光学修正（字重降一档 350/500 + 负字距 -0.01em）。
+  - **六维度升级**：①Linear 四级表面亮度阶梯（surface0-4：#14181f→#2d3848，替代投影承载层级）；②Stripe 双层投影系统（近距小模糊+远距大模糊+inset 顶部高光线）；③GitHub 发丝边框（rgba 白 7%/12%/16% 三档）+ 表格行 hover 重音条（inset 2px accent）；④Linear 噪点纹理升级（feTurbulence 0.65/3 octaves + mix-blend-mode overlay/4.5%）；⑤Vercel 透明度文字层级（95%/65%/40%/28% 四档）+ tabular-nums；⑥暗色光学修正（字重降一档 350/500 + 负字距 -0.01em）。
 
   - **新增 token**：shadow\.darkCard/DarkCardHover/DarkDropdown/DarkModal/focusRing、craft.glowDarkSecondary/cardBorderGradient/hoverSpotlight/noiseOpacity、dark.surface3/surface4/textPrimary/textTertiary/textFaint/textDisabled/hairline/hairlineHover、font.weightBodyDark/weightHeadingDark/letterSpacingBodyDark/letterSpacingHeadingSm/Lg。
 
@@ -88,7 +90,7 @@
 
   - **主题真注入**：MtThemeProvider 全量注入 AntD（36 控件高/品牌字体/表头石墨底/墨调浮层影）+ 品牌字体 link 幂等注入（id=mt-brand-fonts）；AdminShell 经内部 AdminDarkThemeProvider（darkAlgorithm + tokens.admin 锚点）整体深色——**后台 AntD 表格/表单/Modal 全部跟随深色**；UserShell 嵌套 ConfigProvider 让前台分页/输入/按钮跟随应用 accent；
 
-  - **测试**：@mt/ui 20 用例（探针组件读 antdTheme.useToken() 断言注入结果；darkAlgorithm 会把种子 #6e8bad 微调为 #617996、inline 色值被规范化为 rgb()——断言按色彩族+双格式兼容）；全仓 46/46、lint 0 err、e2e 全量 52 passed/1 skipped（含视觉基线 16 张重生成）；
+  - **测试**：@mt/ui 20 用例（探针组件读 antdTheme.useToken() 断言注入结果；darkAlgorithm 会把种子 #6e8bad 微调为 #617996、inline 色值被规范化为 rgb()——断言按色彩族+双格式兼容）；全仓 46/46、lint 0 err、e2e 全量 52 passed / 1 skipped（含视觉基线 16 张重生成）；
 
   - **门禁教训**：ESLint 白名单需补 card/brick 主题扩展键；后台页直引 tokens.color 亮色值在暗色 AdminShell 下不可读（designer pre 块/assistant Statistic 已改 useToken()/bgUser 自适应）——后续后台页一律 useToken() 或语义底色；
 
@@ -132,7 +134,7 @@
 
 - **Release/changesets 链路修复→闭环（2026-08-29，Version PR #46 已合并 main a83fa40）**：
 
-  - **根因一（mixed changeset）**：`all-apps-dual-shell` 等 8 个 changeset 同时含发布包（`packages/*`）与被忽略的 private 包（`apps/*` 全部 private:true）→ `changeset version` 报 _Mixed changesets not allowed_ exit 1 → Release workflow _全天红_（10/10）；修法：8 个剔除私有包行、11 个纯私有包 changeset 直接删除（发布流程里本就不参与）；
+  - **根因一（mixed changeset）**：`all-apps-dual-shell` 等 8 个 changeset 同时含发布包（`packages/*`）与被忽略的 private 包（`apps/* 全部 private:true）→ `changeset version` 报 _Mixed changesets not allowed_ exit 1 → Release workflow _全天红_（10/10）；修法：8 个剔除私有包行、11 个纯私有包 changeset 直接删除（发布流程里本就不参与）；
 
   - **根因二（仓库设置）**：changesets/action 需 `Settings → Actions → General → Workflow permissions` 勾选 "Allow GitHub Actions to create and approve pull requests"（用户已配置）；修后 Release attempt=2 转绿，Version PR #46（@mt/ui、@mt/model-client minor + @mt/db patch）自动开出；
 
@@ -194,7 +196,7 @@
 
   - D1 推送去向可见：gatherer ItemList 推送成功提示至 Scholar 收件箱（knowledge.item.collected）并说明拉取步骤；investigator SurveyDetail 推送成功提示至 Assessor 收件箱（researcher.response.push）并说明拉取步骤；assessor RequestDetail 推送 Manager 文案补收件箱（requirement.created）与拉取步骤；
 
-  - D3 编辑入口补齐：gatherer SourceList 新增「编辑」列与 Modal（PATCH /sources/:id）；investigator SurveyList 新增「编辑」列，SurveyForm 扩展 initialValues/title 支持编辑模式；scholar EntryList 馆藏条目右侧新增「编辑」按钮与 Modal，覆盖 title/summary/content/category/tags 五项（PATCH /entries/:id 前端字段扩展）；
+  - D3 编辑入口补齐：gatherer SourceList 新增「编辑」列与 Modal（PATCH /sources/:id）；investigator SurveyList 新增「编辑」列，SurveyForm 扩展 initialValues/title 支持编辑模式；scholar EntryList 馆藏条目右侧新增「编辑」按钮与 Modal，覆盖 title/summary/content/content/category/tags 五项（PATCH /entries/:id 前端字段扩展）；
 
   - 本地构建 lint + 四应用单测全部通过（scholar 9/9、gatherer 3/3、investigator 3/3、assessor 3/3）；changeset 已加 fix-d1-d3-push-to-edit.md。
 
