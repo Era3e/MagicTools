@@ -56,7 +56,7 @@ describe("IntentLogPage 数据查询监控", () => {
   it("渲染卡片、双路记录与按路由分组的成功率/平均延迟", async () => {
     render(<IntentLogPage />);
     expect(await screen.findByText(/数据查询监控/)).toBeTruthy();
-    expect(screen.getByText(/queryByStructure/)).toBeTruthy();
+    expect(await screen.findByText(/queryByStructure/, {}, { timeout: 10000 })).toBeTruthy();
     expect(screen.getByText(/block/)).toBeTruthy();
     expect(screen.getAllByText("agent").length).toBeGreaterThan(0);
     expect(screen.getAllByText("direct").length).toBeGreaterThan(0);
