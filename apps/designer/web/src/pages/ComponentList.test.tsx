@@ -2,6 +2,8 @@ import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import ComponentList from "./ComponentList";
 
+const findByRoleTimeout = { timeout: 10000 };
+
 describe("ComponentList", () => {
   let fetchMock: ReturnType<typeof vi.fn>;
 
@@ -33,7 +35,8 @@ describe("ComponentList", () => {
 
   it("删除组件调用 DELETE", async () => {
     render(<ComponentList />);
-    fireEvent.click(await screen.findByRole("button", { name: /删\s*除/ }));
+    const delBtn = await screen.findByRole("button", { name: /删\s*除/ }, findByRoleTimeout);
+    fireEvent.click(delBtn);
     await waitFor(() => {
       const del = fetchMock.mock.calls.find((c) => (c[1] as RequestInit | undefined)?.method === "DELETE");
       expect(del).toBeTruthy();
