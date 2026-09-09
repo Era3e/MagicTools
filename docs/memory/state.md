@@ -134,7 +134,7 @@
 
 - **Release/changesets 链路修复→闭环（2026-08-29，Version PR #46 已合并 main a83fa40）**：
 
-  - **根因一（mixed changeset）**：`all-apps-dual-shell` 等 8 个 changeset 同时含发布包（`packages/*`）与被忽略的 private 包（`apps/* 全部 private:true）→ `changeset version` 报 _Mixed changesets not allowed_ exit 1 → Release workflow _全天红_（10/10）；修法：8 个剔除私有包行、11 个纯私有包 changeset 直接删除（发布流程里本就不参与）；
+  - **根因一（mixed changeset）**：`all-apps-dual-shell` 等 8 个 changeset 同时含发布包（`packages/*`）与被忽略的 private 包（`apps/*` 全部 private:true）→ `changeset version` 报 _Mixed changesets not allowed_ exit 1 → Release workflow _全天红_（10/10）；修法：8 个剔除私有包行、11 个纯私有包 changeset 直接删除（发布流程里本就不参与）；
 
   - **根因二（仓库设置）**：changesets/action 需 `Settings → Actions → General → Workflow permissions` 勾选 "Allow GitHub Actions to create and approve pull requests"（用户已配置）；修后 Release attempt=2 转绿，Version PR #46（@mt/ui、@mt/model-client minor + @mt/db patch）自动开出；
 
