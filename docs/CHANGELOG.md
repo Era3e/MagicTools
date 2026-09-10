@@ -40,7 +40,39 @@
 
 - **修复无前台应用后台无效返回链接（PR #32，b830c93）**：验收发现 gatherer/investigator/assessor 后台侧栏「返回前台」点击无效——frontPath 误指向后台自身；三应用本无前台形态，移除传参后 AdminShell 自动隐藏该链接。
 
+## 2026-08-28（补记）
+
+- **质量三角机制全部落地（PR #35，squash acae500）**：E2E 副作用断言四模式 + 16 页视觉快照基线 + guard-skip 空转绿治理（51 passed / 2 skipped / 0 failed）；coverage-matrix / mvp-deferred 追溯体系建立（区分「未实现」vs「故意不做」）；@mt/ui patterns 页面模式库（MagazineList/ControlTable/DetailHero）+ ThemeContext + no-hardcoded-colors ESLint 规则，11 前台页全量迁移 useTheme。
+- **D-04/D-05 兑现（PR #42 → 5a940ff / PR #38 → 58a3e97）**：Designer 组件一键 PR 到 @mt/ui（GitHubClient 三步流 + publish.service + 「一键 PR」按钮）；Scholar 图谱 G6 力导向图（节点拖拽/缩放/边点击/详情面板）。
+- **D-07/D-11/D-16/D-17 兑现（PR #36 → 2934264）**：Investigator node-cron 自动调度；CI 0 bug loop 复选框检测闭环；Designer 前台组件馆藏入口；意图日志入口确认补齐。
+- **D-03/D-14/D-10 兑现（PR #41 → c9d43fa / PR #40 → 248ba8f / PR #37 → d3481f3）**：Manager Webhook 自动刷新（HMAC 签名 + delivery 幂等）；迭代燃尽图 TimelineBurndown；Gateway /status 健康仪表盘（Chart.js）。
+- **D-09 在线学习层 + D-06/D-08/D-12/D-13 兑现（PR #43 → 5eae2a3）**：few-shot 纠错样本注入 + 评估闭环（混淆矩阵/回放）+ JSONL 导出；Obsidian 冲突三策略解决；ClawCV 配额告警；Gatherer 死信队列（指数退避 + dead_letter）；双壳移动端折叠基础。
+
+## 2026-08-29（补记）
+
+- **Release/changesets 链路修复闭环（Version PR #46 → a83fa40）**：mixed changeset 拆分 + 仓库工作流权限配置 + `publish: pnpm release:tag`（私有 monorepo 只打 tag）；changeset-release/main 工作分支机制理清（无待发布时自动重建，删除无损失）。
+- **D-18 跨平台视觉基线收官（PR #44 → 03711c4 / PR #45 → 3e674d4）**：平台基线感知守卫 + visual-baseline.yml 生成 workflow + push-visual-baseline.mjs REST 回传（Blobs API + sha 自校验）；16 张 linux 基线入库，win32/linux 双平台像素比对闭环，CI 视觉用例首次真跑全绿。**mvp-deferred 至此 17/18 兑现**。
+
 ## 2026-09-02
 
-- **UI v2「墨蓝石墨·工房感」落地 @mt/ui（feat-ui-v2-migrate-mtui）**：tokens 全量替换 AntD 出厂值（墨蓝 ink-600 #2c4a6e 主色 + 石墨中性阶 + 暗色板/海拔/动效/字体扩展，键结构向后兼容零改业务代码）；主题真注入——MtThemeProvider 全量注入 AntD、AdminShell 经 darkAlgorithm 整体转石墨深色控制台、UserShell 八主题 accent 注入前台控件；MtEmptyState 品牌化去 AntD 简笔画；八应用主题常量按业务受众派生口径重算；视觉基线 16 张重生成，e2e 全量 52 passed。
+- **UI v2「墨蓝石墨·工房感」落地 @mt/ui（feat-ui-v2-migrate-mtui，随 PR #47 于 09-03 合并）**：tokens 全量替换 AntD 出厂值（墨蓝 ink-600 #2c4a6e 主色 + 石墨中性阶 + 暗色板/海拔/动效/字体扩展，键结构向后兼容零改业务代码）；主题真注入——MtThemeProvider 全量注入 AntD、AdminShell 经 darkAlgorithm 整体转石墨深色控制台、UserShell 八主题 accent 注入前台控件；MtEmptyState 品牌化去 AntD 简笔画；八应用主题常量按业务受众派生口径重算；视觉基线 16 张重生成，e2e 全量 52 passed。
 - **UI「塑料感」评审 + v2 设计规范定稿（设计系统交付，未含代码落地）**：全平台 UI 评审定位四根源（AntD 出厂令牌照搬 / 主题只装饰外壳内脏默认件 / 无中性阶与海拔体系 / OS 自带字体角色扮演）；用户拍板「统一底座 + 八主题真注入 / 墨蓝石墨·工房感 / 暗色纳入 / 先规范后落地」。交付 `.design_library/magictools/` 设计系统（191 令牌含亮暗双色板、surface 三级表面、5 级墨调海拔、motion、字体三层；6 组件契约与预览；UI Kit 展示页；SKILL/README），docs/ui-spec.md 重写为 v2（令牌唯一来源、11 条强制规则、八主题业务受众派生口径、暗色模式、8 项落地迁移清单）。代码落地按迁移清单另起任务。
+
+## 2026-09-03（补记）
+
+- **UI v2/v2.1 合并 main（PR #47，squash 9f0c096）**：墨蓝石墨·工房感令牌体系（ink-600 #2c4a6e 主色 + 石墨中性阶）+ Linear/Stripe/GitHub/Vercel/Notion 五家质感密码逆向（四级表面亮度/双层投影/发丝边框/噪点纹理/透明度文字层级/暗色光学修正）；AdminShell 深色控制台 + AdminDarkThemeProvider 组件级注入；linux 旧基线随 PR 移除（平台守卫显式 skip，待 workflow 重生成）。
+
+## 2026-09-08（补记）
+
+- **UI v2.2 页面级组件合并 main（PR #51，squash 31dda02）**：MtStatusTag（六 tone 语义标签）+ MtKpiRow（等宽 KPI 读数）替换 8 应用全部 AntD Tag 预设色（38 处）/Empty 简笔画（3 处）/Statistic；patterns 四组件补单测（coverage 59.37%→95.82%）；ui-spec §六迁移清单 8 项全量勾选。
+- **Assistant 双路数据查询与质量兜底落地（PR #54 前身，分支 feat/assistant-dual-query）**：direct-query 五步流水线 + verify-task 五终态状态机 + compare 数值归一对比 + cybercloud_calls 监控 + ChatPage VerifyBadge；真环境（testcybercloud-dev）实测抓获智能体预设值错误回答（divergent 83%）；spec/plan 文档入库（2026-09-08-assistant-dual-query-design.md）。
+
+## 2026-09-09（补记）
+
+- **UI v2.3 全量重构 + 五道质量防线（PR #56，squash ef9821d）**：17 页设计稿全量落地（双壳 v2.3 报头式前台/琥珀指示条后台 + 8 应用前后台 + gateway 落地页 + 3 交互演示：重试恢复流/自动暂停/批量部分成功）；五防线：responsive.spec 巡检（32 用例，首跑抓出 15 个 768px 真实溢出）、文案单源 APP_ACCENT_TOKENS（+drift guard 用例）、pre-commit 钩子（冲突标记 + dist 陈旧守卫）、turbo ^build + vitest alias 双保险、视觉锚点 fail fast + waitFor/settleMs 时序机制；e2e 83 passed 两轮稳定复现，0 bug loop 测试代理验收通过（含双篡改测试）。
+- **双路查询发布收官（PR #54，squash a924d42）**：CI 三段全绿一次通过合并；@mt/ui 0.3.0 发版；worktree 清理。
+- **Release + linux 基线 + CI flaky 修复（PR #57 → 99a5d72 / PR #58 → 1fb0d48 / PR #59 → d7c4942）**：@mt/ui 0.4.0 版本更新；v2.3 linux 基线 16 张经 visual-baseline workflow 重生成合入（跨平台视觉闭环达成）；main CI 慢机 flaky 修复（findByRole/findByText 显式 10s）+「静态锚点后紧跟 getBy 数据断言」反模式全库扫描；沉淀 CI 慢机测试纪律与 changeset release PR body 被 bot 重写等经验。
+
+## 2026-09-09（文档治理轮，补记）
+
+- **文档偏移五文档对齐修复 + 防弊机制三线落地**：全仓内容级取证修复 CHANGELOG（补齐 08-28~09-09 五个缺失日期段）、CODE_WIKI（v2.3 外壳/组件族/双路查询模块表与路由表）、coverage-matrix（I3/M4/D9/C6~C9 陈旧行 + 第 10 章增量）、mvp-deferred（D-04/D-12/D-13 补 ✅，摘要 17/4 自纠）、state.md 已知问题 12 存档化。防弊三线：①PR 模板新增「沉淀层文档已同步」勾选 + CI quality PR 事件检测扩展为两项（与 0 bug loop 同级强制）；②新增 infra/scripts/lib/docs-guard.mjs drift guard（coverage-matrix ✅ 行声明的仓库路径存在性校验，TDD 5 用例 + CLI 守卫挂接 pnpm test:infra，qa:gate/CI 自动生效）；③git-workflow.md 收尾协议补 CHANGELOG/coverage-matrix 两项 + AGENTS.md 硬性约定 3 扩充。根因分析（更新义务未绑定检测点、双文档体系无单一触发、squash 断链、验证闭环不覆盖文档）与全过程记录见 state.md 对应条目。

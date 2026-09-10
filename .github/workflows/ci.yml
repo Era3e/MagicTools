@@ -23,7 +23,7 @@ jobs:
           --health-retries 10
     steps:
       - uses: actions/checkout@v4
-      - name: 检查 0 bug loop 验收记录（PR 事件）
+      - name: 检查 0 bug loop 验收记录与文档同步勾选（PR 事件）
         if: github.event_name == 'pull_request'
         env:
           PR_BODY: ${{ github.event.pull_request.body || '' }}
@@ -34,6 +34,13 @@ jobs:
           else
             echo "❌ PR 未勾选 0 bug loop 验收记录复选框"
             echo "请在 PR 描述「自检清单」勾选 [x] **0 bug loop 验收记录** 并附验收链接/说明"
+            exit 1
+          fi
+          if echo "$PR_BODY" | grep -qiE '\[x\]\s*\*\*沉淀层文档已同步\*\*'; then
+            echo "✅ 沉淀层文档同步（CHANGELOG/CODE_WIKI）已勾选"
+          else
+            echo "❌ PR 未勾选「沉淀层文档已同步」复选框"
+            echo "请在「自检清单」勾选 [x] **沉淀层文档已同步**：追加 docs/CHANGELOG.md 条目并核对 CODE_WIKI.md 涉及章节"
             exit 1
           fi
       - uses: pnpm/action-setup@v4

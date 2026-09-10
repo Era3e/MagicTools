@@ -28,7 +28,7 @@
 |---|-------|----------|-------------|------|---------|
 | I1 | 飞书 Bitable 源配置 | spec 3.1 | server/survey.controller.ts, feishu/client.ts | ✅ 已实现 | survey.e2e.test.ts（FEISHU_STUB） |
 | I2 | 字段映射配置 | spec 3.1 | server/schemas.ts SurveyCreate, SurveyRepo | ✅ 已实现 | unit test（桩） |
-| I3 | 定时/手动拉取 Bitable 记录 | spec 3.2 | server/survey.service.ts syncSurvey()（node-cron 待补） | ⚠️ 部分：仅手动 sync，无 cron 调度 | investigator.spec.ts |
+| I3 | 定时/手动拉取 Bitable 记录 | spec 3.2 | server/survey.service.ts syncSurvey() + apps/investigator/server/src/scheduler.ts（node-cron，migrations/003 cron 列） | ✅ 已实现（D-07 兑现，PR #36：startScheduler + meta/scheduler-status API + 3 单测） | investigator.spec.ts + scheduler.test.ts |
 | I4 | LLM 结构化提取（question/answer/priority/...） | spec 3.3 | server/survey.service.ts structurize() + llm.ts | ✅ 已实现 | survey.e2e.test.ts |
 | I5 | 结果筛选 + 推送 Assessor（D1） | spec 3.4, state.md fix-d1-d3 | server/outbox append researcher.response.push, web/SurveyDetail.tsx 收件箱文案 | ✅ 已实现 | survey.e2e.test.ts（断言 outbox 入库） |
 | I6 | 前台档案风报头 | PR #29 | web/App.tsx ARCHIVE_THEME（直跳后台） | ✅ 已实现 | — |
@@ -54,7 +54,7 @@
 | M1 | 跨库消费 assessor.outbox（requirement.created） | spec 3.1 | server/main.ts processOutbox(ASSESSOR_DATABASE_URL) | ✅ 已实现 | requirement.e2e.test.ts |
 | M2 | 需求 7 态状态机 | spec 3.2 | server/schemas.ts RequirementStatus 7 值 | ✅ 已实现 | requirement.e2e.test.ts 状态流转 |
 | M3 | 三来源标签（Assessor/手动/GitHub Phantom） | spec 3.2 | server/requirement.repo.ts source 字段三枚举 | ✅ 已实现 | unit + requirement.e2e.test.ts |
-| M4 | PR 状态联动刷新 | spec 3.3 | server/requirement.service.ts syncPrStatus()（仅手动按钮） | ⚠️ 部分：缺 Webhook 自动刷新，需管理员点按钮 | requirement.e2e.test.ts |
+| M4 | PR 状态联动刷新 | spec 3.3 | server/requirement.service.ts syncPrStatus() + apps/manager/server/src/webhook.controller.ts | ✅ 已实现（D-03 兑现，PR #41：POST /webhook/github HMAC-SHA256 签名 + delivery 幂等 + 6 单测） | requirement.e2e.test.ts + webhook.controller.spec.ts |
 | M5 | Phantom GitHub Issues 同步 | spec 3.3 | server/github/client.ts getPhantomIssues() + GITHUB_STUB | ✅ 已实现 | unit（桩） |
 | M6 | 迭代管理（CRUD + 需求关联） | spec 3.4 | server/iteration.*, web/pages/IterationList.tsx | ✅ 已实现 | iteration.e2e.test.ts |
 | M7 | 前台 FLIGHT DECK 七泳道看板 | PR #30 | web/pages/RequirementBoard.tsx COCKPIT_THEME | ✅ 已实现 | manager.spec.ts 页面渲染 |
@@ -122,9 +122,9 @@
 | D4 | 组件审核入库 → @mt/ui 候选池 | spec 3.3 | component.* + ComponentRepo + admin/components | ✅ 已实现 | components.e2e.test.ts |
 | D5 | 生成历史记录 | spec 3.3 | generation.repo.ts + pages/HistoryList.tsx | ✅ 已实现 | GeneratePage.test.tsx |
 | D6 | 前台画廊委托单 + 预览展位 | PR #30 | pages/GeneratePage.tsx GALLERY_THEME 委托卡 + 展品卡 | ✅ 已实现 | GeneratePage.test.tsx |
-| D7 | **可视化拖拽编辑器** | spec 2.1「MVP 边界：降级版，无可视化编辑器」 | — | 📝 规划未纳入（MVP 降级项） | — |
-| D8 | **实时双向编辑** | spec 2.1 MVP 边界 | — | 📝 规划未纳入（MVP 降级项） | — |
-| D9 | **一键发布到 npm / PR 到 @mt/ui** | — | — | 🚫 未实现（后续补充，deferred D-04） | — |
+| D7 | **可视化拖拽编辑器** | spec 2.1「MVP 边界：降级版，无可视化编辑器」 | — | 📝 规划未纳入（MVP 降级项，deferred D-01，P2） | — |
+| D8 | **实时双向编辑** | spec 2.1 MVP 边界 | — | 📝 规划未纳入（MVP 降级项，deferred D-02，P2） | — |
+| D9 | **一键发布到 npm / PR 到 @mt/ui** | — | apps/designer/server/src/publish.service.ts + publish.controller.ts + github/client.ts + ComponentList「一键 PR」按钮 | ✅ 已实现（deferred D-04 兑现，PR #42：createBranch/createFile/createPr 三步流，PAT + GITHUB_STUB 桩） | publish.service.spec.ts 4 用例 + components.e2e.test.ts |
 
 ## 9. 公共能力 & 工程化
 
@@ -135,8 +135,21 @@
 | C3 | outbox 事件（失败重试 + dead 终态 + 幂等） | CODE_WIKI 7, state.md 决策 37 | @mt/db outbox.ts | ✅ 已实现 |
 | C4 | @mt/model-client parseJson 四级容错 | state.md PR #26 | model-client/parseJson.ts | ✅ 已实现，5 服务替换 |
 | C5 | 前后台双外壳（前台各异 / 后台统一） | ui-spec.md, CODE_WIKI 8.2 | @mt/ui UserShell / AdminShell + 8 App.tsx 切换 | ✅ 已实现（8 应用全覆盖） |
-| C6 | 0 bug loop 开发/测试分拆验收 | state.md 已知问题 9 | PR 模板待补验收链接勾选 | ⚠️ 流程纪律：规则有，落地产物无 |
-| C7 | 视觉样式回归测试 | 本方案 P0-1c | Playwright toHaveScreenshot 16 张页 | 🚫 未实现（本 PR 补） |
-| C8 | 前端硬编码色值静态检查 | 本方案 P1-1 | ESLint 自定义 rule | 🚫 未实现（本 PR 补） |
-| C9 | 通用页面模式库（patterns） | 本方案 P1-3 | @mt/ui patterns/ MagazineList/ControlTable/DetailHero | 🚫 未实现（本 PR 补） |
-| C10 | ThemePreview 主题横向对比 | 本方案中期 | @mt/ui ThemePreview.tsx | 🚫 未实现（后续 P2） |
+| C6 | 0 bug loop 开发/测试分拆验收 | state.md 已知问题 9 | PR 模板复选框 + .github/workflows/ci.yml quality 条件检测（仅 PR 事件） | ✅ 已实现（D-11 兑现，PR #36） |
+| C7 | 视觉样式回归测试 | 本方案 P0-1c | e2e/tests/_visual.spec.ts Playwright toHaveScreenshot 16 张 + 平台基线感知守卫 | ✅ 已实现（PR #35/#44/#45：win32/linux 双平台基线闭环） |
+| C8 | 前端硬编码色值静态检查 | 本方案 P1-1 | infra/eslint/rules/no-hardcoded-colors.mjs | ✅ 已实现（PR #35） |
+| C9 | 通用页面模式库（patterns） | 本方案 P1-3 | packages/ui/src/patterns/（MagazineList/ControlTable/DetailHero/TimelineBurndown） | ✅ 已实现（PR #35/#40，含 patterns.test.tsx 8 用例） |
+| C10 | ThemePreview 主题横向对比 | 本方案中期 | — | 🚫 未实现（后续 P2，无 deferred 编号） |
+
+## 10. 2026-09 增量（双路查询 + UI v2.x 轮次，补记）
+
+| # | 功能点 | Spec 章节 | 实际实现文件 | 状态 | E2E 覆盖 |
+|---|-------|----------|-------------|------|---------|
+| E1 | Assistant 双路数据查询（直连先行 + 智能体核验） | dual-query-design 3.x | apps/assistant/server/src/direct-query.service.ts + verify-task.registry.ts + chat.service.ts 双路编排 | ✅ 已实现（PR #54，CYBERCLOUD_MODE=dual 默认） | chat.dual.e2e.test.ts 五终态场景 |
+| E2 | 数值比对引擎（万/亿/k/% 归一 + 容差） | dual-query-design | apps/assistant/server/src/compare.service.ts | ✅ 已实现（PR #54） | compare.service.test.ts |
+| E3 | cybercloud_calls 双路调用监控 | dual-query-design 可观测 | apps/assistant/server/migrations/004 + cybercloud-calls.repo.ts + IntentLogPage 监控卡 | ✅ 已实现（PR #54） | cybercloud-calls.repo.test.ts + IntentLogPage.calls.test.tsx |
+| E4 | ChatPage VerifyBadge 核验标签 | dual-query-design 前端 | apps/assistant/web/src/pages/ChatPage.tsx VerifyBadge（2s 轮询终态/404 停止） | ✅ 已实现（PR #54） | ChatPage.verify.test.tsx |
+| E5 | 真环境校准（四契约偏差修复） | dual-query-design 附录 | direct-query 行分组兜底/包裹对象取值/取值键构造/空数据回答 0 | ✅ 已实现（a851a68，140/140 绿） | direct-query.service.test.ts |
+| E6 | UI v2/v2.1/v2.2 令牌与组件基建 | ui-spec v2 §六 | packages/ui/src/tokens.ts v2 系 + MtStatusTag + MtKpiRow + patterns 单测 | ✅ 已实现（PR #47/#51） | @mt/ui 22 用例 + e2e 视觉基线 |
+| E7 | UI v2.3 全量页面重构（17 页设计稿） | .design-ref 17 页 | packages/ui/src/AdminShell.tsx + UserShell.tsx v2.3 + 8 应用前后台全页 + gateway 落地页 + 3 交互演示 | ✅ 已实现（PR #56 前身，squash ef9821d） | e2e 全量 83 passed + 视觉 16/16 |
+| E8 | 五道质量防线（v2.3.1） | state.md 五防线轮 | e2e/tests/responsive.spec.ts（32 用例）+ .githooks/pre-commit + turbo ^build + packages/ui/src/apps.ts 文案单源 + 视觉锚点 fail fast | ✅ 已实现（PR #56，0 bug loop 验收通过） | responsive 32/32 + drift guard 用例 |

@@ -18,7 +18,7 @@
 
 1. TDD：先写失败测试再实现；禁止 TODO/TBD 占位符
 2. 提交遵循 Conventional Commits（中文 subject，动词开头，不超过 50 字）
-3. 每个任务完成即刻更新 docs/memory/ 与 changeset（迭代日志），禁止事后补记
+3. 每个任务完成即刻更新 docs/memory/ 与 changeset（迭代日志）；**合 main 前追加 docs/CHANGELOG.md 条目并核对 CODE_WIKI.md 涉及章节**（PR 模板「沉淀层文档已同步」勾选，CI 强制检测；coverage-matrix ✅ 行由 test:infra 内 drift guard 校验路径真实性）
 4. 分支命名 feat-<项目>-<任务ID>-<描述>；一个任务一个 worktree；会话收尾必须执行收尾协议（见 docs/git-workflow.md）
 5. 质量门禁：合入前本地跑 pnpm qa:gate，冒烟 pnpm smoke，全绿才可提交
 6. 开发与测试分拆不同智能体（0 bug loop）：开发 agent 完成后必须由测试 agent 独立验收
