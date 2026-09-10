@@ -55,9 +55,9 @@ test("assistant 聊天 发送消息 副作用：回车发送 → 气泡数+1 + P
   const input = page
     .getByPlaceholder(/输入消息|请输入|Send a message/i)
     .first();
-  if ((await input.count()) === 0) {
-    test.skip(true, "[assistant] 未命中聊天输入框（检查 placeholder）");
-  }
+  // ChatPage 实测 placeholder 为「输入消息」（ChatPage.tsx sendInput）；
+  // 命中失败属定位器失配，显式 skip 计入报告而非静默通过
+  test.skip((await input.count()) === 0, "[assistant] 未命中聊天输入框（检查 ChatPage placeholder「输入消息」）");
 
   // 会话列表加载期间 textbox 处于 disabled（按钮转 loading），
   // 必须等输入框可用再输入，否则回车被吞、POST /chat 根本不发
@@ -88,34 +88,27 @@ test("assistant 聊天 发送消息 副作用：回车发送 → 气泡数+1 + P
 });
 
 test("assistant 导航跳转 副作用：反馈页 / 意图日志页 URL 变化", async ({ page }) => {
-  // 前台 Chat → 反馈页（/admin/feedback）
+  // 前台 IA（App.tsx USER_NAV）仅有「对话」；去后台唯一入口是
+  // UserShell 页脚「管理后台 →」（adminPath=/admin/feedback，App.tsx 实证）
   await page.goto("/assistant/chat");
-  const fbLink = page
-    .getByRole("link", { name: /反馈|Feedback/i })
+  const adminLink = page
+    .getByRole("link", { name: /管理后台/i })
     .first();
-  const fbTrigger = (await fbLink.count()) > 0
-    ? fbLink
-    : page.getByText(/反馈/).first();
-  test.skip(
-    (await fbTrigger.count()) === 0,
-    "[assistant] 未命中「反馈」导航入口"
-  );
-  await fbTrigger.click();
-  await expect(page).toHaveURL(/\/assistant\/(admin\/)?feedback/, { timeout: 8000 });
-  await expect(page.getByText(/反馈|用户反馈/)).toBeVisible();
+  test.skip((await adminLink.count()) === 0, "[assistant] 未命中页脚「管理后台 →」入口（UserShell adminPath）");
+  await adminLink.click();
+  await expect(page).toHaveURL(/\/assistant\/admin\/feedback/, { timeout: 8000 });
+  // FeedbackPage 页面锚点是 Card 标题「用户反馈」（FeedbackPage.tsx:26）；
+  // 侧栏菜单文案为「反馈处理」——用完整词避免正则 /反馈/ 双命中
+  await expect(page.getByText("用户反馈", { exact: true })).toBeVisible();
 
-  // 意图日志页（反馈页外壳的侧栏/页脚入口）
+  // 意图日志：后台侧栏菜单（ADMIN_NAV「意图日志」→ /admin/intent-logs）。
+  // AdminShell 侧栏 <a> 无 href（AdminShell.tsx:105），无障碍树非 link 角色，
+  // 须按 nav[aria-label=后台导航] 容器 + 精确文本定位（getByRole("link") 必 0 命中）
   const logLink = page
-    .getByRole("link", { name: /意图日志|intent.*log/i })
-    .first();
-  const logTrigger = (await logLink.count()) > 0
-    ? logLink
-    : page.getByText(/意图日志/).first();
-  test.skip(
-    (await logTrigger.count()) === 0,
-    "[assistant] 当前页面无「意图日志」入口（在反馈页找导航）"
-  );
-  await logTrigger.click();
-  await expect(page).toHaveURL(/\/assistant\/(admin\/)?intent-logs/, { timeout: 8000 });
+    .getByRole("navigation", { name: "后台导航" })
+    .getByText("意图日志", { exact: true });
+  test.skip((await logLink.count()) === 0, "[assistant] 后台侧栏无「意图日志」菜单（ADMIN_NAV）");
+  await logLink.click();
+  await expect(page).toHaveURL(/\/assistant\/admin\/intent-logs/, { timeout: 8000 });
   await expect(page.getByText(/意图日志/)).toBeVisible();
 });
