@@ -16,7 +16,17 @@
 
   - **根因结论（为什么机制在还会偏移）**：更新义务绑定在「任务完成」时刻，而任务完成的定义只含代码+测试+state.md+changeset；CHANGELOG/CODE_WIKI/coverage-matrix 无强制更新触发点（coverage-matrix 头部维护规则无 CI/PR 模板兜底）——五轮 UI 快速迭代连续 squash 合并时，沉淀层文档欠账滚雪球。详见当轮会话报告；防弊方向：PR 模板补「文档同步」勾选段 + 仿 gateway drift guard 用例做 coverage-matrix ✅ 行文件存在性检测。
 
-  - **待办**：`.design-ref/` 17 页设计稿去留待用户拍板；magictools-ui-design/ 与 .design-ref/ 内容高度重复可收敛；e2e assistant.spec:57-59「发送消息」用例 skip 守卫条件已满足可修（placeholder「输入消息」可命中）。
+  - **待办**：`.design-ref/` 17 页设计稿去留待用户拍板（已入库，与 magictools-ui-design/ 内容高度重复可收敛，用户暂未选择默认保持现状）；magictools-ui-design/* 后台测量进程回写文件已 checkout 还原（勿误提交）。
+
+- **assistant.spec 历史校准缺陷修复（2026-09-09，PR #61，fix/assistant-e2e-nav-skip）**：
+
+  - **输入**：盘点报告「测试欠账」项——两条用例自 2026-08-27 空转绿治理轮后一直 skip：①「发送消息」用例 `if(count==0){test.skip(true)}` 永久硬跳过（placeholder 实际可命中，守卫条件早已不成立）；②「导航跳转」用例在前台找「反馈」链接，但前台 IA（USER_NAV 仅「对话」）根本没有该入口。
+
+  - **修复（E2E 校准纪律全程：锚点全部源码实证）**：①skip(true)→条件式 test.skip(cond)；②导航按真实 IA 重写——前台入口=页脚「管理后台 →」（App.tsx adminPath）→ 反馈页锚点收敛 exact「用户反馈」（正则 /反馈/ 会与侧栏「反馈处理」双命中 strict mode 报错）→ 意图日志定位改 `getByRole("navigation", { name: "后台导航" }).getByText(exact)`。
+
+  - **本轮最有价值发现——AdminShell 侧栏无 href 陷阱**：AdminShell.tsx:105 渲染的导航 `<a>` **无 href 属性**，无障碍树中不具备 link 角色，`getByRole("link")` 永远 0 命中——旧用例的 getByText fallback 兜底一直在掩盖这个失配（DEBUG=pw:api 实证 count 3ms 返回 0）。**教训入库：JS 导航（onClick+onNavigate）的 `<a>` 不进 link 角色树，定位此类元素用语义容器（nav aria-label）+ getByText，或改用 href 真链接。**
+
+  - **验证终态**：本地带桩真跑 assistant.spec **4 passed / 0 skipped**——导航用例自诞生以来首次全链路跑通（页脚入口→/admin/feedback→侧栏→/admin/intent-logs）。推送再撞 schannel（今天写通道持续故障），按已验证的 REST 降级链推送（单文件 Blobs 链，远端 3778216）+ REST 开 PR #61（body 豁免说明：纯测试修复无平台级变更，CHANGELOG 不新增条目）。CI e2e 段将在 ubuntu 桩环境复跑同一 spec 复核。**合并闭环**：CI 三段全绿后用户合并（merge commit `5ae3972`），本地 main 同步、state.md 实录经 checkout 取回落 main（git push 仍断，改经 Contents API 直推），分支清理后本地/远端仅剩 main。
 
 - **文档偏移防弊机制落地（2026-09-09 收尾轮，三线）**：
 
