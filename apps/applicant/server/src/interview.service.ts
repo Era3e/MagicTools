@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
 import { parseJson } from "@mt/model-client";
 import { llmChat } from "./llm";
 import { interviewAnalysisSchema } from "./schemas";
-import { createInterview, getInterview, listInterviews, setAnalysis } from "./interview.repo";
+import { createInterview, getInterview, listInterviews, listAllWithPosition, updateInterview, setAnalysis } from "./interview.repo";
 
 const ANALYSIS_PROMPT =
   "你是面试复盘教练。根据面试问答记录与自我反思，输出 JSON：questions（数组：{category, question, comment}）、quality（整体回答质量点评）、suggestions（改进建议数组）、actionItems（下次面试前行动项数组）。只输出 JSON。记录：";
@@ -13,8 +13,29 @@ export class InterviewService {
     return listInterviews(positionId);
   }
 
-  create(positionId: string, input: { round: number; qaNotes: string; reflection: string }) {
-    return createInterview(positionId, input);
+  listAll() {
+    return listAllWithPosition();
+  }
+
+  create(positionId: string, input: { round: number; happenedAt?: string; qaNotes?: string; reflection?: string; status?: "scheduled" | "done" }) {
+    const status = input.status ?? "done";
+    const qaNotes = input.qaNotes ?? "";
+    if (status === "done" && !qaNotes.trim()) {
+      throw new BadRequestException("已完成的面试必须填写问答记录");
+    }
+    return createInterview(positionId, { ...input, qaNotes, reflection: input.reflection ?? "", status });
+  }
+
+  async update(id: string, patch: { happenedAt?: string; status?: "scheduled" | "done" }) {
+    if (patch.status && !["scheduled", "done"].includes(patch.status)) {
+      throw new BadRequestException("非法面试状态: " + patch.status);
+    }
+    if (patch.happenedAt === undefined && patch.status === undefined) {
+      throw new BadRequestException("至少提供 happenedAt 或 status 之一");
+    }
+    const row = await updateInterview(id, patch);
+    if (!row) throw new NotFoundException("面试记录不存在");
+    return row;
   }
 
   async analyze(id: string) {

@@ -21,6 +21,7 @@
 | A11 | 前台 InterviewPage 对开双栏 | PR #31 | web/pages/InterviewPage.tsx DEBRIEF theme | ✅ 已实现 | — |
 | A12 | 前台 ResumeCenter 工坊 | PR #31 | web/pages/ResumeCenter.tsx WORKSHOP theme | ✅ 已实现 | — |
 | A13 | 后台岗位管理表格 | PR #28 | web/pages/PositionList.tsx AdminShell | ✅ 已实现 | applicant.spec.ts 路由拆分 |
+| A14 | D-15 投递日历（跨岗位月历/时间线 + KPI + 待跟进 + 计划面试） | mvp-deferred D-15 | apps/applicant/web/src/pages/CalendarPage.tsx + apps/applicant/web/src/pages/calendar-view.ts + apps/applicant/server/src/interview.repo.ts + apps/applicant/server/migrations/002_delivery_calendar.sql | ✅ 已实现（D-15 兑现） | applicant.spec.ts 投递日历用例 |
 
 ## 2. Investigator（调研 · 需求主线第一环）
 

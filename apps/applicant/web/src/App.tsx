@@ -5,6 +5,7 @@ import PositionList from "./pages/PositionList";
 import PositionDetail from "./pages/PositionDetail";
 import InterviewPage from "./pages/InterviewPage";
 import ResumeCenter from "./pages/ResumeCenter";
+import CalendarPage from "./pages/CalendarPage";
 
 const ACCENT = appAccent("applicant");
 
@@ -27,6 +28,7 @@ const APPLICANT_THEME: UserShellTheme = {
 
 const USER_NAV = [
   { key: "/positions", label: "岗位博览" },
+  { key: "/calendar", label: "投递日历" },
   { key: "/resumes", label: "简历工坊" },
 ];
 
@@ -39,6 +41,7 @@ function UserRoutes() {
       <Route path="/positions" element={<PositionWall />} />
       <Route path="/positions/:id" element={<PositionDetail />} />
       <Route path="/positions/:id/interviews" element={<InterviewPage />} />
+      <Route path="/calendar" element={<CalendarPage />} />
       <Route path="/resumes" element={<ResumeCenter />} />
       <Route path="/admin/*" element={<Navigate to="/admin/positions" replace />} />
     </Routes>

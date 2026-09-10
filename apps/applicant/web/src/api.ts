@@ -28,6 +28,7 @@ export interface Position {
   jdRaw: string;
   notes: string;
   appliedUrl?: string;
+  appliedAt?: string | null;
   updatedAt: string;
 }
 
@@ -50,8 +51,11 @@ export const api = {
       { method: "POST", body: form }
     ),
   listInterviews: (positionId: string) => request<Interview[]>("/positions/" + positionId + "/interviews"),
-  createInterview: (positionId: string, input: { round: number; qaNotes: string; reflection: string }) =>
+  listAllInterviews: () => request<InterviewWithPosition[]>("/interviews"),
+  createInterview: (positionId: string, input: { round: number; happenedAt?: string; qaNotes?: string; reflection?: string; status?: "scheduled" | "done" }) =>
     request<Interview>("/positions/" + positionId + "/interviews", { method: "POST", body: JSON.stringify(input) }),
+  updateInterview: (id: string, patch: { happenedAt?: string; status?: "scheduled" | "done" }) =>
+    request<Interview>("/interviews/" + id, { method: "PATCH", body: JSON.stringify(patch) }),
   analyzeInterview: (id: string) => request<Interview>("/interviews/" + id + "/analyze", { method: "POST" }),
   exportInterviewUrl: (id: string) => BASE + "/interviews/" + id + "/export.md",
   listResumes: () => request<Resume[]>("/resumes"),
@@ -70,7 +74,14 @@ export interface Interview {
   happenedAt: string;
   qaNotes: string;
   reflection: string;
+  status: "scheduled" | "done";
   analysis: InterviewAnalysis | null;
+}
+
+export interface InterviewWithPosition extends Interview {
+  company: string;
+  title: string;
+  positionStatus: PositionStatus;
 }
 
 export interface Resume {

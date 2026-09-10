@@ -68,6 +68,7 @@ export default function PositionDetail() {
         <div style={{ display: "flex", justifyContent: "center", gap: 24, color: MAG.muted, fontSize: 13 }}>
           {item.city ? <span>📍 {item.city}</span> : null}
           {item.salary ? <span>{item.salary}</span> : null}
+          {item.appliedAt ? <span>投递于 {item.appliedAt.slice(0, 10)}</span> : null}
           <span>来源 · {item.source}</span>
         </div>
       </div>

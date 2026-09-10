@@ -4,7 +4,33 @@
 > 即时更新：每完成一个功能 / 关键决策 / 迭代结束，即刻追加条目，禁止事后批量补记。
 > 本文件定位「当前状态快照」，历史细节见 docs/CHANGELOG.md 与 docs/superpowers/specs/、plans/。
 
-## 当前状态快照（2026-09-09 更新）
+## 当前状态快照（2026-09-10 更新）
+
+- **D-15 投递日历落地（2026-09-10，分支 feat-applicant-d15-calendar，开发完成待 PR）**：
+
+  - **输入**：用户要求按设计稿（magictools-ui-design/pages/applicant-calendar.html）实现 Applicant 前台跨岗位视角投递日历页。设计稿（编辑部目录式构图）与 plan 初稿（Segmented 切换）不同——按用户指令以设计稿为准：Hero D-day 读数带 + 左「按 D-day 排序的节点清单」1.9fr / 右 sticky 月历 1fr 双栏棋盘 + 底部岗位进度横带 + 待跟进区（第 03 节），无视图切换、双视图常驻。
+
+  - **实现**：①migration 002（positions.applied_at 可空 + interviews.status scheduled/done 默认 done 零迁移）；②服务端三扩展（GET /interviews 跨岗位 JOIN 列表、PATCH /interviews/:id 改期/标记完成 + 校验拒绝（done 缺 qaNotes/非法 status/空 body 均 400）、POST 扩展 status/happenedAt；position.repo updatePosition 自动落库规则——status→applied 且无既有值且未显式传 appliedAt 时置 now，手动值永远优先幂等）；③前端 CalendarPage（CSS 变量注入 --cal- 前缀 + 静态类布局 pg-cal- 前缀，媒体查询直接生效无 !important；月历零外部库手写 CSS Grid 周一起始，今日格 accent 反白块；三类事件 dot：投递 graphite/计划面试 info/已完成 ink；月历格可点跳转 + title 全量事件；紧急提醒卡（下一场 ≤3 天面试 error 语义））；④InterviewForm 双提交路径（保存复盘 done/记为计划 scheduled——计划模式 validateFields 白名单跳过 qaNotes 必填，dayjs DatePicker 时间录入）；⑤InterviewPage scheduled 条目（MtStatusTag 待进行 + 标记完成，无 mono prop——mono 会覆盖 tone 语义色）；⑥PositionDetail 投递日期行。
+
+  - **TDD 全程**：服务端 28 用例（appliedAt 自动/手动/幂等 + 计划面试全链路 + 校验拒绝）、前端 13 用例（calendar-view 纯函数 5 + CalendarPage 渲染/空态 + InterviewForm 2）先红后绿。**两处 plan 偏差实证**：POST service 需补 reflection 空串兜底（NOT NULL 列）；jsdom 测试需显式 cleanup()（RTL auto-cleanup 未配置）。
+
+  - **验证终态**：e2e 71 passed / 1 skipped / 0 failed（新用例含月历切月交互与节点跳转 URL 副作用断言）；视觉基线 16→17 张清库空态重生成 17/17；responsive 34/34（375/768 × 17 页含新页）；qa:gate 全绿（lint 0 err/build/test/coverage/infra/docs 0 err）；smoke 17/17。Chrome DevTools 三端实机截图核验（桌面/860/375）设计稿还原达标。
+
+  - **两条新教训**：①**start-services.mjs 的 SERVER_ENV.applicant 原为空对象**——CI 的 job 级 env 给 applicant-server 注入 MT_LLM_STUB=1 而本地脚本漏了，本地跑 e2e 时 analyze 走真实 LLM（智谱 Key 过期 401）必红；已补 `applicant: { ...MT_LLM_STUB }` 对齐。**教训：start-services 与 ci.yml 的桩开关要逐服务对照，job 级 env 与 spawn env 两种注入方式容易漏拍**。②旧进程占端口会让新 spawn 静默 EADDRINUSE 退出（smoke 仍绿——旧进程响应健康检查），**「服务起不来」先查端口占用进程的启动时间而非只看 smoke**。
+
+  - **基线防漂移设计**：月历今日格高亮随运行日期漂移、Hero eyebrow 含年月——两处以 data-testid mask（cal-month-grid/cal-eyebrow）+ waitFor cal-empty（空态锚点），基线只锁布局与主题。
+
+  - **待办**：推送开 PR（body 勾选 0 bug loop + 沉淀层文档两项）→ CI 三段绿 → 0 bug loop 独立测试代理验收 → squash 合并 → dispatch visual-baseline 重生成 linux 基线（17 张）。
+
+- **ui-spec 验证闭环洞察补沉淀（2026-09-10，文档欠账清偿）**：
+
+  - **输入**：用户要求盘点项目待办后先补沉淀 ui-spec 那条洞察——2026-09-03 v2 落地轮记录的「用户提出，待沉淀入 ui-spec」工作流洞察，在 09-09 文档治理轮（只修五文档对齐）中未被覆盖，实际一直未落笔。
+
+  - **内容**：ui-spec.md 新增「七、验证闭环」章——双场景定则（存量调优用真实 dev server + HMR + 实机截图，设计画布仅适合从零探索新页）、双层验证闭环（UI Kit 规范页覆盖令牌/契约层，真实页截图视觉基线 + responsive.spec 覆盖落地层）、落地印证（v2→v2.3.1 五轮已按此执行）、操作纪律（token 级变更本地 e2e:visual:update，合入后 dispatch visual-baseline）；文档头版本日期 09-02→09-10。落笔前已核 CODE_WIKI 仅章节级引用 ui-spec（§8 速查），追加章节号无偏移风险。
+
+  - **验证**：pnpm docs:lint 33 文件 0 错误。
+
+  - **同轮盘点结论（背景）**：全仓待办盘点确认代码零 TODO 占位、git 干净仅 main、无未合并 PR；真延期仅 mvp-deferred 4 项（D-01/D-02/D-09 LoRA/D-15）+ coverage-matrix C10（ThemePreview）+ 平台 Backlog 6 项 + 双路查询阶段二方向 + 运维类（主仓 .env 凭据空、.design-ref/ 去留、部署 Secrets）；文档侧唯一欠账即本条已清偿。
 
 - **文档偏移盘点与五文档对齐修复完成（2026-09-09 收尾轮）**：
 
@@ -419,7 +445,7 @@
 
 - **D-18 链路落地（2026-08-29，PR #44 已合并 main 03711c4）**：视觉快照跨平台基线三件套——① 守卫改**平台基线感知**（递归扫 snapshots 按 `-<platform>.png` 后缀计数 ≥16；废弃 `!!CI` 环境硬编码。踩坑记录：Playwright sanitize 测试名（空格/中括号→'-'）致拼路径探测全 skip，改后缀计数法修复，本地 16/16 真跑验证）；② `visual-baseline.yml` 手动生成 workflow（已在 main 生效 id 345049578）；③ `push-visual-baseline.mjs` REST 回传（tree→commit→分支→PR，gh CLI 缺失可用）。附带：win32 manager 双页基线更新（D-14 布局变更欠账，真跑暴露，精确更新 2 张其余 14 张零误伤）。**剩余一步（用户操作）**：配 Secret `VISUAL_BASELINE_TOKEN`（PAT：contents:write + pull\_request）→ Actions 触发 visual-baseline → 合入自动开的基线 PR → CI 视觉用例闭环真跑；
 
-- 候选（mvp-deferred 未兑现项）：D-15（Applicant 投递日历）；#37-#42 对应的 D-10/D-05/D-16 重复项/D-14/D-03/D-04 已在各自 PR 实现待合并；
+- **D-15 投递日历落地进行中（2026-09-10，分支 feat-applicant-d15-calendar，开发+文档完成待推送开 PR）**：详见当前状态快照顶部条目；mvp-deferred 18 项至此全部兑现或降级说明闭合，真延期仅剩 D-01/D-02/D-09 LoRA 层。
 
 - 候选：部署上线（需 GitHub Secrets）、Designer 可视化编辑器、智谱 Key 更新。
 

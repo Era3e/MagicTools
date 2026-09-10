@@ -1,4 +1,4 @@
-# MagicTools UI 规范（v2 · 2026-09-02）
+# MagicTools UI 规范（v2 · 2026-09-10）
 
 品牌基调：**墨蓝石墨·工房感**——墨蓝主色、石墨中性、琥珀强调；衬线展示、等宽数字、纸面层级。
 
@@ -106,3 +106,10 @@ v2 新增：
 > 前四项 + 基线随 PR #47 落地；v2.2（feat/ui-v22-pages）补齐最后一公里——MtStatusTag/MtKpiRow 沉淀入 @mt/ui 并替换 8 应用全部 AntD Tag 预设色（38 处）、Empty 简笔画（3 处）与 Statistic（1 组），patterns 四组件补齐单测（coverage 回 95.8%），win32 基线再次重生成。
 
 注：UI Checklist（PR 模板）增加 v2 强制规则勾选项。
+
+## 七、验证闭环（2026-09-10 沉淀；源自 2026-09-03 v2 落地轮用户工作流洞察）
+
+- **双场景定则**：存量系统调优优先在真实 dev server 上验证——Vite HMR 秒级反馈 + Playwright 实机截图比对，所见即最终像素；设计画布（设计系统预览页）适合从零探索新页面，不宜作为调优依据（画布像素 ≠ 运行时像素）。
+- **双层验证闭环**：UI Kit 规范页（`.design_library/magictools/`）覆盖令牌与组件契约层；真实后台页截图（e2e 视觉基线 16 张 + responsive.spec 32 用例）覆盖落地层。两层各司其职，任一层不可替代另一层。
+- **落地印证**：五轮 UI 快速迭代（v2→v2.3.1）已按此模式执行——每轮「真实页面截图验收 → 基线重生成」，v2.3.1 起进一步由 responsive 巡检与视觉锚点 fail fast 工程化（见 state.md 五防线轮）。
+- **操作纪律**：token/主题级变更合并前本地重跑 `pnpm e2e:visual:update`；前台视觉/主题改动合入后 dispatch visual-baseline workflow 重生成 linux 基线。
