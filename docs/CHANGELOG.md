@@ -76,3 +76,7 @@
 ## 2026-09-09（文档治理轮，补记）
 
 - **文档偏移五文档对齐修复 + 防弊机制三线落地**：全仓内容级取证修复 CHANGELOG（补齐 08-28~09-09 五个缺失日期段）、CODE_WIKI（v2.3 外壳/组件族/双路查询模块表与路由表）、coverage-matrix（I3/M4/D9/C6~C9 陈旧行 + 第 10 章增量）、mvp-deferred（D-04/D-12/D-13 补 ✅，摘要 17/4 自纠）、state.md 已知问题 12 存档化。防弊三线：①PR 模板新增「沉淀层文档已同步」勾选 + CI quality PR 事件检测扩展为两项（与 0 bug loop 同级强制）；②新增 infra/scripts/lib/docs-guard.mjs drift guard（coverage-matrix ✅ 行声明的仓库路径存在性校验，TDD 5 用例 + CLI 守卫挂接 pnpm test:infra，qa:gate/CI 自动生效）；③git-workflow.md 收尾协议补 CHANGELOG/coverage-matrix 两项 + AGENTS.md 硬性约定 3 扩充。根因分析（更新义务未绑定检测点、双文档体系无单一触发、squash 断链、验证闭环不覆盖文档）与全过程记录见 state.md 对应条目。
+
+## 2026-09-10
+
+- **D-15 投递日历落地（Applicant 前台跨岗位视角）**：新增 `/calendar` 前台页——设计稿「编辑部目录式时间轴」构图全量复刻（Hero D-day 读数带 + 左「按 D-day 排序的节点清单」1.9fr / 右 sticky 月历 1fr 双栏棋盘 + 底部岗位进度横带 + 待跟进区），零外部日历库手写 CSS Grid 月历（周一起始、今日格 accent 高亮、三类事件标记：投递/计划面试/已完成面试），私有断点 860/720 对齐设计稿（单列纵排月历上移、节点行两段堆叠）；数据层 migration 002（positions.applied_at 投递时间戳，status→applied 自动落库手动值优先 + interviews.status scheduled/done 状态机）；API 三处扩展（GET /interviews 跨岗位 JOIN 列表、PATCH /interviews/:id 改期/标记完成、POST 校验 done 必填 qaNotes/scheduled 免填）；InterviewForm 双提交路径（保存复盘/记为计划 + dayjs 面试时间录入）、InterviewPage 计划条目（待进行标签 + 标记完成）、PositionDetail 投递日期行；Playwright e2e 新用例（页渲染/月历切月/节点跳转副作用断言）；视觉基线 16→17 张（清库空态重生成）+ responsive 巡检 34 用例纳管新页全绿。顺手修复：start-services.mjs 的 applicant 桩开关缺失（SERVER_ENV.applicant 补 MT_LLM_STUB=1，对齐 CI 口径——此前本地跑 e2e analyze 走真实 LLM 必红）。

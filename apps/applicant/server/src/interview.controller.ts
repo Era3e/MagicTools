@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Header, Inject, Param, Post } from "@nestjs/common";
+import { Body, Controller, Get, Header, Inject, Param, Patch, Post } from "@nestjs/common";
 import { InterviewService } from "./interview.service";
 
 @Controller()
@@ -10,8 +10,18 @@ export class InterviewController {
     return this.service.list(positionId);
   }
 
+  @Get("interviews")
+  listAll() {
+    return this.service.listAll();
+  }
+
+  @Patch("interviews/:id")
+  update(@Param("id") id: string, @Body() body: { happenedAt?: string; status?: "scheduled" | "done" }) {
+    return this.service.update(id, body);
+  }
+
   @Post("positions/:positionId/interviews")
-  create(@Param("positionId") positionId: string, @Body() body: { round: number; qaNotes: string; reflection: string }) {
+  create(@Param("positionId") positionId: string, @Body() body: { round: number; happenedAt?: string; qaNotes?: string; reflection?: string; status?: "scheduled" | "done" }) {
     return this.service.create(positionId, body);
   }
 

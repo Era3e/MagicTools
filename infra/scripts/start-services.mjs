@@ -63,7 +63,7 @@ const SERVER_ENV = {
   designer:     { ...MT_LLM_STUB },
   scholar:      { ...MT_LLM_STUB },
   assistant:    { CYBERCLOUD_STUB: "1", ACTION_STUB: "1", CLARIFY_STUB_CONFIDENCE: "0.9", ...MT_LLM_STUB },
-  applicant:    {},
+  applicant:    { ...MT_LLM_STUB },
 };
 
 const procs = [];

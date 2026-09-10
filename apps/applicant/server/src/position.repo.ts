@@ -13,6 +13,7 @@ export interface PositionInput {
   jdStructured?: Record<string, unknown>;
   status?: PositionStatus;
   appliedUrl?: string;
+  appliedAt?: string | null;
   notes?: string;
 }
 
@@ -28,6 +29,7 @@ export interface PositionRow {
   status: PositionStatus;
   appliedUrl: string;
   notes: string;
+  appliedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -45,6 +47,7 @@ function mapRow(r: Record<string, unknown>): PositionRow {
     status: r.status as PositionStatus,
     appliedUrl: r.applied_url as string,
     notes: r.notes as string,
+    appliedAt: r.applied_at ? new Date(r.applied_at as string).toISOString() : null,
     createdAt: new Date(r.created_at as string).toISOString(),
     updatedAt: new Date(r.updated_at as string).toISOString(),
   };
@@ -73,10 +76,17 @@ export async function createPosition(input: PositionInput): Promise<PositionRow>
 export async function updatePosition(id: string, patch: Partial<PositionInput>): Promise<PositionRow | null> {
   const current = await getPosition(id);
   if (!current) return null;
-  const next = { ...current, ...patch };
+  const merged: PositionRow = {
+    ...current,
+    ...patch,
+    appliedAt: patch.appliedAt !== undefined ? patch.appliedAt ?? null : current.appliedAt,
+  };
+  if (patch.status === "applied" && !merged.appliedAt && patch.appliedAt === undefined) {
+    merged.appliedAt = new Date().toISOString();
+  }
   const rows = await pool.query(
-    "UPDATE positions SET company=$1,title=$2,city=$3,salary=$4,source=$5,jd_raw=$6,jd_structured=$7,status=$8,applied_url=$9,notes=$10,updated_at=now() WHERE id=$11 RETURNING *",
-    [next.company, next.title, next.city, next.salary, next.source, next.jdRaw, JSON.stringify(next.jdStructured), next.status, next.appliedUrl, next.notes, id]
+    "UPDATE positions SET company=$1,title=$2,city=$3,salary=$4,source=$5,jd_raw=$6,jd_structured=$7,status=$8,applied_url=$9,notes=$10,applied_at=$11,updated_at=now() WHERE id=$12 RETURNING *",
+    [merged.company, merged.title, merged.city, merged.salary, merged.source, merged.jdRaw, JSON.stringify(merged.jdStructured), merged.status, merged.appliedUrl, merged.notes, merged.appliedAt, id]
   );
   return rows.rowCount ? mapRow(rows.rows[0]) : null;
 }

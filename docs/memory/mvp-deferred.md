@@ -20,15 +20,15 @@
 | **D-12** | ~~落地降级~~ ✅ **已兑现** | Gatherer **采集失败重试指数退避 + 死信告警** | gatherer-spec.md §3.3 管道失败处理 | MVP 采集失败只打日志，无指数退避和死信通知 | ✅ 2026-09-08 兑现（PR #43）：collect.service.ts 指数退避（1s→2s→4s→8s→16s，MAX_ATTEMPTS=5）+ markRunDead dead 终态（migrations/003_retry）+ gatherer.collect.dead_letter outbox 告警事件 + collect.service.spec.ts 5 场景单测 | ✅ P1 已完成 | — |
 | **D-13** | ~~落地降级~~ ✅ **已兑现** | 所有应用 **移动端响应式适配（<768px）** | ui-spec.md 未声明；CODE_WIKI §8 前端未提移动端 | MVP 8 应用前台深度设计全部按桌面端（>=1280px）做，无移动端折叠 | ✅ 分两轮兑现：PR #43 双壳折叠规则基础；v2.3 收尾轮（2026-09-09）补齐页面级断点（PositionWall 860/720、RequirementBoard 960/640、ChatPage 920/640 等）+ v2.3.1 responsive.spec 巡检防线（375/768 × 16 页 = 32 用例全绿，768 平板档首跑抓出 15 个真实溢出后修复） | ✅ P1 已完成（后续由 responsive 防线持续防回归） | — |
 | **D-14** ✅ PR #40 | 规划遗漏 | Manager **迭代燃尽图 / 进度可视化** | manager-spec.md §3.4 未明确可视化细节 | MVP IterationList 只有纯表格，无需求数/完成数趋势图 | —（已落地：patterns/TimelineBurndown + IterationList 点击展开 + 需求指标条） | P1 | — |
-| **D-15** | 规划遗漏 | Applicant **投递日历视图 / 面试时间线** | applicant-spec.md 未覆盖 | MVP 只有 PositionDetail 面试 Tab 列表 + InterviewPage 单份复盘，无跨岗位面试时间轴/日历 | 用户看 InterviewPage 列表手动梳理 | P2 | 复用 manager 飞行日志时间线 patterns/ 改造 |
+| **D-15** | ~~规划遗漏~~ ✅ **已兑现** | Applicant **投递日历视图 / 面试时间线** | applicant-spec.md 未覆盖 | MVP 只有 PositionDetail 面试 Tab 列表 + InterviewPage 单份复盘，无跨岗位面试时间轴/日历 | ✅ 2026-09-10 兑现：投递日历页 `/calendar`（编辑部目录式构图：Hero D-day 读数带 + 时间轴/月历双栏棋盘 + 岗位进度横带 + 待跟进区）+ 计划面试（scheduled/done 状态机，可改期/标记完成）+ positions.applied_at 自动落库（手动值优先） | ✅ P2 已完成 | — |
 | **D-16** | ~~落地降级~~ ✅ **已兑现** | Designer 前台页 **「组件馆藏」导航入口** | e2e designer.spec 导航跳转用例；2026-08-27 显式 skip 发现 | 前台 UserShell 导航只有「定制生成」，无通往 /admin/components 组件馆藏的入口（仅页脚「管理后台 →」间接可达） | ✅ 2026-08-28 兑现（PR #36）：USER_NAV 加「组件馆藏」+ Route 改直接渲染 ComponentList | ✅ P2 已完成 | — |
 | **D-17** | ~~落地降级~~ ✅ **已确认已修复** | Assistant **「意图日志」导航入口** | e2e assistant.spec 导航跳转用例；2026-08-27 显式 skip 发现 | 反馈页（/admin/feedback）侧栏无「意图日志」菜单，仅能手动输 URL /admin/intent-logs 到达 | ✅ 已确认：ADMIN_NAV 已有「意图日志」菜单 + /admin/intent-logs Route + IntentLogPage，2026-08-27 后代码已补齐 | ✅ P2 已完成 | — |
 | **D-18** | ~~落地降级~~ ✅ **已完成（PR #45）** | E2E 视觉快照 **跨平台基线（CI/linux）** | PR #35 CI e2e job 失败实证：snapshotPathTemplate 含 {platform}，仓库仅 win32 基线，CI 找 -linux.png 必失败 | ✅ 2026-08-29 全链路收官：① 守卫平台基线感知（PR #44）；② `visual-baseline.yml` 生成 workflow（PR #44）；③ 回传脚本三轮修复（Trees encoding 无效→Blobs API+sha 自校验；PR 复用 head 格式）上 main 8fc1b2d；④ 16 张真二进制 linux 基线入库（PR #45 合并 3e674d4），CI 视觉用例首次真跑全绿 | ✅ 已完成 | ✅ P1 已完成 | 后续：前台视觉/主题改动后手动 dispatch visual-baseline 重生成；升级 runner 版本需同步重生成 |
 
-## 统计摘要（更新：2026-09-09）
+## 统计摘要（更新：2026-09-10）
 
 - 总数：18 项
-- **已兑现 17 项**：D-03（Webhook，PR #41）、D-04（一键 PR，PR #42）、D-06（Obsidian 冲突，PR #43）、D-07（Cron，PR #36）、D-08（ClawCV 告警，PR #43）、D-09 在线学习层（PR #43）、D-10（Gateway 仪表盘，PR #37）、D-11（0 bug loop 检测，PR #36）、D-12（死信队列，PR #43）、D-13（移动端响应式，PR #43 + v2.3 轮补齐）、D-16/D-17（导航入口，PR #36）、D-05（PR #38）、D-14（PR #40）、D-18（linux 视觉基线全链路，PR #44+#45）
-- **真延期 4 项**：D-01/D-02（Designer 拖拽与双向编辑，P2）、D-09 LoRA 层（P3）、D-15（投递日历，P2）
-- 按优先级：P0 全部兑现 · **P1 全部兑现** · P2 剩 D-01/02/15 · P3 剩 D-09 LoRA 层
-- **下一迭代建议**：D-15（投递日历，可复用 manager 时间线 patterns）；D-01/02（Designer 拖拽画布）；coverage-matrix C10（ThemePreview，P2 无编号项）
+- **已兑现 18 项**：D-03（Webhook，PR #41）、D-04（一键 PR，PR #42）、D-06（Obsidian 冲突，PR #43）、D-07（Cron，PR #36）、D-08（ClawCV 告警，PR #43）、D-09 在线学习层（PR #43）、D-10（Gateway 仪表盘，PR #37）、D-11（0 bug loop 检测，PR #36）、D-12（死信队列，PR #43）、D-13（移动端响应式，PR #43 + v2.3 轮补齐）、D-16/D-17（导航入口，PR #36）、D-05（PR #38）、D-14（PR #40）、D-18（linux 视觉基线全链路，PR #44+#45）、D-15（投递日历，2026-09-10 兑现）
+- **真延期 3 项**：D-01/D-02（Designer 拖拽与双向编辑，P2）、D-09 LoRA 层（P3）
+- 按优先级：P0 全部兑现 · P1 全部兑现 · **P2 仅剩 D-01/02** · P3 剩 D-09 LoRA 层
+- **下一迭代建议**：D-01/02（Designer 拖拽画布）；coverage-matrix C10（ThemePreview，P2 无编号项）

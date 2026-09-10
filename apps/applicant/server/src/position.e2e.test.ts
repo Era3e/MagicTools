@@ -61,6 +61,27 @@ describe("positions", () => {
     expect(res.status).toBe(400);
   });
 
+  it("状态流转 applied 自动落 appliedAt 且手动值优先", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    const created = await request(app.getHttpServer())
+      .post("/api/applicant/positions")
+      .send({ company: "日历E2E公司" + Date.now(), title: "日历测试岗" });
+    const id = created.body.id as string;
+
+    const first = await request(app.getHttpServer()).patch("/api/applicant/positions/" + id).send({ status: "applied" });
+    expect(first.status).toBe(200);
+    expect(first.body.appliedAt).toBeTruthy();
+
+    const again = await request(app.getHttpServer()).patch("/api/applicant/positions/" + id).send({ status: "interview" });
+    expect(again.body.appliedAt).toBe(first.body.appliedAt);
+
+    const manual = await request(app.getHttpServer())
+      .patch("/api/applicant/positions/" + id)
+      .send({ appliedAt: "2026-09-01T08:00:00.000Z" });
+    expect(manual.status).toBe(200);
+    expect(manual.body.appliedAt).toBe("2026-09-01T08:00:00.000Z");
+  });
+
   it("JD 文本解析返回结构化字段（stub）", async (ctx) => {
     if (!available) { ctx.skip(); return; }
     process.env.MT_LLM_STUB = "1";

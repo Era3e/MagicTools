@@ -696,7 +696,9 @@ export const APPS: AppEntry[] = [
 **关键路由**：
 - `POST /api/applicant/positions` — 创建岗位（含 JD parse）
 - `POST /api/applicant/positions/upload-image` — 截图上传 → 视觉 LLM 提取 JD
-- `POST /api/applicant/positions/:id/interviews` — 添加面试记录 + LLM 复盘
+- `POST /api/applicant/positions/:id/interviews` — 添加面试记录 + LLM 复盘（status=scheduled 计划面试免填 qaNotes）
+- `GET /api/applicant/interviews` — 跨岗位面试列表（JOIN positions 取 company/title/status，D-15）
+- `PATCH /api/applicant/interviews/:id` — 计划面试改期 / 标记完成（D-15）
 - `POST /api/applicant/resumes/analyze` / `rewrite` / `match` — 简历三件套
 
 #### 前端路由
@@ -706,6 +708,7 @@ export const APPS: AppEntry[] = [
   /positions           PositionWall    岗位博览墙（杂志风检索+分页）
   /positions/:id       PositionDetail  机会档案（FEATURE 特稿版式）
   /positions/:id/interviews InterviewPage  面试复盘（DEBRIEF 对开双栏）
+  /calendar             CalendarPage   投递日历（D-15：D-day 时间轴+月历+待跟进）
   /resumes             ResumeCenter    简历工坊（WORKSHOP 改写台）
 
 后台（AdminShell /applicant/admin）：

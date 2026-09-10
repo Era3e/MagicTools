@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { api, type Interview, type Position } from "../api";
 import { AnalysisView } from "../components/AnalysisView";
 import { InterviewForm } from "../components/InterviewForm";
-import { useTheme } from "@mt/ui";
+import { MtStatusTag, useTheme } from "@mt/ui";
 
 export default function InterviewPage() {
   const { id } = useParams();
@@ -91,8 +91,11 @@ export default function InterviewPage() {
           }}
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
-            <span style={{ fontFamily: MAG.display, fontSize: 17 }}>
-              第 {iv.round} 面
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontFamily: MAG.display, fontSize: 17 }}>第 {iv.round} 面</span>
+              {iv.status === "scheduled" ? (
+                <MtStatusTag tone="warning">待进行</MtStatusTag>
+              ) : null}
             </span>
             <span style={{ color: MAG.muted, fontSize: 12 }}>
               {new Date(iv.happenedAt).toLocaleString()}
@@ -117,13 +120,30 @@ export default function InterviewPage() {
             </div>
           </div>
           <div style={{ marginTop: 12 }}>
-            <AnalysisView
-              analysis={iv.analysis}
-              onAnalyze={() => analyze(iv.id)}
-              onExport={() => {
-                window.open(api.exportInterviewUrl(iv.id), "_blank");
-              }}
-            />
+            {iv.status === "scheduled" ? (
+              <Button
+                size="small"
+                onClick={async () => {
+                  try {
+                    await api.updateInterview(iv.id, { status: "done" });
+                    message.success("已标记完成，可回填复盘内容");
+                    refresh();
+                  } catch (err) {
+                    message.error(String(err));
+                  }
+                }}
+              >
+                标记完成
+              </Button>
+            ) : (
+              <AnalysisView
+                analysis={iv.analysis}
+                onAnalyze={() => analyze(iv.id)}
+                onExport={() => {
+                  window.open(api.exportInterviewUrl(iv.id), "_blank");
+                }}
+              />
+            )}
           </div>
         </article>
       ))}

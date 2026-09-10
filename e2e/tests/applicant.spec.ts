@@ -1,4 +1,4 @@
-﻿import { test, expect } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 import { COPY } from "../fixtures/copy";
 
 const unique = () => "E2E公司" + Date.now();
@@ -121,4 +121,37 @@ test("applicant 后台 新建岗位按钮 副作用：Modal 打开 + 提交后�
   });
   await page.reload({ waitUntil: "networkidle" });
   await expect(page.getByText(company).first()).toBeVisible({ timeout: 8000 });
+});
+
+// ---------- D-15 投递日历 ----------
+test("applicant 投递日历页渲染、切月与时间线节点跳转", async ({ page, request }) => {
+  const company = "日历E2E公司" + Date.now();
+  const created = await request.post("/api/applicant/positions", {
+    data: { company, title: "日历工程师" },
+  });
+  expect(created.ok()).toBeTruthy();
+  const pos = await created.json();
+  const patched = await request.patch("/api/applicant/positions/" + pos.id, { data: { status: "applied" } });
+  expect((await patched.json()).appliedAt).toBeTruthy();
+
+  await page.goto("/applicant/calendar", { waitUntil: "networkidle" });
+  await expect(page.getByText("投递读数")).toBeVisible({ timeout: 8000 });
+  await expect(page.getByRole("heading", { name: "岗位进度" })).toBeVisible({ timeout: 8000 });
+
+  // 时间线节点按唯一公司名断言（并发禁 [0] 位置断言）
+  const node = page.locator(".pg-cal-node", { hasText: company });
+  await expect(node).toBeVisible({ timeout: 8000 });
+  await expect(node).toContainText("投递");
+
+  // 月历切月交互：下一月 → 月份变化 → 回到本月恢复
+  const monthLabel = page.getByTestId("cal-month-label");
+  const current = (await monthLabel.textContent()) ?? "";
+  await page.getByLabel("下一月").click();
+  await expect(monthLabel).not.toHaveText(current, { timeout: 8000 });
+  await page.getByRole("button", { name: /回到本月/ }).click();
+  await expect(monthLabel).toHaveText(current, { timeout: 8000 });
+
+  // 副作用断言：点击节点「进度详情」跳岗位详情（URL 变化）
+  await node.getByRole("button", { name: /进度详情/ }).click();
+  await page.waitForURL(new RegExp("/applicant/positions/" + pos.id + "$"), { timeout: 10000 });
 });

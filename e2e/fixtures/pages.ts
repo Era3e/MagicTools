@@ -24,6 +24,14 @@ export const PAGES: VisualPage[] = [
     anchor: /岗位博览|每一次投递/,
   },
   {
+    name: "front-applicant-calendar",
+    path: "/applicant/calendar",
+    anchor: /投递日历|TIMELINE/,
+    waitFor: "[data-testid=cal-empty]",
+    // mask：今日格高亮随运行日期漂移、eyebrow 含年月——两处动态区遮罩，基线只锁布局与主题
+    mask: "[data-testid=cal-month-grid], [data-testid=cal-eyebrow]",
+  },
+  {
     name: "front-scholar-entry-list",
     path: "/scholar/entries",
     anchor: /知识书院|馆 藏 目 录/,

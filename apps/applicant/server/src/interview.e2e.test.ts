@@ -46,3 +46,68 @@ describe("interviews", () => {
     expect(exported.text).toContain("# 面试复盘");
   });
 });
+
+describe("interviews · 计划面试（D-15）", () => {
+  it("创建计划面试 → 跨岗位列表 → 改期 → 标记完成", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    const company = "日历E2E公司" + Date.now();
+    const pos = await request(app.getHttpServer())
+      .post("/api/applicant/positions")
+      .send({ company, title: "计划面试岗" });
+    const scheduledAt = new Date(Date.now() + 3 * 86_400_000).toISOString();
+    const created = await request(app.getHttpServer())
+      .post("/api/applicant/positions/" + pos.body.id + "/interviews")
+      .send({ round: 2, status: "scheduled", happenedAt: scheduledAt });
+    expect(created.status).toBe(201);
+    expect(created.body.status).toBe("scheduled");
+    expect(created.body.happenedAt).toBe(scheduledAt);
+
+    const all = await request(app.getHttpServer()).get("/api/applicant/interviews");
+    expect(all.status).toBe(200);
+    const mine = all.body.find((i: { company: string }) => i.company === company);
+    expect(mine.company).toBe(company);
+    expect(mine.title).toBe("计划面试岗");
+    expect(mine.status).toBe("scheduled");
+
+    const moved = new Date(Date.now() + 5 * 86_400_000).toISOString();
+    const patched = await request(app.getHttpServer())
+      .patch("/api/applicant/interviews/" + mine.id)
+      .send({ happenedAt: moved });
+    expect(patched.status).toBe(200);
+    expect(patched.body.happenedAt).toBe(moved);
+
+    const done = await request(app.getHttpServer())
+      .patch("/api/applicant/interviews/" + mine.id)
+      .send({ status: "done" });
+    expect(done.status).toBe(200);
+    expect(done.body.status).toBe("done");
+  });
+
+  it("校验拒绝：done 缺 qaNotes / 非法 status / 空 PATCH body", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    const company = "日历E2E公司" + Date.now();
+    const pos = await request(app.getHttpServer())
+      .post("/api/applicant/positions")
+      .send({ company, title: "校验岗" });
+
+    const noNotes = await request(app.getHttpServer())
+      .post("/api/applicant/positions/" + pos.body.id + "/interviews")
+      .send({ round: 1, status: "done" });
+    expect(noNotes.status).toBe(400);
+
+    const created = await request(app.getHttpServer())
+      .post("/api/applicant/positions/" + pos.body.id + "/interviews")
+      .send({ round: 1, status: "scheduled" });
+    expect(created.status).toBe(201);
+
+    const badPatch = await request(app.getHttpServer())
+      .patch("/api/applicant/interviews/" + created.body.id)
+      .send({ status: "paused" });
+    expect(badPatch.status).toBe(400);
+
+    const emptyPatch = await request(app.getHttpServer())
+      .patch("/api/applicant/interviews/" + created.body.id)
+      .send({});
+    expect(emptyPatch.status).toBe(400);
+  });
+});
