@@ -6,11 +6,11 @@
 
 ## 当前状态快照（2026-09-12 更新）
 
-- **P04备份恢复设计（2026-09-12，feat-infra-P04-backup）**：旧backup.ps1漏八库且不检查失败。独立审查后选择PG16整cluster物理备份、每文件独立nonce认证加密及完整清单HMAC、新卷恢复与实际角色/八库/pgvector验证；异机复制和RPO/RTO分开记录。方案与逐行为TDD计划分别见 docs/superpowers/specs/2026-09-12-backup-recovery-design.md 和 docs/superpowers/plans/2026-09-12-backup-recovery.md。当前为设计完成，尚未实现；Manager需求33ceef9c-38ed-4cce-b5f5-81f9bba709ff已进入designing。工作区基于PR72收尾候选6dc271a，P03/P05最终CI为run34649781031，合并结果后续核实。
+- **P04本机核心实施（2026-09-12，feat-infra-P04-backup）**：基线main f199f8b，完整P04尚未合并。现有create/verify/restore与真实演练入口，完成源配置依赖、物理备份、AES-GCM/HMAC、独立PG恢复及本机RPO/RTO。独立源配置实际问题已全部闭环；编排16组受控边界、加密14项、指标6项独立复验通过，额外缓存离线回归已加入。真实run37ef4dcc212ff7bd通过八库/角色/向量/微秒标记、命令校验及清理，约103MB密文、热镜像恢复19.533秒，恢复点年龄保守区间0.293–11.718秒；仅为该本机样本，源码fingerprint与验证边界见docs/validation/2026-09-12-backup-core.md。Docker上下文与Git均排除.private/backups/备份密钥。SSH异机保存、保留15份、告警/定时任务、旧PS脚本替换、部署交接和完整候选CI继续实施；Manager P04仍developing。
 
 - **P03/P05交付验收（2026-09-12，PR #72）**：17独立镜像、迁移/数据库就绪、不可变制品、本机/SSH部署回执和回退已实现。两份干净SHA制品A=cc03f425939448b3e720b0a29084ae479f9412db（release d90f38182d37e0e8）与B=5355139ec425dd0394f61e1d149ee1063ae1e486（release 31adfd27e83e27a7）分别构建、9项容器验收和发布成功；部署验证c4382360ff95e4b9的升级/移动标签/拉取失败/坏密码/迁移失败/恢复/回退/数据与env保护8项全过。独立智能体775fc054580e另行执行A→B→A，八库唯一marker全保留、env字节不变、PG实例稳定，B的102个registry对象原始摘要通过；本轮验证资源清理通过，未动原5432和共享测试PG。
 
-  完整qa:gate回执64d0fd261f5931e7b020db33通过：infra136/136、真实DB31文件136/136且skip=0，源码smoke17/17。独立部署11条、SSH28条及配置/隔离回归通过；原生PowerShell检查失败exit1、成功exit0。源码交付记录见 docs/validation/2026-09-12-runtime-images.md；后续收尾提交不冒充被测A/B，最终候选仍须quality/smoke/e2e及artifact核验后合并。SSH使用可控传输适配器验证，生产SSH/上线及真实模型效果未验证。P04备份恢复、P06权限以及其余P01–P26规划继续实施。
+  完整qa:gate回执64d0fd261f5931e7b020db33通过：infra136/136、真实DB31文件136/136且skip=0，源码smoke17/17。独立部署11条、SSH28条及配置/隔离回归通过；原生PowerShell检查失败exit1、成功exit0。源码交付记录见 docs/validation/2026-09-12-runtime-images.md；最终候选6dc271a的CI run34649781031 quality/smoke/e2e和原始artifact已独立核验，PR72合并为f199f8bd41681dd608c98af3760055246c5215fd，合并树与被测checkout一致；不冒充被测A/B。SSH使用可控传输适配器验证，生产SSH/上线及真实模型效果未验证。本地P03/P05验收.qa已迁到工作区work/runtime-evidence-archive，独立CI报告在work/ci-runtime-review/34649781031；已清理本批旧19测试容器/专用卷及mt-runtime工作树，共享PG和源码预览保留。main CI run34651552771全绿，实际发布17镜像（publish94f222212e24e0c2）的ZIP摘要/来源/推拉日志独立核对通过，报告work/main-release-review/34651552771；镜像发布不代表生产已部署。P04备份恢复、P06权限以及其余P01–P26规划继续实施。
 
 - **持续落地授权与主线（2026-09-11→12）**：用户明确授权先合并两批，后续实现、独立检查和 CI 无误后直接合并，自动循环至现有 P01–P26 规划全部开发落地，不再逐项等待人工确认。#69 已合入 104eee6；#70 更新 main 后重新通过 quality/smoke/e2e，合入 aeaff9a；合并后的 main CI 也已通过。当前开发工作与部署/真实模型验证分开记录，不用桩或跳过冒充完成。
 

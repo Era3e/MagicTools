@@ -11,6 +11,9 @@ test-results/
 *.log
 .run-logs/
 .qa/
+.private/
+backups/
+*.backup-key
 .DS_Store
 
 .stage-assistant-dual-query/

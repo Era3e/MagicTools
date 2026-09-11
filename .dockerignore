@@ -16,6 +16,11 @@ coverage
 **/.env.*
 .qa
 **/.qa
+.private
+**/.private
+backups
+**/backups
+**/*.backup-key
 .codex
 .cbc
 **/*.pem

@@ -324,7 +324,7 @@ MagicTools/
 │  ├─ compose.prod.yml                       # 生产环境编排（待补全）
 │  ├─ postgres-init.sql                      # 多库自举初始化脚本
 │  ├─ deploy.ps1                             # ECS 部署脚本（PowerShell）
-│  ├─ backup.ps1                             # 数据库备份脚本
+│  ├─ backup.ps1                             # 旧版仅备份magictools，P04替换中
 │  ├─ templates/                             # pnpm new:app 模板（server + web 骨架）
 │  └─ scripts/                               # 工程化脚本（全部 .mjs ESM）
 │     ├─ smoke.mjs                           # 冒烟：读取 ports.yaml 探活全部服务
@@ -1767,3 +1767,9 @@ assistant.knowledge
 ---
 
 > 📌 本 Code Wiki 为活文档，随代码迭代同步更新。每次合入 main 时，如文档涉及范围有变动（新增公共包/接口/配置项/子项目），请在 PR 中同步修改本文件对应章节，由 review 环节把关一致性。
+
+## 备份恢复核心（P04实施中）
+
+`backup:create`、`backup:verify`、`backup:restore`由infra/scripts/backup.mjs调度，backup-local.mjs组织源检查、物理备份/原生验证、加密和独立恢复；backup-docker.mjs管理专属资源及进程退出。backup-source.mjs/backup-config-files.mjs同时检查运行与启动生效的配置依赖，backup-crypto.mjs负责文件认证和清单HMAC，backup-metrics.mjs使用微秒计算本机恢复区间。实现与边界见 [备份说明](features/backup-recovery.md) 和 [核心验收](validation/2026-09-12-backup-core.md)。
+
+旧backup.ps1仍待本批完整替换，只导出magictools库，不能作为八库备份方案。SSH异机保存、保留/告警/定时任务及应用切换仍未交付；当前本机回执不能代表生产保障。P03/P05已合并，main发布run34651552771的17镜像来源、固定digest及推拉日志已独立核验，生产环境部署未验证。

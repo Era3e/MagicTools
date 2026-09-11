@@ -83,6 +83,21 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: 构建17镜像并验证独立Compose冷启动
         run: pnpm images:smoke
+      - name: 验证八库加密备份、独立恢复与本机指标
+        run: pnpm backup:validate
+      - name: 保存备份验证证据（排除密钥与私有配置）
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-evidence-${{ github.event.pull_request.head.sha || github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .qa/backup-validation/**/summary.json
+            .qa/backup-validation/**/store/attempt-*.json
+            .qa/backup-validation/**/store/.magictools-backups.json
+            .qa/backup-validation/**/store/backup-*/backup.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
       - name: 保存镜像与运行证据（失败也保留）
         if: always()
         uses: actions/upload-artifact@v4
