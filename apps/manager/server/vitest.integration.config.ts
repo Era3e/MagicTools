@@ -13,6 +13,6 @@ export default defineConfig({
     environment: "node",
     env: { DATABASE_URL: databaseUrl },
     fileParallelism: false,
-    include: ["src/requirement-foundation.e2e.test.ts", "src/import-batch.e2e.test.ts"],
+    include: ["src/requirement-foundation.e2e.test.ts", "src/import-batch.e2e.test.ts", "src/requirement-revisions.e2e.test.ts"],
   },
 });

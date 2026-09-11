@@ -7,9 +7,11 @@ import { RequirementService } from "./requirement.service";
 import { WebhookController } from "./webhook.controller";
 import { CapabilityController, ImportController } from "./import.controller";
 import { ImportService } from "./import.service";
+import { RequirementApprovalController } from "./requirement-approval.controller";
+import { RequirementApprovalService } from "./requirement-approval.service";
 
 @Module({
-  controllers: [HealthController, RequirementController, IterationController, WebhookController, ImportController, CapabilityController],
-  providers: [RequirementService, IterationService, ImportService],
+  controllers: [HealthController, RequirementController, IterationController, WebhookController, ImportController, CapabilityController, RequirementApprovalController],
+  providers: [RequirementService, IterationService, ImportService, RequirementApprovalService],
 })
 export class AppModule {}

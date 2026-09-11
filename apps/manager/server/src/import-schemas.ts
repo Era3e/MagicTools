@@ -21,7 +21,7 @@ const candidateSchema = z.object({
   automation_eligible: z.literal(false),
   priority: z.enum(["P0", "P1", "P2"]).default("P2"),
   evidence: z.array(evidenceSchema).min(1).max(20),
-  acceptance_criteria: z.array(z.string().min(1).max(2000)).max(50).default([]),
+  acceptance_criteria: z.array(z.string().min(1).max(2000).refine((value) => value.trim().length > 0)).max(50).default([]),
   verification_gaps: z.array(z.string().min(1).max(2000)).max(50).default([]),
   depends_on: z.array(candidateId).max(100).default([]),
 }).passthrough();

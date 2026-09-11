@@ -787,6 +787,7 @@ export const APPS: AppEntry[] = [
 | 需求 | RequirementController | RequirementService | RequirementRepo | 7 态生命周期 / 事务更新与 revision 冲突 / PR 联动 / 规划验收与来源证据 |
 | 迭代 | IterationController | IterationService | IterationRepo | 迭代管理（增删改查 + 需求关联） |
 | 候选与能力基线 | ImportController / CapabilityController | ImportService | manager_import_batches / manager_import_links / capabilities | 预览、选择确认、剩余批次、稳定来源去重、冲突回滚；基线与规划分开保存 |
+| 内容修订与审批 | RequirementController / RequirementApprovalController | RequirementApprovalService | requirement_revisions / requirement_approvals | 数据库触发器保存内容快照；行锁与双版本审批；单用户凭证身份；追加批准/撤销记录 |
 
 **消费事件**：`requirement.created`（ASSESSOR_DATABASE_URL processOutbox）
 **外部集成**：`github/client.ts` — Phantom GitHub Issues 同步（GITHUB_STUB=1）
@@ -811,7 +812,9 @@ export const APPS: AppEntry[] = [
 
 2026-09-11 起，手工状态迁移由 `requirement-policy.ts` 约束；字段与状态在行锁事务中合并，新客户端提交 expectedRevision，过期返回 409。PR 同状态不增加修订，不能回退 accepting/done。详情的关联草稿与服务器基准分离，冲突后不会自动使用新版本覆盖旧内容。
 
-候选导入支持 `magictools-requirement-candidates/0.1`：baseline 保存为 capabilities，planned 保存为 waiting/manual 需求；源码观察不等于已验收或已部署。当前不包含完整正文修订历史、批准流程和自动执行。接口、来源与大小上限见 [Manager 候选导入说明](features/manager-candidate-import.md)。关键数据库验证使用 `pnpm test:manager:integration`，并由本地与 CI 共用的 qa:gate 强制执行。
+候选导入支持 `magictools-requirement-candidates/0.1`：baseline 保存为 capabilities，planned 保存为 waiting/manual 需求；源码观察不等于已验收或已部署。接口、来源与大小上限见 [Manager 候选导入说明](features/manager-candidate-import.md)。关键数据库验证使用 `pnpm test:manager:integration`，并由本地与 CI 共用的 qa:gate 强制执行。
+
+P08 通过迁移 006/007 增加 `contentRevision` 和快照、审批事件。内容八字段改变时递增内容版本，操作信息变更只影响并发版本；批准绑定指定内容，变更后显示 outdated。详情页支持内容编辑、冲突草稿恢复、任意已加载版本对比、审批与撤销及分页审计。审批身份由 `MANAGER_APPROVAL_ACTOR` 配置，`MANAGER_APPROVAL_TOKEN` 未配置时拒绝审批；客户端不能伪造身份。当前仍为 manual，不触发执行、合并、验收或部署。迁移只回填升级时快照，不编造此前历史。操作、配置、API 和验证说明见 [需求内容修订与审批](features/manager-content-approval.md)。
 
 ---
 

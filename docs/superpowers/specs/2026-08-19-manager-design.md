@@ -1,5 +1,7 @@
 # Manager（管理者）子系统设计（MVP）
 
+> 本文记录 2026-08-19 的历史 MVP。2026-09-11 的状态/导入行为以 [候选导入说明](../../features/manager-candidate-import.md) 为准，内容修订和审批以 [P08 功能说明](../../features/manager-content-approval.md) 为准。
+
 - 文档类型：子项目设计文档（spec）
 - 创建日期：2026-08-19
 - 状态：✅ 已确认（2026-08-19 用户确认 M1~M4 四项默认值）

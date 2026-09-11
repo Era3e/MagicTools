@@ -1,8 +1,9 @@
 import { Alert, Button, Input, Select, message } from "antd";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { MtStatusTag, tokens, useTheme } from "@mt/ui";
 import { api, type Requirement, type RequirementStatus } from "../api";
+import RequirementContentPanel from "./RequirementContentPanel";
 
 const STATUS_OPTIONS: Array<{ value: RequirementStatus; label: string }> = [
   { value: "waiting", label: "待分析" },
@@ -26,6 +27,11 @@ function linkSnapshot(item: Requirement) {
 }
 
 export default function RequirementDetail() {
+  const { id } = useParams();
+  return <RequirementDetailBody key={id} id={id} />;
+}
+
+function RequirementDetailBody({ id }: { id: string | undefined }) {
   const theme = useTheme();
   const DECK = {
     ink: theme.ink,
@@ -36,26 +42,35 @@ export default function RequirementDetail() {
     mono: theme.displayFont,
     sans: theme.bodyFont,
   };
-  const { id } = useParams();
   const navigate = useNavigate();
   const [item, setItem] = useState<Requirement | null>(null);
   const [links, setLinks] = useState({ branch: "", prUrl: "", baseBranch: "", basePrUrl: "", revision: 0 });
   const [savingLinks, setSavingLinks] = useState(false);
+  const [loadError, setLoadError] = useState("");
+  const mounted = useRef(false);
+  const readSequence = useRef(0);
   const { branch, prUrl } = links;
 
   useEffect(() => {
+    mounted.current = true;
+    let active = true;
     if (id) {
       api.getRequirement(id).then((r) => {
+        if (!active) return;
         setItem(r);
         setLinks(linkSnapshot(r));
-      });
+      }).catch((err) => { if (active) setLoadError(err instanceof Error ? err.message : String(err)); });
     }
+    return () => { active = false; mounted.current = false; };
   }, [id]);
 
+  if (loadError) return <Alert type="error" showIcon message={loadError} />;
   if (!item) return <div style={{ fontFamily: DECK.mono, color: DECK.muted, padding: 40, textAlign: "center" }}>LOADING FLIGHT DATA…</div>;
 
   const refresh = async (resetLinks = false) => {
+    const sequence = ++readSequence.current;
     const fresh = await api.getRequirement(item.id);
+    if (!mounted.current || sequence !== readSequence.current) return;
     setItem(fresh);
     setLinks((draft) => {
       const dirty = draft.branch !== draft.baseBranch || draft.prUrl !== draft.basePrUrl;
@@ -103,7 +118,7 @@ export default function RequirementDetail() {
   };
 
   return (
-    <div style={{ fontFamily: DECK.sans, color: DECK.ink }}>
+    <div style={{ fontFamily: DECK.sans, color: DECK.ink, overflowWrap: "anywhere", minWidth: 0 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
         <span style={{ fontFamily: DECK.mono, letterSpacing: 3, color: DECK.sky, fontSize: 12 }}>
           FLIGHT LOG · 需求档案
@@ -176,6 +191,8 @@ export default function RequirementDetail() {
         {item.evidenceRefs?.map((e, i) => <div key={i}><a href={e.url} target="_blank" rel="noreferrer">{e.path}:{e.line}</a></div>)}
         {item.dependencyRefs?.length ? <p>前置候选：{item.dependencyRefs.join("、")}（需在排期时核验）</p> : null}
       </section> : null}
+
+      {typeof item.contentRevision === "number" ? <RequirementContentPanel key={item.id} item={item} onUpdated={() => refresh()} /> : null}
 
       {item.sourcePayload ? (
         <details style={{ border: "1px dashed " + DECK.border, padding: "8px 12px", marginBottom: 12 }}>

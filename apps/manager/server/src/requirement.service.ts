@@ -4,6 +4,8 @@ import { GitHubClient } from "./github/client";
 import { assessorPool } from "./db";
 import { requirementInputSchema, requirementPatchSchema } from "./schemas";
 import { MANUAL_TRANSITIONS } from "./requirement-policy";
+import { getRequirementRevisions } from "./requirement-revisions.repo";
+import { z } from "zod";
 import {
   createRequirement,
   findRequirementByEventId,
@@ -17,6 +19,15 @@ import {
 
 @Injectable()
 export class RequirementService {
+  async revisions(id: string, query: unknown) {
+    const parsed = z.object({ limit: z.coerce.number().int().min(1).max(100).default(20),
+      before: z.coerce.number().int().positive().max(2147483647).optional() }).safeParse(query);
+    if (!parsed.success) throw new BadRequestException("修订分页参数非法");
+    const result = await getRequirementRevisions(id, parsed.data.limit, parsed.data.before);
+    if (!result) throw new NotFoundException("需求不存在");
+    return result;
+  }
+
   list(filters: { status?: string; source?: string; iterationId?: string }) {
     return listRequirements(filters);
   }
@@ -27,8 +38,9 @@ export class RequirementService {
     return { ...row, allowedNextStatuses: MANUAL_TRANSITIONS[row.status] };
   }
 
-  create(input: { title: string; description?: string; priority?: string }) {
-    const parsed = requirementInputSchema.pick({ title: true, description: true, priority: true }).safeParse(input);
+  create(input: unknown) {
+    const parsed = requirementInputSchema.pick({ title: true, description: true, priority: true, project: true,
+      scope: true, risk: true, acceptanceCriteria: true, dependencyRefs: true }).strict().safeParse(input);
     if (!parsed.success) throw new BadRequestException("需求参数非法：标题必填，优先级为 P0/P1/P2");
     return createRequirement({ ...parsed.data, source: "manual" });
   }

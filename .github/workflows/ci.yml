@@ -174,6 +174,9 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
       - run: pnpm --filter @mt/e2e exec playwright install chromium
+      - name: 生成一次性 Manager 审批测试凭证
+        run: |
+          node -e 'require("node:fs").appendFileSync(process.env.GITHUB_ENV, "MANAGER_APPROVAL_TOKEN=" + require("node:crypto").randomBytes(32).toString("hex") + "\nMANAGER_APPROVAL_ACTOR=e2e-owner\n")'
       - name: 启动全部服务并运行 E2E
         run: |
           node apps/applicant/server/dist/main.js &
