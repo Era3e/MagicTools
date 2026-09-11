@@ -6,6 +6,8 @@
 
 ## 当前状态快照（2026-09-12 更新）
 
+- **P04备份恢复设计（2026-09-12，feat-infra-P04-backup）**：旧backup.ps1漏八库且不检查失败。独立审查后选择PG16整cluster物理备份、每文件独立nonce认证加密及完整清单HMAC、新卷恢复与实际角色/八库/pgvector验证；异机复制和RPO/RTO分开记录。方案与逐行为TDD计划分别见 docs/superpowers/specs/2026-09-12-backup-recovery-design.md 和 docs/superpowers/plans/2026-09-12-backup-recovery.md。当前为设计完成，尚未实现；Manager需求33ceef9c-38ed-4cce-b5f5-81f9bba709ff已进入designing。工作区基于PR72收尾候选6dc271a，P03/P05最终CI为run34649781031，合并结果后续核实。
+
 - **P03/P05交付验收（2026-09-12，PR #72）**：17独立镜像、迁移/数据库就绪、不可变制品、本机/SSH部署回执和回退已实现。两份干净SHA制品A=cc03f425939448b3e720b0a29084ae479f9412db（release d90f38182d37e0e8）与B=5355139ec425dd0394f61e1d149ee1063ae1e486（release 31adfd27e83e27a7）分别构建、9项容器验收和发布成功；部署验证c4382360ff95e4b9的升级/移动标签/拉取失败/坏密码/迁移失败/恢复/回退/数据与env保护8项全过。独立智能体775fc054580e另行执行A→B→A，八库唯一marker全保留、env字节不变、PG实例稳定，B的102个registry对象原始摘要通过；本轮验证资源清理通过，未动原5432和共享测试PG。
 
   完整qa:gate回执64d0fd261f5931e7b020db33通过：infra136/136、真实DB31文件136/136且skip=0，源码smoke17/17。独立部署11条、SSH28条及配置/隔离回归通过；原生PowerShell检查失败exit1、成功exit0。源码交付记录见 docs/validation/2026-09-12-runtime-images.md；后续收尾提交不冒充被测A/B，最终候选仍须quality/smoke/e2e及artifact核验后合并。SSH使用可控传输适配器验证，生产SSH/上线及真实模型效果未验证。P04备份恢复、P06权限以及其余P01–P26规划继续实施。
