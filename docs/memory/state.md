@@ -22,7 +22,11 @@
 
   - **拖拽交互检查与修复（2026-09-11，用户「先不推送，帮我检查画布拖拽交互」）**：代码审查发现 onDragEnd 依赖 e.over 但画布无 useDroppable 注册 → 拖拽放置断链（此前 e2e 只测双击兜底路径掩盖了缺陷）。TDD 修复：新建 CanvasDropZone.tsx（useDroppable id="canvas-root" + isOver 悬停高亮 dashed info 边框 + 点阵背景纹理）→ StudioPage 用其包裹画布 → 单测 8/8。e2e 新增 2 条真实指针拖拽用例（palette→画布 / 拖入选中容器），designer.spec 10 用例 9 passed 1 skipped（skip 为既有生成按钮守卫）。**三个新经验**：①**dnd-kit + Playwright 拖拽铁律：不可用 locator.dragTo**——它只派发一次 pointermove，而 PointerSensor 的 activationConstraint(distance:6) 在激活那次 move 会丢弃坐标（源码 handleStart 后直接 return），激活后的 collision detection 需要后续 move 驱动，否则 e.over 恒 null；e2e 必须手写 mouse 序列且 steps≥2（对照实验实证 steps=1 必败 / steps=8 必成）；②**dnd-kit useDraggable 默认 attributes 带 role="button"**——页面级 getByRole("button") 会假阳性命中 palette 卡自身，断言必须 scope 收敛到画布内；③spec §8「dnd-kit 指针交互在 Playwright 有头模式真实可用（dragTo）」的记录不准确——可用的是手写 mouse 序列，已实证。视觉基线无需重生成（点阵纹理密度 0.4% < 2% 阈值，front-designer-studio 比对通过）。
 
-  - **待办**：0 bug loop 独立验收 → PR（body 双勾选）→ 合并后 dispatch visual-baseline 重生成 linux 基线（18 张）；D-09 真跑条件留档（样本 ≥500 + Pro 权益 + FT_LAUNCH_ENABLED=1）。
+  - **PR 提交与 0 bug loop 收官（2026-09-11 午后）**：拖拽修复经独立测试代理验收**通过**（静态链路四环节确认 + 单测 34/34 + e2e 9P/1S + 视觉 PASS；双篡改实验：移除 useDroppable 注册 → 2 拖拽用例精确变红、steps:8→1 → 同样变红；SHA256 还原零残留。**篡改设计新经验：纯改 droppable id 是惰性篡改**——dnd-kit 碰撞检测按几何矩形，onDragEnd 只判 e.over 真值，有效缺陷形态是移除注册本身）。**外部设计工具会话并发提交踩踏实录（本轮最大坑）**：①我的 git add 后 commit 前瞬间被外部会话抢提（内容完整但 message 错位）；②随后外部会话重写历史，拖拽修复提交被剥离回工作区——发现后重新提交 6c58a6e。**教训入库：同仓多智能体会话并发写 git 时，add+commit 必须原子连发（单条命令分号串联），且提交后立即 log 验证在 HEAD 链上**。推送链：git push 代理通道持续挂死（LOW_SPEED 快速失败 + 重试均无效）→ REST 降级链推送（.rest-push.mjs：diff --name-status -z 处理 A/M/D + blob GET 幂等检查 + sha 自校验 + ref 创建重试；首跑撞 422「Reference does not exist」疑似 blob 批传后瞬态传播，二跑幂等命中全部 blob 后成功建 commit f29c7b6+ref）→ REST 开 **PR #65**（body 双勾选含 0 bug loop 验收表 + 附带发现处置说明）。**注意：远端是单 squash 提交形态（REST 链），本地仍是多提交链——本地分支不可直接对远端做 fetch/reset 同步，合并后按 main 内容级对齐**。CI 触发 in_progress。
+
+  - **PR #65 合并闭环（2026-09-11）**：CI 三段全绿（一次通过，含 design:check 门禁 CI 首跑 + 18 张 win32 基线比对）→ squash 合并 **2635e03** 入 main。本地对齐验证：fetch 后 `git diff origin/main..feat/designer-D0102` 为空——REST squash 提交的 tree 与本地多提交链 HEAD 内容完全一致（REST 推送完整性的最终铁证）；分支已删（远端 head 自动回收）。本地 main 回位顺序：stash（state.md 未提交改动挡住 checkout）→ checkout main → ff-only → stash pop——**切分支前先固化工作区**（教训④同族再现）。
+
+  - **待办**：dispatch visual-baseline 重生成 linux 基线（18 张）→ 基线 PR 合入后 linux 视觉用例恢复真跑；D-09 真跑条件留档（样本 ≥500 + Pro 权益 + FT_LAUNCH_ENABLED=1）。
 
 - **D-15 投递日历落地（2026-09-10，PR #62 squash 合并 bf4d95b；全链路收官）**：
 
