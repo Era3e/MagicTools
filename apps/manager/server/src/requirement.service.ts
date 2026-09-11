@@ -2,8 +2,9 @@ import { Injectable, BadRequestException, NotFoundException } from "@nestjs/comm
 import { processOutbox } from "@mt/db";
 import { GitHubClient } from "./github/client";
 import { assessorPool } from "./db";
+import { requirementInputSchema, requirementPatchSchema } from "./schemas";
+import { MANUAL_TRANSITIONS } from "./requirement-policy";
 import {
-  REQUIREMENT_STATUSES,
   createRequirement,
   findRequirementByEventId,
   findRequirementByRef,
@@ -23,24 +24,23 @@ export class RequirementService {
   async get(id: string) {
     const row = await getRequirement(id);
     if (!row) throw new NotFoundException("需求不存在");
-    return row;
+    return { ...row, allowedNextStatuses: MANUAL_TRANSITIONS[row.status] };
   }
 
   create(input: { title: string; description?: string; priority?: string }) {
-    if (!input.title?.trim()) throw new BadRequestException("标题必填");
-    return createRequirement({ title: input.title, description: input.description, priority: input.priority, source: "manual" });
+    const parsed = requirementInputSchema.pick({ title: true, description: true, priority: true }).safeParse(input);
+    if (!parsed.success) throw new BadRequestException("需求参数非法：标题必填，优先级为 P0/P1/P2");
+    return createRequirement({ ...parsed.data, source: "manual" });
   }
 
-  async patch(id: string, patch: Partial<{ title: string; description: string; status: string; priority: string; branch: string; prUrl: string; iterationId: string | null }>) {
-    const current = await getRequirement(id);
-    if (!current) throw new NotFoundException("需求不存在");
-    if (patch.status !== undefined) {
-      if (!(REQUIREMENT_STATUSES as readonly string[]).includes(patch.status)) {
-        throw new BadRequestException("非法状态: " + patch.status);
-      }
-      return setStatusWithTimeline(id, patch.status as RequirementStatus, current.status);
-    }
-    return updateRequirement(id, patch as never);
+  async patch(id: string, input: unknown) {
+    const parsed = requirementPatchSchema.safeParse(input);
+    if (!parsed.success) throw new BadRequestException("需求更新参数非法");
+    const { expectedRevision, ...patch } = parsed.data;
+    if (!Object.keys(patch).length) throw new BadRequestException("更新内容不能为空");
+    const row = await updateRequirement(id, patch, { expectedRevision });
+    if (!row) throw new NotFoundException("需求不存在");
+    return { ...row, allowedNextStatuses: MANUAL_TRANSITIONS[row.status] };
   }
 
   async pollInbox() {

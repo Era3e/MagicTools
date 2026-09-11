@@ -11,22 +11,13 @@
  */
 import { Body, Controller, Headers, HttpCode, Post, RawBody } from "@nestjs/common";
 import { createHmac } from "node:crypto";
-import { getRequirement, setStatusWithTimeline, type RequirementStatus } from "./requirement.repo";
+import { getRequirement, mapRow, setStatusWithTimeline, type RequirementStatus } from "./requirement.repo";
+import { canTransition } from "./requirement-policy";
 
 /** 允许的 PR 事件动作白名单（其他直接 200 忽略） */
 const PR_ACTIONS = new Set(["opened", "reopened", "closed", "merged", "synchronize", "edited"]);
 
 /** 当前状态在哪些前置状态下才允许迁移（避免 accepting/done 被回退） */
-const STATUS_TRANSITIONS: Record<RequirementStatus, RequirementStatus[]> = {
-  waiting: ["developing", "todo"],
-  designing: ["developing", "todo"],
-  todo: ["developing"],
-  developing: ["testing", "todo", "accepting"],
-  testing: ["accepting", "developing"],
-  accepting: ["done"],
-  done: [],
-};
-
 @Controller("webhook")
 export class WebhookController {
   /** 最近处理记录 { signature: timestamp }，用于幂等去重（TTL 5min） */
@@ -40,7 +31,7 @@ export class WebhookController {
       for (const [sig, ts] of this.recent) {
         if (now - ts > this.RECENT_TTL_MS) this.recent.delete(sig);
       }
-    }, 60_000);
+    }, 60_000).unref();
   }
 
   @Post("github")
@@ -126,8 +117,7 @@ export class WebhookController {
     }
 
     // 7. 应用状态迁移（遵守状态机）
-    const allowed = STATUS_TRANSITIONS[row.status];
-    if (!allowed.includes(targetStatus) && row.status !== targetStatus) {
+    if (!canTransition(row.status, targetStatus, "github")) {
       // 允许 accepting → done 的自动推进
       if (row.status === "accepting" && targetStatus === "accepting") {
         // 同状态忽略
@@ -144,9 +134,11 @@ export class WebhookController {
       };
     }
 
-    await setStatusWithTimeline(row.id, targetStatus, row.status, note);
-
-    return { ok: true, action: "status_updated", id: row.id, status: targetStatus };
+    const updated = await setStatusWithTimeline(row.id, targetStatus, row.status, note);
+    if (!updated || updated.transitionApplied === false || updated.status !== targetStatus) {
+      return { ok: true, action: "skipped", reason: "current state prevents transition" };
+    }
+    return { ok: true, action: "status_updated", id: updated.id, status: updated.status };
   }
 }
 
@@ -161,25 +153,7 @@ async function findRequirementByPrUrl(prUrl: string): Promise<Awaited<ReturnType
     [prUrl],
   );
   if (!rows.rowCount) return null;
-  // 映射回 RequirementRow
-  const r = rows.rows[0] as Record<string, unknown>;
-  return {
-    id: r.id as string,
-    title: r.title as string,
-    description: r.description as string,
-    source: r.source as string,
-    sourceRef: r.source_ref as string,
-    sourcePayload: (r.source_payload as Record<string, unknown>) ?? null,
-    status: r.status as RequirementStatus,
-    priority: r.priority as string,
-    iterationId: (r.iteration_id as string) ?? null,
-    branch: r.branch as string,
-    prUrl: r.pr_url as string,
-    labels: (r.labels as string[]) ?? [],
-    timeline: (r.timeline as Array<{ at: string; from: string; to: string; note?: string }>) ?? [],
-    createdAt: new Date(r.created_at as string).toISOString(),
-    updatedAt: new Date(r.updated_at as string).toISOString(),
-  };
+  return mapRow(rows.rows[0]);
 }
 
 interface WebhookResponse {

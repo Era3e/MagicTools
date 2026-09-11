@@ -16,6 +16,13 @@ export type RequirementStatus = "waiting" | "designing" | "todo" | "developing" 
 
 export interface Requirement {
   id: string;
+  revision: number;
+  allowedNextStatuses?: RequirementStatus[];
+  project?: string;
+  acceptanceCriteria?: string[];
+  evidenceRefs?: Array<{ url: string; path: string; line: number }>;
+  dependencyRefs?: string[];
+  automationPolicy?: "manual";
   title: string;
   description: string;
   source: string;
@@ -38,7 +45,57 @@ export interface Iteration {
   endDate: string | null;
 }
 
+export interface Candidate {
+  candidate_id: string;
+  record_kind: "baseline" | "planned";
+  project: string;
+  title: string;
+  description: string;
+  disposition?: "new" | "duplicate" | "conflict";
+  evidence: Array<{ url: string; path: string; line: number }>;
+  acceptance_criteria: string[];
+  verification_gaps: string[];
+  depends_on: string[];
+}
+
+export interface ImportResult {
+  batchId: string;
+  created: { baseline: number; planned: number };
+  targets: Array<{ candidateId: string; kind: string; id: string; reused: boolean }>;
+}
+
+export interface ImportPreview {
+  id: string;
+  revision: number;
+  status: "previewed" | "confirmed";
+  repository: string;
+  sourceCommit: string;
+  counts: { baseline: number; planned: number; new: number; duplicate: number; conflict: number };
+  candidates: Candidate[];
+  result: ImportResult | null;
+}
+
+export interface Capability {
+  id: string;
+  project: string;
+  title: string;
+  description: string;
+  repository: string;
+  sourceRef: string;
+  sourceCommit: string;
+  candidatePayload: Candidate;
+  implementationState: string;
+  acceptanceState: string;
+  deploymentState: string;
+}
+
 export const api = {
+  previewCandidates: (input: unknown) => request<ImportPreview>("/import-batches/preview", { method: "POST", body: JSON.stringify(input) }),
+  getImportBatch: (id: string) => request<ImportPreview>("/import-batches/" + id),
+  previewRemainingCandidates: (id: string) => request<ImportPreview>("/import-batches/" + id + "/remaining-preview", { method: "POST" }),
+  confirmCandidates: (id: string, expectedRevision: number, candidateIds: string[]) =>
+    request<ImportResult>("/import-batches/" + id + "/confirm", { method: "POST", body: JSON.stringify({ expectedRevision, candidateIds }) }),
+  listCapabilities: () => request<Capability[]>("/capabilities"),
   pollInbox: () => request<{ consumed: number; created: number; skipped: number }>("/inbox/poll", { method: "POST" }),
   listRequirements: (filters?: { status?: string; source?: string; iterationId?: string }) => {
     const qs = new URLSearchParams();

@@ -86,4 +86,6 @@
 
 ## 2026-09-11
 
+- **Manager 需求基础与候选导入（P01/P07/P09 首批）**：状态和普通字段在事务中同时保存，统一七态迁移和 PR 终态保护，expectedRevision 冲突返回 409，同状态 Webhook 不递增版本；前端保留关联草稿并阻止冲突重试覆盖。新增候选预览/确认/剩余批次、独立能力基线、规划验收与证据；GitHub 仓库身份归一、交叠批次去重、冲突整批回滚，所有规划保持待分析和人工开发。本地与 CI quality 统一调用 qa:gate，并强制运行专用 Manager 数据库契约测试。使用方式见 docs/features/manager-candidate-import.md；本次未启用自动开发、合并或部署。
+
 - **Designer 画布拖拽交互修复与真实指针级 e2e（D-01 收尾）**：修复拖拽放置断链——StudioPage onDragEnd 依赖 e.over 但画布未注册 useDroppable（此前 e2e 只测双击兜底路径掩盖缺陷）；新建 CanvasDropZone（droppable canvas-root + isOver 悬停高亮 dashed info 边框 + inset 光晕 + 点阵纹理背景）；e2e 新增 2 条真实指针拖拽用例（palette→画布 / 拖入选中容器嵌套落点），designer.spec 10 用例。**沉淀 dnd-kit+Playwright 拖拽铁律**：locator.dragTo 只派发一次 pointermove，activationConstraint 激活那次 move 坐标被丢弃（handleStart 后直接 return），碰撞检测需后续 move 驱动否则 e.over 恒 null——e2e 必须手写 mouse 序列 steps>=2（对照实验 steps=1 必败/steps=8 必成）；另实证 useDraggable 默认 attributes 带 role=button（页面级 getByRole 假阳性）与 AntD 双字按钮字间空格（正则 \s* 形式）。视觉基线无需重生成（点阵纹理密度 0.4% < 2% 阈值）。

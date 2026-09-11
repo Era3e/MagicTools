@@ -24,7 +24,8 @@ vi.mock("./db", () => ({
   pool: { query: mockPoolQuery },
 }));
 
-vi.mock("./requirement.repo", () => ({
+vi.mock("./requirement.repo", async (importOriginal) => ({
+  ...await importOriginal<typeof import("./requirement.repo")>(),
   setStatusWithTimeline: mockSetStatus,
   getRequirement: mockGetRequirement,
 }));

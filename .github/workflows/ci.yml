@@ -8,6 +8,8 @@ on:
 jobs:
   quality:
     runs-on: ubuntu-latest
+    env:
+      MANAGER_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/mt_manager_test
     services:
       postgres:
         image: pgvector/pgvector:pg16
@@ -56,11 +58,7 @@ jobs:
           restore-keys: |
             turbo-${{ runner.os }}-
       - run: pnpm install --frozen-lockfile
-      - run: pnpm lint
-      - run: pnpm build
-      - run: pnpm test
-      - run: pnpm test:infra
-      - run: pnpm docs:lint
+      - run: pnpm qa:gate
 
   smoke:
     needs: quality
