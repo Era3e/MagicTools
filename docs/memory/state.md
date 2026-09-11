@@ -6,11 +6,9 @@
 
 ## 当前状态快照（2026-09-12 更新）
 
-- **P05部署器实施（2026-09-12）**：cc03f42干净制品构建/9项容器验收/17镜像digest发布全部通过；PR72该候选quality/smoke/e2e通过。新增deploy-release/deploy-ssh及PS包装，公开配置与已有env分离、锁、制品快照、成功回执先于状态原子提交、失败恢复及正常回退；独立测试发现回执写入顺序/锁提前释放/checksum判重问题均已修复。首版实际部署项目mt-validation-p05-89011a63通过17服务就绪、401/200令牌、Manager写入及env保护，PS原生失败exit1无成功文案、成功exit0；相同SQL改稳定摘要挂载。生产Compose配置与文档已补齐，第二版SHA和完整升级/失败/回退尚待执行，保持草稿。
+- **P03/P05交付验收（2026-09-12，PR #72）**：17独立镜像、迁移/数据库就绪、不可变制品、本机/SSH部署回执和回退已实现。两份干净SHA制品A=cc03f425939448b3e720b0a29084ae479f9412db（release d90f38182d37e0e8）与B=5355139ec425dd0394f61e1d149ee1063ae1e486（release 31adfd27e83e27a7）分别构建、9项容器验收和发布成功；部署验证c4382360ff95e4b9的升级/移动标签/拉取失败/坏密码/迁移失败/恢复/回退/数据与env保护8项全过。独立智能体775fc054580e另行执行A→B→A，八库唯一marker全保留、env字节不变、PG实例稳定，B的102个registry对象原始摘要通过；本轮验证资源清理通过，未动原5432和共享测试PG。
 
-- **P03/P05首个候选提交（2026-09-12）**：b4bcc0a已提交并建立草稿PR #72；本地完整qa:gate（infra77、DB31文件136且零跳过）、源码smoke17通过，CI运行34636277477。干净提交的images:release发现PG基础镜像缺少Labels/Healthcheck可选字段，run runtime-9c9c9e512af3465f在创建容器前正确失败；inspect模板改用index，真实PG及Manager镜像元数据读取均正常，修复提交与完整发布链继续执行。保持草稿至P05部署器与回退完成，不自动合并过渡代码。
-
-- **P03/P05镜像与发布批次（2026-09-12，feat-infra-P03-runtime）**：基于main531e82a，P03运行切片已独立验收：build60e9dd418cbde78a的17镜像、runtime-7edb3a63b0febb03的9项实际检查均通过并清理；本地registry的publish782381fceab52b16推送/按digest回读17镜像成功。数据库断连进程退出、Assistant漏依赖/端口资源及容器寻址已修复。CI smoke改真实镜像冷启动，main镜像发布改SHA/digest。P05部署回执与回退尚未完成，旧deploy.ps1仍待替换，本批不得按完整交付合并。工作树证据、正式提交、生产部署和真实模型质量分开记录；细节见 docs/features/runtime-images.md 与 docs/validation/2026-09-12-runtime-images.md。完整qa:gate的高并发触发Designer预览超时，Docker停止后仍复现；单独Turbo 25/25通过，全仓限并发2且强制重跑46/46通过（4分22秒），门禁固定并发2并保留原超时/断言。
+  完整qa:gate回执64d0fd261f5931e7b020db33通过：infra136/136、真实DB31文件136/136且skip=0，源码smoke17/17。独立部署11条、SSH28条及配置/隔离回归通过；原生PowerShell检查失败exit1、成功exit0。源码交付记录见 docs/validation/2026-09-12-runtime-images.md；后续收尾提交不冒充被测A/B，最终候选仍须quality/smoke/e2e及artifact核验后合并。SSH使用可控传输适配器验证，生产SSH/上线及真实模型效果未验证。P04备份恢复、P06权限以及其余P01–P26规划继续实施。
 
 - **持续落地授权与主线（2026-09-11→12）**：用户明确授权先合并两批，后续实现、独立检查和 CI 无误后直接合并，自动循环至现有 P01–P26 规划全部开发落地，不再逐项等待人工确认。#69 已合入 104eee6；#70 更新 main 后重新通过 quality/smoke/e2e，合入 aeaff9a；合并后的 main CI 也已通过。当前开发工作与部署/真实模型验证分开记录，不用桩或跳过冒充完成。
 

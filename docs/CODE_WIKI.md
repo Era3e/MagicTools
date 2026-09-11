@@ -1430,7 +1430,7 @@ flowchart LR
 
 应用镜像的Node运行时为固定digest的Node 22，开发/quality仍覆盖Node 20。生产目录通过pnpm deploy装配，Node服务以UID1000运行；业务镜像包含迁移，Gateway/Assistant带ports.yaml，Designer带动态预览依赖。
 
-业务health为存活，health/ready检查数据库与迁移；Gateway的/ready聚合八个后端和八个Web。迁移成功后才监听，运行中断连返回503并可恢复。制品与回执入口见 [运行镜像说明](features/runtime-images.md)，本地独立验证见 [P03验收](validation/2026-09-12-runtime-images.md)。P05部署入口为deploy-release.mjs/deploy-ssh.mjs，核验固定制品、公开配置与就绪，成功回执先于状态提交并全程持锁；原env不覆盖，快照用于失败恢复与正常回退。详见 [部署说明](features/deployment-receipts.md)，第二版实际升级/回退验收仍在收尾。
+业务health为存活，health/ready检查数据库与迁移；Gateway的/ready聚合八个后端和八个Web。迁移成功后才监听，运行中断连返回503并可恢复。制品与回执入口见 [运行镜像说明](features/runtime-images.md)，本地独立验证见 [P03验收](validation/2026-09-12-runtime-images.md)。P05部署入口为deploy-release.mjs/deploy-ssh.mjs，核验固定制品、公开配置与就绪，成功回执先于状态提交并全程持锁；原env不覆盖，快照用于失败恢复与正常回退。详见 [部署说明](features/deployment-receipts.md)，cc03f42→5355139两版实际升级、故障恢复与回退已通过，独立验收确认八库数据、env及PG实例保持；该验收绑定上述两份源码，后续收尾候选另由CI验证。
 
 ---
 

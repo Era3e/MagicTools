@@ -1,8 +1,37 @@
-# P03镜像运行切片验收
+# P03/P05镜像、部署与回退验收
 
 ## 范围与结果
 
-本轮基于main `531e82a`，实现P03与P05制品基础。P03运行切片已由独立测试智能体复核；P05部署、回退与最终CI合并仍属本批后续工作。
+本轮基于main `531e82a`，实现P03独立镜像及P05不可变制品、本机/SSH部署、回执与回退。真实本地两源码版本验收和独立复验均通过，无遗留产品缺陷；最终PR候选仍由CI与其原始证据核验后合并。
+
+## 两份干净源码制品
+
+| 版本 | 完整源码SHA | build | runtime | release |
+|---|---|---|---|---|
+| A | cc03f425939448b3e720b0a29084ae479f9412db | 3e81c53cf8820353 | runtime-78f82b091b8c1b43 | d90f38182d37e0e8 |
+| B | 5355139ec425dd0394f61e1d149ee1063ae1e486 | 58000eeb8c964e28 | runtime-669e234d2f8debd6 | 31adfd27e83e27a7 |
+
+两版均为clean=true、mode=release，分别构建17镜像、通过9项运行检查及资源清理，然后推送本机测试registry并按实际digest回读。独立验收核对Git tree、工作树指纹、同批build/runtime/publish身份与bundle校验和，并GET核验B的102个registry index、manifest、config和构建证明对象原始SHA256。证明附件与运行镜像分开核对。
+
+## 实际升级、故障与回退
+
+部署验证run `c4382360ff95e4b9`（mode.upgrade=distinct-revisions）8项全部通过：首次部署A并写数据、升级B并改变公开配置、移动两个不同Manager digest的标签而固定部署不变、缺失digest拉取失败后恢复B、回退A并保留数据、错误密码触发真实数据库鉴权失败后恢复A、注入SELECT 1 / 0迁移触发实际division by zero启动失败后恢复A，以及env字节与PG容器ID保持。故障镜像明确标记validation-fault-injection，不作为普通发布制品。9份原始attempt回执为6成功、3失败（pull/up/up），成功指针与故障阶段经独立复核。
+
+独立测试智能体使用另一项目 `mt-validation-review-775fc054580e`，在八个业务库分别写唯一marker，单独执行A→B→A：
+
+| 操作 | attempt | 网关loopback端口 | 结果 |
+|---|---|---|---|
+| 部署A | 69e000afdfebd8c4 | 63472 | 18容器健康，八库数据已写入 |
+| 升级B | 172632d0b65e07f4 | 63473 | 八库数据保留，配置生效 |
+| 回退A | 7d401ea72f163f8d | 63472 | 八库数据保留，公开配置恢复 |
+
+三步均核对实际17镜像digest、平台、源码及资源归属，private.env逐字节不变，PG容器ID始终为915ac59975598a33d5e9504eef46c0a7f6d56f5a901a0696bb247c29d87ff9f7。Gateway无令牌401、有测试令牌200。两次部署验证项目及B的runtime项目最终容器、网络、卷零残留，生成的私有env已删除；未操作原5432或共享测试PG。
+
+本地回执分别位于 `.qa/deployment-validation/c4382360ff95e4b9/summary.json`、`.qa/releases/<publishRunId>/`；独立报告保存于工作区外部验收目录 `work/deployment-final-review/775fc054580e/`，含report.json、review.md及三个attempt原始回执/公开快照。临时证据不入Git。后续收尾提交不冒充本节被测源码。
+
+## 早期运行切片证据
+
+以下为实现阶段的工作树验收，保留定位历史缺陷：
 
 | 验证 | 实际结果 | 证据标识 |
 |---|---|---|
@@ -26,11 +55,12 @@
 7. 独立审查发现新CI runner没有数据库镜像缓存；运行器改为创建容器前显式拉取固定pgvector digest并核验平台，应用镜像仍不允许漂移拉取。发布前缀与清单同时拒绝隐式Docker Hub地址。
 8. main重新构建的制品必须重新验收。发布入口现为构建→同批容器验收→推送；底层publisher要求完整运行回执并逐个比对image ID。独立10条回归覆盖模式、来源、失败回执、平台及运行证据门禁（Docker调用在这些单测中明确拦截/模拟）；运行证据完整性另有纯函数回归。新增运行回执用例首次执行即已通过，不把它们记录成观察过失败的用例。
 9. 首个干净提交b4bcc0a的发布链路在PG预拉取后发现基础镜像缺少可选Labels/Healthcheck字段，旧Go模板因此报错。改用index读取可选字段，真实PG返回null、应用仍返回正确revision和探针。失败run `runtime-9c9c9e512af3465f`发生在创建容器前，没有发布制品；修复后继续对干净提交执行完整发布验收。
+10. P05独立审查发现回执/状态写入顺序、锁提前释放、同名制品checksum判重、SSH回退快照完整性及验证器资源隔离问题；修复后本地部署11条、SSH28条和配置/隔离测试全部通过。初始化SQL改用内容摘要的稳定挂载，同版本重部署不重建PG。PowerShell原生失败退出1且无成功文案，成功退出0。
 
-## 证据边界
+## 质量门禁与证据边界
 
-P05部署器增量已经完成本地编排、SSH传输校验和原生PowerShell入口回归。第一版cc03f42已在独立项目实际部署，17应用就绪、令牌401/200和Manager写入通过；同制品重新部署确认PostgreSQL容器ID不变。独立审查修复回执/状态提交顺序、锁、manifest checksum判重、SSH回退快照完整性和验证器资源边界。第二版SHA及两版实际升级/故障/回退仍在本候选提交后执行，草稿PR不能提前合并。
+完整本地qa:gate回执 `64d0fd261f5931e7b020db33` 全部7阶段通过：infra136/136、真实数据库31文件136/136且skip=0；源码smoke17/17。收尾变更再次执行所需门禁，候选提交的quality/smoke/e2e与artifact身份由GitHub最终检查确认。
 
-本轮使用专用Docker数据库与本地registry，未修改原5432数据。容器测试验证真实数据库和esbuild，不调用真实外部模型；publish清单明确为validation模式。尚未据此声称生产上线、两个正式版本回退或回答准确率提升。
+CI smoke从实际checkout构建并验收17镜像，再使用一次性registry验证同一制品的两份公开配置、实际移动标签与部署故障恢复；报告明确为config-change，不能替代本地不同源码的distinct-revisions验收。独立审查run34647098949的原始artifact后补充上传两份公开配置，使configVersion可重新计算；CI保留JSON证据，不上传私有env。SSH传输、退出码、回执/快照回读使用可控适配器回归，尚未连接真实生产SSH主机。
 
-提交前完整 `qa:gate` 生成独立回执，PR的required checks继续验证候选源码。该记录中的本地工作树证明与后续CI/部署回执分别保留。
+本轮真实数据库和容器验证使用独立测试资源，本机registry发布不代表生产上线。应用回退不逆向SQL迁移；数据备份恢复由P04继续落实。真实外部模型未调用，本报告不评价回答准确率。

@@ -154,8 +154,8 @@ P03运行契约与P05制品基础补充：
 
 | 编号 | 能力 | 实现及验证入口 | 状态 |
 |---|---|---|---|
-| P03 | 独立镜像、迁移就绪、断连恢复、Web与业务持久化 | infra/scripts/build-images.mjs + infra/scripts/validate-runtime.mjs + packages/db/src/readiness.ts | ✅ 17镜像及9项实际容器回归通过，独立验收完成，整批CI仍需验证 |
-| P05-artifact | SHA与registry digest、制品校验、失败发布回执 | infra/scripts/publish-images.mjs + infra/scripts/lib/release-artifacts.mjs | ✅ 本地仓库17镜像推送/回读通过；本机/SSH部署及回退入口已实现，第二版实际回归待收尾 |
+| P03 | 独立镜像、迁移就绪、断连恢复、Web与业务持久化 | infra/scripts/build-images.mjs + infra/scripts/validate-runtime.mjs + packages/db/src/readiness.ts | ✅ 两份干净SHA各17镜像及9项实际容器回归通过，独立验收完成；最终候选由CI继续核对 |
+| P05 | SHA与registry digest、部署回执、失败恢复及回退 | infra/scripts/publish-images.mjs + infra/scripts/deploy-release.mjs + infra/scripts/deploy-ssh.mjs + infra/scripts/validate-deployment.mjs | ✅ 两SHA升级/故障/回退8项通过，独立八库复验与102个registry对象核验通过；SSH适配器回归通过，生产SSH未验证 |
 
 | # | 功能点 | Spec 章节 | 实际实现文件 | 状态 | E2E 覆盖 |
 |---|-------|----------|-------------|------|---------|
