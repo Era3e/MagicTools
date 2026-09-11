@@ -52,6 +52,8 @@ PATCH 将字段和状态在同一事务修改，返回 `revision`。新客户端
 
 `pnpm qa:gate` 是本地与 CI quality 的共同入口，包含 lint、build/test、coverage、基础设施、文档、设计检查，以及 Manager 关键数据库契约测试。
 
+CI 复用原有 pgvector PostgreSQL 服务，在独立的 mt_manager_test 库执行新增契约。基础设施测试严格解析全部 workflow YAML，重复字段会在提交前被阻断。
+
 配置 `MANAGER_TEST_DATABASE_URL` 指向名称为 `mt_*test` 的专用 PostgreSQL 测试库，例如开发机 PostgreSQL 的 `mt_manager_test`。集成配置会读取仓库根 `.env`；不能把全局 DATABASE_URL 指向某个业务库用于全仓测试。
 
 单独运行 `pnpm test:manager:integration`；没有有效配置或数据库不可用即失败，不跳过。此专用套件覆盖原子修改、状态约束、并发版本、PR 幂等、导入预览、重复和交叠确认、冲突回滚、来源与自动化标记校验。

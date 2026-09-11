@@ -8,20 +8,8 @@ on:
 jobs:
   quality:
     runs-on: ubuntu-latest
-    services:
-      manager-postgres:
-        image: postgres:16
-        env:
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - "55432:5432"
-        options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 5s
-          --health-timeout 3s
-          --health-retries 10
     env:
-      MANAGER_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/mt_manager_test
+      MANAGER_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/mt_manager_test
     services:
       postgres:
         image: pgvector/pgvector:pg16
