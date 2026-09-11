@@ -150,6 +150,13 @@
 
 ## 10. 2026-09 增量（双路查询 + UI v2.x 轮次，补记）
 
+P03运行契约与P05制品基础补充：
+
+| 编号 | 能力 | 实现及验证入口 | 状态 |
+|---|---|---|---|
+| P03 | 独立镜像、迁移就绪、断连恢复、Web与业务持久化 | infra/scripts/build-images.mjs + infra/scripts/validate-runtime.mjs + packages/db/src/readiness.ts | ✅ 两份干净SHA各17镜像及9项实际容器回归通过，独立验收完成；最终候选由CI继续核对 |
+| P05 | SHA与registry digest、部署回执、失败恢复及回退 | infra/scripts/publish-images.mjs + infra/scripts/deploy-release.mjs + infra/scripts/deploy-ssh.mjs + infra/scripts/validate-deployment.mjs | ✅ 两SHA升级/故障/回退8项通过，独立八库复验与102个registry对象核验通过；SSH适配器回归通过，生产SSH未验证 |
+
 | # | 功能点 | Spec 章节 | 实际实现文件 | 状态 | E2E 覆盖 |
 |---|-------|----------|-------------|------|---------|
 | E1 | Assistant 双路数据查询（直连先行 + 智能体核验） | dual-query-design 3.x | apps/assistant/server/src/direct-query.service.ts + verify-task.registry.ts + chat.service.ts 双路编排 | ✅ 已实现（PR #54，CYBERCLOUD_MODE=dual 默认） | chat.dual.e2e.test.ts 五终态场景 |

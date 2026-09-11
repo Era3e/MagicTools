@@ -15,7 +15,7 @@ export async function runQualityGate() {
   const report = { schema: "magictools-quality-evidence/1", success: false, identity: null,
     startedAt: new Date().toISOString(), mode: { database: "real", external: "stub-or-mock", liveModel: "not-run" }, stages: [] };
   const commands = {
-    lint: ["exec", "eslint", "."], "build-and-unit": ["exec", "turbo", "run", "build", "test"],
+    lint: ["exec", "eslint", "."], "build-and-unit": ["exec", "turbo", "run", "build", "test", "--concurrency=2"],
     coverage: ["coverage"], infra: ["test:infra"], docs: ["docs:lint"], design: ["design:check"],
   };
   try {

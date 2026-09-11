@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { Injectable } from "@nestjs/common";
-import { parse as parseYaml } from "yaml";
+import { loadYamlFile } from "@mt/config";
 import { parseJson } from "./json";
 import { llmChat } from "./llm";
 import { answerSchema } from "./schemas";
@@ -33,13 +33,14 @@ function findPortsFile(startDir: string): string {
 
 export async function probeHealth(): Promise<HealthProbe[]> {
   const portsFile = findPortsFile(process.cwd());
-  const ports = parseYaml(readFileSync(portsFile, "utf8")) as Record<string, { web?: number; server?: number }>;
+  const ports = loadYamlFile(portsFile) as Record<string, { web?: number; server?: number }>;
+  const host = (service: string) => process.env.MT_PROD === "1" ? service : "127.0.0.1";
   const results: HealthProbe[] = [];
   const targets = Object.entries(ports).filter(([name]) => name !== "gateway");
   await Promise.all(
     targets.map(async ([name, p]) => {
       if (!p.server) return;
-      const url = "http://127.0.0.1:" + p.server + "/api/" + name + "/health";
+      const url = "http://" + host(name + "-server") + ":" + p.server + "/api/" + name + "/health/ready";
       const started = Date.now();
       try {
         const res = await fetch(url, { signal: AbortSignal.timeout(3000) });
@@ -52,7 +53,8 @@ export async function probeHealth(): Promise<HealthProbe[]> {
   // 网关健康
   const gwStarted = Date.now();
   try {
-    const res = await fetch("http://127.0.0.1:3000/health", { signal: AbortSignal.timeout(3000) });
+    const headers = process.env.GATEWAY_TOKEN ? { "x-access-token": process.env.GATEWAY_TOKEN } : undefined;
+    const res = await fetch("http://" + host("gateway") + ":" + ports.gateway.web + "/ready", { headers, signal: AbortSignal.timeout(5000) });
     results.push({ service: "gateway", ok: res.ok, status: res.status, ms: Date.now() - gwStarted });
   } catch (err) {
     results.push({ service: "gateway", ok: false, status: 0, ms: Date.now() - gwStarted, error: String(err).slice(0, 120) });

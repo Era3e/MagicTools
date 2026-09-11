@@ -14,8 +14,6 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix("api/gatherer");
   app.enableCors();
-  await app.listen(PORT);
-  console.log("gatherer-server listening on " + PORT);
 
   try {
     await ensureDatabase();
@@ -23,8 +21,14 @@ async function bootstrap() {
     console.log("migrations applied");
     await startScheduler(new CollectService());
   } catch (err) {
-    console.warn("db unavailable, continuing: " + String(err));
+    await app.close();
+    throw err;
   }
+  await app.listen(PORT);
+  console.log("gatherer-server ready on " + PORT);
 }
 
-bootstrap();
+bootstrap().catch((error) => {
+  console.error("startup failed: " + String(error));
+  process.exit(1);
+});

@@ -3,7 +3,8 @@ import { parseJson } from "./json";
 import { llmChat } from "./llm";
 import { actionSchema } from "./schemas";
 
-const GATEWAY_URL = () => process.env.INTERNAL_GATEWAY_URL ?? "http://127.0.0.1:3000";
+const GATEWAY_URL = () => process.env.INTERNAL_GATEWAY_URL ?? (process.env.MT_PROD === "1" ? "http://gateway:3000" : "http://127.0.0.1:3000");
+const gatewayHeaders = (): Record<string, string> => process.env.GATEWAY_TOKEN ? { "x-access-token": process.env.GATEWAY_TOKEN } : {};
 
 const ACTION_PROMPT =
   '你是平台动作解析器。从用户消息解析要执行的动作，只输出 JSON：{action: "create_requirement"|"trigger_collect", params: {title?: 需求标题, description?: 需求描述, sourceId?: 信息源ID}}。{action}';
@@ -30,7 +31,7 @@ export class ActionService {
       }
       const res = await fetch(GATEWAY_URL() + "/api/manager/requirements", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...gatewayHeaders() },
         body: JSON.stringify({ title: spec.params.title, description: spec.params.description ?? "" }),
       });
       if (!res.ok) {
@@ -49,7 +50,7 @@ export class ActionService {
         actionResult: { ok: false, error: "缺少 sourceId" },
       };
     }
-    const res = await fetch(GATEWAY_URL() + "/api/gatherer/sources/" + spec.params.sourceId + "/collect", { method: "POST" });
+    const res = await fetch(GATEWAY_URL() + "/api/gatherer/sources/" + spec.params.sourceId + "/collect", { method: "POST", headers: gatewayHeaders() });
     if (!res.ok) {
       return { reply: "触发采集失败：" + res.status, actionResult: { ok: false, status: res.status } };
     }

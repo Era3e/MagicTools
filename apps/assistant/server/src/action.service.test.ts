@@ -26,6 +26,8 @@ describe("ActionService", () => {
   });
 
   it("真实模式创建需求经网关落 Manager", async () => {
+    vi.stubEnv("MT_PROD", "1");
+    vi.stubEnv("GATEWAY_TOKEN", "runtime-test-token");
     const urls: string[] = [];
     const fetchMock = vi.fn(async (url: string, _init?: RequestInit) => {
       urls.push(String(url));
@@ -43,6 +45,7 @@ describe("ActionService", () => {
     expect(res.actionResult.ok).toBe(true);
     expect(res.actionResult.requirementId).toBe("req-1");
     expect(urls.some((u) => u.includes("/api/manager/requirements"))).toBe(true);
+    expect(fetchMock).toHaveBeenCalledWith("http://gateway:3000/api/manager/requirements", expect.objectContaining({ headers: { "Content-Type": "application/json", "x-access-token": "runtime-test-token" } }));
   });
 
   it("触发采集缺 sourceId 时友好提示", async () => {

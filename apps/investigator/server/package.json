@@ -34,5 +34,9 @@
     "@types/supertest": "^6.0.2",
     "@types/pg": "^8.11.0",
     "@types/node-cron": "^3.0.11"
-  }
+  },
+  "files": [
+    "dist",
+    "migrations"
+  ]
 }

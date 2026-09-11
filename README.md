@@ -18,7 +18,7 @@
 ## 技术栈
 
 - **前端**：React 18 + TypeScript + Vite + Ant Design 5
-- **后端**：Node.js 20 + NestJS 10 + TypeScript
+- **后端**：Node.js 20（开发/quality）与22（固定digest运行镜像）+ NestJS 10 + TypeScript
 - **数据库**：PostgreSQL 16 + pgvector + 全文检索 FTS
 - **仓库**：pnpm workspace + Turborepo
 - **LLM**：`@mt/model-client` 统一抽象（DeepSeek + 智谱，OpenAI 兼容协议）
@@ -63,8 +63,11 @@ pnpm qa:gate
 | `pnpm build` / `pnpm test` | 构建 / 单元与集成测试 |
 | `pnpm lint` | ESLint（typescript-eslint + react-hooks） |
 | `pnpm coverage` | 覆盖率（公共包设 70/70/70/50 门槛） |
-| `pnpm qa:gate` | 本地门禁：lint + build + test + coverage + infra + docs |
+| `pnpm qa:gate` | 本地与CI共用：lint、构建/单测、coverage、infra、docs、design与真实数据库验证 |
 | `pnpm smoke [--only <服务>]` | 冒烟 |
+| `pnpm images:smoke` | 构建17镜像并执行独立Compose冷启动、恢复和持久化回归 |
+| `pnpm images:release --registry <host/namespace>` | 干净提交构建、容器验收、推送SHA标签及固定digest制品 |
+| `pnpm deploy:release` / `pnpm deploy:ssh` | 固定制品部署、回执与回退，使用独立公开配置和已有env |
 | `pnpm new:app <name>` | 新建子项目 |
 | `pnpm changeset` | 添加迭代日志 |
 
@@ -76,6 +79,8 @@ pnpm qa:gate
 - UI 规范：`docs/ui-spec.md`
 - 迭代日志：`docs/CHANGELOG.md`
 - Git 工作流：`docs/git-workflow.md`
+- 运行镜像与制品：[docs/features/runtime-images.md](docs/features/runtime-images.md)
+- 部署与回退：[docs/features/deployment-receipts.md](docs/features/deployment-receipts.md)
 - 外部集成：`docs/integrations/`（飞书 / ClawCV / cybercloud）
 
 > **Windows 提示**：PowerShell 执行策略限制，pnpm 一律使用 `pnpm.cmd`。
