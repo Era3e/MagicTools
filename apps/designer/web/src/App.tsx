@@ -3,6 +3,7 @@ import { AdminShell, UserShell, appAccent } from "@mt/ui";
 import GeneratePage from "./pages/GeneratePage";
 import ComponentList from "./pages/ComponentList";
 import HistoryList from "./pages/HistoryList";
+import StudioPage from "./pages/studio/StudioPage";
 
 const ACCENT = appAccent("designer");
 
@@ -27,6 +28,7 @@ const ADMIN_NAV = [
 
 const USER_NAV = [
   { key: "/generate", label: "定制生成" },
+  { key: "/studio", label: "画布工坊" },
   { key: "/components", label: "组件馆藏" },
 ];
 
@@ -77,6 +79,7 @@ function Shell() {
       <Routes>
         <Route path="/" element={<Navigate to="/generate" replace />} />
         <Route path="/generate" element={<GeneratePage />} />
+        <Route path="/studio" element={<StudioPage />} />
         <Route path="/components" element={<ComponentList front />} />
         <Route path="/history" element={<Navigate to="/admin/history" replace />} />
         <Route path="/admin/*" element={<Navigate to="/admin/components" replace />} />

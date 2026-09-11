@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Button, Input, message } from "antd";
+import { useNavigate } from "react-router-dom";
 import { api, downloadText, type GenerateResult } from "../api";
 import { MtStatusTag, tokens, useTheme } from "@mt/ui";
 
 export default function GeneratePage() {
   const theme = useTheme();
+  const navigate = useNavigate();
   const GALLERY = {
     ink: theme.ink,
     accent: theme.accent ?? theme.primary,
@@ -54,6 +56,16 @@ export default function GeneratePage() {
       message.success(res.duplicated ? "组件已存在，幂等跳过" : "已沉淀为组件库");
     } catch (err) {
       message.error(String(err));
+    }
+  };
+
+  const toStudio = async () => {
+    if (!result || result.status !== "ok") return;
+    try {
+      const res = await api.parseCode(result.code);
+      navigate("/studio", { state: { doc: res.doc } });
+    } catch {
+      message.warning("该组件含画布不支持的语法，请手动修改源码");
     }
   };
 
@@ -143,9 +155,12 @@ export default function GeneratePage() {
             <div style={{ background: GALLERY.panel, border: "1px solid " + GALLERY.border, borderRadius: tokens.radiusTokens.md, padding: 16, display: "flex", flexDirection: "column" }}>
               <div style={{ fontFamily: GALLERY.display, fontSize: 20, fontWeight: 600, marginBottom: 4 }}>{result.componentName}</div>
               <div style={{ color: GALLERY.muted, fontSize: 12, marginBottom: 12, flex: 1 }}>{result.description}</div>
-              <div style={{ display: "flex", gap: 8 }}>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <Button size="small" onClick={() => downloadText(result.componentName + ".tsx", result.code)}>
                   下载源码
+                </Button>
+                <Button size="small" onClick={toStudio}>
+                  送入画布
                 </Button>
                 <Button size="small" type="primary" onClick={save} style={{ background: GALLERY.accent }}>
                   收入馆藏

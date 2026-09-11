@@ -1,5 +1,6 @@
 import { BadRequestException, Body, Controller, Get, HttpCode, Inject, NotFoundException, Param, Post, Query } from "@nestjs/common";
 import { EvaluationService } from "./evaluation.service";
+import { FinetuneService } from "./finetune.service";
 import { correctIntentLog, listIntentLogs } from "./intent-log.repo";
 import { IntentService } from "./intent.service";
 import { intentCorrectionSchema } from "./schemas";
@@ -8,7 +9,8 @@ import { intentCorrectionSchema } from "./schemas";
 export class IntentLogController {
   constructor(
     @Inject(EvaluationService) private readonly evaluation: EvaluationService,
-    @Inject(IntentService) private readonly intents: IntentService
+    @Inject(IntentService) private readonly intents: IntentService,
+    @Inject(FinetuneService) private readonly finetune: FinetuneService
   ) {}
 
   @Get("intent-logs")
@@ -52,5 +54,18 @@ export class IntentLogController {
     const { jsonl, count } = await this.evaluation.exportDataset();
     const lines = jsonl.split("\n").filter(Boolean);
     return { count, preview: lines.slice(0, 5).map((l) => JSON.parse(l) as unknown) };
+  }
+
+  /** D-09 LoRA: 微调编排状态（就绪度门禁 + 最近任务） */
+  @Get("intent-logs/finetune/status")
+  finetuneStatus() {
+    return this.finetune.status();
+  }
+
+  /** D-09 LoRA: 发起微调（FT_LAUNCH_ENABLED=1 且样本达标时真跑） */
+  @HttpCode(200)
+  @Post("intent-logs/finetune")
+  finetuneLaunch() {
+    return this.finetune.launch();
   }
 }

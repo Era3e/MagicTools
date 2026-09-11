@@ -6,6 +6,24 @@
 
 ## 当前状态快照（2026-09-10 更新）
 
+- **D-01/D-02 画布工坊 + D-09 LoRA 编排层落地（2026-09-10，分支 feat/designer-D0102，待验收开 PR）**：
+
+  - **输入**：用户要求兑现 mvp-deferred 最后三项真延期（D-01/D-02 Designer 拖拽画布 P2、D-09 LoRA 层 P3）。两项用户拍板：技术栈 dnd-kit + textarea（否决 CodeMirror 6 与原生 DnD）；D-09 做「编排层就绪」（纠错样本实测 10/500、智谱 LoRA 需 Pro 权益，真跑无意义不耗费用）。spec：docs/superpowers/specs/2026-09-10-designer-canvas-design.md + 2026-09-10-assistant-lora-finetune-design.md；plan：2026-09-10-designer-canvas-lora.md。
+
+  - **D-01/D-02 实现（TDD 全程）**：①canvas/schema.ts 纯函数层（不可变 addNode/removeNode/moveNode/duplicateNode/updateNodeProps）+ registry.ts 8 组件注册表（div/Card/Typography×3/Button/MtStatusTag/MtEmptyState，容器样式=direction/gap/padding 枚举映射 tokens.spacing——no-hardcoded-colors 天然合规）；②codegen.ts schema→code 确定性生成器（imports 按需收集、布尔 false 省略、字母序）+ server parse.service @babel/parser 白名单逆向（POST /parse，未知组件/任意 style/非字面量/非函数组件均 400 带 reason/line）；③StudioPage 三栏（palette useDraggable+双击同源 / CanvasRenderer 真渲染 / PropForm 受控联动 + 选中操作条）+ CodePanel（未应用徽标/应用代码流）；④GeneratePage「送入画布」+ migration 002 schema jsonb 列（components/generations）。
+
+  - **D-09 实现**：model-client finetune.ts（智谱 v4 四端点：POST /files、POST/GET /fine-tuning/jobs、GET events；FT_STUB 桩 + FT_STUB_STATUS）+ assistant finetune.service（500 样本门禁 409 / FT_LAUNCH_ENABLED 缺省关 403 / busy 防重 / status 远端刷新失败降级 degraded）+ migration 005 finetune_jobs 表 + IntentLogPage 微调卡（MtKpiRow 四读数 + 进度条 + 5s 轮询终态停）。**模型切换零代码**：微调完成把 fine_tuned_model 编码写入 ZHIPU_MODEL 即生效。
+
+  - **验证终态**：designer-web 29/29、designer-server 35/35、model-client 18/18、assistant-server 127/127、assistant-web 21/21；e2e 功能+responsive 77 passed / 1 skipped / 0 failed（画布 4 新用例：双击添加/属性联动/应用代码/页渲染）；视觉基线 17→18 张清库重生成全绿（applicant 库 TRUNCATE CASCADE 才出 cal-empty 空态锚点）；qa:gate EXIT=0；smoke 17 PASS。
+
+  - **本轮三个新坑入库**：①**worktree 环境外目录不可写**（沙箱编辑工具限制 working dir）→ 主仓直接建分支开发，workspace.mjs 的 worktree 清理撞「Filename too long」用 robocopy /MIR 清空法；②**dnd-kit 依赖装在已删 worktree 的 node_modules，主仓丢失**——pnpm-lock 更新了但主仓没跑 install，pnpm add 幂等重装解决；③**旧 designer-server（09:46 启动）占 5005 端口**，start-services 新 spawn 静默 EADDRINUSE 退出而 smoke 仍绿——「重启服务先查端口占用进程启动时间」教训再次实证；带桩重启用 `cmd /c set MT_LLM_STUB=1&& node dist/main.js`（PowerShell 5.1 Start-Process 无 -Environment 参数）。
+
+  - **e2e 校准实录**：「标题文本」同时命中画布 heading 与代码 textarea——strict mode 收敛 getByRole("heading", { name: /^标题文本/ })；Playwright 的 page.snapshot（error-context）是定位双命中的第一取证工具。
+
+  - **拖拽交互检查与修复（2026-09-11，用户「先不推送，帮我检查画布拖拽交互」）**：代码审查发现 onDragEnd 依赖 e.over 但画布无 useDroppable 注册 → 拖拽放置断链（此前 e2e 只测双击兜底路径掩盖了缺陷）。TDD 修复：新建 CanvasDropZone.tsx（useDroppable id="canvas-root" + isOver 悬停高亮 dashed info 边框 + 点阵背景纹理）→ StudioPage 用其包裹画布 → 单测 8/8。e2e 新增 2 条真实指针拖拽用例（palette→画布 / 拖入选中容器），designer.spec 10 用例 9 passed 1 skipped（skip 为既有生成按钮守卫）。**三个新经验**：①**dnd-kit + Playwright 拖拽铁律：不可用 locator.dragTo**——它只派发一次 pointermove，而 PointerSensor 的 activationConstraint(distance:6) 在激活那次 move 会丢弃坐标（源码 handleStart 后直接 return），激活后的 collision detection 需要后续 move 驱动，否则 e.over 恒 null；e2e 必须手写 mouse 序列且 steps≥2（对照实验实证 steps=1 必败 / steps=8 必成）；②**dnd-kit useDraggable 默认 attributes 带 role="button"**——页面级 getByRole("button") 会假阳性命中 palette 卡自身，断言必须 scope 收敛到画布内；③spec §8「dnd-kit 指针交互在 Playwright 有头模式真实可用（dragTo）」的记录不准确——可用的是手写 mouse 序列，已实证。视觉基线无需重生成（点阵纹理密度 0.4% < 2% 阈值，front-designer-studio 比对通过）。
+
+  - **待办**：0 bug loop 独立验收 → PR（body 双勾选）→ 合并后 dispatch visual-baseline 重生成 linux 基线（18 张）；D-09 真跑条件留档（样本 ≥500 + Pro 权益 + FT_LAUNCH_ENABLED=1）。
+
 - **D-15 投递日历落地（2026-09-10，PR #62 squash 合并 bf4d95b；全链路收官）**：
 
   - **输入**：用户要求按设计稿（magictools-ui-design/pages/applicant-calendar.html）实现 Applicant 前台跨岗位视角投递日历页。设计稿（编辑部目录式构图）与 plan 初稿（Segmented 切换）不同——按用户指令以设计稿为准：Hero D-day 读数带 + 左「按 D-day 排序的节点清单」1.9fr / 右 sticky 月历 1fr 双栏棋盘 + 底部岗位进度横带 + 待跟进区（第 03 节），无视图切换、双视图常驻。

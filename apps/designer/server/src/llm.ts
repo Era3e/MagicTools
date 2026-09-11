@@ -5,15 +5,16 @@ const client = createModelClient(ZHIPU, (u) => console.log("[llm]", u.model, u.m
 
 export const STUB_COMPONENT_NAME = "GreetingCard";
 export const STUB_COMPONENT_DESCRIPTION = "示例问候卡片（桩模式）";
-export const STUB_COMPONENT_CODE = `import { Card } from "antd";
+export const STUB_COMPONENT_CODE = `import { Button, Card, Typography } from "antd";
 import { MtStatusTag } from "@mt/ui";
 
-export default function GreetingCard({ title = "你好" }: { title?: string }) {
+export default function GreetingCard() {
   return (
-    <Card>
+    <Card title="问候卡片">
+      <Typography.Title level={3}>你好</Typography.Title>
       <MtStatusTag tone="info" mono>示例组件</MtStatusTag>
-      <h3>{title}</h3>
-      <p>这是桩模式生成的示例组件（基于 @mt/ui 令牌）。</p>
+      <Typography.Paragraph>这是桩模式生成的示例组件（基于 @mt/ui 令牌）。</Typography.Paragraph>
+      <Button type="primary">开始使用</Button>
     </Card>
   );
 }

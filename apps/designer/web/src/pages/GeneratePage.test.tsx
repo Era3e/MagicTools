@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
 import GeneratePage from "./GeneratePage";
 
 const CODE = 'import { Card } from "antd";\nexport default function GreetingCard() { return <Card>你好</Card>; }';
@@ -28,7 +29,11 @@ describe("GeneratePage", () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it("生成组件并展示展品与 iframe 预览", async () => {
-    render(<GeneratePage />);
+    render(
+      <MemoryRouter>
+        <GeneratePage />
+      </MemoryRouter>
+    );
     fireEvent.change(screen.getByPlaceholderText(/统计数字的深色卡片|描述你要的组件/), { target: { value: "问候卡片" } });
     fireEvent.click(screen.getByRole("button", { name: /生\s*成/ }));
     expect(await screen.findByText("GreetingCard")).toBeTruthy();
@@ -42,7 +47,11 @@ describe("GeneratePage", () => {
   });
 
   it("沉淀按钮调用 POST /components", async () => {
-    render(<GeneratePage />);
+    render(
+      <MemoryRouter>
+        <GeneratePage />
+      </MemoryRouter>
+    );
     fireEvent.change(screen.getByPlaceholderText(/统计数字的深色卡片|描述你要的组件/), { target: { value: "问候卡片" } });
     fireEvent.click(screen.getByRole("button", { name: /生\s*成/ }));
     fireEvent.click(await screen.findByRole("button", { name: /收\s*入\s*馆\s*藏/ }));
@@ -55,11 +64,44 @@ describe("GeneratePage", () => {
   });
 
   it("prompt 为空时不调用生成", async () => {
-    render(<GeneratePage />);
+    render(
+      <MemoryRouter>
+        <GeneratePage />
+      </MemoryRouter>
+    );
     fireEvent.click(screen.getByRole("button", { name: /生\s*成/ }));
     await waitFor(() => {
       const gen = fetchMock.mock.calls.find((c) => String(c[0]).includes("/api/designer/generate"));
       expect(gen).toBeUndefined();
     });
+  });
+
+  it("送入画布：parse 成功跳转 /studio 携 doc", async () => {
+    fetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
+      const u = String(url);
+      const method = init?.method ?? "GET";
+      if (u.includes("/api/designer/generate") && method === "POST") {
+        return new Response(JSON.stringify({ generationId: "g1", componentName: "GreetingCard", description: "问候卡片", code: CODE, status: "ok" }), { status: 201 });
+      }
+      if (u.includes("/api/designer/preview") && method === "POST") {
+        return new Response(JSON.stringify({ ok: true, previewId: "p1" }), { status: 201 });
+      }
+      if (u.includes("/api/designer/parse") && method === "POST") {
+        return new Response(JSON.stringify({ doc: { componentName: "GreetingCard", root: { id: "r", type: "container", component: "div", props: {}, children: [] } } }), { status: 200 });
+      }
+      return new Response("{}", { status: 200 });
+    });
+    render(
+      <MemoryRouter initialEntries={["/generate"]}>
+        <Routes>
+          <Route path="/generate" element={<GeneratePage />} />
+          <Route path="/studio" element={<div data-testid="studio-reached">STUDIO</div>} />
+        </Routes>
+      </MemoryRouter>
+    );
+    fireEvent.change(screen.getByPlaceholderText(/统计数字的深色卡片|描述你要的组件/), { target: { value: "问候卡片" } });
+    fireEvent.click(screen.getByRole("button", { name: /生\s*成/ }));
+    fireEvent.click(await screen.findByRole("button", { name: /送\s*入\s*画\s*布/ }));
+    expect(await screen.findByTestId("studio-reached")).toBeTruthy();
   });
 });

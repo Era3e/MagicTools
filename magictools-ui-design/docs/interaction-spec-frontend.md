@@ -8,19 +8,24 @@
 
 - [1. 平台总览 · 网关（index.html）](#1-平台总览--网关indexhtml)
   - [1.9 错误态（Error State）](#19-错误态error-state)
-- [2. 求职前台 · 岗位墙（applicant-front.html）](#2-求职前台--岗位墙applicant-fronthtml)
+- [2. 求职前台 · 岗位博览（applicant-front.html）](#2-求职前台--岗位博览applicant-fronthtml)
   - [2.9 错误态（Error State）](#29-错误态error-state)
-- [3. 书库前台 · 馆藏检索（scholar-front.html）](#3-书库前台--馆藏检索scholar-fronthtml)
+- [3. 书库前台 · 馆藏条目（scholar-front.html）](#3-书库前台--馆藏条目scholar-fronthtml)
   - [3.9 错误态（Error State）](#39-错误态error-state)
 - [4. 助手前台 · 智能对话（assistant-front.html）](#4-助手前台--智能对话assistant-fronthtml)
   - [4.9 错误态（Error State）](#49-错误态error-state)
-- [5. 交付前台 · 需求看板（manager-front.html）](#5-交付前台--需求看板manager-fronthtml)
+- [5. 交付前台 · 交付驾驶舱（manager-front.html）](#5-交付前台--交付驾驶舱manager-fronthtml)
   - [5.9 错误态（Error State）](#59-错误态error-state)
 - [6. 工坊前台 · 组件画廊（designer-front.html）](#6-工坊前台--组件画廊designer-fronthtml)
   - [6.9 错误态（Error State）](#69-错误态error-state)
 - [7. 前台共性交互契约（UserShell）](#7-前台共性交互契约usershell)
 - [8. 空态与加载态共性规范](#8-空态与加载态共性规范)
 - [9. 错误态共性规范](#9-错误态共性规范)
+- [附录 B · 投递日历页（applicant-calendar.html）](#附录-b--投递日历页applicant-calendarhtml)
+- [附录 C · 批次 3 新页速览](#附录-c--批次-3-新页速览)
+  - [C.1 使用反馈页（assistant-feedback.html）](#c1-使用反馈页assistant-feedbackhtml)
+  - [C.2 组件馆藏前台页（designer-components.html）](#c2-组件馆藏前台页designer-componentshtml)
+  - [C.3 书库 front 重构说明（scholar-front.html）](#c3-书库-front-重构说明scholar-fronthtml)
 
 ---
 
@@ -91,7 +96,7 @@
 | 应用卡 · 评审工坊（路由 `/assessor · :3018 · 控制台`） | `a[data-dom-id="card-assessor"]` | `./assessor-admin.html` | `<a href>` |
 | 页脚 · 管理后台 | `a.us-footer-admin` | —（占位 `href="#"`，网关页无单一后台归属，待定） | `<a href>` 占位 |
 
-入向：5 个业务前台的「返回总览」（`back-platform`）与导航「首页」均回指本页；manager-front 的全局导航「首页」亦回指本页；assistant-retry-demo 页脚「返回助手前台」不经过本页。
+入向：5 个业务前台的「返回总览」（`back-platform`）均回指本页——各业务前台导航已收敛为应用私有组（求职 3 项 / 书库 3 项 / 助手 2 项 / 交付单项 / 工坊 3 项），均不含「首页」导航项；assistant-retry-demo 页脚「返回助手前台」不经过本页。
 
 ### 1.6 可访问性与降级
 
@@ -164,19 +169,19 @@
 
 ---
 
-## 2. 求职前台 · 岗位墙（applicant-front.html）
+## 2. 求职前台 · 岗位博览（applicant-front.html）
 
 ### 2.1 页面定位
 
-求职工坊对外的「编辑部特稿」式岗位墙，面向求职者浏览在招岗位并进入简历工坊。accent 为砖红 `var(--app-applicant)`（`#a8522e`，header 内联 `--app-accent: var(--app-applicant)`）。报头 `APPLICANT · 求职工坊 / 岗位墙`，主导航「岗位墙」激活，导航组为本应用私有 3 项。
+求职工坊对外的「编辑部特稿」式岗位博览页，面向求职者浏览在招岗位并进入简历工坊。accent 为砖红 `var(--app-applicant)`（`#a8522e`，header 内联 `--app-accent: var(--app-applicant)`）。报头 `APPLICANT · 求职工坊 / 求职工坊`（eyebrow `APPLICANT · 求职工坊` + 应用名「求职工坊」），主导航「岗位博览」激活，导航组为本应用私有 3 项（岗位博览 / 投递日历 / 简历工坊；同应用岗位详情与面试管理页 active 亦为「岗位博览」）。
 
 ### 2.2 页面结构
 
-1. **报头**：品牌区 → 导航（wall / resume / review）→ 动作区（返回总览 + 后台管理琥珀描边按钮）
+1. **报头**：品牌区 → 导航（wall / calendar / resume）→ 动作区（返回总览 + 后台管理琥珀描边按钮）
 2. **主区（us-main）**
    - 特稿 hero（pg-hero）：`VOL.09 · 在招岗位` 刊号 + 大标题「把简历排进编辑部」（em 强调色砖红）+ 右侧统计（在招 12 / 本周新增 +3），砖红浅底 `--app-applicant-tint`
    - 筛选行（pg-filters）：城市组（北京/上海/远程）+ 职类组（前端/后端/产品）胶囊 + 右侧 mono 计数「精选 07 / 12」
-   - 岗位墙（pg-wall）：2 列杂志网格——头条卡（跨 2 列，含 JD 摘要侧栏与「查看详情」按钮）、大卡 ×2、小卡 ×4，共 7 张岗位卡
+   - 岗位博览网格（pg-wall，aria-label="岗位墙"）：2 列杂志网格——头条卡（跨 2 列，含 JD 摘要侧栏与「查看详情」按钮）、大卡 ×2、小卡 ×4，共 7 张岗位卡
    - 简历工坊入口卡（pg-studio）：凹面 surface-2 横幅 + pen-tool 圆形图标 + 「进入工坊」按钮
 3. **页脚**：注记「每一份履历都值得被认真排印」+ 管理后台 + 版权
 
@@ -184,9 +189,9 @@
 
 | # | 元素 | DOM 标识/选择器 | 类型 | 触发行为 | 去向/反馈 |
 |---|------|----------------|------|----------|-----------|
-| 1 | 导航 · 岗位墙 | `a[data-nav-key="wall"]`（`data-active="true"`） | 链接 | 点击跳转 | `./applicant-front.html`（当前页） |
-| 2 | 导航 · 简历中心 | `a[data-nav-key="resume"]`（`data-active="false"`） | 链接 | 点击跳转 | `#`（占位） |
-| 3 | 导航 · 面试复盘 | `a[data-nav-key="review"]`（`data-active="false"`） | 链接 | 点击跳转 | `#`（占位） |
+| 1 | 导航 · 岗位博览 | `a[data-nav-key="wall"]`（`data-active="true"`） | 链接 | 点击跳转 | `./applicant-front.html`（当前页） |
+| 2 | 导航 · 投递日历 | `a[data-nav-key="calendar"]`（`data-active="false"`） | 链接 | 点击跳转 | `./applicant-calendar.html` |
+| 3 | 导航 · 简历工坊 | `a[data-nav-key="resume"]`（`data-active="false"`） | 链接 | 点击跳转 | `./applicant-resume.html` |
 | 4 | 返回总览 | `a[data-dom-id="back-platform"]` | 链接 | 点击跳转 | `./index.html` |
 | 5 | 后台管理 | `a[data-dom-id="link-admin"]`（`.us-admin-btn`） | 链接按钮 | 点击跳转 | `./applicant-admin.html`，琥珀描边 + `wrench` 图标 |
 | 6 | 城市筛选 · 北京 | `button.pg-pill[data-active="true"]`（城市组第 1 项） | 胶囊按钮 | 点击切换选中 | 选中态砖红浅底 `--app-applicant-tint` + 砖红文字 |
@@ -222,10 +227,10 @@
 | 返回总览 | `a[data-dom-id="back-platform"]`（`.us-back-link`） | `./index.html` | `<a href>` |
 | 后台管理（报头按钮） | `a[data-dom-id="link-admin"]`（`.us-admin-btn`） | `./applicant-admin.html` | `<a href>` |
 | 页脚 · 管理后台 | `a.us-footer-admin` | `./applicant-admin.html` | `<a href>` |
-| 导航 · 简历中心 / 面试复盘 | `a[data-nav-key="resume"]` / `a[data-nav-key="review"]` | `#`（占位，页签未实装） | `<a href>` 占位 |
+| 导航 · 投递日历 / 简历工坊 | `a[data-nav-key="calendar"]` / `a[data-nav-key="resume"]` | `./applicant-calendar.html` / `./applicant-resume.html` | `<a href>` |
 | 查看详情（头条岗位） / 进入工坊（简历工坊） | `a.pg-btn` ×2 | `#`（占位） | `<a href>` 占位 |
 
-入向：来自网关导航「求职」与目录墙链接卡 `card-applicant`。
+入向：来自网关导航「求职」与目录墙链接卡 `card-applicant`；同应用其余 4 页（投递日历 / 岗位详情 / 面试管理 / 简历工坊）主导航「岗位博览」均回指本页。
 
 ### 2.6 可访问性与降级
 
@@ -237,28 +242,28 @@
 
 - **≤920px**（UserShell 层）：报头换行、导航整行置底
 - **≤860px**：hero 改纵向（标题 32px，统计区改为上边线 + 横排）；头条卡降单列（侧栏改上边线）；筛选计数 `.pg-filter-count` 换行占满宽
-- **≤720px**：岗位墙降 1 列；头条标题降至 22px；「进入工坊」按钮拉通 100% 宽
+- **≤720px**：岗位博览网格（`.pg-wall`，aria-label="岗位墙"）降 1 列；头条标题降至 22px；「进入工坊」按钮拉通 100% 宽
 - **≤640px**（UserShell 层）：品牌区限宽 58%、admin 按钮收窄、页脚纵向堆叠
 
 ### 2.8 空态与加载态
 
-空态与加载态只作用于岗位墙网格（`.pg-wall`）；hero 特稿、筛选行（`.pg-filters`）、简历工坊入口卡（`.pg-studio`）为常驻结构，不设空态。
+空态与加载态只作用于岗位博览网格（`.pg-wall`）；hero 特稿、筛选行（`.pg-filters`）、简历工坊入口卡（`.pg-studio`）为常驻结构，不设空态。
 
 #### 空态（Empty State）
 
 | 触发条件 | 承载区域 | 视觉构成 | 恢复动作 |
 |---|---|---|---|
-| 岗位全部筛空（城市 × 职类组合无匹配岗位，如「上海 × 前端」） | 岗位墙 `.pg-wall` 整体替换 | 图标 `search-x`（data-lucide）32px / `--text-faint`；空态标题「这一组合暂无在招」：`--font-display` / 15px / 600 / `--text-body`；描述「换个城市或职类试试，编辑部每周更新岗位」：`--font-body` / 13px / `--text-muted`；动作按钮「清除筛选」复用 `.pg-btn` 次级按钮语言（`--surface-1` 底 + `--mt-hairline-strong` 描边 + 34px 高，hover 砖红描边 `--app-applicant`）；区域留白上下 `--space-7`、左右跟随网格宽；空态外框用 `--mt-hairline` 1px 虚线（`border-radius: var(--radius-lg)`）或纯留白二选一，禁止位图插画 | 点击「清除筛选」重置城市/职类胶囊至默认（北京 / 前端），岗位墙回到初始 7 卡 |
+| 岗位全部筛空（城市 × 职类组合无匹配岗位，如「上海 × 前端」） | 岗位博览网格 `.pg-wall` 整体替换 | 图标 `search-x`（data-lucide）32px / `--text-faint`；空态标题「这一组合暂无在招」：`--font-display` / 15px / 600 / `--text-body`；描述「换个城市或职类试试，编辑部每周更新岗位」：`--font-body` / 13px / `--text-muted`；动作按钮「清除筛选」复用 `.pg-btn` 次级按钮语言（`--surface-1` 底 + `--mt-hairline-strong` 描边 + 34px 高，hover 砖红描边 `--app-applicant`）；区域留白上下 `--space-7`、左右跟随网格宽；空态外框用 `--mt-hairline` 1px 虚线（`border-radius: var(--radius-lg)`）或纯留白二选一，禁止位图插画 | 点击「清除筛选」重置城市/职类胶囊至默认（北京 / 前端），岗位博览网格回到初始 7 卡 |
 | 检索/在招库为空（服务返回岗位总数为 0，非筛选所致） | 同上 | 图标 `newspaper`（data-lucide）32px / `--text-faint`；标题「本期特稿还在排版」；描述「编辑部正在准备下一期岗位，先去简历工坊打磨履历」；动作改「进入工坊」accent 下划线链接（`--app-applicant` / 13px / 600 / `text-underline-offset: 4px`，hover `--app-applicant-ink`） | 链接跳转简历工坊；或等岗位发布后重新进入本页 |
 
 注：筛选计数 `.pg-filter-count` 同步显示「精选 00 / 12」（mono / `--text-faint`），与空态文案互为印证，不互相替代。
 
 #### 加载态（Loading State）
 
-- **首屏整体骨架**：岗位墙首屏即铺骨架卡阵，占位与真实网格同构（2 列 `repeat(2, minmax(0,1fr))`、gap 16px）——头条骨架 1 张跨 2 列（高约 200px）+ 大卡骨架 2 张（高约 160px）+ 小卡骨架 4 张（高约 150px），共 7 个占位与初始卡数一致
+- **首屏整体骨架**：岗位博览网格首屏即铺骨架卡阵，占位与真实网格同构（2 列 `repeat(2, minmax(0,1fr))`、gap 16px）——头条骨架 1 张跨 2 列（高约 200px）+ 大卡骨架 2 张（高约 160px）+ 小卡骨架 4 张（高约 150px），共 7 个占位与初始卡数一致
 - **骨架块规格**：统一 `--surface-2` 底 + `--radius-lg` 卡壳（对齐 `.pg-job` 的 `--radius-lg`）；卡内文字行（标题/机构/薪资行）用 `--surface-2` + `--radius-sm` 的行块模拟，行高对齐真实行高（标题行 17px→22px 块、meta 行 12px→16px 块）
-- **筛选局部加载**：切换城市/职类胶囊后仅岗位墙区重铺骨架，hero、筛选行、入口卡不动；骨架期间筛选计数显示「精选 -- / --」
-- **首屏 vs 局部**：hero 与筛选行首屏静态直出（无骨架）；简历工坊入口卡在岗位墙之后、滚动到位即静态呈现，不延迟加载
+- **筛选局部加载**：切换城市/职类胶囊后仅岗位博览网格区重铺骨架，hero、筛选行、入口卡不动；骨架期间筛选计数显示「精选 -- / --」
+- **首屏 vs 局部**：hero 与筛选行首屏静态直出（无骨架）；简历工坊入口卡在岗位博览网格之后、滚动到位即静态呈现，不延迟加载
 - **动效**：shimmer 扫光 `linear-gradient(90deg, transparent, var(--surface-1) 50%, transparent)`，`--duration-slow`（320ms）+ `--ease-standard` 循环；禁止旋转 spinner
 - **降级**：`prefers-reduced-motion: reduce` 时 shimmer 停止，骨架退为静态 `--surface-2` 块
 
@@ -269,14 +274,14 @@
 
 ### 2.9 错误态（Error State）
 
-错误态作用于岗位墙网格（`.pg-wall`）的区域级接口失败，与卡片上的收藏/投递行内动作失败反馈；hero 特稿、筛选行、简历工坊入口卡为常驻结构不出错误态。与 2.8 的关系：pending 铺骨架卡阵，fulfilled 非空出卡、fulfilled 且空出空态（2.8），rejected 进入本节错误面板；错误优先于空态，禁止以「岗位 0」空态兜底接口失败。
+错误态作用于岗位博览网格（`.pg-wall`）的区域级接口失败，与卡片上的收藏/投递行内动作失败反馈；hero 特稿、筛选行、简历工坊入口卡为常驻结构不出错误态。与 2.8 的关系：pending 铺骨架卡阵，fulfilled 非空出卡、fulfilled 且空出空态（2.8），rejected 进入本节错误面板；错误优先于空态，禁止以「岗位 0」空态兜底接口失败。
 
 #### 区域级错误（可重试）
 
 | 错误场景 | 承载区域 | 视觉构成 | 恢复动作 |
 |---|---|---|---|
-| 岗位列表接口失败（首屏或切换筛选后 `/api/jobs` rejected / 非 2xx） | 岗位墙 `.pg-wall` 整体替换（hero、筛选行、`.pg-studio` 不动） | 图标 `wifi-off`（网络级）或 `cloud-off`（服务端）data-lucide 18px / `--state-error-text`；错误面板：底 `--state-error-bg` + 1px `--state-error` 描边 + `--radius-md`，宽随网格（2 列模板保持，面板跨满宽），留白上下 `--space-7`、居中排布；标题「岗位墙暂时失联」：`--font-body` / 14px / 600 / `--text-strong`；描述「拉取在招岗位失败（`ERR-JOB-503`），可重试或稍后再来」：12.5px / `--text-muted`，错误码 mono 直排；重试按钮复用 `.pg-btn` 次级按钮语言（`--surface-1` 底 + `--mt-hairline-strong` 描边 + 34px 高，hover 砖红描边 `--app-applicant`），文案「重试」+ `refresh-cw` 图标（14px）；筛选计数 `.pg-filter-count` 同步为「精选 -- / --」 | 点击「重试」→ 岗位墙回到 2.8 定义的骨架卡阵（头条 1 + 大卡 2 + 小卡 4 同构占位）→ 成功出卡、失败回错误面板；重试期间按钮禁用并回到骨架，面板即刻让位 |
-| 筛选切换接口失败（城市/职类胶囊切换后的增量拉取 rejected） | 同上（仅岗位墙区重铺，筛选胶囊保持用户已选项） | 同上结构，标题换「这一组岗位没拉取成功」；已选胶囊保持砖红选中态不变（错误不回滚用户选择） | 同上；「重试」按当前筛选组合重新拉取；不改写胶囊选中态 |
+| 岗位列表接口失败（首屏或切换筛选后 `/api/jobs` rejected / 非 2xx） | 岗位博览网格 `.pg-wall` 整体替换（hero、筛选行、`.pg-studio` 不动） | 图标 `wifi-off`（网络级）或 `cloud-off`（服务端）data-lucide 18px / `--state-error-text`；错误面板：底 `--state-error-bg` + 1px `--state-error` 描边 + `--radius-md`，宽随网格（2 列模板保持，面板跨满宽），留白上下 `--space-7`、居中排布；标题「岗位博览暂时失联」：`--font-body` / 14px / 600 / `--text-strong`；描述「拉取在招岗位失败（`ERR-JOB-503`），可重试或稍后再来」：12.5px / `--text-muted`，错误码 mono 直排；重试按钮复用 `.pg-btn` 次级按钮语言（`--surface-1` 底 + `--mt-hairline-strong` 描边 + 34px 高，hover 砖红描边 `--app-applicant`），文案「重试」+ `refresh-cw` 图标（14px）；筛选计数 `.pg-filter-count` 同步为「精选 -- / --」 | 点击「重试」→ 岗位博览网格回到 2.8 定义的骨架卡阵（头条 1 + 大卡 2 + 小卡 4 同构占位）→ 成功出卡、失败回错误面板；重试期间按钮禁用并回到骨架，面板即刻让位 |
+| 筛选切换接口失败（城市/职类胶囊切换后的增量拉取 rejected） | 同上（仅岗位博览网格区重铺，筛选胶囊保持用户已选项） | 同上结构，标题换「这一组岗位没拉取成功」；已选胶囊保持砖红选中态不变（错误不回滚用户选择） | 同上；「重试」按当前筛选组合重新拉取；不改写胶囊选中态 |
 
 - **自动重试**：首屏失败自动静默重试 1 次（间隔 `--duration-slow` 级短退避）；仍失败才出面板。面板出现后不再自动重试，手动入口唯一。
 - **优先级**：错误 > 空 > 加载完成。接口 rejected 时即使响应体携带空数组语义也一律出错误面板。
@@ -289,23 +294,25 @@
 
 #### 降级与重试策略
 
-- **网络级 vs 服务端**：网络级（fetch 抛出/超时）图标用 `wifi-off`、描述「网络不稳，岗位墙没拉取成功（`ERR-NET-408`）」；服务端（非 2xx）图标用 `cloud-off`、描述「编辑部服务暂时不可用（`ERR-JOB-503`）」。两档面板结构一致，仅图标与文案区分。
+- **网络级 vs 服务端**：网络级（fetch 抛出/超时）图标用 `wifi-off`、描述「网络不稳，岗位博览没拉取成功（`ERR-NET-408`）」；服务端（非 2xx）图标用 `cloud-off`、描述「编辑部服务暂时不可用（`ERR-JOB-503`）」。两档面板结构一致，仅图标与文案区分。
 - **重试回骨架**：一切手动重试先回 2.8 骨架卡阵，禁止从错误面板直接翻转到内容（保持加载感知）。
 - **互斥关系**：骨架/内容/空态/错误态四者互斥单态呈现；错误面板期间 hero 统计（在招 12 / 本周新增 +3）如来自同一接口需同步隐藏数字为「--」，不得保留旧值误导。
 
 #### 文案规范
 
-- 首屏失败：标题「岗位墙暂时失联」+ 描述「拉取在招岗位失败（`ERR-JOB-503`），可重试或稍后再来」+ 按钮「重试」
-- 网络超时：标题「这一组岗位没拉取成功」+ 描述「网络不稳，岗位墙没拉取成功（`ERR-NET-408`）」+ 按钮「重试」
+- 首屏失败：标题「岗位博览暂时失联」+ 描述「拉取在招岗位失败（`ERR-JOB-503`），可重试或稍后再来」+ 按钮「重试」
+- 网络超时：标题「这一组岗位没拉取成功」+ 描述「网络不稳，岗位博览没拉取成功（`ERR-NET-408`）」+ 按钮「重试」
 - 行内失败：toast「收藏失败 · `ERR-FAV-500`，请稍后再试」/「投递未能送达 · `ERR-APPLY-502`，岗位仍可重投」
 
 ---
 
-## 3. 书库前台 · 馆藏检索（scholar-front.html）
+## 3. 书库前台 · 馆藏条目（scholar-front.html）
 
 ### 3.1 页面定位
 
-学者书库对外的「图书馆目录」检索页，面向长期阅读者按类目浏览馆藏书目。accent 为馆藏绿 `var(--app-scholar)`（`#2f5a3b`，header 内联 `--app-accent: var(--app-scholar)`）。报头 `SCHOLAR · 学者书库 / 馆藏检索`，导航「馆藏检索」激活。
+学者书库对外的「图书馆目录」检索页，面向长期阅读者按类目浏览馆藏书目。accent 为馆藏绿 `var(--app-scholar)`（`#2f5a3b`，header 内联 `--app-accent: var(--app-scholar)`）。报头 `SCHOLAR · ENTRIES / 馆藏条目`，导航「馆藏条目」激活。
+
+> 修订注记（2026-09-11）：本页已重构为馆藏条目列表形态（D-14），检索职责移交书目检索页；本章 3.2 结构描述为重构前版本，交互元素清单以 3.3 更新行与当前 HTML 为准。重构后导航 3 项为：馆藏条目（`entries`，active，`./scholar-front.html`）/ 书目检索（`search`，`./scholar-search.html`）/ 知识图谱（`graph`，`./scholar-graph.html`）。页面现构成为：编辑部页头（标题「馆藏条目」+ mono 读数「在册 3,284 / 本月入库 47 / 未读 12」）+ 快捷检索表单（GET 提交 `action="./scholar-search.html"` 携 `q` 参数，另有「去书目检索」文字链）+ 筛选工具行（类型 全部/书籍/论文/网页、来源 采集/录入/API、排序 最近入库/标题/年份）+ 书脊目录列表（10 行条目，`pg-entry`：书脊竖条 / 标题+作者·年份·类型+来源徽标 / 日期+已读未读 / 收藏星标 `pg-star`）+ 分页（1–10 / 3,284）+ sticky 侧栏（最近入库 ×5 / 图谱速览「前往图谱」链接 → `./scholar-graph.html` / 未读清单）。
 
 ### 3.2 页面结构
 
@@ -321,9 +328,9 @@
 
 | # | 元素 | DOM 标识/选择器 | 类型 | 触发行为 | 去向/反馈 |
 |---|------|----------------|------|----------|-----------|
-| 1 | 导航 · 馆藏检索 | `a[data-nav-key="catalog"]`（`data-active="true"`） | 链接 | 点击跳转 | `./scholar-front.html`（当前页） |
-| 2 | 导航 · 知识图谱 | `a[data-nav-key="graph"]`（`data-active="false"`） | 链接 | 点击跳转 | `#`（占位） |
-| 3 | 导航 · 收件箱 | `a[data-nav-key="inbox"]`（`data-active="false"`） | 链接 | 点击跳转 | `#`（占位） |
+| 1 | 导航 · 馆藏条目 | `a[data-nav-key="entries"]`（`data-active="true"`） | 链接 | 点击跳转 | `./scholar-front.html`（当前页） |
+| 2 | 导航 · 书目检索 | `a[data-nav-key="search"]`（`data-active="false"`） | 链接 | 点击跳转 | `./scholar-search.html` |
+| 3 | 导航 · 知识图谱 | `a[data-nav-key="graph"]`（`data-active="false"`） | 链接 | 点击跳转 | `./scholar-graph.html` |
 | 4 | 返回总览 | `a[data-dom-id="back-platform"]` | 链接 | 点击跳转 | `./index.html` |
 | 5 | 后台管理 | `a[data-dom-id="link-admin"]` | 链接按钮 | 点击跳转 | `./scholar-admin.html`，琥珀描边 + `wrench` |
 | 6 | 馆藏检索输入框 | `input.pg-search-input`（`type="search"`，`aria-label="检索馆藏目录"`，placeholder「检索书名、作者、来源或关键词」） | 搜索输入 | 聚焦输入 | 容器 `:focus-within` 绿色 2px 聚焦环；`/` 键位提示为装饰（`kbd.pg-kbd[aria-hidden="true"]`） |
@@ -335,6 +342,8 @@
 | 12 | 书目条目 ×6 | `li.pg-entry`（含 `.pg-spine` 书脊） | 展示行 | 仅 hover 反馈 | hover 边框加深、书脊变深绿 `--app-scholar-ink`、标题变深绿 |
 | 13 | 查看图谱 | `a.pg-graph-btn` | 次级按钮 | 点击跳转 | `#`（占位），`arrow-right` 图标；hover 绿边框 + 绿浅底 |
 | 14 | 页脚 · 管理后台 | `a.us-footer-admin` | 链接 | 点击跳转 | `./scholar-admin.html` |
+
+注（2026-09-11）：本表 #6–#13 为重构前版本遗留行——快捷检索表单、筛选工具行（类型/来源 chip + 排序）、书脊条目列表 ×10、收藏星标、分页与侧栏三卡（最近入库 / 图谱速览 / 未读清单）等重构后交互元素以 3.1 修订注记、附录 C.3 与当前 HTML 为准。
 
 注：条目右侧质量徽标（`.pg-quality--complete` 摘要完备 / `.pg-quality--review` 摘要待校）为静态状态展示。
 
@@ -360,8 +369,11 @@
 | 返回总览 | `a[data-dom-id="back-platform"]`（`.us-back-link`） | `./index.html` | `<a href>` |
 | 后台管理（报头按钮） | `a[data-dom-id="link-admin"]`（`.us-admin-btn`） | `./scholar-admin.html` | `<a href>` |
 | 页脚 · 管理后台 | `a.us-footer-admin` | `./scholar-admin.html` | `<a href>` |
-| 导航 · 知识图谱 / 收件箱 | `a[data-nav-key="graph"]` / `a[data-nav-key="inbox"]` | `#`（占位，页签未实装） | `<a href>` 占位 |
-| 类目 ×4 / 查看图谱 | `a.pg-cat` ×4 / `a.pg-graph-btn` | `#`（占位） | `<a href>` 占位 |
+| 导航 · 书目检索 / 知识图谱（重构后新增实装去向） | `a[data-nav-key="search"]` / `a[data-nav-key="graph"]` | `./scholar-search.html` / `./scholar-graph.html` | `<a href>` |
+| 快捷检索表单提交（重构后新增） | `form.pg-quick-search`（`action="./scholar-search.html" method="get"`，携 `q` 参数） | `./scholar-search.html?q=…` | `<form action>` GET 提交 |
+| 去书目检索（快捷检索旁文字链，重构后新增） | `a.pg-quick-link` | `./scholar-search.html` | `<a href>` |
+| 前往图谱（侧栏图谱速览，重构后新增） | `a.pg-graph-go` | `./scholar-graph.html` | `<a href>` |
+| 类目 ×4 / 查看图谱（重构前占位，已随重构移除） | `a.pg-cat` ×4 / `a.pg-graph-btn` | —（已不存在于当前 HTML） | — |
 
 入向：来自网关导航「书库」与目录墙链接卡 `card-scholar`。
 
@@ -461,7 +473,7 @@
 | # | 元素 | DOM 标识/选择器 | 类型 | 触发行为 | 去向/反馈 |
 |---|------|----------------|------|----------|-----------|
 | 1 | 导航 · 对话 | `a[data-nav-key="chat"]`（`data-active="true"`） | 链接 | 点击跳转 | `./assistant-front.html`（当前页） |
-| 2 | 导航 · 使用反馈 | `a[data-nav-key="feedback"]`（`data-active="false"`） | 链接 | 点击跳转 | `#`（占位） |
+| 2 | 导航 · 使用反馈 | `a[data-nav-key="feedback"]`（`data-active="false"`） | 链接 | 点击跳转 | `#`（占位；反馈页已落地为独立页 `./assistant-feedback.html`，本导航项 href 实测未接，详见 4.5 与附录 C.1） |
 | 3 | 返回总览 | `a[data-dom-id="back-platform"]` | 链接 | 点击跳转 | `./index.html` |
 | 4 | 后台管理 | `a[data-dom-id="link-admin"]` | 链接按钮 | 点击跳转 | `./assistant-admin.html`，琥珀描边 + `wrench` |
 | 5 | 新对话 | `button.pg-new-chat`（`type="button"`） | 实心主按钮 | 点击新建会话 | 瓷青实心底 + `plus` 图标；hover 深瓷青，按压墨蓝 |
@@ -496,7 +508,7 @@
 | 返回总览 | `a[data-dom-id="back-platform"]`（`.us-back-link`） | `./index.html` | `<a href>` |
 | 后台管理（报头按钮） | `a[data-dom-id="link-admin"]`（`.us-admin-btn`） | `./assistant-admin.html` | `<a href>` |
 | 页脚 · 管理后台 | `a.us-footer-admin` | `./assistant-admin.html` | `<a href>` |
-| 导航 · 使用反馈 | `a[data-nav-key="feedback"]` | `#`（占位，页签未实装） | `<a href>` 占位 |
+| 导航 · 使用反馈 | `a[data-nav-key="feedback"]`（`href="#"` 占位；前台反馈页已落地为 `./assistant-feedback.html`，该页不在导航内，详见附录 C.1；本导航项 href 实测仍为 `#`） | `#`（占位，导航项未接新页） | `<a href>` 占位 |
 | 历史会话项 ×6 / 引用来源 | `a.pg-session-item` ×6 / `a.pg-cite` | `#`（占位） | `<a href>` 占位 |
 
 入向：来自网关导航「助手」与目录墙链接卡 `card-assistant`。
@@ -576,15 +588,15 @@
 
 ---
 
-## 5. 交付前台 · 需求看板（manager-front.html）
+## 5. 交付前台 · 交付驾驶舱（manager-front.html）
 
 ### 5.1 页面定位
 
-交付管理对外的「FLIGHT DECK 交付驾驶舱」，面向项目交付相关方纵览需求流转与迭代交付节奏。accent 为钢蓝 `var(--app-manager)`（`#3a5f84`，header 内联 `--app-accent: var(--app-manager)`）。报头 `MANAGER · WORKSPACE / 交付管理`。注意：本页导航沿用网关 6 项全局导航（非应用私有导航），且非激活项**未写 `data-active="false"`**，仅激活项标注 `data-active="true"`。
+交付管理对外的「FLIGHT DECK 交付驾驶舱」，面向项目交付相关方纵览需求流转与迭代交付节奏。accent 为钢蓝 `var(--app-manager)`（`#3a5f84`，header 内联 `--app-accent: var(--app-manager)`）。报头 `MANAGER · WORKSPACE / 交付驾驶舱`（eyebrow + 应用名「交付驾驶舱」）。注意：本页导航已收敛为单项应用私有导航「需求台」（`data-nav-key="requirements"`，`data-active="true"`，`href="./manager-front.html"`）；原跨应用 6 项全站导航（home/applicant/scholar/assistant/manager/designer）已删除，返回网关改经「返回总览」链接。
 
 ### 5.2 页面结构
 
-1. **报头**：品牌区 → 全局导航 6 项（home/applicant/scholar/assistant/manager/designer，manager 激活且 `href="#"`）→ 动作区（返回总览 + 后台管理）
+1. **报头**：品牌区 → 导航单项（requirements，即「需求台」，激活且自指 `./manager-front.html`）→ 动作区（返回总览 + 后台管理）
 2. **主区（us-main / pg-page）**
    - FLIGHT DECK hero（pg-flight）：mono 眉题「FLIGHT DECK · 交付驾驶舱」+ 衬线标题 + 副文 + mono 读数行（活跃需求 24 / 本迭代交付 8 / 阻塞 3 / 完成率 67%）
    - 01 关键读数（pg-kpis）：4 张 KPI 卡，surface-1 + 顶部 4px 钢蓝顶边 + `--shadow-1`
@@ -596,20 +608,15 @@
 
 | # | 元素 | DOM 标识/选择器 | 类型 | 触发行为 | 去向/反馈 |
 |---|------|----------------|------|----------|-----------|
-| 1 | 导航 · 首页 | `a[data-nav-key="home"]`（无 data-active 属性） | 链接 | 点击跳转 | `./index.html` |
-| 2 | 导航 · 求职 | `a[data-nav-key="applicant"]` | 链接 | 点击跳转 | `./applicant-front.html` |
-| 3 | 导航 · 书库 | `a[data-nav-key="scholar"]` | 链接 | 点击跳转 | `./scholar-front.html` |
-| 4 | 导航 · 助手 | `a[data-nav-key="assistant"]` | 链接 | 点击跳转 | `./assistant-front.html` |
-| 5 | 导航 · 交付 | `a[data-nav-key="manager"][data-active="true"]` | 链接 | 点击跳转 | `#`（当前场景自身，钢蓝激活下划线） |
-| 6 | 导航 · 工坊 | `a[data-nav-key="designer"]` | 链接 | 点击跳转 | `./designer-front.html` |
-| 7 | 返回总览 | `a[data-dom-id="back-platform"]` | 链接 | 点击跳转 | `./index.html` |
-| 8 | 后台管理 | `a[data-dom-id="link-admin"]` | 链接按钮 | 点击跳转 | `./manager-admin.html`，琥珀描边 + `wrench` |
-| 9 | KPI 卡 ×4 | `.pg-kpi`（活跃需求 24 / 今日交付 8 / 阻塞项 3 / 完成率 67%） | 静态读数卡 | 无 | 顶部 4px 钢蓝顶边，无 hover/点击态 |
-| 10 | 需求卡 ×8 | `article.pg-req`（含 `.pg-req-badge[data-tone]` P0×1 / P1×3 / P2×4） | 展示卡 | 仅 hover 反馈 | hover 边框加深为 `--mt-hairline-strong`；无跳转 |
-| 11 | 迭代项 · IT-014 | `a.pg-iter-item[data-active="true"]` | 切换标签 | 点击切换迭代 | `#`；激活态 surface-2 底 + 钢蓝描边 |
-| 12 | 迭代项 · IT-013 | `a.pg-iter-item` | 切换标签 | 点击切换迭代 | `#`；hover 灰底深字 |
-| 13 | 迭代项 · IT-012 | `a.pg-iter-item` | 切换标签 | 点击切换迭代 | `#`；hover 灰底深字 |
-| 14 | 页脚 · 管理后台 | `a.us-footer-admin` | 链接 | 点击跳转 | `./manager-admin.html` |
+| 1 | 导航 · 需求台（当前页） | `a[data-nav-key="requirements"]`（`data-active="true"`） | 链接 | 点击跳转 | `./manager-front.html`（自指当前页，钢蓝激活下划线） |
+| 2 | 返回总览 | `a[data-dom-id="back-platform"]` | 链接 | 点击跳转 | `./index.html` |
+| 3 | 后台管理 | `a[data-dom-id="link-admin"]` | 链接按钮 | 点击跳转 | `./manager-admin.html`，琥珀描边 + `wrench` |
+| 4 | KPI 卡 ×4 | `.pg-kpi`（活跃需求 24 / 今日交付 8 / 阻塞项 3 / 完成率 67%） | 静态读数卡 | 无 | 顶部 4px 钢蓝顶边，无 hover/点击态 |
+| 5 | 需求卡 ×8 | `article.pg-req`（含 `.pg-req-badge[data-tone]` P0×1 / P1×3 / P2×4） | 展示卡 | 仅 hover 反馈 | hover 边框加深为 `--mt-hairline-strong`；无跳转 |
+| 6 | 迭代项 · IT-014 | `a.pg-iter-item[data-active="true"]` | 切换标签 | 点击切换迭代 | `#`；激活态 surface-2 底 + 钢蓝描边 |
+| 7 | 迭代项 · IT-013 | `a.pg-iter-item` | 切换标签 | 点击切换迭代 | `#`；hover 灰底深字 |
+| 8 | 迭代项 · IT-012 | `a.pg-iter-item` | 切换标签 | 点击切换迭代 | `#`；hover 灰底深字 |
+| 9 | 页脚 · 管理后台 | `a.us-footer-admin` | 链接 | 点击跳转 | `./manager-admin.html` |
 
 注：优先级徽标语义色——`data-tone="p0"` error 红、`"p1"` warning 琥珀、`"p2"` info 蓝，均为静态。
 
@@ -622,16 +629,11 @@
 
 ### 5.5 页面互跳
 
-出向（本页持有六页最全的全局导航组）：
+出向（原「六页最全的全局导航组」已收敛为单项导航，跨应用跳转仅余返回总览与后台两路）：
 
 | 入口元素 | DOM 标识 | 目标页面 | 实现方式 |
 |---|---|---|---|
-| 导航 · 首页 | `a[data-nav-key="home"]` | `./index.html` | `<a href>` |
-| 导航 · 求职 | `a[data-nav-key="applicant"]` | `./applicant-front.html` | `<a href>` |
-| 导航 · 书库 | `a[data-nav-key="scholar"]` | `./scholar-front.html` | `<a href>` |
-| 导航 · 助手 | `a[data-nav-key="assistant"]` | `./assistant-front.html` | `<a href>` |
-| 导航 · 交付（当前页，active） | `a[data-nav-key="manager"][data-active="true"]` | `#`（自指占位，钢蓝激活下划线） | `<a href>` 占位 |
-| 导航 · 工坊 | `a[data-nav-key="designer"]` | `./designer-front.html` | `<a href>` |
+| 导航 · 需求台（当前页，active） | `a[data-nav-key="requirements"][data-active="true"]` | `./manager-front.html`（自指） | `<a href>` |
 | 返回总览 | `a[data-dom-id="back-platform"]`（`.us-back-link`） | `./index.html` | `<a href>` |
 | 后台管理（报头按钮） | `a[data-dom-id="link-admin"]`（`.us-admin-btn`） | `./manager-admin.html` | `<a href>` |
 | 页脚 · 管理后台 | `a.us-footer-admin` | `./manager-admin.html` | `<a href>` |
@@ -648,7 +650,7 @@
 ### 5.7 响应式行为
 
 - **≤960px**：KPI 行降 2 列；泳道看板降单列纵向堆叠（列间发丝线由左边线改为上边线）
-- **≤920px**（UserShell 层）：报头换行、导航整行置底（全局导航 6 项在窄屏横向滚动）
+- **≤920px**（UserShell 层）：报头换行、导航整行置底（单项导航在窄屏不溢出）
 - **≤640px**：KPI 降 1 列；区块间距 `--space-7`→`--space-6`；小节标题头改纵向
 - 迭代切换条本身 `overflow-x: auto`，任意宽度下可横向滚动
 
@@ -716,11 +718,11 @@
 
 ### 6.1 页面定位
 
-组件工坊对外的「画廊委托」页，面向设计师用自然语言下委托单生成组件、浏览组件馆藏。accent 为墨黑 `var(--app-designer)`（`#1c2530`，header 内联 `--app-accent: var(--app-designer)`，页面根 `.pg-root` 另定义 `--pg-accent: var(--app-designer)` 供私有样式引用）。报头 `DESIGNER · 组件工坊 / 定制生成`，导航「定制生成」激活。
+组件工坊对外的「画廊委托」页，面向设计师用自然语言下委托单生成组件、浏览组件馆藏。accent 为墨黑 `var(--app-designer)`（`#1c2530`，header 内联 `--app-accent: var(--app-designer)`，页面根 `.pg-root` 另定义 `--pg-accent: var(--app-designer)` 供私有样式引用）。报头 eyebrow `DESIGNER · 组件工坊`，应用名（us-appname）**已修正为「组件工坊」**（2026-09-11，原误用「定制生成」）；导航「组件馆藏」激活（本页即画廊形态的馆藏入口；工坊 4 页导航统一为 定制生成 / 画布工坊 / 组件馆藏 三项，实测各页「组件馆藏」href 互指 `./designer-front.html`，新列表页 designer-components.html 的导航才指向自身，详见附录 C.2）。title 仍为「工坊前台 · 组件画廊」——画廊叙事页定位，title/壳名分工：壳名承应用身份、title 承页面叙事，属可接受口径。
 
 ### 6.2 页面结构
 
-1. **报头**：品牌区 → 导航（designer-generate / designer-library）→ 动作区（返回总览 + 后台管理）
+1. **报头**：品牌区 → 导航（generate / studio / components）→ 动作区（返回总览 + 后台管理）
 2. **主区（us-main / pg-root）**
    - 画廊 hero + 委托单（pg-hero-grid，7/5 非对称双栏）：
      - 左：mono 眉题「COMMISSION」+ 大标题「下一件展品，由你描述」+ 两段描述
@@ -733,16 +735,17 @@
 
 | # | 元素 | DOM 标识/选择器 | 类型 | 触发行为 | 去向/反馈 |
 |---|------|----------------|------|----------|-----------|
-| 1 | 导航 · 定制生成 | `a[data-nav-key="designer-generate"]`（`data-active="true"`） | 链接 | 点击跳转 | `./designer-front.html`（当前页） |
-| 2 | 导航 · 组件馆藏 | `a[data-nav-key="designer-library"]`（`data-active="false"`） | 链接 | 点击页内锚点 | `#exhibits`（滚动至馆藏区，六页中唯一的页内锚点导航） |
-| 3 | 返回总览 | `a[data-dom-id="back-platform"]` | 链接 | 点击跳转 | `./index.html` |
-| 4 | 后台管理 | `a[data-dom-id="link-admin"]` | 链接按钮 | 点击跳转 | `./designer-admin.html`，琥珀描边 + `wrench` |
-| 5 | 组件描述输入 | `textarea#pg-desc`（`rows="4"`，label `for="pg-desc"`「组件描述」，placeholder 示例文案） | 多行输入 | 输入描述 | 聚焦墨黑描边 + 3px 墨蓝浅环；`resize: vertical` 可纵向拉伸 |
-| 6 | 目标平台选择 | `button#pg-platform.pg-select`（`aria-labelledby="pg-platform-label"`、`aria-haspopup="listbox"`、`aria-expanded="false"`） | 下拉触发按钮 | 点击展开选项（设计稿态，未含面板实现） | 当前值「@mt/ui · React 18」+ `chevron-down` 图标；hover 边框加深 |
-| 7 | 生成（提交） | `button.pg-submit`（`type="submit"`，表单 `form.pg-form[action="#"][method="post"]`） | 实心主按钮 | 提交委托单 | 文案「生　成」（全角空格间隔，注意 E2E 正则写 `/生\s*成/`）；墨黑实心 44px 高；hover 深墨，按压下沉 1px |
-| 8 | 生成状态条 | `.pg-status`（`role="status" aria-label="生成状态"`）内含 `.pg-progress[role="progressbar"][aria-valuenow="62"][aria-valuemin="0"][aria-valuemax="100"]` | 进度状态 | 无操作 | 进度条 62% 墨黑填充，1.6s 透明度脉冲动画；右侧「生成中」info 标签 |
-| 9 | 展品卡 ×6 | `article.pg-exhibit`（按钮 button v2.4.1 / 标签 tag v1.8.0 / 输入框 input v2.1.3 / 表格 table v3.0.0 已发布；对话框 dialog v1.2.0 / 开关 switch v0.9.4 草稿） | 展示卡 | 仅 hover 反馈 | hover 边框变 `--mt-ink-300` + `translateY(-2px)`，预览图标变墨黑 accent |
-| 10 | 页脚 · 管理后台 | `a.us-footer-admin` | 链接 | 点击跳转 | `./designer-admin.html` |
+| 1 | 导航 · 定制生成 | `a[data-nav-key="generate"]`（`data-active="false"`） | 链接 | 点击跳转 | `./designer-generate.html` |
+| 2 | 导航 · 画布工坊 | `a[data-nav-key="studio"]`（`data-active="false"`） | 链接 | 点击跳转 | `./designer-studio.html` |
+| 3 | 导航 · 组件馆藏（当前页） | `a[data-nav-key="components"]`（`data-active="true"`） | 链接 | 点击跳转 | `./designer-front.html`（自指当前页，画廊形态馆藏入口；列表形态独立页见附录 C.2） |
+| 4 | 返回总览 | `a[data-dom-id="back-platform"]` | 链接 | 点击跳转 | `./index.html` |
+| 5 | 后台管理 | `a[data-dom-id="link-admin"]` | 链接按钮 | 点击跳转 | `./designer-admin.html`，琥珀描边 + `wrench` |
+| 6 | 组件描述输入 | `textarea#pg-desc`（`rows="4"`，label `for="pg-desc"`「组件描述」，placeholder 示例文案） | 多行输入 | 输入描述 | 聚焦墨黑描边 + 3px 墨蓝浅环；`resize: vertical` 可纵向拉伸 |
+| 7 | 目标平台选择 | `button#pg-platform.pg-select`（`aria-labelledby="pg-platform-label"`、`aria-haspopup="listbox"`、`aria-expanded="false"`） | 下拉触发按钮 | 点击展开选项（设计稿态，未含面板实现） | 当前值「@mt/ui · React 18」+ `chevron-down` 图标；hover 边框加深 |
+| 8 | 生成（提交） | `button.pg-submit`（`type="submit"`，表单 `form.pg-form[action="#"][method="post"]`） | 实心主按钮 | 提交委托单 | 文案「生　成」（全角空格间隔，注意 E2E 正则写 `/生\s*成/`）；墨黑实心 44px 高；hover 深墨，按压下沉 1px |
+| 9 | 生成状态条 | `.pg-status`（`role="status" aria-label="生成状态"`）内含 `.pg-progress[role="progressbar"][aria-valuenow="62"][aria-valuemin="0"][aria-valuemax="100"]` | 进度状态 | 无操作 | 进度条 62% 墨黑填充，1.6s 透明度脉冲动画；右侧「生成中」info 标签 |
+| 10 | 展品卡 ×6 | `article.pg-exhibit`（按钮 button v2.4.1 / 标签 tag v1.8.0 / 输入框 input v2.1.3 / 表格 table v3.0.0 已发布；对话框 dialog v1.2.0 / 开关 switch v0.9.4 草稿） | 展示卡 | 仅 hover 反馈 | hover 边框变 `--mt-ink-300` + `translateY(-2px)`，预览图标变墨黑 accent |
+| 11 | 页脚 · 管理后台 | `a.us-footer-admin` | 链接 | 点击跳转 | `./designer-admin.html` |
 
 注：展品状态标签（`.pg-tag-success` 已发布 / `.pg-tag-neutral` 草稿 / `.pg-tag-info` 生成中）与展位说明三步均为静态展示。
 
@@ -763,10 +766,12 @@
 | 返回总览 | `a[data-dom-id="back-platform"]`（`.us-back-link`） | `./index.html` | `<a href>` |
 | 后台管理（报头按钮） | `a[data-dom-id="link-admin"]`（`.us-admin-btn`） | `./designer-admin.html` | `<a href>` |
 | 页脚 · 管理后台 | `a.us-footer-admin` | `./designer-admin.html` | `<a href>` |
-| 导航 · 组件馆藏 | `a[data-nav-key="designer-library"]` | `#exhibits`（页内锚点，滚动至馆藏区） | `<a href>`（页内锚点） |
+| 导航 · 定制生成 | `a[data-nav-key="generate"]` | `./designer-generate.html` | `<a href>` |
+| 导航 · 画布工坊 | `a[data-nav-key="studio"]` | `./designer-studio.html` | `<a href>` |
+| 导航 · 组件馆藏（当前页自指） | `a[data-nav-key="components"]` | `./designer-front.html` | `<a href>` |
 | 委托单表单 action | `form.pg-form` | `#`（占位，表单无实装提交端点） | `<form action>` 占位 |
 
-入向：来自网关导航「工坊」与目录墙链接卡 `card-designer`。
+入向：来自网关导航「工坊」与目录墙链接卡 `card-designer`；工坊定制生成 / 画布工坊两页导航「组件馆藏」亦回指本页；组件馆藏列表新页（designer-components.html）导航「组件馆藏」自指，不回指本页（见附录 C.2）。
 
 ### 6.6 可访问性与降级
 
@@ -875,11 +880,12 @@
 
 | 页面 | 导航项数 | 激活标记方式 | 非激活项标记 |
 |------|----------|--------------|--------------|
-| index / manager | 6（全局组：首页/求职/书库/助手/交付/工坊） | `data-active="true"` | index 全部显式 `data-active="false"`；manager 省略该属性 |
-| applicant | 3（wall/resume/review，应用私有组） | `data-active="true"` | 显式 `data-active="false"` |
-| scholar | 3（catalog/graph/inbox） | `data-active="true"` | 显式 `data-active="false"` |
-| assistant | 2（chat/feedback） | `data-active="true"` | 显式 `data-active="false"` |
-| designer | 2（designer-generate/designer-library） | `data-active="true"` | 显式 `data-active="false"`；馆藏项为页内锚点 `#exhibits` |
+| index | 6（全局组：首页/求职/书库/助手/交付/工坊） | `data-active="true"` | 全部显式 `data-active="false"` |
+| manager | 1（requirements，即「需求台」，应用私有组；原 6 项全局导航已删） | `data-active="true"` | 无非激活项 |
+| applicant | 3（wall=岗位博览 / calendar=投递日历 / resume=简历工坊，应用私有组） | `data-active="true"` | 显式 `data-active="false"` |
+| scholar | 3（entries=馆藏条目 / search=书目检索 / graph=知识图谱，应用私有组） | `data-active="true"` | 显式 `data-active="false"` |
+| assistant | 2（chat=对话 / feedback=使用反馈，应用私有组；feedback 页本身不在导航内但保留「对话」激活态） | `data-active="true"` | 显式 `data-active="false"`（当前仅对话页持有） |
+| designer | 3（generate=定制生成 / studio=画布工坊 / components=组件馆藏，应用私有组；front / generate / studio 三页「组件馆藏」href 实测互指 `./designer-front.html`，components 新页指向 `./designer-components.html`） | `data-active="true"` | 显式 `data-active="false"` |
 
 ### 7.6 焦点、动效与降级（六页统一）
 
@@ -1020,3 +1026,269 @@
 入向：无实页链接指向本文件（网关与其余前台均不含指向 `./assistant-retry-demo.html` 的链接），属独立演示入口，仅经本地文件直接打开进入。
 
 深度规格文档互链关系：本附录（前台分册）§4.9 错误态口径 ↔ `docs/deep-dive-assistant-retry.md`（状态机 / 错误码矩阵 / DOM 模板 / 验收清单完整版）；演示页内 `.rd-spec-src` 一段即该互链的落地文案。
+
+---
+
+## 附录 B · 投递日历页（applicant-calendar.html）
+
+> 求职工坊新增第 2 页「投递日历 · D-15」，此前分册未覆盖（正文第 2 章仅含岗位博览 applicant-front.html）。本附录沿用正文 1.1–1.9 小节模式补记，全部元素 / href / 类名 / 断点均按 `pages/applicant-calendar.html` 实测，未含虚构项。
+
+### B.1 页面定位
+
+跨岗位投递进度总览页，把多家公司的面试、笔试、Offer、材料截止等节点摊在同一张月历与同一条 D-day 主轴上：时间轴按 D-day 升序排节点（编辑部目录式条目），右栏月历格以彩色圆点联动，底部岗位进度横带汇总 5 家公司状态。accent 为赤陶 `var(--app-applicant)`（header 内联 `--app-accent: var(--app-applicant)`，与岗位博览页同源）。报头 `APPLICANT · TIMELINE / 投递日历`，主导航为应用私有 3 项（岗位博览 wall / 投递日历 calendar / 简历工坊 resume），「投递日历」激活；页面标题 `投递日历 · D-15`。
+
+### B.2 页面结构
+
+按实际 DOM 顺序四区块：
+
+1. **报头（us-masthead）**：品牌区（eyebrow `APPLICANT · TIMELINE` + 应用名「投递日历」）→ 主导航（3 项：岗位博览 / 投递日历 / 简历工坊，aria-label="主导航"）→ 动作区（返回总览 + 后台管理琥珀描边按钮）
+2. **主区（us-main / pg-page）**
+   - **Hero · D-day 读数带（pg-hero）**：mono 眉题 `TIMELINE · 2026-09 · D-15`（赤陶色）+ 衬线大标题「十五天窗口」+ 副文 + mono 读数行四指标（见 B.4）
+   - **两栏棋盘（pg-board）**：grid `minmax(0,1.9fr) minmax(0,1fr)`，gap `--space-6`
+     - 左：01 按 D-day 排序的节点清单（pg-timeline，`<ol class="pg-node-list">` 8 条目录式条目，小节头 mono 计「8 节点 · 5 公司」）
+     - 右：本月投递日历（pg-rail，`<aside aria-label="本月投递日历">`，`position: sticky; top: 84px`）——月切换头（pg-cal-head）+ 7×N 月历格（pg-cal-grid，周一为每周第一天）+ 圆点图例（pg-cal-legend，截止/面试/笔试/Offer 四项）+ 紧节点提醒条（pg-urgent，`role="note"`）
+   - **底部 · 岗位进度横带（pg-companies）**：02 小节 + 5 张公司卡（pg-company-strip，`repeat(auto-fit, minmax(160px,1fr))`），小节头 mono 计「5 公司 · 本月」
+3. **页脚（us-footer）**：mono 注记「MagicTools · 投递日历 · 跨岗位进度」+ 管理后台链接 + 版权行
+
+### B.3 交互元素清单
+
+| # | 元素 | DOM 标识/选择器 | 类型 | 触发行为 | 去向/反馈 |
+|---|------|----------------|------|----------|-----------|
+| 1 | 导航 · 岗位博览 | `a[data-nav-key="wall"]`（`data-active="false"`） | 链接 | 点击跳转 | `./applicant-front.html` |
+| 2 | 导航 · 投递日历（当前页） | `a[data-nav-key="calendar"]`（`data-active="true"`） | 链接 | 点击跳转 | `./applicant-calendar.html`（当前页，赤陶文字 + 2px 赤陶下边线） |
+| 3 | 导航 · 简历工坊 | `a[data-nav-key="resume"]`（`data-active="false"`） | 链接 | 点击跳转 | `./applicant-resume.html` |
+| 4 | 返回总览 | `a[data-dom-id="back-platform"]`（`.us-back-link`） | 链接 | 点击跳转 | `./index.html`，图标 `data-lucide="arrow-left"` |
+| 5 | 后台管理（报头按钮） | `a[data-dom-id="link-admin"]`（`.us-admin-btn`） | 链接按钮 | 点击跳转 | `./applicant-admin.html`，琥珀描边 + `wrench` 图标 |
+| 6 | 节点动作 · 面试复盘 | `a.pg-link`（第 1 条 D-02 节点 `.pg-node-action` 内） | 文字链 | 点击跳转 | `#`（占位），hover 文字与下边线变赤陶 `--app-applicant` |
+| 7 | 节点动作 · 进度详情 ×5 | `a.pg-link`（D-03 / D-05 / D-07 / D-12 / D+03 各节点 `.pg-node-action` 内） | 文字链 | 点击跳转 | `#`（占位），hover 同上 |
+| 8 | 节点动作 · 材料清单 ×2 | `a.pg-link`（D-09 与 D-15 两条截止节点 `.pg-node-action` 内） | 文字链 | 点击跳转 | `#`（占位），hover 同上 |
+| 9 | 月历 · 上一月 | `button.pg-cal-nav[aria-label="上一月"]`（`chevron-left` 图标） | 图标按钮 | 点击切换月份 | 月历区重铺（目标月格子 + 圆点），月份读数 `.pg-cal-month` 同步（当前「2026-09」） |
+| 10 | 月历 · 下一月 | `button.pg-cal-nav[aria-label="下一月"]`（`chevron-right` 图标） | 图标按钮 | 点击切换月份 | 同上；hover 底变 `--surface-2`、文字变 `--text-body` |
+| 11 | 月历格 · 无节点日 | `.pg-cal-cell`（无圆点，如 1–6 日） | 展示格 | 无交互 | 静态 mono 日期数字（`.pg-cal-day`） |
+| 12 | 月历格 · 有节点日 ×8 | `.pg-cal-cell[aria-label]`（7/12/13/15/17/19/22/25 日，各挂事件描述 aria-label + 彩色圆点 `.pg-cal-dot--*`） | 展示格 | 无点击绑定（设计稿静态） | 圆点色映射事件类型（见 B.4）；今日格 `.pg-cal-cell--today`（10 日）赤陶反色 |
+| 13 | 紧节点提醒条 | `.pg-urgent`（`role="note" aria-label="紧节点提醒"`，`clock` 图标 + `D-02` + 提醒文案） | 提示条 | 无交互 | error 语义三件套渲染（见 B.4），静态直出 |
+| 14 | 岗位进度卡 ×5 | `.pg-company`（字节跳动·面试中 / 腾讯·已 Offer / 网易·投递中 / 美团·投递中 / 阿里巴巴·已婉拒，均非链接） | 展示卡 | 仅 hover 反馈 | hover 边框变 `--mt-hairline-strong`；`briefcase` 图标 14px 赤陶色 |
+| 15 | 页脚 · 管理后台 | `a.us-footer-admin` | 链接 | 点击跳转 | `./applicant-admin.html`，`arrow-right` 图标 |
+
+注：8 条时间轴节点行 `.pg-node` 本体（D-day 读数 + 岗位标题 + 公司·时间 mono 行 + 事件 badge）均为静态内容，交互只落在行尾动作文字链；月历图例 `.pg-legend-item` 四项与 hero 读数行亦为静态展示。
+
+### B.4 数据状态组件
+
+- **D-day 徽标三分档**（`.pg-dday`，mono / 15px / tabular-nums）：
+  - 紧（≤D-3）：节点挂 `.pg-node--soon`，`.pg-node--soon .pg-dday` → 字重 600 + 赤陶 `--app-applicant`（实测 D-02 / D-03 两条）；D-02 / D-03 的 `.pg-dday` 另挂 `aria-label`（「两天后」/「三天后」）供读屏展开
+  - 普通：默认态 → `--text-muted` / 500（实测 D-05 / D-07 / D-09 / D-12 / D-15 五条）
+  - 已了结（D+）：节点挂 `.pg-node--done`，`.pg-node--done .pg-dday` → `--text-faint`，`.pg-node--done .pg-node-title` 同步降为 `--text-muted`（实测 D+03 一条，aria-label「三天前已了结」）
+- **事件类型 badge 五类语义映射**（`.pg-badge`，高 22px / 11px / 700 / `--radius-full` 胶囊）：
+
+  | badge 类名 | 文案 | 底色 | 文字色 | 语义 |
+  |---|---|---|---|---|
+  | `.pg-badge--error` | 截止 | `--mt-error-50` | `--state-error-text` | 材料 / 作品集截止（D-09、D-15） |
+  | `.pg-badge--info` | 面试 / 面试中 | `--mt-info-50` | `--state-info-text` | 面试类节点（D-02）与横带「面试中」 |
+  | `.pg-badge--warning` | 笔试 | `--mt-warning-50` | `--state-warning-text` | 线上笔试（D-03） |
+  | `.pg-badge--success` | Offer / 已 Offer | `--mt-success-50` | `--state-success-text` | Offer 沟通与签约（D-05、D-12）及横带「已 Offer」 |
+  | `.pg-badge--neutral` | 跟进 / 投递中 | `--surface-2` | `--text-body` | 致谢跟进（D-07）与横带「投递中」×2 |
+  | `.pg-badge--ghost` | 已婉拒 | `--mt-graphite-100` | `--mt-graphite-600` | 已了结灰态（D+03 及横带阿里巴巴） |
+
+- **mono 读数行四指标**（`.pg-readouts`，`--font-mono` / 12px / tabular-nums，词头「投递读数」为 `.pg-readout--mast`，各指标左挂 1px 分隔线）：跟踪岗位 **5** / 七日内节点 **3** / 最近截止 **D-9** / 本月已了结 **2**（数值 `<b>` 为 mono 14px / 600 / 赤陶 `--app-applicant`）
+- **月历节点圆点色映射**（`.pg-cal-dot` 5px 圆点，与 badge 同语义五色）：`--error`（pg-cal-dot--error，19/25 日）→ 截止；`--info`（--info，12 日）→ 面试；`--warning`（--warning，13 日）→ 笔试；`--success`（--success，15/22 日）→ Offer；`--muted`（--muted，`--mt-graphite-400`，7/17 日）→ 跟进 / 已了结（图例只列前四类，muted 为无图例的辅色）。**今日反色格**：`.pg-cal-cell--today` → 格底 `--app-applicant-tint`，`.pg-cal-cell--today .pg-cal-day` → 20px 圆角块（`--radius-sm`）赤陶底 `--app-applicant` + 反色白字 `--primary-foreground` / 600，aria-label「今天，9 月 10 日」
+- **紧节点提醒条**（`.pg-urgent`）：底 `--state-error-bg` + 1px `--state-error` 描边 + `--radius-md`，`clock` 图标 16px `--state-error`，D-02 读数 mono 600 `--state-error-text`，正文 13px `--state-error-text`（公司·岗位 `<b>` 强调）
+
+### B.5 页面互跳
+
+出向（本页可离开的全部入口，均为 `<a href>` 实现）：
+
+| 入口元素 | DOM 标识 | 目标页面 | 实现方式 |
+|---|---|---|---|
+| 导航 · 岗位博览 | `a[data-nav-key="wall"]` | `./applicant-front.html` | `<a href>` |
+| 导航 · 投递日历（当前页，active） | `a[data-nav-key="calendar"][data-active="true"]` | `./applicant-calendar.html` | `<a href>` |
+| 导航 · 简历工坊 | `a[data-nav-key="resume"]` | `./applicant-resume.html` | `<a href>` |
+| 返回总览 | `a[data-dom-id="back-platform"]`（`.us-back-link`） | `./index.html` | `<a href>` |
+| 后台管理（报头按钮） | `a[data-dom-id="link-admin"]`（`.us-admin-btn`） | `./applicant-admin.html` | `<a href>` |
+| 页脚 · 管理后台 | `a.us-footer-admin` | `./applicant-admin.html` | `<a href>` |
+| 节点动作文字链 ×8（面试复盘 / 进度详情 ×5 / 材料清单 ×2） | `.pg-node-action a.pg-link` | `#`（占位，目标页未实装） | `<a href>` 占位 |
+
+入向：岗位博览 applicant-front.html 主导航「投递日历」项（`data-nav-key="calendar"` → `./applicant-calendar.html`，3 项导航之一）；同应用岗位详情 / 面试管理 / 简历工坊页导航「投递日历」亦回指本页。网关目录墙暂不含日历入口（求职卡直达岗位博览，经导航二跳到达）。
+
+### B.6 空态与加载态
+
+沿用 §8 共性规范（空态三层构成 8.1 / 骨架令牌 8.2 / 加载文案 8.3 / 互斥规则 8.4 / 同构原则 8.5），针对本页定制：时间轴与月历为两个独立数据区，可分别进入空态 / 加载态；hero 读数行随时间轴数据同步，岗位进度横带随岗位数据同步。
+
+#### 空态（Empty State）
+
+| 触发条件 | 承载区域 | 视觉构成 | 恢复动作 |
+|---|---|---|---|
+| 无任何投递（时间轴 fulfilled 且为空，用户尚未投出第一份） | 时间轴 `.pg-node-list` 整体替换（月历、横带不受影响） | 图标 `calendar-plus`（data-lucide）32px / `--text-faint`；标题「还没开始投递，从岗位博览挑第一件」：`--font-display` / 15px / 600 / `--text-body`；描述「投出第一份简历后，截止、面试和笔试会自动排进这张日历」：`--font-body` / 13px / `--text-muted`；区域留白上下 `--space-7`，空态外框 `--mt-hairline` 1px 虚线 + `--radius-md` 或纯留白二选一 | accent 下划线链接「去岗位博览」：`--app-applicant` / 13px / 600 / `text-underline-offset: 4px`，hover `--app-applicant-ink`，跳转 `./applicant-front.html`；hero 读数四指标同步为 0 / 0 / -- / 0 |
+| 筛选 / 区间空（月份切换或区间过滤后该区间无节点） | 同上 | 图标 `calendar-x`（data-lucide）32px / `--text-faint`；标题「这个区间没有节点」；描述「上一个月或换个月份看看，节点都在别处排着」；无动作链接（数据所致，给时间预期） | 切换月份（pg-cal-nav）或回到当前月即恢复；不放置死链接 |
+| 全部了结（正向空态：区间内节点全部为 done / D+） | 同上 | 图标 `check-circle-2`（data-lucide 线性）32px / `--state-success-text`（正向语义允许成功色）；标题「本季投递已全部了结」；描述「八枚节点都已收官，下一批投递从岗位博览重新开始」；空态框改 success 语义虚线（`--state-success` 1px 虚线 + `--radius-md`）为可选增强 | accent 下划线链接「去岗位博览」（同上规格），开始新一轮投递 |
+
+注：月历格不因时间轴空态清空——月历渲染的是「日历壳 + 日期数字」，无数据时格子照常渲染但无圆点（见下方加载态说明）；今日反色格与 D-day 读数依赖系统时间，不受空态影响。
+
+#### 加载态（Loading State）
+
+- **时间轴 8 行骨架**：与真实条目同构——同 `grid-template-columns: 88px minmax(0,1fr) auto auto`、同 `column-gap: var(--space-4)`、行高锚定真实行高（真实 `.pg-node` 双行岗位块约 68px，骨架行同高，分隔线 `--mt-hairline` 直出）；四段列各自骨架块（底 `--surface-2` + `--radius-sm`）：D-day 列 **64×20px**、岗位列两行块（标题行 **55%×16px** + 机构行 **45%×12px**）、badge 列 **48×22px**、动作列 **40%×14px**（宽度按列内百分比计）；首批条数已知按实际数铺（本页典型 8 行），未知时按 6 行铺
+- **月历格骨架**：保留网格壳（`.pg-cal-grid` 7 列模板 + 1px gap 网格线 + `--radius-md` 边框直出），格内日期数字位铺 **35 格** `--surface-2` 骨架块（`min-height: 44px` 与真实格同高，星期头 `.pg-cal-dow` 静态直出不参与骨架）；月份读数 `.pg-cal-month` 先铺 72×16px 行内骨架
+- **月历数据缺失**（月份切换后节点数据未回或无节点）：格子正常渲染日期数字，仅无圆点——月历永远不出整区空态，缺失只体现为「格子渲染但无圆点」
+- **hero 读数行加载**：四指标数值位铺行内骨架（48×14px×4，`--surface-2`），词头「投递读数」静态直出；紧节点提醒条 `.pg-urgent` 随时间轴数据同批到达，加载期间不预渲染
+- **首屏 vs 局部**：hero 标题 / 副文、月历网格壳、岗位进度横带卡壳为常驻结构静态直出；切换月份仅月历区重铺骨架（时间轴不动，节点清单不随月份联动过滤）
+- **动效**：shimmer 扫光 `linear-gradient(90deg, transparent, var(--surface-1) 50%, transparent)`，`--duration-slow`（320ms）+ `--ease-standard` 循环；禁止旋转 spinner
+- **降级**：`prefers-reduced-motion: reduce` 时 shimmer 停止，骨架退为静态 `--surface-2` 块
+
+#### 文案规范
+
+- 无投递：标题「还没开始投递，从岗位博览挑第一件」+ 描述「投出第一份简历后，截止、面试和笔试会自动排进这张日历」+ 链接「去岗位博览」
+- 区间空：标题「这个区间没有节点」+ 描述「上一个月或换个月份看看，节点都在别处排着」
+- 全了结：标题「本季投递已全部了结」+ 描述「八枚节点都已收官，下一批投递从岗位博览重新开始」+ 链接「去岗位博览」
+
+### B.7 错误态
+
+沿用 §9 共性规范（三级体系 9.1 / 错误令牌三件套 9.2 / 优先级 9.3 / 重试回骨架 9.4 / 错误码 mono 展示 9.5 / 错误播报 9.6），针对本页定制。与 B.6 的关系：pending 铺骨架，fulfilled 非空出内容、fulfilled 且空出空态（B.6），rejected 进入本节；错误优先于空态，禁止以「节点 0」空态兜底接口失败。
+
+#### 区域级错误（可重试）
+
+| 错误场景 | 承载区域 | 视觉构成 | 恢复动作 |
+|---|---|---|---|
+| 时间轴拉取失败（节点清单接口 rejected / 非 2xx） | 时间轴 `.pg-node-list` 整体替换为错误面板（月历、横带、hero 标题不动） | 图标 `wifi-off`（网络级）或 `cloud-off`（服务端）18px / `--state-error-text`；面板：底 `--state-error-bg` + 1px `--state-error` 描边 + `--radius-md`，留白上下 `--space-7`、居中；标题「节点清单暂时失联」：`--font-body` / 14px / 600 / `--text-strong`；描述「拉取投递节点失败（`ERR-CAL-503`），可重试或稍后再来」：12.5px / `--text-muted`，错误码 mono；重试按钮复用次级按钮语言（`--surface-1` 底 + `--mt-hairline-strong` 描边 + 34px 高，hover 赤陶描边 `--app-applicant`），文案「重试」+ `refresh-cw` 图标；hero 四指标同步降级为「--」（mono / `--text-faint`）；紧节点提醒条隐藏（数据不可信不出提醒） | 点击「重试」→ 时间轴回到 B.6 的 8 行同构骨架 → 成功出节点、失败回面板并刷新错误码；重试期间按钮禁用；面板挂 `aria-live="assertive"` |
+| 月历独立加载失败（月历与时间轴可分别失败） | 月历区 `.pg-rail` 显示行内错误条 + **保留网格壳** | 网格壳（7 列模板 + 网格线 + 边框圆角）保持渲染，格内日期数字照常直出、圆点全部不渲染；网格上方插行内错误条：底 `--state-error-bg` + 1px `--state-error` 描边 + `--radius-md`，内联 `cloud-off` 16px + 描述「本月节点没取到（`ERR-CAL-500`），日期仍然可看」12.5px / `--state-error-text` + 下划线链接「重试」（`--font-mono` / 12px，hover 加深）；不影响时间轴与图例（图例静态直出） | 点击「重试」→ 仅月历区圆点位与月份读数回骨架 → 成功补圆点、失败回错误条；月切换按钮期间不禁用（可切走避开坏月份） |
+
+- **重试回骨架**：两个区域重试均先回 B.6 同构骨架（9.4），禁止从错误面板 / 错误条直接翻转为内容；重试期间入口禁用防连点
+- **优先级**：错误 > 空 > 加载完成。月历错误条与「格子无圆点」的数据缺失表现互斥——rejected 出错误条，fulfilled 无节点才是静默无圆点；两区域错误可并存（时间轴面板 + 月历错误条同屏），各自独立重试
+- **D-day 跨时区口径**：D-xx 读数（含 hero「最近截止 D-9」与节点 `.pg-dday`）以**服务端时间的东八区日界**为计算基准，客户端本地时区不参与 D-day 换算；用户设备时区偏离东八区时，页面展示的 D-day 与用户本地感知的「天数差」最多偏差 1 天，属已知口径不作换算提示；今日反色格（`.pg-cal-cell--today`）同样锚定东八区日期。时间源不可得（未配 NTP / 接口未返回时间戳）时按浏览器本地时间兜底，不阻断渲染。
+- **不自动重试**：节点清单与月历均为读多写少的数据区，首屏失败各自动静默重试至多 1 次（网络级）；失败后手动入口唯一。
+
+#### 行内/轻量错误（toast 与字段）
+
+本页无表单与写操作（节点动作均为链接跳转），无 toast / 字段级错误触点；月切换按钮失败按上方「月历独立加载失败」行内错误条处理，不升级 toast。
+
+#### 文案规范
+
+- 时间轴失败：标题「节点清单暂时失联」+ 描述「拉取投递节点失败（`ERR-CAL-503`），可重试或稍后再来」+ 按钮「重试」
+- 月历失败：行内条「本月节点没取到（`ERR-CAL-500`），日期仍然可看」+ 链接「重试」
+- 网络超时（时间轴）：标题「节点没拉取成功」+ 描述「网络不稳，节点清单没拉取成功（`ERR-NET-408`）」+ 按钮「重试」
+
+### B.8 可访问性与响应式
+
+#### 可访问性
+
+- **aria**：
+  - 紧节点提醒 `.pg-urgent` 挂 `role="note" aria-label="紧节点提醒"`——提示性内容不作 alert 打断
+  - 月历网格 `.pg-cal-grid` 挂 `aria-label="2026 年 9 月投递节点日历，周一为每周第一天"`（随月份动态生成）；有节点日格子挂事件描述 `aria-label`（如「9 月 12 日：字节跳动前端工程师视频一面」），今日格挂「今天，9 月 10 日」；圆点 `.pg-cal-dot` 与空位格 `.pg-cal-cell--empty` 均 `aria-hidden="true"`
+  - 时间轴用真实列表语义 `<ol class="pg-node-list">`（D-day 排序即阅读顺序）；紧邻读数 `.pg-dday` 挂人类可读 `aria-label`（「两天后」「三天前已了结」），仅 soon / done 两档挂、普通档不挂
+  - 区块标注：hero `aria-labelledby="pg-hero-title"`、时间轴 `aria-labelledby="pg-nodes-title"`、月历 `<aside aria-label="本月投递日历">`、横带 `aria-labelledby="pg-companies-title"`、主导航 `aria-label="主导航"`；全部装饰图标 `aria-hidden="true"`
+- **focus-visible**：本页私有控件（`.pg-link`、`.pg-cal-nav`）→ `outline: 2px solid var(--app-applicant); outline-offset: 2px`（赤陶环，与岗位博览页私有控件同口径）；UserShell 层导航 / 返回总览 / 页脚链接为墨蓝环 `--mt-ink-500`、admin 按钮为琥珀环 `--mt-amber-600`（§7.6）
+- **prefers-reduced-motion: reduce**：`.pg-link` / `.pg-cal-nav` / `.pg-company` 过渡全部禁用（`transition: none`），叠加 UserShell 四类链接/按钮禁用（§7.6）
+
+#### 响应式（本页私有刻度 860 / 720 / 640 + 壳层 920 / 640，壳层行为见 §7.6）
+
+| 断点 | 行为 |
+|---|---|
+| ≤920px（壳层） | 报头换行、导航整行置底（order:3）、主区 padding 收窄 `20px 16px 48px` |
+| ≤860px | 两栏棋盘 `.pg-board` 并单列（`grid-template-columns: minmax(0,1fr)`）；月历栏 `.pg-rail` `order: -1` 置顶且 `position: static`（sticky 解除）；hero 副文 `max-width: none` 放开限宽 |
+| ≤720px | 节点行 `.pg-node` 四段改三列两行堆叠（`grid-template-columns: 88px minmax(0,1fr) auto` + `row-gap: var(--space-2)`）：D-day 与岗位一行，badge 落第二行首列（`.pg-node-type { grid-column: 1 / 2 }`）、动作落第二行岗位列起点（`.pg-node-action { grid-column: 2 / -1; justify-self: start }`） |
+| ≤640px | `.pg-page` 区块间距 `--space-7`→`--space-6`；读数行行距收紧（`--space-2`）；小节头 `.pg-sec-head` 改纵向排列；壳层同步品牌区限宽 58%、admin 按钮收窄、页脚纵向堆叠 |
+
+---
+
+## 附录 C · 批次 3 新页速览
+
+> 本附录覆盖批次 3 落地的 3 个前台新页 / 重构页：C.1 使用反馈页（assistant-feedback.html）、C.2 组件馆藏前台页（designer-components.html）、C.3 书库 front 重构（scholar-front.html）。沿用速览口径：交互元素表 + 互跳表，全部元素 / href / 类名均按各 HTML 实测，未含虚构项。
+
+### C.1 使用反馈页（assistant-feedback.html）
+
+助手前台新增反馈直达页（编辑部气质窄栏 `pg-feedback`）。报头 `ASSISTANT · FEEDBACK / 使用反馈`；本页**不在导航内**——经对话页侧边「反馈」入口进入，selectedKey 仍指向 /chat，故导航仅保留单项「对话」且保持激活态（HTML 注释明示此口径）。页面构成：hero（衬线标题「说说这次的使用体验」+ 副文 + mono 读数行 本月反馈 186 / 已响应 172 / 平均响应 6h）→ 01 反馈类型三枚大 chip 单选（点赞默认 `aria-pressed="true"` / 点踩 / 纠错）→ 02 反馈表单卡（关联会话下拉 + 最近会话快捷选择 ×3 / 反馈内容 textarea `maxlength=500` / 纠错附加字段「错误分类」chip 行 答非所问·事实错误(默认选中)·引用失效·其他 / 提交行「提交反馈」+ 字数 0/500）→ 03 我的反馈历史（4 条目录式条目，时间 + 类型徽标 + 摘要 + 状态徽标；空态备用文案「还没有反馈记录，第一句话从上面开始」以注释预留）。
+
+交互元素清单（实测）：
+
+| # | 元素 | DOM 标识/选择器 | 类型 | 触发行为 | 去向/反馈 |
+|---|------|----------------|------|----------|-----------|
+| 1 | 导航 · 对话 | `a[data-nav-key="chat"]`（`data-active="true"`） | 链接 | 点击跳转 | `./assistant-front.html`（本页不在导航内，回对话页） |
+| 2 | 返回总览 | `a[data-dom-id="back-platform"]`（`.us-back-link`） | 链接 | 点击跳转 | `./index.html` |
+| 3 | 后台管理 | `a[data-dom-id="link-admin"]`（`.us-admin-btn`） | 链接按钮 | 点击跳转 | `./assistant-admin.html`，琥珀描边 + `wrench` |
+| 4 | 反馈类型 chip · 点赞 | `button.pg-type-chip.pg-type-up`（`aria-pressed="true"` 默认选中） | 单选 chip | 点击切换 | 选中态呈现 |
+| 5 | 反馈类型 chip · 点踩 | `button.pg-type-chip.pg-type-down`（`aria-pressed="false"`） | 单选 chip | 点击切换 | 同上 |
+| 6 | 反馈类型 chip · 纠错 | `button.pg-type-chip.pg-type-fix`（`aria-pressed="false"`） | 单选 chip | 点击切换 | 选中后展示错误分类字段 |
+| 7 | 关联会话下拉 | `button.pg-select`（`aria-labelledby="pg-session-label"`、`aria-haspopup="listbox"`） | 下拉触发 | 点击展开 | 当前值「不关联具体会话」 |
+| 8 | 最近会话快捷 ×3 | `button.pg-recent-item`（CHAT-2026-0908 / 0907 / 0906） | 快捷按钮 | 点击选中会话 | 填入关联会话值 |
+| 9 | 反馈内容输入 | `textarea#pg-feedback-content`（`maxlength="500"`，placeholder「说说哪里好用、哪里别扭…」） | 多行输入 | 输入内容 | 计数 `.pg-count`（aria-live="polite"）同步「n / 500」 |
+| 10 | 错误分类 chip ×4 | `button.pg-cat-chip`（答非所问 / 事实错误 `aria-pressed="true"` / 引用失效 / 其他） | 单选 chip | 点击切换 | 纠错时展示（`.pg-label-hint` 标注） |
+| 11 | 提交反馈 | `button.pg-submit`（`type="submit"`，`send` 图标） | 实心主按钮 | 提交表单 | 表单提交（设计稿态无实装端点） |
+| 12 | 历史条目徽标 | `.pg-badge-type`（纠错 warning / 点赞 success / 点踩 error）与 `.pg-badge-status`（已响应 success / 待处理 warning） | 静态徽标 | 无 | 目录式条目状态展示 |
+
+页面互跳（实测）：
+
+| 入口元素 | DOM 标识 | 目标页面 | 实现方式 |
+|---|---|---|---|
+| 导航 · 对话 | `a[data-nav-key="chat"][data-active="true"]` | `./assistant-front.html` | `<a href>` |
+| 返回总览 | `a[data-dom-id="back-platform"]` | `./index.html` | `<a href>` |
+| 后台管理（报头按钮） | `a[data-dom-id="link-admin"]` | `./assistant-admin.html` | `<a href>` |
+| 页脚 · 管理后台 | `a.us-footer-admin` | `./assistant-admin.html` | `<a href>` |
+
+入向：对话页（assistant-front.html）导航「使用反馈」项 `href` 实测仍为 `#` 占位（未接本页），本页暂以直链 / 内部入口方式到达；对话页侧边「反馈」入口为规划路径（HTML 注释口径）。
+
+### C.2 组件馆藏前台页（designer-components.html）
+
+工坊前台新增列表形态馆藏页（批次 3 落地）。报头 `DESIGNER · LIBRARY / 组件馆藏`，导航「组件馆藏」激活。页面构成：① 页头工具区（标题「组件馆藏」+ 副文 + 搜索框「搜索组件名 / slug」+ 工具行：读数「在册 86 · 已发布 54」+ 分类 chip 全部/基础/表单/展示/导航 + 状态 chip 全部/已发布/草稿）→ ② 在架组件网格（SHOWING 8 / 86，auto-fill 卡片网格 8 卡：按钮 v2.3.1 / 输入框 v2.1.3 / 数据表格 v3.0.0 / 标签 v1.8.0 / 开关 v0.9.4 / 下拉选择 v1.4.2 / 分页 v2.0.1 / 面包屑 v1.6.0；每卡 = 预览缩略 `.pg-thumb` + 名称行（精选星标 + 版本）+ 分类/状态徽标 + 「使 用」/「查看」动作）→ ③ 底部 CTA 条（「没找到合适的？」+「去定制生成」按钮）。
+
+交互元素清单（实测）：
+
+| # | 元素 | DOM 标识/选择器 | 类型 | 触发行为 | 去向/反馈 |
+|---|------|----------------|------|----------|-----------|
+| 1 | 导航 · 定制生成 | `a[data-nav-key="generate"]`（`data-active="false"`） | 链接 | 点击跳转 | `./designer-generate.html` |
+| 2 | 导航 · 画布工坊 | `a[data-nav-key="studio"]`（`data-active="false"`） | 链接 | 点击跳转 | `./designer-studio.html` |
+| 3 | 导航 · 组件馆藏（当前页） | `a[data-nav-key="components"]`（`data-active="true"`） | 链接 | 点击跳转 | `./designer-components.html`（自指） |
+| 4 | 返回总览 | `a[data-dom-id="back-platform"]`（`.us-back-link`） | 链接 | 点击跳转 | `./index.html` |
+| 5 | 后台管理 | `a[data-dom-id="link-admin"]`（`.us-admin-btn`） | 链接按钮 | 点击跳转 | `./designer-admin.html`，琥珀描边 + `wrench` |
+| 6 | 组件搜索框 | `input.pg-search-input`（`type="search"`，`aria-label="搜索组件"`，placeholder「搜索组件名 / slug」） | 搜索输入 | 输入关键词 | 容器 `.pg-search` 聚焦反馈 |
+| 7 | 分类筛选 chip ×5 | `button.pg-chip`（全部 `aria-pressed="true"` 默认 / 基础 / 表单 / 展示 / 导航，`role="group"[aria-label="按分类筛选"]`） | 胶囊按钮 | 点击切换选中 | 选中态呈现 |
+| 8 | 状态筛选 chip ×3 | `button.pg-chip`（全部 `aria-pressed="true"` 默认 / 已发布 / 草稿，`role="group"[aria-label="按状态筛选"]`） | 胶囊按钮 | 点击切换选中 | 同上 |
+| 9 | 组件卡「使 用」×8 | `button.pg-use`（`type="button"`，各卡 `.pg-card-actions` 内） | 次级按钮 | 点击取用组件 | 取用动作（设计稿态） |
+| 10 | 组件卡「查看」×8 | `a.pg-view`（各卡 `.pg-card-actions` 内） | 文字链 | 点击跳转 | `./designer-components.html`（当前页自指，详情页未实装） |
+| 11 | 去定制生成（CTA） | `a.pg-cta-btn`（`arrow-right` 图标） | 次级按钮 | 点击跳转 | `./designer-generate.html` |
+| 12 | 页脚 · 管理后台 | `a.us-footer-admin` | 链接 | 点击跳转 | `./designer-admin.html` |
+
+注：读数行 `.pg-readout`（`role="status"`）与精选星标 `.pg-card-star`（`role="img" aria-label="精选"`）为静态展示。
+
+页面互跳（实测）：
+
+| 入口元素 | DOM 标识 | 目标页面 | 实现方式 |
+|---|---|---|---|
+| 导航 · 定制生成 | `a[data-nav-key="generate"]` | `./designer-generate.html` | `<a href>` |
+| 导航 · 画布工坊 | `a[data-nav-key="studio"]` | `./designer-studio.html` | `<a href>` |
+| 导航 · 组件馆藏（当前页自指） | `a[data-nav-key="components"]` | `./designer-components.html` | `<a href>` |
+| 返回总览 | `a[data-dom-id="back-platform"]` | `./index.html` | `<a href>` |
+| 后台管理（报头按钮） | `a[data-dom-id="link-admin"]` | `./designer-admin.html` | `<a href>` |
+| 页脚 · 管理后台 | `a.us-footer-admin` | `./designer-admin.html` | `<a href>` |
+| 卡片「查看」×8 | `a.pg-view` ×8 | `./designer-components.html`（自指占位） | `<a href>` |
+| CTA · 去定制生成 | `a.pg-cta-btn` | `./designer-generate.html` | `<a href>` |
+
+入向与链接口径说明：工坊其余 3 页（designer-front / designer-generate / designer-studio）导航「组件馆藏」`href` 实测均为 `./designer-front.html`（互指画廊页，**未指向本页 designer-components.html**）；本页当前主要经直链或 C.2 内部入口到达。实测未发现任何馆藏链接指向 designer-admin（designer-generate / designer-studio 内的 `designer-admin` 链接仅为报头「后台管理」按钮与页脚「管理后台」，属 §7.3 / §7.4 既有契约，非馆藏跳转）。
+
+### C.3 书库 front 重构说明（scholar-front.html）
+
+scholar-front 已从「检索叙事」重构为**馆藏条目列表形态**（D-14），检索职责移交书目检索页（scholar-search.html）。正文第 3 章 3.1 已加修订注记，本节速览重构后的关键事实：
+
+**新结构**（编辑部条目总目构图）：
+
+1. **报头**：eyebrow `SCHOLAR · ENTRIES` + 应用名「馆藏条目」→ 导航 3 项（entries / search / graph）→ 动作区（返回总览 + 后台管理）
+2. **编辑部页头（pg-head）**：标题「馆藏条目」+ 副文「全库馆藏条目总目：书籍、论文与网页剪存按入库次序编列，可按类型与来源圈定，逐条查阅、收藏与整理。」+ mono 读数「在册 3,284 / 本月入库 47 / 未读 12」
+3. **快捷检索表单（pg-quick-search）**：入口捷径——GET 提交 `action="./scholar-search.html"` 携 `q` 参数（placeholder「快捷检索书名、作者、关键词，回车前往书目检索…」），旁挂「去书目检索」文字链；完整检索能力由书目检索页承接
+4. **筛选工具行（pg-toolbar）**：类型 chip（全部/书籍/论文/网页）+ 来源 chip（采集/录入/API）+ 排序下拉（最近入库/标题/年份）
+5. **书脊目录列表（pg-entries）**：10 行条目，每行 = 书脊竖条 `.pg-spine`（按来源三色 gather/api/manual）+ 主体（书名链接 + 作者·年份·类型 + 来源徽标）+ 元信息（日期 + 已读/未读）+ 收藏星标 `.pg-star`（aria-pressed 切换，已收藏 accent 填充）
+6. **分页（pg-pagination）**：「1–10 / 3,284」+ 页码按钮组（1/2/3/…/329/下一页）
+7. **sticky 侧栏（pg-aside）**：最近入库 ×5（日期右挂）/ 图谱速览（network 图标 + 12,560 节点 + 「前往图谱」链接 → `./scholar-graph.html`）/ 未读清单 ×3（圆点前缀）
+
+**检索移交口径**：本页不再承担检索结果页职责——检索输入仅作为快捷入口（表单 GET 跳转 scholar-search?q=…），类目书签（pg-cat）、高级检索（pg-adv-btn）、图谱横幅（pg-graph-banner）等重构前元素已随重构移除；正文 3.2–3.9 中涉及上述元素的结构 / 状态 / 断点描述为重构前版本，以 3.1 修订注记与当前 HTML 为准。
+
+**互跳**（实测，与 3.5 更新行一致）：
+
+| 入口元素 | DOM 标识 | 目标页面 | 实现方式 |
+|---|---|---|---|
+| 导航 · 书目检索 | `a[data-nav-key="search"]` | `./scholar-search.html` | `<a href>` |
+| 导航 · 知识图谱 | `a[data-nav-key="graph"]` | `./scholar-graph.html` | `<a href>` |
+| 快捷检索表单提交 | `form.pg-quick-search[action="./scholar-search.html"][method="get"]` | `./scholar-search.html?q=…` | `<form action>` GET |
+| 去书目检索文字链 | `a.pg-quick-link` | `./scholar-search.html` | `<a href>` |
+| 前往图谱（侧栏） | `a.pg-graph-go` | `./scholar-graph.html` | `<a href>` |
+| 返回总览 | `a[data-dom-id="back-platform"]` | `./index.html` | `<a href>` |
+| 后台管理（报头按钮） | `a[data-dom-id="link-admin"]` | `./scholar-admin.html` | `<a href>` |
+| 页脚 · 管理后台 | `a.us-footer-admin` | `./scholar-admin.html` | `<a href>` |
+
+注：书目条目链接（`a[href="#"]`，书名与侧栏条目）仍为占位；收藏星标为按钮型切换（`aria-pressed`），不产生页面跳转。

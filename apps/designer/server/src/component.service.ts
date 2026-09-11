@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
-import { deleteComponent, findComponentByName, getComponent, insertComponent, listComponents } from "./component.repo";
+import { deleteComponent, findComponentByName, getComponent, insertComponent, listComponents, type CanvasDocRow } from "./component.repo";
 import { componentInputSchema } from "./schemas";
 
 @Injectable()
@@ -7,8 +7,8 @@ export class ComponentService {
   async add(input: unknown) {
     const parsed = componentInputSchema.safeParse(input);
     if (!parsed.success) throw new BadRequestException("name 与 code 必填");
-    const { name, description, code } = parsed.data;
-    const inserted = await insertComponent(name, description, code);
+    const { name, description, code, schema } = parsed.data;
+    const inserted = await insertComponent(name, description, code, schema as CanvasDocRow | undefined);
     if (inserted) return { component: inserted, duplicated: false };
     return { component: await findComponentByName(name), duplicated: true };
   }

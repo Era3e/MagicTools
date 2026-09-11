@@ -15,7 +15,7 @@
           "contentHeight": 1288,
           "viewportWidth": 1440,
           "sourceHash": "fnv1a-38089369",
-          "measuredAt": 1788923887719
+          "measuredAt": 1789094260601
         }
       },
       "devMetadata": {
@@ -37,12 +37,35 @@
           "version": 1,
           "contentHeight": 1296,
           "viewportWidth": 1440,
-          "sourceHash": "fnv1a-5ec1caea",
-          "measuredAt": 1788923887719
+          "sourceHash": "fnv1a-56014584",
+          "measuredAt": 1789094260601
         }
       },
       "devMetadata": {
         "htmlSrc": "pages/applicant-front.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-applicant-calendar",
+      "title": "投递日历 · D-15",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1788924000000,
+      "canvasData": {
+        "x": 480,
+        "y": 486,
+        "group": 1,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1391,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-7b99844b",
+          "measuredAt": 1789094260601
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/applicant-calendar.html",
         "interactions": []
       }
     },
@@ -53,15 +76,15 @@
       "version": 1,
       "createdAt": 1788846500200,
       "canvasData": {
-        "x": 480,
+        "x": 960,
         "y": 486,
         "group": 1,
         "layoutSnapshot": {
           "version": 1,
           "contentHeight": 1020,
           "viewportWidth": 1440,
-          "sourceHash": "fnv1a-a2b93b29",
-          "measuredAt": 1788923887719
+          "sourceHash": "fnv1a-26cfa5e8",
+          "measuredAt": 1789106037311
         }
       },
       "devMetadata": {
@@ -71,20 +94,20 @@
     },
     {
       "id": "page-scholar-front",
-      "title": "书库前台 · 馆藏检索",
+      "title": "馆藏条目 · 书库前台",
       "type": "page",
       "version": 1,
       "createdAt": 1788846500300,
       "canvasData": {
         "x": 0,
-        "y": 974,
+        "y": 1002,
         "group": 2,
         "layoutSnapshot": {
           "version": 1,
-          "contentHeight": 1380,
+          "contentHeight": 1387,
           "viewportWidth": 1440,
-          "sourceHash": "fnv1a-05a2d7ce",
-          "measuredAt": 1788923887719
+          "sourceHash": "fnv1a-0567fe22",
+          "measuredAt": 1789094260601
         }
       },
       "devMetadata": {
@@ -100,14 +123,14 @@
       "createdAt": 1788846500400,
       "canvasData": {
         "x": 480,
-        "y": 974,
+        "y": 1002,
         "group": 2,
         "layoutSnapshot": {
           "version": 1,
           "contentHeight": 1020,
           "viewportWidth": 1440,
-          "sourceHash": "fnv1a-c5fa1f38",
-          "measuredAt": 1788923887719
+          "sourceHash": "fnv1a-b2ab3b75",
+          "measuredAt": 1789094260601
         }
       },
       "devMetadata": {
@@ -123,14 +146,14 @@
       "createdAt": 1788846500500,
       "canvasData": {
         "x": 0,
-        "y": 1487,
+        "y": 1575,
         "group": 3,
         "layoutSnapshot": {
           "version": 1,
           "contentHeight": 900,
           "viewportWidth": 1440,
-          "sourceHash": "fnv1a-4311d1af",
-          "measuredAt": 1788870327217
+          "sourceHash": "fnv1a-a7bb6bd8",
+          "measuredAt": 1789106037311
         }
       },
       "devMetadata": {
@@ -146,14 +169,14 @@
       "createdAt": 1788869000000,
       "canvasData": {
         "x": 480,
-        "y": 1487,
+        "y": 1575,
         "group": 3,
         "layoutSnapshot": {
           "version": 1,
           "contentHeight": 1223,
           "viewportWidth": 1440,
           "sourceHash": "fnv1a-2621c729",
-          "measuredAt": 1788923887719
+          "measuredAt": 1789094260601
         }
       },
       "devMetadata": {
@@ -169,14 +192,14 @@
       "createdAt": 1788846500600,
       "canvasData": {
         "x": 960,
-        "y": 1487,
+        "y": 1575,
         "group": 3,
         "layoutSnapshot": {
           "version": 1,
           "contentHeight": 1242,
           "viewportWidth": 1440,
-          "sourceHash": "fnv1a-f9836058",
-          "measuredAt": 1788923887719
+          "sourceHash": "fnv1a-3c1e9ef2",
+          "measuredAt": 1789094260601
         }
       },
       "devMetadata": {
@@ -192,14 +215,14 @@
       "createdAt": 1788846500700,
       "canvasData": {
         "x": 0,
-        "y": 1959,
+        "y": 2047,
         "group": 4,
         "layoutSnapshot": {
           "version": 1,
           "contentHeight": 1211,
           "viewportWidth": 1440,
-          "sourceHash": "fnv1a-ce2eb356",
-          "measuredAt": 1788923887719
+          "sourceHash": "fnv1a-3d2bc6ff",
+          "measuredAt": 1789094260601
         }
       },
       "devMetadata": {
@@ -215,14 +238,14 @@
       "createdAt": 1788846500800,
       "canvasData": {
         "x": 480,
-        "y": 1959,
+        "y": 2047,
         "group": 4,
         "layoutSnapshot": {
           "version": 1,
           "contentHeight": 1036,
           "viewportWidth": 1440,
-          "sourceHash": "fnv1a-7a0f8387",
-          "measuredAt": 1788923887719
+          "sourceHash": "fnv1a-6e676cf0",
+          "measuredAt": 1789094260601
         }
       },
       "devMetadata": {
@@ -238,14 +261,14 @@
       "createdAt": 1788846500900,
       "canvasData": {
         "x": 0,
-        "y": 2422,
+        "y": 2547,
         "group": 5,
         "layoutSnapshot": {
           "version": 1,
           "contentHeight": 1431,
           "viewportWidth": 1440,
-          "sourceHash": "fnv1a-42a4e349",
-          "measuredAt": 1788924302626
+          "sourceHash": "fnv1a-5ca805d2",
+          "measuredAt": 1789104973483
         }
       },
       "devMetadata": {
@@ -261,14 +284,14 @@
       "createdAt": 1788846501000,
       "canvasData": {
         "x": 480,
-        "y": 2422,
+        "y": 2547,
         "group": 5,
         "layoutSnapshot": {
           "version": 1,
           "contentHeight": 1042,
           "viewportWidth": 1440,
-          "sourceHash": "fnv1a-5947d946",
-          "measuredAt": 1788924302626
+          "sourceHash": "fnv1a-025633c5",
+          "measuredAt": 1789104973483
         }
       },
       "devMetadata": {
@@ -284,14 +307,14 @@
       "createdAt": 1788846501100,
       "canvasData": {
         "x": 0,
-        "y": 2948,
+        "y": 3225,
         "group": 6,
         "layoutSnapshot": {
           "version": 1,
           "contentHeight": 1015,
           "viewportWidth": 1440,
           "sourceHash": "fnv1a-3ef47310",
-          "measuredAt": 1788924302626
+          "measuredAt": 1789104973483
         }
       },
       "devMetadata": {
@@ -307,7 +330,7 @@
       "createdAt": 1788846501200,
       "canvasData": {
         "x": 0,
-        "y": 3435,
+        "y": 3782,
         "group": 7,
         "layoutSnapshot": {
           "version": 1,
@@ -330,14 +353,14 @@
       "createdAt": 1788846501300,
       "canvasData": {
         "x": 0,
-        "y": 3839,
+        "y": 4310,
         "group": 8,
         "layoutSnapshot": {
           "version": 1,
           "contentHeight": 1128,
           "viewportWidth": 1440,
-          "sourceHash": "fnv1a-ca724187",
-          "measuredAt": 1788924302626
+          "sourceHash": "fnv1a-3c7303a1",
+          "measuredAt": 1789104973483
         }
       },
       "devMetadata": {
@@ -353,14 +376,14 @@
       "createdAt": 1788870000000,
       "canvasData": {
         "x": 480,
-        "y": 2948,
+        "y": 3225,
         "group": 6,
         "layoutSnapshot": {
           "version": 1,
           "contentHeight": 1302,
           "viewportWidth": 1440,
           "sourceHash": "fnv1a-1df172b4",
-          "measuredAt": 1788924302626
+          "measuredAt": 1789104973483
         }
       },
       "devMetadata": {
@@ -376,7 +399,7 @@
       "createdAt": 1788870000100,
       "canvasData": {
         "x": 480,
-        "y": 3839,
+        "y": 4310,
         "group": 8,
         "layoutSnapshot": {
           "version": 1,
@@ -388,6 +411,397 @@
       },
       "devMetadata": {
         "htmlSrc": "pages/assessor-batch-demo.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-applicant-position-detail",
+      "title": "岗位详情 · 求职",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1789087524420,
+      "canvasData": {
+        "x": 1440,
+        "y": 486,
+        "group": 1,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1257,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-ab078659",
+          "measuredAt": 1789094260601
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/applicant-position-detail.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-applicant-interview",
+      "title": "面试管理 · 求职",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1789087524420,
+      "canvasData": {
+        "x": 1920,
+        "y": 486,
+        "group": 1,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1206,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-028fc11f",
+          "measuredAt": 1789094260601
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/applicant-interview.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-applicant-resume",
+      "title": "简历中心 · 求职",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1789087524420,
+      "canvasData": {
+        "x": 2400,
+        "y": 486,
+        "group": 1,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 900,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-ebd01d38",
+          "measuredAt": 1789089424502
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/applicant-resume.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-scholar-search",
+      "title": "书目检索 · 书库",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1789087524420,
+      "canvasData": {
+        "x": 960,
+        "y": 1002,
+        "group": 2,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1459,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-cf4f0c35",
+          "measuredAt": 1789094260601
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/scholar-search.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-scholar-graph",
+      "title": "知识图谱 · 书库",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1789087524420,
+      "canvasData": {
+        "x": 1440,
+        "y": 1002,
+        "group": 2,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 924,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-1f0ae13c",
+          "measuredAt": 1789094260601
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/scholar-graph.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-scholar-settings-admin",
+      "title": "知识库设置 · 书库后台",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1789087524420,
+      "canvasData": {
+        "x": 1920,
+        "y": 1002,
+        "group": 2,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1587,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-74f40d07",
+          "measuredAt": 1789094260601
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/scholar-settings-admin.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-assistant-feedback-admin",
+      "title": "反馈处理 · 助手后台",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1789087524420,
+      "canvasData": {
+        "x": 1440,
+        "y": 1575,
+        "group": 3,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1020,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-d50d779c",
+          "measuredAt": 1789094260601
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/assistant-feedback-admin.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-manager-requirement-detail",
+      "title": "需求详情 · 交付前台",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1789087524420,
+      "canvasData": {
+        "x": 960,
+        "y": 2047,
+        "group": 4,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1337,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-25bddd5f",
+          "measuredAt": 1789094260601
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/manager-requirement-detail.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-manager-iteration-admin",
+      "title": "迭代管理 · 交付后台",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1789087524420,
+      "canvasData": {
+        "x": 1440,
+        "y": 2047,
+        "group": 4,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1003,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-41e0cc6a",
+          "measuredAt": 1789094260601
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/manager-iteration-admin.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-designer-generate",
+      "title": "定制生成 · 工坊前台",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1789087524420,
+      "canvasData": {
+        "x": 960,
+        "y": 2547,
+        "group": 5,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1949,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-93b02ec9",
+          "measuredAt": 1789104973483
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/designer-generate.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-designer-studio",
+      "title": "画布工坊 · 工坊前台",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1789087524420,
+      "canvasData": {
+        "x": 1440,
+        "y": 2547,
+        "group": 5,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1023,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-83efe950",
+          "measuredAt": 1789104973483
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/designer-studio.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-designer-history-admin",
+      "title": "生成历史 · 工坊后台",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1789087524420,
+      "canvasData": {
+        "x": 1920,
+        "y": 2547,
+        "group": 5,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1006,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-b222b3a0",
+          "measuredAt": 1789104973483
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/designer-history-admin.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-gatherer-source-detail",
+      "title": "源详情 · 采集后台",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1789087524420,
+      "canvasData": {
+        "x": 960,
+        "y": 3225,
+        "group": 6,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1534,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-c87c3a53",
+          "measuredAt": 1789104973483
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/gatherer-source-detail.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-investigator-survey-detail",
+      "title": "调研详情 · 调研后台",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1789087524420,
+      "canvasData": {
+        "x": 480,
+        "y": 3782,
+        "group": 7,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1434,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-b4cfe1b5",
+          "measuredAt": 1789104973483
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/investigator-survey-detail.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-assessor-request-detail",
+      "title": "请求详情 · 评审后台",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1789087524420,
+      "canvasData": {
+        "x": 960,
+        "y": 4310,
+        "group": 8,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1140,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-e22c4abe",
+          "measuredAt": 1789104973483
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/assessor-request-detail.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-assistant-feedback",
+      "title": "使用反馈 · 助手前台",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1789094010464,
+      "canvasData": {
+        "x": 1920,
+        "y": 1575,
+        "group": 3,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1242,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-4d5b7cad",
+          "measuredAt": 1789094260601
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/assistant-feedback.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-designer-components",
+      "title": "组件馆藏 · 工坊前台",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1789094010464,
+      "canvasData": {
+        "x": 2400,
+        "y": 2547,
+        "group": 5,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1080,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-a6d87199",
+          "measuredAt": 1789104973483
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/designer-components.html",
         "interactions": []
       }
     }

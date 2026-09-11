@@ -9,10 +9,11 @@
 - [1. 工坊后台 · 组件馆藏（designer-admin.html）](#1-工坊后台--组件馆藏designer-adminhtml)
 - [2. 采集后台 · 采集源管理（gatherer-admin.html）](#2-采集后台--采集源管理gatherer-adminhtml)
 - [3. 调研后台 · 调研管理（investigator-admin.html）](#3-调研后台--调研管理investigator-adminhtml)
-- [4. 评审后台 · 评审请求（assessor-admin.html）](#4-评审后台--评审请求assessor-adminhtml)
+- [4. 评审后台 · 分析请求审批（assessor-admin.html）](#4-评审后台--分析请求审批assessor-adminhtml)
 - [5. AdminShell 共性交互契约](#5-adminshell-共性交互契约)
 - [6. 空态与加载态共性规范（AdminShell）](#6-空态与加载态共性规范adminshell)
 - [7. 错误态共性规范（AdminShell）](#7-错误态共性规范adminshell)
+- [附录 · 批次新增页速览](#附录--批次新增页速览)
 
 ---
 
@@ -26,7 +27,7 @@
 
 按实际 DOM 顺序（`.as-layout` 一栏式双轨布局）：
 
-1. `aside.as-sider` — 240px 吸左侧栏：品牌区（`MAGICTOOLS · DESIGNER · CONTROL` / 工坊后台）→ `nav.as-nav`（aria-label="后台主导航"，两组六项）→ `as-sider-foot`（返回前台 / 返回总览）
+1. `aside.as-sider` — 240px 吸左侧栏：品牌区（`MAGICTOOLS · DESIGNER · CONTROL` / 工坊后台）→ `nav.as-nav`（aria-label="后台主导航"，两组五项：控制台 3 + 业务 2）→ `as-sider-foot`（返回前台 / 返回总览）
 2. `header.as-topbar` — 52px 吸顶玻璃顶栏：面包屑「工坊后台 / 组件馆藏」＋右侧 `V2.2` 版本号 ＋ `ENV · PROD` 环境徽标（含 5px 圆点）
 3. `main.as-content` —
    - `div.as-pagehead`（AdminPageHead 七槽位，见 §5.3）：eyebrow `ADMIN · COMPONENTS` → 标题「组件馆藏」→ 状态徽标（success「服务正常」，内嵌 `check-circle-2` 12px 图标）→ 描述「管理组件生命周期，从草稿到发布。」→ 右侧动作区（导出 / 发布组件）→ KPI 行 → 底部 hairline 分隔
@@ -39,9 +40,8 @@
 | 总览 | `overview` | **data-active="true"** | 控制台 | layout-dashboard |
 | 系统设置 | `settings` | — | 控制台 | settings |
 | 访问日志 | `audit` | — | 控制台 | scroll-text |
-| 组件馆藏 | `components` | **data-active="true"**（本页业务项） | 业务 | package |
-| 委托管理 | `commissions` | — | 业务 | inbox |
-| 发布历史 | `releases` | — | 业务 | git-commit-horizontal |
+| 组件馆藏 | `components` | **data-active="true"**（本页业务项，href `./designer-admin.html`） | 业务 | package |
+| 生成历史 | `history` | —（href `./designer-history-admin.html`，见附录 A.1） | 业务 | history |
 
 > 实际代码中 `overview` 与 `components` 两项**同时**带 `data-active="true"`（总览为控制台常亮锚点，业务项随页面切换），实现时保持该双激活语义。激活态视觉：`.as-nav-item[data-active="true"] { color: var(--text-strong); box-shadow: inset 2px 0 0 var(--mt-amber-400); }` 即左 2px 琥珀指示条 + 文字提亮；hover 态为 `color: var(--text-body); background: var(--surface-2)`，120ms 过渡。
 
@@ -53,23 +53,22 @@
 | 2 | 系统设置 | `.as-nav-item[data-nav-key="settings"]` | 导航链接 | 点击进入系统设置 | 同壳内路由 |
 | 3 | 访问日志 | `.as-nav-item[data-nav-key="audit"]` | 导航链接 | 点击进入访问日志 | 同壳内路由 |
 | 4 | 组件馆藏 | `.as-nav-item[data-nav-key="components"]`（active） | 导航链接 | 点击回到本页 | 当前页 |
-| 5 | 委托管理 | `.as-nav-item[data-nav-key="commissions"]` | 导航链接 | 点击进入委托管理 | 同壳内路由 |
-| 6 | 发布历史 | `.as-nav-item[data-nav-key="releases"]` | 导航链接 | 点击进入发布历史 | 同壳内路由 |
-| 7 | 返回前台 | `button.as-foot-link[data-dom-id="back-front"]` | 按钮 | 离开后台返回工坊前台 | `./designer-front.html`（工坊前台；icon: arrow-left；见 1.6） |
-| 8 | 返回总览 | `button.as-foot-link[data-dom-id="back-platform"]` | 按钮 | 返回 MagicTools 应用总览 | `./index.html`（应用总览；icon: layout-grid；见 1.6） |
-| 9 | 导出 | `.as-page-actions .as-btn-ghost`（icon: download） | ghost 按钮 | 导出当前馆藏清单 | 触发下载/导出任务 |
-| 10 | 发布组件 | `.as-page-actions .as-btn-primary`（icon: upload-cloud） | primary 按钮 | 打开组件发布流程 | 进入发布向导/弹层 |
-| 11 | 搜索框 | `.as-search input`（placeholder「搜索组件名或分类…」，前置 search 图标） | 文本输入 | 按组件名/分类过滤表格 | 即时过滤列表；focus 时 `border-color: var(--mt-ink-400)` + `--shadow-focus` |
-| 12 | 状态筛选 | `.as-select select` 第 1 组（全部/草稿/待审/已发布/已归档） | 下拉选择 | 按状态过滤表格 | 列表刷新 |
-| 13 | 分类筛选 | `.as-select select` 第 2 组（全部/通用/表单输入/数据展示/数据可视化/反馈） | 下拉选择 | 按分类过滤 | 列表刷新 |
-| 14 | 排序 | `.as-select select` 第 3 组（最近更新/下载量/版本号） | 下拉选择 | 重排表格 | 列表重排 |
-| 15 | 重置 | `.as-toolbar .as-btn-ghost`（icon: rotate-ccw） | ghost 按钮 | 清空搜索与筛选 | 恢复默认列表 |
-| 16–23 | 行操作「编辑」 | 各行 `a.as-link-btn`（icon: pencil） | 行内链接按钮 | 打开该组件编辑页 | 行 hover `surface-2`；按钮 hover 提亮 + `--mt-hairline-strong` 描边 |
-| 17–24 | 行操作「详情」 | 各行 `a.as-link-btn`（icon: eye） | 行内链接按钮 | 打开组件详情 | 同上 |
-| 32 | 批量发布 | `.as-actionbar-btns .as-btn-accent`（icon: upload-cloud） | **accent 按钮**（琥珀） | 对已选组件批量发布 | 批量状态流转 |
-| 33 | 批量归档 | `.as-actionbar-btns .as-btn-ghost`（icon: archive） | ghost 按钮 | 对已选组件批量归档 | 批量状态流转 |
+| 5 | 生成历史 | `.as-nav-item[data-nav-key="history"]` | 导航链接 | 点击进入生成历史页 | 同壳内路由 → `./designer-history-admin.html`（见附录 A.1） |
+| 6 | 返回前台 | `button.as-foot-link[data-dom-id="back-front"]` | 按钮 | 离开后台返回工坊前台 | `./designer-front.html`（工坊前台；icon: arrow-left；见 1.6） |
+| 7 | 返回总览 | `button.as-foot-link[data-dom-id="back-platform"]` | 按钮 | 返回 MagicTools 应用总览 | `./index.html`（应用总览；icon: layout-grid；见 1.6） |
+| 8 | 导出 | `.as-page-actions .as-btn-ghost`（icon: download） | ghost 按钮 | 导出当前馆藏清单 | 触发下载/导出任务 |
+| 9 | 发布组件 | `.as-page-actions .as-btn-primary`（icon: upload-cloud） | primary 按钮 | 打开组件发布流程 | 进入发布向导/弹层 |
+| 10 | 搜索框 | `.as-search input`（placeholder「搜索组件名或分类…」，前置 search 图标） | 文本输入 | 按组件名/分类过滤表格 | 即时过滤列表；focus 时 `border-color: var(--mt-ink-400)` + `--shadow-focus` |
+| 11 | 状态筛选 | `.as-select select` 第 1 组（全部/草稿/待审/已发布/已归档） | 下拉选择 | 按状态过滤表格 | 列表刷新 |
+| 12 | 分类筛选 | `.as-select select` 第 2 组（全部/通用/表单输入/数据展示/数据可视化/反馈） | 下拉选择 | 按分类过滤 | 列表刷新 |
+| 13 | 排序 | `.as-select select` 第 3 组（最近更新/下载量/版本号） | 下拉选择 | 重排表格 | 列表重排 |
+| 14 | 重置 | `.as-toolbar .as-btn-ghost`（icon: rotate-ccw） | ghost 按钮 | 清空搜索与筛选 | 恢复默认列表 |
+| 15–22 | 行操作「编辑」 | 各行 `a.as-link-btn`（icon: pencil） | 行内链接按钮 | 打开该组件编辑页 | 行 hover `surface-2`；按钮 hover 提亮 + `--mt-hairline-strong` 描边 |
+| 16–23 | 行操作「详情」 | 各行 `a.as-link-btn`（icon: eye） | 行内链接按钮 | 打开组件详情 | 同上 |
+| 30 | 批量发布 | `.as-actionbar-btns .as-btn-accent`（icon: upload-cloud） | **accent 按钮**（琥珀） | 对已选组件批量发布 | 批量状态流转 |
+| 31 | 批量归档 | `.as-actionbar-btns .as-btn-ghost`（icon: archive） | ghost 按钮 | 对已选组件批量归档 | 批量状态流转 |
 
-> 行操作共 8 行 × 2 个（编辑 / 详情）＝16 个；上表 #16–#31 为逐行实例，编号合并表示。全页可交互元素合计 **33 个**（侧栏 8 + 页头 2 + 工具栏 5 + 行操作 16 + 动作条 2）。
+> 行操作共 8 行 × 2 个（编辑 / 详情）＝16 个；上表 #15–#29 为逐行实例，编号合并表示。业务导航缩减为 2 项（组件馆藏 / 生成历史）后，全页可交互元素合计 **31 个**（侧栏 7 + 页头 2 + 工具栏 5 + 行操作 16 + 动作条 2）。
 
 ### 1.5 数据状态组件
 
@@ -587,20 +586,20 @@
 
 ---
 
-## 4. 评审后台 · 评审请求（assessor-admin.html）
+## 4. 评审后台 · 分析请求审批（assessor-admin.html）
 
 ### 4.1 页面定位
 
-评审后台的请求队列页：以 `RV-YYYY-NNN` 编号管理评审请求，双 badge 体系（优先级 + 状态）叠加来源 badge（调研/采集/外部），底部设「分析文档」入口面板。页头徽标为 warning「5 待审」（四页中唯一非 success 的页头徽标）。
+评审后台的请求队列页（页面命名「分析请求审批」，title `评审后台 · 分析请求审批`）：以 `RV-YYYY-NNN` 编号管理评审请求，双 badge 体系（优先级 + 状态）叠加来源 badge（调研/采集/外部），底部设「分析文档」入口面板。页头徽标为 warning「5 待审」（四页中唯一非 success 的页头徽标）。
 
 ### 4.2 页面结构
 
 按实际 DOM 顺序：
 
 1. `aside.as-sider` — 品牌（`MAGICTOOLS · ASSESSOR · CONTROL` / 评审后台）→ 导航（控制台组 + 业务组）→ 底部返回组
-2. `header.as-topbar` — 面包屑「评审后台 / 评审请求」＋ `V2.2` ＋ `ENV · PROD`
+2. `header.as-topbar` — 面包屑「评审后台 / 分析请求审批」＋ `V2.2` ＋ `ENV · PROD`
 3. `main.as-content` —
-   - AdminPageHead：eyebrow `ADMIN · REVIEWS` → 标题「评审请求」→ 徽标（**warning「5 待审」**）→ 描述「管理评审请求队列、评审标准与分析文档入口。」→ 动作区（导出 / 批量分配）→ KPI 行
+   - AdminPageHead：eyebrow `ADMIN · REVIEWS` → 标题「分析请求审批」→ 徽标（**warning「5 待审」**）→ 描述「管理评审请求队列、评审标准与分析文档入口。」→ 动作区（导出 / 批量分配）→ KPI 行
    - `as-content-body` — 工具栏 → 评审请求表格 → 分页条 → **分析文档入口面板**（`section.as-panel.as-doc-panel`，aria-label="分析文档入口"）
 
 ### 4.3 侧栏导航
@@ -610,9 +609,8 @@
 | 总览 | `overview` | **data-active="true"** | 控制台 | layout-dashboard |
 | 系统设置 | `settings` | — | 控制台 | settings |
 | 访问日志 | `audit` | — | 控制台 | scroll-text |
-| 评审请求 | `reviews` | **data-active="true"**（本页业务项） | 业务 | clipboard-check |
-| 评审标准 | `criteria` | — | 业务 | list-checks |
-| 分析文档 | `docs` | — | 业务 | file-text |
+| 分析请求审批 | `requests` | **data-active="true"**（本页业务项，href `./assessor-admin.html`） | 业务 | clipboard-check |
+| 请求详情 | `request-detail` | —（href `./assessor-request-detail.html`，见附录 A.2） | 业务 | file-text |
 
 ### 4.4 交互元素清单
 
@@ -621,9 +619,8 @@
 | 1 | 总览 | `.as-nav-item[data-nav-key="overview"]`（active） | 导航链接 | 切换控制台总览 | 同壳内路由 |
 | 2 | 系统设置 | `.as-nav-item[data-nav-key="settings"]` | 导航链接 | 进入系统设置 | 同壳内路由 |
 | 3 | 访问日志 | `.as-nav-item[data-nav-key="audit"]` | 导航链接 | 进入访问日志 | 同壳内路由 |
-| 4 | 评审请求 | `.as-nav-item[data-nav-key="reviews"]`（active） | 导航链接 | 回到本页 | 当前页 |
-| 5 | 评审标准 | `.as-nav-item[data-nav-key="criteria"]` | 导航链接 | 进入评审标准 | 同壳内路由 |
-| 6 | 分析文档 | `.as-nav-item[data-nav-key="docs"]` | 导航链接 | 进入分析文档 | 同壳内路由（与底部入口面板同目标） |
+| 4 | 分析请求审批 | `.as-nav-item[data-nav-key="requests"]`（active） | 导航链接 | 回到本页 | 当前页 |
+| 5 | 请求详情 | `.as-nav-item[data-nav-key="request-detail"]` | 导航链接 | 进入请求详情页 | 同壳内路由 → `./assessor-request-detail.html`（见附录 A.2） |
 | 7 | 返回前台 | `button.as-foot-link[data-dom-id="back-front"]` | 按钮 | 纯后台应用，回网关总览 | `./index.html`（网关总览；本应用无前台页面；见 4.6） |
 | 8 | 返回总览 | `button.as-foot-link[data-dom-id="back-platform"]` | 按钮 | 返回应用总览 | `./index.html`（网关总览；见 4.6） |
 | 9 | 导出 | `.as-page-actions .as-btn-ghost`（download） | ghost 按钮 | 导出请求清单 | 触发下载 |
@@ -641,7 +638,7 @@
 | 32 | 下一页 | `.as-page-btn`（chevron-right） | 分页按钮 | 前往第 2 页 | 翻页 |
 | 33 | 分析文档入口「进入」 | `.as-doc-panel .as-btn-ghost.as-doc-panel-btn`（arrow-right） | ghost 按钮 | 进入分析文档汇总 | 前往 docs 视图 |
 
-> 全页可交互元素合计 **47 个**（侧栏 8 + 页头 2 + 工具栏 4 + 行操作 24 + 分页 8 + 文档面板 1）。
+> 业务导航缩减为 2 项（分析请求审批 / 请求详情）后，全页可交互元素合计 **46 个**（侧栏 7 + 页头 2 + 工具栏 4 + 行操作 24 + 分页 8 + 文档面板 1）。
 
 ### 4.5 数据状态组件
 
@@ -685,7 +682,7 @@
 | 返回前台 | `data-dom-id="back-front"` | `./index.html`（网关总览——本应用为纯后台，无前台页面） | `<button>` + JS `location.href` 注入（非 `<a href>`） |
 | 返回总览 | `data-dom-id="back-platform"` | `./index.html`（网关总览） | `<button>` + JS `location.href` 注入（非 `<a href>`） |
 | 入口侧：网关总览应用卡片 | `data-dom-id="card-assessor"`（`.pg-app-card`） | `./assessor-admin.html`（本控制台） | 原生 `<a href>` 直连（卡片路由标注「控制台」） |
-| 分析文档「进入」 | `.as-doc-panel-btn` | 分析文档视图 | `<button>` 同壳内路由（与侧栏 `docs` 项同目标） |
+| 分析文档「进入」 | `.as-doc-panel-btn` | 分析文档视图 | `<button>` 同壳内路由（业务导航已无 `docs` 项，该面板成为分析文档唯一入口） |
 
 本页为纯后台应用，无前台页面：「返回前台」目标为网关总览（`./index.html`），与 `back-platform` 同目标但保留两个入口。两按钮均为 `<button type="button">`（无 href），跳转由页面末尾 `<script>` 注入：click → `location.href = './index.html'`。视觉沿用 `.as-foot-link`（mono 11px），hover 文字提亮 + surface-2 背景。
 
@@ -978,3 +975,116 @@ badge 语义在既有 success / faint / warning（含 investigator 私有 muted 
 - 域（四页固定）：`CMP`＝工坊组件 / `SRC`＝采集源 / `RSCH`＝调研 / `RVW`＝评审
 - 码位：三位 HTTP 语义码（`409` 冲突 / `500` 服务端 / `503` 不可用 / `504` 超时）或三位业务序号（`003` 阈值触发类）；跨系统集成类可加子域后缀（如 `ERR-RSCH-FEISHU`、`ERR-RVW-DOC`）
 - 同一错误在 toast / 面板 / 行级提示中携带同一错误码，便于日志对账；文案与错误码之间以空格 + mono 反引号呈现
+
+---
+
+## 附录 · 批次新增页速览
+
+> 本附录覆盖运营分册同一批次新增的三页：工坊后台「生成历史」（designer-history-admin.html）、评审后台「请求详情」（assessor-request-detail.html）与工坊前台「组件馆藏」（designer-components.html）。前两页沿用 AdminShell 契约（§5–§7 共性规范全部适用），第三页为前台壳（UserShell）简记。各节内容均逐条提取自对应 HTML 实际代码。
+
+### A.1 工坊后台 · 生成历史（designer-history-admin.html）
+
+**页面定位**：工坊后台的生成任务流水页（title `工坊后台 · 生成历史`）：以 `GEN-MMDD-NNNN` 编号管理 AI 生成任务，页头徽标 success「服务正常」，动作区为双 ghost（导出流水 / 重跑失败，无 primary 主按钮）。
+
+**侧栏导航**（两组五项，与 designer-admin 同构、激活项互换）：
+
+| 导航项 | data-nav-key | 激活态 | 分组 | 图标 data-lucide |
+| --- | --- | --- | --- | --- |
+| 总览 | `overview` | — | 控制台 | layout-dashboard |
+| 系统设置 | `settings` | — | 控制台 | settings |
+| 访问日志 | `audit` | — | 控制台 | scroll-text |
+| 组件馆藏 | `components` | —（href `./designer-admin.html`） | 业务 | package |
+| 生成历史 | `history` | **data-active="true"**（本页业务项，href `./designer-history-admin.html`） | 业务 | history |
+
+> 注意本页 `overview` 不带激活态（仅 `history` 单激活），与 designer-admin 的双激活（overview + components）不同。
+
+**交互元素简表**：
+
+| 元素 | DOM 标识/选择器 | 类型 | 说明 |
+| --- | --- | --- | --- |
+| 导出流水 | `.as-page-actions .as-btn-ghost`（download） | ghost 按钮 | 导出任务流水 |
+| 重跑失败 | `.as-page-actions .as-btn-ghost`（rotate-ccw） | ghost 按钮 | 重跑失败任务 |
+| 搜索框 | `.as-search input`（placeholder「搜索任务 ID 或需求摘要…」） | 文本输入 | 按任务 ID/摘要过滤 |
+| 状态筛选 | `.as-select select` 第 1 组（全部/生成中/成功/失败） | 下拉选择 | 按状态过滤 |
+| 类型筛选 | `.as-select select` 第 2 组（全部/按钮/输入框/表格/标签/对话框/开关） | 下拉选择 | 按产物类型过滤 |
+| 重置 | `.as-toolbar .as-btn-ghost`（rotate-ccw） | ghost 按钮 | 清空搜索与筛选 |
+| 行操作 | 各行 `a.as-link-btn`（eye「查看」；成功/失败行另有 upload-cloud「发布」） | 行内链接按钮 | 查看产物 / 发布入库 |
+| 分页 | `.as-page-btn` ×7（上一页 disabled / 当前 1 / 2 / 3 / … / 161 / 下一页） | 分页按钮 | 「第 1–8 条 · 共 1,284 条」 |
+
+**KPI 读数**：累计生成 1,284 ｜ 本周 36 ｜ 成功率 91% ｜ 平均耗时 24s。
+
+**表格列定义**（实际 `thead`）：任务 ID | 需求摘要 | 类型 | 模型 | 状态 | 耗时 | 产物操作。状态 badge：成功＝success / 生成中＝warning / 失败＝error；模型列（deepseek-chat-v3 / glm-4-plus）与耗时列为 mono。示例 8 行（GEN-0911-0083 → GEN-0908-0076）。
+
+**页面互跳**（back-front 注入已核实：两枚均为 `<button>` + 末尾 `<script>` 注入 click → `location.href`）：
+
+| 入口元素 | DOM 标识 | 目标页面 | 实现方式 |
+| --- | --- | --- | --- |
+| 返回前台 | `data-dom-id="back-front"` | `./designer-front.html`（工坊前台） | `<button>` + JS 注入 |
+| 返回总览 | `data-dom-id="back-platform"` | `./index.html`（应用总览） | `<button>` + JS 注入 |
+
+### A.2 评审后台 · 请求详情（assessor-request-detail.html）
+
+**页面定位**：评审后台的请求详情页（title `请求详情 · 评审后台`）：以单请求（示例 RV-2026-128「定价分析报告 · 第九稿」）为轴，纵向三段——请求信息卡（含「通过 / 驳回」终审动作）→ 意见时间线 → 底部「同类报告趋势」入口面板（沿用 `as-doc-panel` 三段式）。页头徽标三枚：mono 编号 `RV-2026-128` + warning「评审中」+ error「高优先级」。
+
+**侧栏导航**（两组五项，与 assessor-admin 同构、激活项互换）：
+
+| 导航项 | data-nav-key | 激活态 | 分组 | 图标 data-lucide |
+| --- | --- | --- | --- | --- |
+| 总览 | `overview` | — | 控制台 | layout-dashboard |
+| 系统设置 | `settings` | — | 控制台 | settings |
+| 访问日志 | `audit` | — | 控制台 | scroll-text |
+| 分析请求审批 | `requests` | —（href `./assessor-admin.html`） | 业务 | clipboard-check |
+| 请求详情 | `request-detail` | **data-active="true"**（本页业务项，href `./assessor-request-detail.html`） | 业务 | file-text |
+
+> 本页 `overview` 不带激活态（仅 `request-detail` 单激活）。
+
+**交互元素简表**：
+
+| 元素 | DOM 标识/选择器 | 类型 | 说明 |
+| --- | --- | --- | --- |
+| 通过 | `.sd-side-actions .sd-btn-success`（check） | 状态描边按钮（success 令牌） | 终审通过该请求 |
+| 驳回 | `.sd-side-actions .sd-btn-error`（x，ghost 变体） | 状态描边按钮（error 令牌） | 驳回该请求 |
+| 查看原文档 | `.sd-doc-link`（file-text） | 行内链接按钮 | 打开关联原文档 |
+| 意见时间线 | `section[aria-label="意见时间线"]` 内 `.sd-tl-item` ×5（共 11 条、显示最近 5 条） | 只读列表 | 每条含姓名/mono 时间戳/状态 badge（待定 warning、已采纳 success）/意见正文；已采纳项 `is-adopted` 描边 |
+| 趋势面板「进入」 | `.as-doc-panel-btn`（arrow-right） | ghost 按钮 | 进入同类报告趋势视图 |
+
+**KPI 读数**：评审轮次 3 ｜ 意见条数 11 ｜ 已采纳 7 ｜ 平均响应 4.2h。请求信息区字段：请求编号（mono RV-2026-128）/ 来源（info「调研」）/ 提交人（mono zhao.xue）/ 当前轮次（mono ROUND 3）。
+
+**页面互跳**（back-front 注入已核实）：
+
+| 入口元素 | DOM 标识 | 目标页面 | 实现方式 |
+| --- | --- | --- | --- |
+| 返回前台 | `data-dom-id="back-front"` | `./index.html`（网关总览——纯后台应用回落） | `<button>` + JS 注入 |
+| 返回总览 | `data-dom-id="back-platform"` | `./index.html`（网关总览） | `<button>` + JS 注入 |
+
+### A.3 工坊前台 · 组件馆藏（designer-components.html，前台壳简记）
+
+**页面定位**：工坊前台（UserShell 亮色壳、墨石 accent）的在册组件浏览页（title `组件馆藏 · 工坊前台`）：页头工具区（标题 + 副文 + 搜索 + mono 读数「在册 86 · 已发布 54」+ 分类/状态两组 chip 筛选）→ 组件卡片网格（8 张在架卡，`SHOWING 8 / 86`）→ 底部 CTA「去定制生成」。
+
+**前台导航**（`nav.us-nav[aria-label="主导航"]` 三项，本页为 active）：
+
+| 导航项 | data-nav-key | 激活态 | href |
+| --- | --- | --- | --- |
+| 定制生成 | `generate` | — | `./designer-generate.html` |
+| 画布工坊 | `studio` | — | `./designer-studio.html` |
+| 组件馆藏 | `components` | **data-active="true"** | `./designer-components.html` |
+
+**交互元素简表**（前台壳共性见前台分册，此处仅列页面私有项）：
+
+| 元素 | DOM 标识/选择器 | 类型 | 说明 |
+| --- | --- | --- | --- |
+| 搜索框 | `.pg-search-input`（placeholder「搜索组件名 / slug」） | 文本输入 | 即时过滤组件卡 |
+| 分类 chip | `.pg-filter[aria-label="按分类筛选"] .pg-chip` ×5（全部/基础/表单/展示/导航） | chip 按钮 | `aria-pressed` 切换 |
+| 状态 chip | `.pg-filter[aria-label="按状态筛选"] .pg-chip` ×3（全部/已发布/草稿） | chip 按钮 | `aria-pressed` 切换 |
+| 组件卡 | `article.pg-card` ×8 | 卡片 | 名称 + 精选星标 + mono 版本（如 v2.3.1）+ 分类/状态双 badge + 缩略演示图 |
+| 「使 用」 | `.pg-card-actions .pg-use` | 卡片主按钮 | 取用该组件 |
+| 「查看」 | `.pg-card-actions .pg-view` | 卡片链接 | 查看组件详情 |
+| 去定制生成 | `.pg-cta-btn`（arrow-right） | CTA 链接 | `./designer-generate.html` |
+
+**页面互跳**（原生 `<a href>` 直连，非 JS 注入）：
+
+| 入口元素 | DOM 标识 | 目标页面 | 实现方式 |
+| --- | --- | --- | --- |
+| 返回总览 | `data-dom-id="back-platform"` | `./index.html` | 原生 `<a href>` |
+| 后台管理 | `data-dom-id="link-admin"` | `./designer-admin.html`（工坊后台） | 原生 `<a href>` |
+| 页脚「管理后台」 | `.us-footer-admin` | `./designer-admin.html` | 原生 `<a href>` |

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { llmChat, STUB_COMPONENT_NAME } from "./llm";
+import { parseComponentCode } from "./parse.service";
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -17,6 +18,18 @@ describe("llm", () => {
     expect(json.componentName).toBe(STUB_COMPONENT_NAME);
     expect(json.code).toContain("GreetingCard");
     expect(json.code).toContain('from "@mt/ui"');
+  });
+
+  it("桩模式组件代码可被画布 /parse 逆向（送入画布链路在桩环境可用）", async () => {
+    vi.stubEnv("MT_LLM_STUB", "1");
+    const out = await llmChat([
+      { role: "system", content: "输出 JSON：{componentName, description, code}。{component}" },
+      { role: "user", content: "生成一个问候卡片组件" },
+    ]);
+    const json = JSON.parse(out) as { code: string };
+    const doc = parseComponentCode(json.code);
+    expect(doc.componentName).toBe(STUB_COMPONENT_NAME);
+    expect(doc.root.children.length).toBeGreaterThan(0);
   });
 
   it("真实模式调用 chat/completions 并返回内容", async () => {

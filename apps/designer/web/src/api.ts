@@ -1,3 +1,5 @@
+import { extractApiErrorMessage } from "./api-errors";
+
 const BASE = "/api/designer";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -7,7 +9,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error((body as { message?: string }).message || "请求失败 " + res.status);
+    throw new Error(extractApiErrorMessage(body, res.status));
   }
   return res.json() as Promise<T>;
 }
@@ -33,11 +35,18 @@ export interface Generation {
   createdAt: string;
 }
 
+export interface CanvasDocPayload {
+  componentName: string;
+  description?: string;
+  root: unknown;
+}
+
 export interface ComponentItem {
   id: string;
   name: string;
   description: string;
   code: string;
+  schema?: CanvasDocPayload | null;
   createdAt: string;
   status?: string;
 }
@@ -49,8 +58,10 @@ export const api = {
   previewUrl: (id: string) => BASE + "/preview/" + id,
   listGenerations: () => request<Generation[]>("/generations"),
   listComponents: () => request<ComponentItem[]>("/components"),
-  addComponent: (input: { name: string; description: string; code: string }) =>
+  addComponent: (input: { name: string; description: string; code: string; schema?: CanvasDocPayload }) =>
     request<{ component: ComponentItem; duplicated: boolean }>("/components", { method: "POST", body: JSON.stringify(input) }),
+  parseCode: (code: string) =>
+    request<{ doc: CanvasDocPayload }>("/parse", { method: "POST", body: JSON.stringify({ code }) }),
   deleteComponent: (id: string) => request<{ deleted: boolean }>("/components/" + id, { method: "DELETE" }),
   publishComponent: (id: string) =>
     request<{ ok: boolean; prUrl: string; prNumber: number; branch: string; targetPath: string; message: string }>(
