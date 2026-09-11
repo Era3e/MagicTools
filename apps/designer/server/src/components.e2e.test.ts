@@ -87,4 +87,28 @@ describe("components", () => {
     const res = await request(app.getHttpServer()).post("/api/designer/components").send({ name: "X" });
     expect(res.status).toBe(400);
   });
+
+  it("schema 随组件落库并可回读（含 parse 接口）", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    const name = "SchemaCard" + Date.now();
+    const parseRes = await request(app.getHttpServer())
+      .post("/api/designer/parse")
+      .send({ code: `import { tokens } from "@mt/ui";
+export default function ${name.replaceAll(/\W/g, "")}() {
+  return <div style={{ display: "flex", flexDirection: "column", gap: tokens.spacing.m, padding: tokens.spacing.m }} />;
+}` });
+    expect(parseRes.status).toBe(200);
+    expect(parseRes.body.doc.root.component).toBe("div");
+
+    const created = await request(app.getHttpServer())
+      .post("/api/designer/components")
+      .send({ name, description: "schema 测试", code: parseRes.body.doc ? "export default function " + name + "() { return <div />; }" : "", schema: parseRes.body.doc });
+    expect(created.status).toBe(201);
+    expect(created.body.component.schema).toBeTruthy();
+    expect(created.body.component.schema.root.props.gap).toBe("md");
+
+    const list = await request(app.getHttpServer()).get("/api/designer/components");
+    const found = (list.body as Array<{ name: string; schema?: unknown }>).find((c) => c.name === name);
+    expect(found?.schema).toBeTruthy();
+  });
 });

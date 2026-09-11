@@ -55,6 +55,8 @@ export default function IntentLogPage() {
   const [replaying, setReplaying] = useState(false);
   const [datasetCount, setDatasetCount] = useState<number | null>(null);
   const [calls, setCalls] = useState<CybercloudCall[]>([]);
+  const [ftStatus, setFtStatus] = useState<Awaited<ReturnType<typeof api.finetuneStatus>> | null>(null);
+  const [ftLaunching, setFtLaunching] = useState(false);
 
   const refresh = useCallback(() => {
     setLoading(true);
@@ -72,11 +74,39 @@ export default function IntentLogPage() {
     });
   }, []);
 
+  const refreshFinetune = useCallback(() => {
+    api.finetuneStatus().then(setFtStatus).catch(() => setFtStatus(null));
+  }, []);
+
   useEffect(() => {
     refresh();
     refreshEvaluation();
     refreshCalls();
-  }, [refresh, refreshEvaluation, refreshCalls]);
+    refreshFinetune();
+  }, [refresh, refreshEvaluation, refreshCalls, refreshFinetune]);
+
+  // 存在进行中的微调任务时 5s 轮询，终态即停
+  useEffect(() => {
+    const status = ftStatus?.latest?.status;
+    if (status !== "created" && status !== "running") return;
+    const timer = setInterval(() => {
+      api.finetuneStatus().then(setFtStatus).catch(() => undefined);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [ftStatus?.latest?.status]);
+
+  const launchFinetune = async () => {
+    setFtLaunching(true);
+    try {
+      const r = await api.finetuneLaunch();
+      message.success("微调任务已创建：" + r.remoteJobId + "（" + r.sampleCount + " 条样本）");
+      refreshFinetune();
+    } catch (err) {
+      message.warning(String(err));
+    } finally {
+      setFtLaunching(false);
+    }
+  };
 
   const submitCorrect = async () => {
     if (!correcting || !corrected) return;
@@ -366,6 +396,58 @@ export default function IntentLogPage() {
             </Button>
           </div>
         </Modal>
+      <div style={{ marginTop: tokens.spacing.xl }} data-testid="finetune-card">
+          <div style={{ display: "flex", alignItems: "center", gap: tokens.spacing.sm, marginBottom: tokens.spacing.md }}>
+            <div style={{ fontFamily: tokens.font.mono, fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: tokens.color.textSecondary }}>
+              LORA · 微调编排
+            </div>
+            <MtStatusTag tone={ftStatus?.ready ? "success" : "warning"} showDot>
+              {ftStatus?.ready ? "样本就绪" : "样本积累中"}
+            </MtStatusTag>
+            <span style={{ flex: 1 }} />
+            <Button size="small" loading={ftLaunching} disabled={!ftStatus?.ready || ftStatus?.busy} onClick={launchFinetune}>
+              发起微调
+            </Button>
+          </div>
+          {ftStatus ? (
+            <>
+              <div style={{ marginBottom: 12 }}>
+                <MtKpiRow
+                  items={[
+                    { label: "纠错样本", value: String(ftStatus.corrected), unit: "/ " + ftStatus.threshold },
+                    { label: "基座模型", value: "glm-4-flash" },
+                    { label: "最近任务", value: ftStatus.latest?.status ?? "无" },
+                    { label: "微调模型", value: ftStatus.latest?.fineTunedModel ?? "--" },
+                  ]}
+                />
+              </div>
+              <div data-testid="finetune-progress" style={{ display: "flex", alignItems: "center", gap: tokens.spacing.sm }}>
+                <div style={{ flex: 1, height: 6, background: tokens.color.bgNeutral, borderRadius: 3, overflow: "hidden", maxWidth: 420 }}>
+                  <div
+                    style={{
+                      width: Math.min(100, Math.round((ftStatus.corrected / ftStatus.threshold) * 100)) + "%",
+                      height: "100%",
+                      background: ftStatus.ready ? tokens.color.success : tokens.color.info,
+                      transition: "width 0.4s ease",
+                    }}
+                  />
+                </div>
+                <span style={{ fontFamily: tokens.font.mono, fontSize: 12, color: tokens.color.textSecondary }}>
+                  {Math.min(100, Math.round((ftStatus.corrected / ftStatus.threshold) * 100))}%
+                </span>
+                {!ftStatus.launchEnabled ? (
+                  <span style={{ fontSize: 12, color: tokens.color.textSecondary }}>编排就绪；真跑需设置 FT_LAUNCH_ENABLED=1 并开通智谱 Pro 权益</span>
+                ) : null}
+                {ftStatus.latest?.degraded ? <MtStatusTag tone="warning" mono>远端不可达 · 展示本地快照</MtStatusTag> : null}
+              </div>
+              {ftStatus.latest?.error ? (
+                <div style={{ marginTop: 8, fontSize: 12, color: tokens.color.error, fontFamily: tokens.font.mono }}>{ftStatus.latest.error}</div>
+              ) : null}
+            </>
+          ) : (
+            <MtEmptyState title="微调编排状态不可用" description="确认 assistant-server 已启动且数据库就绪" />
+          )}
+        </div>
       <div style={{ marginTop: tokens.spacing.xl }}>
           <div style={{ fontFamily: tokens.font.mono, fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: tokens.color.textSecondary, marginBottom: tokens.spacing.md }}>
             DATA · 数据查询监控（近 {calls.length} 条调用）

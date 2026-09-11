@@ -141,5 +141,16 @@ export const api = {
       body: JSON.stringify({}),
     }),
   exportDataset: () => request<{ jsonl: string; count: number }>("/intent-logs/export"),
+  finetuneStatus: () =>
+    request<{
+      corrected: number;
+      threshold: number;
+      ready: boolean;
+      launchEnabled: boolean;
+      busy: boolean;
+      latest: { id: string; remoteJobId: string; status: string; fineTunedModel: string | null; sampleCount: number; error: string | null; createdAt: string; updatedAt: string; degraded?: boolean } | null;
+    }>("/intent-logs/finetune/status"),
+  finetuneLaunch: () =>
+    request<{ jobId: string; sampleCount: number; remoteJobId: string }>("/intent-logs/finetune", { method: "POST", body: JSON.stringify({}) }),
   listCybercloudCalls: () => request<CybercloudCall[]>("/meta/cybercloud-calls"),
 };

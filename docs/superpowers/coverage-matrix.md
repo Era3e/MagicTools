@@ -123,8 +123,8 @@
 | D4 | 组件审核入库 → @mt/ui 候选池 | spec 3.3 | component.* + ComponentRepo + admin/components | ✅ 已实现 | components.e2e.test.ts |
 | D5 | 生成历史记录 | spec 3.3 | generation.repo.ts + pages/HistoryList.tsx | ✅ 已实现 | GeneratePage.test.tsx |
 | D6 | 前台画廊委托单 + 预览展位 | PR #30 | pages/GeneratePage.tsx GALLERY_THEME 委托卡 + 展品卡 | ✅ 已实现 | GeneratePage.test.tsx |
-| D7 | **可视化拖拽编辑器** | spec 2.1「MVP 边界：降级版，无可视化编辑器」 | — | 📝 规划未纳入（MVP 降级项，deferred D-01，P2） | — |
-| D8 | **实时双向编辑** | spec 2.1 MVP 边界 | — | 📝 规划未纳入（MVP 降级项，deferred D-02，P2） | — |
+| D7 | **可视化拖拽编辑器** | designer-canvas-design（2026-09-10） | apps/designer/web/src/pages/studio/StudioPage.tsx + Palette.tsx + CanvasDropZone.tsx + CanvasRenderer.tsx + PropForm.tsx + canvas/schema.ts + canvas/registry.ts | ✅ 已实现（deferred D-01 兑现：三栏画布，dnd-kit 拖拽 + 双击同源兜底，8 组件注册表；2026-09-11 补 CanvasDropZone droppable 注册修复拖拽放置断链 + 2 条真实指针拖拽 e2e） | designer.spec.ts 画布工坊 6 用例 + StudioPage.test.tsx 8 用例 |
+| D8 | **实时双向编辑** | designer-canvas-design §4 | apps/designer/web/src/canvas/codegen.ts + pages/studio/CodePanel.tsx + apps/designer/server/src/parse.service.ts（@babel/parser 白名单逆向）+ GeneratePage「送入画布」 | ✅ 已实现（deferred D-02 兑现：schema→code 确定性生成 + code→schema 显式应用；components/generations 落 schema jsonb 列） | codegen.test.ts 5 用例 + parse.service.spec.ts 8 用例 + components.e2e.test.ts schema 用例 |
 | D9 | **一键发布到 npm / PR 到 @mt/ui** | — | apps/designer/server/src/publish.service.ts + publish.controller.ts + github/client.ts + ComponentList「一键 PR」按钮 | ✅ 已实现（deferred D-04 兑现，PR #42：createBranch/createFile/createPr 三步流，PAT + GITHUB_STUB 桩） | publish.service.spec.ts 4 用例 + components.e2e.test.ts |
 
 ## 9. 公共能力 & 工程化
@@ -154,3 +154,5 @@
 | E6 | UI v2/v2.1/v2.2 令牌与组件基建 | ui-spec v2 §六 | packages/ui/src/tokens.ts v2 系 + MtStatusTag + MtKpiRow + patterns 单测 | ✅ 已实现（PR #47/#51） | @mt/ui 22 用例 + e2e 视觉基线 |
 | E7 | UI v2.3 全量页面重构（17 页设计稿） | .design-ref 17 页 | packages/ui/src/AdminShell.tsx + UserShell.tsx v2.3 + 8 应用前后台全页 + gateway 落地页 + 3 交互演示 | ✅ 已实现（PR #56 前身，squash ef9821d） | e2e 全量 83 passed + 视觉 16/16 |
 | E8 | 五道质量防线（v2.3.1） | state.md 五防线轮 | e2e/tests/responsive.spec.ts（32 用例）+ .githooks/pre-commit + turbo ^build + packages/ui/src/apps.ts 文案单源 + 视觉锚点 fail fast | ✅ 已实现（PR #56，0 bug loop 验收通过） | responsive 32/32 + drift guard 用例 |
+| E9 | Designer 画布工坊（D-01/D-02 兑现） | designer-canvas-design | apps/designer/web/src/canvas/{schema,registry,codegen}.ts + pages/studio/ 四组件 + apps/designer/server/src/parse.service.ts + migrations/002_canvas_schema.sql | ✅ 已实现（2026-09-10，拖拽画布 + 双向编辑闭环） | designer.spec.ts +4 用例；视觉基线 18 张 |
+| E10 | Assistant LoRA 微调编排层（D-09 兑现） | assistant-lora-finetune-design | packages/model-client/src/finetune.ts + apps/assistant/server/src/finetune.{service,repo}.ts + migrations/005_finetune_jobs.sql + IntentLogPage 微调卡 | ✅ 已实现（2026-09-10，FT_STUB 桩全链路；真跑需样本 ≥500 + FT_LAUNCH_ENABLED=1 + 智谱 Pro 权益） | finetune.test.ts 5 用例 + finetune.service.spec.ts 5 用例 + IntentLogPage.finetune.test.tsx 3 用例 |

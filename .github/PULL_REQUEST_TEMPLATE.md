@@ -21,6 +21,7 @@
 
 ## UI 变更专项（前端/视觉变更必勾选）
 
+- [ ] **设计图一致性**（若本 PR 改动 App.tsx 路由或 USER_NAV / ADMIN_NAV）：已同步 `magictools-ui-design/` 对应设计页与 `docs/design-impl-audit.md` 覆盖矩阵，`pnpm design:check` 全绿（qa:gate 已含此检查）
 - [ ] **视觉快照基线已更新**（若改动前台/后台壳/颜色/字体/布局）：执行 `pnpm e2e:visual:update` 并把 `e2e/snapshots/**` 新快照纳入本 PR
 - [ ] 全页无横向滚动（1280 / 1440 / 1920 三档窗口分别确认）
 - [ ] 所有可点击元素存在 **hover 态 + active 态** 两种视觉反馈（按钮/链接/卡片/切换 Tab 等）

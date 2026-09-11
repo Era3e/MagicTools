@@ -53,6 +53,11 @@ export const PAGES: VisualPage[] = [
     path: "/designer/generate",
     anchor: /组件画廊|定制生成/,
   },
+  {
+    name: "front-designer-studio",
+    path: "/designer/studio",
+    anchor: /STUDIO · 画布工坊/,
+  },
   // gatherer / investigator / assessor 三应用前台本无内容，根路径展示报头后立即重定向到后台。
   // 锚点策略（v2.3.1 定稿）：锚定最终态 `· CONTROL`——AdminShell 侧栏（桌面）/顶栏 pill（移动）都渲染，
   // 且只在后台出现 = 重定向完成的确定信号。勿锚定前台 masthead 文案（只存在一帧，截图时机非确定）。

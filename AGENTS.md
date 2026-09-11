@@ -23,7 +23,8 @@
 5. 质量门禁：合入前本地跑 pnpm qa:gate，冒烟 pnpm smoke，全绿才可提交
 6. 开发与测试分拆不同智能体（0 bug loop）：开发 agent 完成后必须由测试 agent 独立验收
 7. 前端必须使用 @mt/ui（MtThemeProvider + tokens），禁止硬编码颜色值
-8. E2E 用例校准纪律（写用例必须对照真实实现，禁止凭想象写交互）：
+8. **设计图一致性门禁**：前端改路由（App.tsx `<Route>`）或导航（USER_NAV / ADMIN_NAV）时，必须同步 `magictools-ui-design/` 对应设计页（导航项文案 / data-active / href）；快速核对 `pnpm design:check`（C1 路由覆盖 / C2 导航对齐 / C3 激活 / C4 画布注册，非零退出即失败），该检查已并入 qa:gate。映射基线见 `magictools-ui-design/docs/design-impl-audit.md` 覆盖矩阵
+9. E2E 用例校准纪律（写用例必须对照真实实现，禁止凭想象写交互）：
    - 新交互用例落笔前必须读对应组件源码（按钮文案/路由/字段名/前置条件），或用 playwright codegen 录制校准；
    - AntD 双字按钮文案含字间空格（「生 成」「编 辑」「保 存」），按钮名正则一律写 /生\s*成/ 形式；
    - 禁止「if count==0 则 return」静默跳过——前置不满足用 test.skip(cond, "原因") 显式计入报告，定位失败必须暴露；
@@ -37,6 +38,7 @@
 - pnpm new:app <name>（新子项目）
 - pnpm smoke [--only <服务>]（冒烟）
 - pnpm qa:gate（本地门禁）
+- pnpm design:check（设计图 ↔ 前端一致性核对，qa:gate 已含；单独跑秒级出结果）
 - pnpm ws:create <项目> <任务ID> / pnpm ws:cleanup <项目> <任务ID>（worktree）
 - pnpm changeset（添加迭代日志）
 

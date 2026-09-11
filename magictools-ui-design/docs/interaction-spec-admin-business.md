@@ -12,6 +12,7 @@
 4. [交付后台 · 需求驾驶舱（manager-admin.html）](#4-交付后台--需求驾驶舱manager-adminhtml)
 5. [AdminShell 共性交互契约](#adminshell-共性交互契约)
 6. [错误态共性规范（AdminShell）](#错误态共性规范adminshell)
+7. [附录 · 批次新增页速览](#附录--批次新增页速览)
 
 ---
 
@@ -388,9 +389,10 @@
 | 总览 | `overview` | `data-active="true"` | 控制台 | layout-dashboard |
 | 系统设置 | `settings` | — | 控制台 | settings |
 | 访问日志 | `audit` | — | 控制台 | scroll-text |
-| 意图日志 | `intent` | `data-active="true"` | 业务 | git-branch |
-| 模型路由 | `routing` | — | 业务 | route |
-| 提示词模板 | `prompt` | — | 业务 | file-text |
+| [反馈处理](#a1-反馈处理页assistant-feedback-adminhtml) | `feedback` | `data-active="false"`（显式置否） | 业务 | message-square |
+| 意图日志（当前页） | `intent` | `data-active="true"` | 业务 | scroll-text |
+
+业务组导航项均为实链（`<a href>`）：反馈处理 → `./assistant-feedback-admin.html`，意图日志 → `./assistant-admin.html`（自指当前页）。
 
 ### 3.4 交互元素清单
 
@@ -591,9 +593,10 @@
 | 总览 | `overview` | `data-active="true"` | 控制台 | layout-dashboard |
 | 系统设置 | `settings` | — | 控制台 | settings |
 | 访问日志 | `audit` | — | 控制台 | scroll-text |
-| 需求管理 | `requirements` | `data-active="true"` | 业务 | list-checks |
-| 迭代排期 | `iteration` | — | 业务 | calendar-range |
-| 交付看板 | `board` | — | 业务 | kanban |
+| 需求管理（当前页） | `requirements` | `data-active="true"` | 业务 | clipboard-list |
+| [迭代管理](#a2-迭代管理页manager-iteration-adminhtml) | `iterations` | — | 业务 | calendar-days |
+
+业务组导航项均为实链（`<a href>`）：需求管理 → `./manager-admin.html`（自指当前页），迭代管理 → `./manager-iteration-admin.html`。
 
 ### 4.4 交互元素清单
 
@@ -807,3 +810,110 @@
 8. **错误码命名规范**：`ERR-<域>-<码>`，mono 呈现、全大写——域取 API / DB / NET / AUTH / AGG / QUERY / EXPORT / IMPORT / FORM / LLM / FIELD / CLEAN / CONFLICT，码取 HTTP 语义（500/403/409）或场景词（TIMEOUT/FORMAT/FIELD）；同一错误在面板描述、toast、badge title 中使用同一码，禁止同场景多码。
 9. **重试策略统一**：读操作失败自动静默重试 1 次（间隔 800ms），两次均失败才落错误面板；写操作（提交、清理、行状态变更、摘要生成）失败不自动重试，仅给手动入口；权限 403（`ERR-AUTH-403`）一律隐藏「重试」按钮，改「联系管理员」ghost 链接。
 10. **toast 暗色规格**：`--surface-2` 底 + 左 3px `--state-error` 竖条 + `--radius-md` + `--shadow-2`；正文 12.5px `--text-muted`，错误码与时间戳 mono（时间戳格式 HH:MM:SS）；3s 自动消失；同屏至多 1 条错误 toast（新错误替换旧 toast，不堆叠）。
+
+---
+
+## 附录 · 批次新增页速览
+
+> 以下三页为批次 1-3 落地、正文四章未覆盖的新增页，数据均提取自实际 HTML 源码。A.1 / A.2 为 AdminShell 暗色系；A.3 为前台壳亮色特例。
+
+### A.1 反馈处理页（assistant-feedback-admin.html）
+
+助手后台的业务子页，承接侧栏「反馈处理」导航项（`data-nav-key="feedback"`）。集中处理对话点赞、点踩与纠错反馈：按类型/状态筛选 → 逐条查看会话 → 标记解决。面包屑 `助手后台 / 反馈处理`；eyebrow `ADMIN · FEEDBACK`；页头 badge `warning`「12 待处理」（inbox 图标）。注意：本页仅激活业务组当前项，控制台组 `overview` 不带 `data-active`（与正文四页「双激活」不同）。
+
+侧栏导航（品牌区同助手后台：eyebrow `MAGICTOOLS · ASSISTANT · CONTROL`，名称 `助手后台`）：
+
+| 导航项 | data-nav-key | 激活态 | 分组 | 图标 data-lucide | href |
+| --- | --- | --- | --- | --- | --- |
+| 总览 | `overview` | — | 控制台 | layout-dashboard | `#` |
+| 系统设置 | `settings` | — | 控制台 | settings | `#` |
+| 访问日志 | `audit` | — | 控制台 | scroll-text | `#` |
+| 反馈处理 | `feedback` | `data-active="true"` | 业务 | message-square | `./assistant-feedback-admin.html` |
+| 意图日志 | `intent` | `data-active="false"` | 业务 | scroll-text | `./assistant-admin.html` |
+
+交互元素简表：
+
+| # | 元素 | DOM 标识/选择器 | 说明 |
+| --- | --- | --- | --- |
+| 1 | KPI ×4 | `.as-kpirow` | 待处理 12 / 本周新增 28 / 已解决 156 / 好评率 92% |
+| 2 | 搜索 | `.as-search input`（placeholder「搜索会话 ID 或反馈摘要…」） | 按会话 ID / 摘要过滤 |
+| 3 | 类型筛选 | `.as-select select`（标签「类型」） | 选项：全部/点赞/点踩/纠错 |
+| 4 | 状态筛选 | `.as-select select`（标签「状态」） | 选项：全部/待处理/已处理 |
+| 5 | 重置 | `.as-toolbar-gap` 后 `.as-btn-ghost`（rotate-ccw） | 清空筛选 |
+| 6 | 反馈表 | `.as-table`，6 列 | 时间 / 会话 ID / 类型 / 反馈摘要 / 处理状态 / 操作；8 行（09-11 14:32 `ss-8a3f2c1d` → 09-10 09:26 `ss-1a4d6c8b`） |
+| 7 | 类型 badge | `.as-badge[data-tone]` | 点赞 success（thumbs-up）/ 点踩 error（thumbs-down）/ 纠错 warning（pencil-line） |
+| 8 | 状态 badge | `.as-badge` | 待处理 warning；已处理 `muted`（本页特有 tone，正文四章未出现） |
+| 9 | 行内·查看会话 | `tr .as-link-btn`（messages-square） | 全部行均有 |
+| 10 | 行内·标记解决 | `tr .as-link-btn--resolve`（check） | 仅「待处理」行出现 |
+| 11 | 分页 | `.as-page-btn`（按钮式） | `共 184 条 · 第 1 / 23 页`；上一页(disabled) / 1(active) / 2 / 3 / … / 23 / 下一页 |
+| 12 | 导出 | `.as-page-actions .as-btn-ghost`（download） | 页头次按钮 |
+
+页面互跳：
+
+| 按钮 | data-dom-id | 目标页面 | 实现方式 |
+| --- | --- | --- | --- |
+| 返回前台 | `back-front` | `./assistant-front.html`（助手前台） | `<button>` + JS `location.href` 注入 |
+| 返回总览 | `back-platform` | `./index.html`（平台总览） | `<button>` + JS `location.href` 注入 |
+
+### A.2 迭代管理页（manager-iteration-admin.html）
+
+交付后台的业务子页，承接侧栏「迭代管理」导航项（`data-nav-key="iterations"`）。按迭代组织交付节奏：页头 KPI 读节奏 → 选中迭代卡 → 下方需求摘要表核对明细。面包屑 `交付后台 / 迭代管理`；eyebrow `ADMIN · ITERATIONS`；页头 badge `warning`「IT-014 进行中」（calendar-range 图标）。本页同样仅激活业务组当前项（`overview` 无 `data-active`）；无筛选工具栏、无分页条（迭代卡 + 前 5 条摘要为静态展示）。
+
+侧栏导航（品牌区同交付后台：eyebrow `MAGICTOOLS · MANAGER · CONTROL`，名称 `交付后台`）：
+
+| 导航项 | data-nav-key | 激活态 | 分组 | 图标 data-lucide | href |
+| --- | --- | --- | --- | --- | --- |
+| 总览 | `overview` | — | 控制台 | layout-dashboard | `#` |
+| 系统设置 | `settings` | — | 控制台 | settings | `#` |
+| 访问日志 | `audit` | — | 控制台 | scroll-text | `#` |
+| 需求管理 | `requirements` | — | 业务 | clipboard-list | `./manager-admin.html` |
+| 迭代管理 | `iterations` | `data-active="true"` | 业务 | calendar-days | `./manager-iteration-admin.html` |
+
+交互元素简表：
+
+| # | 元素 | DOM 标识/选择器 | 说明 |
+| --- | --- | --- | --- |
+| 1 | KPI ×4 | `.as-kpirow` | 进行中 1 / 已归档 13 / 本迭代需求 24 / 完成率 67% |
+| 2 | 迭代卡 ×3 | `a.it-card`（区块 01「迭代列表」，meta「1 进行中 · 2 已归档」） | IT-014 交付节奏与看板重构期（09-01~09-30，需求 24，完成率 67%，badge warning 进行中，`data-active="true"` + `aria-current="true"`）；IT-013 检索迁移与解析升级期（需求 21，100%，已归档）；IT-012 助手多轮与路由调优期（需求 18，94%，已归档）——归档卡带 `data-archived="true"`，badge 无 tone |
+| 3 | 新建迭代 | `.it-sec-head .as-btn-primary`（plus） | 区块 01 头部主按钮 |
+| 4 | 需求摘要表 | `.as-table`，5 列（区块 02，meta「IT-014 · 前 5 条」） | 编号 / 标题 / 状态 / 负责人 / 操作；5 行 IT-014→IT-010（简历解析引擎升级 / 书库全文检索迁移 / 助手多轮对话优化 / 交付看板拖拽重构 / 采集去重策略调整） |
+| 5 | 状态 badge | `.as-badge[data-tone]` | 进行中 info / 已交付 success / 已验收 success / 待启动无 tone |
+| 6 | 行内·详情 | `tr .as-link-btn`（eye） | IT-011 行为实链 `./manager-requirement-detail.html`（唯一实链，其余 `#` 占位） |
+| 7 | 导出 | `.as-page-actions .as-btn-ghost`（download） | 页头次按钮 |
+
+页面互跳：
+
+| 按钮 | data-dom-id | 目标页面 | 实现方式 |
+| --- | --- | --- | --- |
+| 返回前台 | `back-front` | `./manager-front.html`（交付前台） | `<button>` + JS `location.href` 注入 |
+| 返回总览 | `back-platform` | `./index.html`（平台总览） | `<button>` + JS `location.href` 注入 |
+
+### A.3 需求详情页（manager-requirement-detail.html，前台壳）
+
+**亮壳特例**：本页不属于 AdminShell 暗色系——`<html>` 根节点为 `class="light"`，走前台 UserShell（`us-*`）+ 详情版式（`pg-*`），masthead 以 `--app-accent: var(--app-manager)` 挂交付应用色。它是交付前台「需求台」的单条需求详情（示例 IT-011 交付看板拖拽重构），入口为迭代管理页需求摘要表的行内「详情」实链。**无 AdminShell 侧栏**，导航由 masthead 的 `us-nav` 主导航 + `us-actions` 动作区承担。
+
+masthead 导航（无分组、无侧栏）：
+
+| 导航项 | data-nav-key | 激活态 | 容器 | href |
+| --- | --- | --- | --- | --- |
+| 需求台 | `requirements` | `data-active="true"` | `us-nav` | `./manager-front.html` |
+
+交互元素简表：
+
+| # | 元素 | DOM 标识/选择器 | 说明 |
+| --- | --- | --- | --- |
+| 1 | 页头读数组 | `.pg-head`（eyebrow MANAGER · DETAIL，编号 IT-011） | badges：优先级·P1（p1）/ 状态·开发中（doing）；readouts：负责人 赵雨晴 / 预估工时 16h / 剩余工时 6h / 创建 09-02 |
+| 2 | 验收标准 | `.pg-accept`（区块 01，4 项有序列表） | 编号对照式验收条目 |
+| 3 | 关联资源 | `.pg-links`（区块 02，3 链接） | 设计稿 / 分支 / 评审记录（`#` 占位链接） |
+| 4 | 动态时间线 | `.pg-timeline`（区块 03，5 条最近在前） | 当前项 `data-current="true"`（恢复开发 09-11）；阻塞项 `data-tone="blocked"`（09-09）；回溯至 09-02 创建 |
+| 5 | 信息卡 | `.pg-aside` | 所属迭代 IT-014 徽标；完成进度 10.4h/16h、65% 大数字 + `.pg-progress-track`（`role="progressbar"` aria-valuenow 65）；阻塞原因 note（alert-triangle） |
+| 6 | 更新状态 / 导出 | `.pg-aside-actions .pg-btn-primary / .pg-btn-ghost`（refresh-cw / download） | 信息卡底部动作组 |
+
+页面互跳（本页为前台壳无侧栏，出口集中在 `us-actions` 与页脚）：
+
+| 入口元素 | DOM 标识 | 目标页面 | 实现方式 |
+| --- | --- | --- | --- |
+| 需求台 | `us-nav` 导航项 | `./manager-front.html`（交付前台） | `<a href>` 实链 |
+| 返回总览 | `us-back-link[data-dom-id="back-platform"]` | `./index.html`（平台总览） | `<a href>` 实链（注意：非 AdminShell 的 button + JS 注入形态） |
+| 后台管理 | `us-admin-btn[data-dom-id="link-admin"]` | `./manager-admin.html`（需求驾驶舱） | `<a href>` 实链，形成详情 ⇄ 后台闭环 |
+| 管理后台（页脚） | `.us-footer-admin` | `./manager-admin.html` | `<a href>` 实链 |

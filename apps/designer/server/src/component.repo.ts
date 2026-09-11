@@ -1,10 +1,17 @@
 import { pool } from "./db";
 
+export interface CanvasDocRow {
+  componentName: string;
+  description?: string | null;
+  root: unknown;
+}
+
 export interface ComponentRow {
   id: string;
   name: string;
   description: string;
   code: string;
+  schema: CanvasDocRow | null;
   createdAt: string;
 }
 
@@ -14,16 +21,17 @@ function mapRow(r: Record<string, unknown>): ComponentRow {
     name: r.name as string,
     description: r.description as string,
     code: r.code as string,
+    schema: (r.schema as CanvasDocRow | null) ?? null,
     createdAt: new Date(r.created_at as string).toISOString(),
   };
 }
 
-const COLUMNS = "id, name, description, code, created_at";
+const COLUMNS = "id, name, description, code, schema, created_at";
 
-export async function insertComponent(name: string, description: string, code: string): Promise<ComponentRow | null> {
+export async function insertComponent(name: string, description: string, code: string, schema?: CanvasDocRow | null): Promise<ComponentRow | null> {
   const rows = await pool.query(
-    "INSERT INTO components (name, description, code) VALUES ($1, $2, $3) ON CONFLICT (name) DO NOTHING RETURNING " + COLUMNS,
-    [name, description, code]
+    "INSERT INTO components (name, description, code, schema) VALUES ($1, $2, $3, $4) ON CONFLICT (name) DO NOTHING RETURNING " + COLUMNS,
+    [name, description, code, schema ?? null]
   );
   return rows.rows[0] ? mapRow(rows.rows[0]) : null;
 }

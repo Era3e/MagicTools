@@ -72,6 +72,6 @@ describe("IntentLogPage 数据查询监控", () => {
     expect(await screen.findByText(/数据查询监控/)).toBeTruthy();
     expect(await screen.findByText(/暂无数据查询调用/)).toBeTruthy();
     expect(screen.getAllByText("EMPTY").length).toBe(1);
-    expect(screen.getAllByText("--").length).toBe(4);
+    expect(screen.getAllByText("--").length).toBe(5); // 4 个查询监控占位 + 1 个微调模型占位
   });
 });

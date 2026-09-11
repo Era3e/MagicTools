@@ -65,6 +65,12 @@ export async function listCorrectedLogs(limit = 500): Promise<IntentLogRow[]> {
   return rows.rows.map(mapRow);
 }
 
+/** D-09 LoRA: 纠错样本计数（就绪度门禁指标） */
+export async function countCorrectedLogs(): Promise<number> {
+  const rows = await pool.query("SELECT count(*)::int AS n FROM intent_logs WHERE corrected_intent IS NOT NULL AND corrected_intent <> ''");
+  return Number(rows.rows[0]?.n ?? 0);
+}
+
 /** D-09: 统计路由表现（真值 = corrected_intent ?? intent），供混淆矩阵与趋势观测 */
 export async function intentStats(): Promise<Array<{ intent: string; total: number; corrected: number }>> {
   const rows = await pool.query(
