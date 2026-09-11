@@ -12,7 +12,7 @@ export const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 export const catalog = () => runtimeCatalog(parse(readFileSync(join(root, "infra/ports.yaml"), "utf8")));
 
 export function inspectImage(reference) {
-  const format = '{"id":{{json .Id}},"labels":{{json .Config.Labels}},"os":{{json .Os}},"architecture":{{json .Architecture}},"health":{{json .Config.Healthcheck}}}';
+  const format = '{"id":{{json .Id}},"labels":{{json (index .Config "Labels")}},"os":{{json .Os}},"architecture":{{json .Architecture}},"health":{{json (index .Config "Healthcheck")}}}';
   return JSON.parse(execFileSync("docker", ["image", "inspect", reference, "--format", format], { encoding: "utf8", windowsHide: true }));
 }
 
