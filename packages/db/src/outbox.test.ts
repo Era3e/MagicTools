@@ -1,9 +1,11 @@
+// @database-integration: required by test:db
 import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { runMigrations } from "./migrations";
 import { appendOutbox, processOutbox } from "./outbox";
 
-const url = process.env.TEST_DATABASE_URL ?? "postgres://postgres:postgres@127.0.0.1:5432/mt_test";
+const url = process.env.TEST_DATABASE_URL;
+if (!url) throw new Error("请通过 pnpm test:db 配置专用测试库");
 let pool: Pool;
 let available = false;
 
@@ -15,8 +17,9 @@ beforeAll(async () => {
     await runMigrations(pool, process.cwd() + "/migrations");
     // 测试隔离：清空上轮残留（避免 retry 行被本轮测试 1 一并处理）
     await pool.query("TRUNCATE outbox");
-  } catch {
-    available = false;
+  } catch (error) {
+    // 关键数据库套件必须失败并保留原错误，不能把初始化异常变成跳过。
+    throw error;
   }
 }, 15000);
 

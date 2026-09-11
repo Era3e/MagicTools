@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       MANAGER_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/mt_manager_test
+      MT_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/postgres
     services:
       postgres:
         image: pgvector/pgvector:pg16
@@ -59,6 +60,15 @@ jobs:
             turbo-${{ runner.os }}-
       - run: pnpm install --frozen-lockfile
       - run: pnpm qa:gate
+      - name: 保存候选提交的质量证据（失败也保留）
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-evidence-${{ github.event.pull_request.head.sha || github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .qa/quality/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
 
   smoke:
     needs: quality

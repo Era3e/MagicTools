@@ -13,13 +13,14 @@
     "lint": "eslint .",
     "test:infra": "node infra/scripts/test-infra.mjs",
     "test:manager:integration": "pnpm --filter @mt/manager-server test:integration",
+    "test:db": "node infra/scripts/test-database.mjs",
     "smoke": "node infra/scripts/smoke.mjs",
     "e2e": "pnpm --filter @mt/e2e exec playwright test",
     "e2e:update": "pnpm --filter @mt/e2e exec playwright test --update-snapshots",
     "e2e:visual": "pnpm --filter @mt/e2e exec playwright test _visual.spec.ts",
     "e2e:visual:update": "pnpm --filter @mt/e2e exec playwright test _visual.spec.ts --update-snapshots",
     "design:check": "node magictools-ui-design/scripts/check-design-consistency.mjs",
-    "qa:gate": "eslint . && turbo run build test && pnpm coverage && pnpm test:infra && pnpm docs:lint && pnpm design:check && pnpm test:manager:integration",
+    "qa:gate": "node infra/scripts/quality-gate.mjs",
     "new:app": "node infra/scripts/new-app.mjs",
     "docs:lint": "markdownlint-cli2 \"docs/**/*.md\"",
     "changeset": "changeset",
@@ -34,9 +35,11 @@
     "eslint": "^9",
     "eslint-plugin-react-hooks": "^5",
     "markdownlint-cli2": "^0.14.0",
+    "pg": "8.23.0",
     "turbo": "^2.1.0",
     "typescript": "^5.5.0",
     "typescript-eslint": "^8",
+    "vitest": "2.1.9",
     "yaml": "^2.5.0"
   }
 }

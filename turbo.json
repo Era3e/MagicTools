@@ -1,8 +1,13 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["infra/testing/**"],
   "tasks": {
     "build": { "dependsOn": ["^build"], "outputs": ["dist/**"] },
-    "test": { "dependsOn": ["^build"] },
+    "test": {
+      "dependsOn": ["^build"],
+      "env": ["MT_LLM_STUB", "FT_STUB", "GITHUB_STUB", "FEISHU_STUB", "FEED_STUB", "ACTION_STUB", "CYBERCLOUD_STUB", "CLARIFY_STUB_CONFIDENCE"]
+    },
+    "test:integration": { "dependsOn": ["^build"], "cache": false, "passThroughEnv": ["MT_TEST_DATABASE_URL", "MANAGER_TEST_DATABASE_URL"] },
     "coverage": { "dependsOn": ["^build"], "outputs": ["coverage/**"] },
     "lint": { "dependsOn": ["^build"] },
     "dev": { "cache": false, "persistent": true }

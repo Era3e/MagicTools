@@ -1,3 +1,4 @@
+// @database-integration: required by test:db
 import { randomUUID } from "node:crypto";
 import { type INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";

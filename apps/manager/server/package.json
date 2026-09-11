@@ -6,7 +6,7 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/main.js",
     "test": "vitest run",
-    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "test:integration": "node ../../../infra/scripts/test-database.mjs --project manager",
     "lint": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {

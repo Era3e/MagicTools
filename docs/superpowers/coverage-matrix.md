@@ -145,6 +145,8 @@
 | C8 | 前端硬编码色值静态检查 | 本方案 P1-1 | infra/eslint/rules/no-hardcoded-colors.mjs | ✅ 已实现（PR #35） |
 | C9 | 通用页面模式库（patterns） | 本方案 P1-3 | packages/ui/src/patterns/（MagazineList/ControlTable/DetailHero/TimelineBurndown） | ✅ 已实现（PR #35/#40，含 patterns.test.tsx 8 用例） |
 | C10 | ThemePreview 主题横向对比 | 本方案中期 | — | 🚫 未实现（后续 P2，无 deferred 编号） |
+| C11 | 全项目关键数据库强制验证与普通单测边界 | docs/features/quality-evidence.md | infra/scripts/test-database.mjs + infra/testing/database-suites.json + infra/testing/unit-database-boundary.mjs | ✅ 已实现：每文件隔离主库/上游、无缓存、skip=0、清单漏项拒绝；database-validation.review.test.mjs 独立验收 |
+| C12 | 候选提交与运行绑定的质量证据 | docs/features/quality-evidence.md | infra/scripts/quality-gate.mjs + infra/scripts/lib/quality-evidence.mjs | ✅ 已实现：候选/checkout/base/run/mode绑定、工作树漂移拒绝、完整数据库明细重算与失败artifact；quality-evidence.review.test.mjs 独立验收 |
 
 ## 10. 2026-09 增量（双路查询 + UI v2.x 轮次，补记）
 

@@ -1,3 +1,4 @@
+// @database-integration: required by test:db
 import { join } from "node:path";
 import { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
@@ -8,7 +9,8 @@ import { AppModule } from "./app.module";
 import { ensureDatabase, migrate, pool, scholarPool } from "./db";
 import { pseudoVector } from "./llm";
 
-const SCHOLAR_TEST_URL = "postgres://postgres:postgres@127.0.0.1:5432/scholar_assistant_e2e";
+const SCHOLAR_TEST_URL = process.env.SCHOLAR_DATABASE_URL;
+if (!SCHOLAR_TEST_URL) throw new Error("请通过 pnpm test:db 分配 Scholar 上游测试库");
 
 let app: INestApplication;
 let available = false;
@@ -34,9 +36,9 @@ beforeAll(async () => {
     app = moduleRef.createNestApplication();
     app.setGlobalPrefix("api/assistant");
     await app.init();
-  } catch (err) {
-    console.warn("[multi-turn.e2e] 数据库不可用，跳过: " + String(err));
-    available = false;
+  } catch (error) {
+    // 关键数据库套件必须失败并保留原错误，不能把初始化异常变成跳过。
+    throw error;
   }
 }, 60000);
 
