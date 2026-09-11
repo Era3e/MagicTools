@@ -1,5 +1,4 @@
 name: magictools
-
 services:
   gateway:
     image: ${GATEWAY_IMAGE:-magictools-unconfigured/gateway:unconfigured}
@@ -9,139 +8,201 @@ services:
       MT_PROD: "1"
       GATEWAY_TOKEN: ${GATEWAY_TOKEN:-}
     restart: unless-stopped
-
   applicant-web:
     image: ${APPLICANT_WEB_IMAGE:-magictools-unconfigured/applicant-web:unconfigured}
-    expose: [ "4008" ]
+    expose:
+      - "4008"
     restart: unless-stopped
   applicant-server:
     image: ${APPLICANT_SERVER_IMAGE:-magictools-unconfigured/applicant-server:unconfigured}
-    expose: [ "5008" ]
+    expose:
+      - "5008"
     environment:
       PORT: "5008"
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/applicant
+      DATABASE_URL: ${APPLICANT_DATABASE_URL:?APPLICANT_DATABASE_URL is required}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      ZHIPU_API_KEY: ${ZHIPU_API_KEY:-}
+      LLM_PROVIDER: ${LLM_PROVIDER:-}
+      ZHIPU_MODEL: ${ZHIPU_MODEL:-glm-4-flash}
+      CLAWCV_API_KEY: ${CLAWCV_API_KEY:-}
+      CLAWCV_BACKEND_URL: ${CLAWCV_BACKEND_URL:-https://api.wondercv.com}
     depends_on:
       postgres:
         condition: service_healthy
     restart: unless-stopped
-
   gatherer-web:
     image: ${GATHERER_WEB_IMAGE:-magictools-unconfigured/gatherer-web:unconfigured}
-    expose: [ "4001" ]
+    expose:
+      - "4001"
     restart: unless-stopped
   gatherer-server:
     image: ${GATHERER_SERVER_IMAGE:-magictools-unconfigured/gatherer-server:unconfigured}
-    expose: [ "5001" ]
+    expose:
+      - "5001"
     environment:
       PORT: "5001"
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/gatherer
+      DATABASE_URL: ${GATHERER_DATABASE_URL:?GATHERER_DATABASE_URL is required}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      ZHIPU_API_KEY: ${ZHIPU_API_KEY:-}
+      LLM_PROVIDER: ${LLM_PROVIDER:-}
+      ZHIPU_MODEL: ${ZHIPU_MODEL:-glm-4-flash}
     depends_on:
       postgres:
         condition: service_healthy
     restart: unless-stopped
-
   investigator-web:
     image: ${INVESTIGATOR_WEB_IMAGE:-magictools-unconfigured/investigator-web:unconfigured}
-    expose: [ "4002" ]
+    expose:
+      - "4002"
     restart: unless-stopped
   investigator-server:
     image: ${INVESTIGATOR_SERVER_IMAGE:-magictools-unconfigured/investigator-server:unconfigured}
-    expose: [ "5002" ]
+    expose:
+      - "5002"
     environment:
       PORT: "5002"
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/investigator
+      DATABASE_URL: ${INVESTIGATOR_DATABASE_URL:?INVESTIGATOR_DATABASE_URL is required}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      ZHIPU_API_KEY: ${ZHIPU_API_KEY:-}
+      LLM_PROVIDER: ${LLM_PROVIDER:-}
+      ZHIPU_MODEL: ${ZHIPU_MODEL:-glm-4-flash}
+      FEISHU_APP_ID: ${FEISHU_APP_ID:-}
+      FEISHU_APP_SECRET: ${FEISHU_APP_SECRET:-}
+      FEISHU_BOT_WEBHOOK: ${FEISHU_BOT_WEBHOOK:-}
     depends_on:
       postgres:
         condition: service_healthy
     restart: unless-stopped
-
   assessor-web:
     image: ${ASSESSOR_WEB_IMAGE:-magictools-unconfigured/assessor-web:unconfigured}
-    expose: [ "4003" ]
+    expose:
+      - "4003"
     restart: unless-stopped
   assessor-server:
     image: ${ASSESSOR_SERVER_IMAGE:-magictools-unconfigured/assessor-server:unconfigured}
-    expose: [ "5003" ]
+    expose:
+      - "5003"
     environment:
       PORT: "5003"
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/assessor
-      INVESTIGATOR_DATABASE_URL: postgres://postgres:postgres@postgres:5432/investigator
+      DATABASE_URL: ${ASSESSOR_DATABASE_URL:?ASSESSOR_DATABASE_URL is required}
+      INVESTIGATOR_DATABASE_URL: ${INVESTIGATOR_DATABASE_URL:?INVESTIGATOR_DATABASE_URL is required}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      ZHIPU_API_KEY: ${ZHIPU_API_KEY:-}
+      LLM_PROVIDER: ${LLM_PROVIDER:-}
+      ZHIPU_MODEL: ${ZHIPU_MODEL:-glm-4-flash}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
     depends_on:
       postgres:
         condition: service_healthy
     restart: unless-stopped
-
   manager-web:
     image: ${MANAGER_WEB_IMAGE:-magictools-unconfigured/manager-web:unconfigured}
-    expose: [ "4004" ]
+    expose:
+      - "4004"
     restart: unless-stopped
   manager-server:
     image: ${MANAGER_SERVER_IMAGE:-magictools-unconfigured/manager-server:unconfigured}
-    expose: [ "5004" ]
+    expose:
+      - "5004"
     environment:
       PORT: "5004"
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/manager
-      ASSESSOR_DATABASE_URL: postgres://postgres:postgres@postgres:5432/assessor
+      DATABASE_URL: ${MANAGER_DATABASE_URL:?MANAGER_DATABASE_URL is required}
+      ASSESSOR_DATABASE_URL: ${ASSESSOR_DATABASE_URL:?ASSESSOR_DATABASE_URL is required}
       MANAGER_APPROVAL_TOKEN: ${MANAGER_APPROVAL_TOKEN:-}
       MANAGER_APPROVAL_ACTOR: ${MANAGER_APPROVAL_ACTOR:-owner}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      ZHIPU_API_KEY: ${ZHIPU_API_KEY:-}
+      LLM_PROVIDER: ${LLM_PROVIDER:-}
+      ZHIPU_MODEL: ${ZHIPU_MODEL:-glm-4-flash}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      GITHUB_WEBHOOK_SECRET: ${GITHUB_WEBHOOK_SECRET:-}
     depends_on:
       postgres:
         condition: service_healthy
     restart: unless-stopped
-
   designer-web:
     image: ${DESIGNER_WEB_IMAGE:-magictools-unconfigured/designer-web:unconfigured}
-    expose: [ "4005" ]
+    expose:
+      - "4005"
     restart: unless-stopped
   designer-server:
     image: ${DESIGNER_SERVER_IMAGE:-magictools-unconfigured/designer-server:unconfigured}
-    expose: [ "5005" ]
+    expose:
+      - "5005"
     environment:
       PORT: "5005"
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/designer
+      DATABASE_URL: ${DESIGNER_DATABASE_URL:?DESIGNER_DATABASE_URL is required}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      ZHIPU_API_KEY: ${ZHIPU_API_KEY:-}
+      LLM_PROVIDER: ${LLM_PROVIDER:-}
+      ZHIPU_MODEL: ${ZHIPU_MODEL:-glm-4-flash}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      GITHUB_REPO: ${GITHUB_REPO:-Era3e/MagicTools}
+      GITHUB_BASE_BRANCH: ${GITHUB_BASE_BRANCH:-main}
     depends_on:
       postgres:
         condition: service_healthy
     restart: unless-stopped
-
   scholar-web:
     image: ${SCHOLAR_WEB_IMAGE:-magictools-unconfigured/scholar-web:unconfigured}
-    expose: [ "4006" ]
+    expose:
+      - "4006"
     restart: unless-stopped
   scholar-server:
     image: ${SCHOLAR_SERVER_IMAGE:-magictools-unconfigured/scholar-server:unconfigured}
-    expose: [ "5006" ]
+    expose:
+      - "5006"
     environment:
       PORT: "5006"
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/scholar
-      GATHERER_DATABASE_URL: postgres://postgres:postgres@postgres:5432/gatherer
+      DATABASE_URL: ${SCHOLAR_DATABASE_URL:?SCHOLAR_DATABASE_URL is required}
+      GATHERER_DATABASE_URL: ${GATHERER_DATABASE_URL:?GATHERER_DATABASE_URL is required}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      ZHIPU_API_KEY: ${ZHIPU_API_KEY:-}
+      LLM_PROVIDER: ${LLM_PROVIDER:-}
+      ZHIPU_MODEL: ${ZHIPU_MODEL:-glm-4-flash}
     depends_on:
       postgres:
         condition: service_healthy
     restart: unless-stopped
-
   assistant-web:
     image: ${ASSISTANT_WEB_IMAGE:-magictools-unconfigured/assistant-web:unconfigured}
-    expose: [ "4007" ]
+    expose:
+      - "4007"
     restart: unless-stopped
   assistant-server:
     image: ${ASSISTANT_SERVER_IMAGE:-magictools-unconfigured/assistant-server:unconfigured}
-    expose: [ "5007" ]
+    expose:
+      - "5007"
     environment:
       MT_PROD: "1"
       GATEWAY_TOKEN: ${GATEWAY_TOKEN:-}
       PORT: "5007"
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/assistant
-      SCHOLAR_DATABASE_URL: postgres://postgres:postgres@postgres:5432/scholar
+      DATABASE_URL: ${ASSISTANT_DATABASE_URL:?ASSISTANT_DATABASE_URL is required}
+      SCHOLAR_DATABASE_URL: ${SCHOLAR_DATABASE_URL:?SCHOLAR_DATABASE_URL is required}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      ZHIPU_API_KEY: ${ZHIPU_API_KEY:-}
+      LLM_PROVIDER: ${LLM_PROVIDER:-}
+      ZHIPU_MODEL: ${ZHIPU_MODEL:-glm-4-flash}
+      CYBERCLOUD_BASE_URL: ${CYBERCLOUD_BASE_URL:-}
+      CYBERCLOUD_API_KEY: ${CYBERCLOUD_API_KEY:-}
+      CYBERCLOUD_AGENT_ID: ${CYBERCLOUD_AGENT_ID:-}
+      CYBERCLOUD_USERNAME: ${CYBERCLOUD_USERNAME:-}
+      CYBERCLOUD_PASSWORD: ${CYBERCLOUD_PASSWORD:-}
+      CYBERCLOUD_JWT: ${CYBERCLOUD_JWT:-}
+      CYBERCLOUD_MODE: ${CYBERCLOUD_MODE:-dual}
+      CYBERCLOUD_DIRECT_TIMEOUT_MS: ${CYBERCLOUD_DIRECT_TIMEOUT_MS:-8000}
+      CYBERCLOUD_VERIFY_TIMEOUT_MS: ${CYBERCLOUD_VERIFY_TIMEOUT_MS:-60000}
+      CYBERCLOUD_COMPARE_TOLERANCE: ${CYBERCLOUD_COMPARE_TOLERANCE:-0.01}
+      CLARIFY_THRESHOLD: ${CLARIFY_THRESHOLD:-0.6}
+      FT_LAUNCH_ENABLED: ${FT_LAUNCH_ENABLED:-0}
     depends_on:
       postgres:
         condition: service_healthy
     restart: unless-stopped
-
   postgres:
     image: pgvector/pgvector:pg16@sha256:ccc6e83d6e35e931dc7c5def2022729d5a6c370318d099181995567ff1fb4d6b
     environment:
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       POSTGRES_DB: magictools
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -155,6 +216,5 @@ services:
       timeout: 3s
       retries: 20
       start_period: 10s
-
 volumes:
-  pgdata:
+  pgdata: null

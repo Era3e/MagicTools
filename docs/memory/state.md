@@ -6,6 +6,8 @@
 
 ## 当前状态快照（2026-09-12 更新）
 
+- **P05部署器实施（2026-09-12）**：cc03f42干净制品构建/9项容器验收/17镜像digest发布全部通过；PR72该候选quality/smoke/e2e通过。新增deploy-release/deploy-ssh及PS包装，公开配置与已有env分离、锁、制品快照、成功回执先于状态原子提交、失败恢复及正常回退；独立测试发现回执写入顺序/锁提前释放/checksum判重问题均已修复。首版实际部署项目mt-validation-p05-89011a63通过17服务就绪、401/200令牌、Manager写入及env保护，PS原生失败exit1无成功文案、成功exit0；相同SQL改稳定摘要挂载。生产Compose配置与文档已补齐，第二版SHA和完整升级/失败/回退尚待执行，保持草稿。
+
 - **P03/P05首个候选提交（2026-09-12）**：b4bcc0a已提交并建立草稿PR #72；本地完整qa:gate（infra77、DB31文件136且零跳过）、源码smoke17通过，CI运行34636277477。干净提交的images:release发现PG基础镜像缺少Labels/Healthcheck可选字段，run runtime-9c9c9e512af3465f在创建容器前正确失败；inspect模板改用index，真实PG及Manager镜像元数据读取均正常，修复提交与完整发布链继续执行。保持草稿至P05部署器与回退完成，不自动合并过渡代码。
 
 - **P03/P05镜像与发布批次（2026-09-12，feat-infra-P03-runtime）**：基于main531e82a，P03运行切片已独立验收：build60e9dd418cbde78a的17镜像、runtime-7edb3a63b0febb03的9项实际检查均通过并清理；本地registry的publish782381fceab52b16推送/按digest回读17镜像成功。数据库断连进程退出、Assistant漏依赖/端口资源及容器寻址已修复。CI smoke改真实镜像冷启动，main镜像发布改SHA/digest。P05部署回执与回退尚未完成，旧deploy.ps1仍待替换，本批不得按完整交付合并。工作树证据、正式提交、生产部署和真实模型质量分开记录；细节见 docs/features/runtime-images.md 与 docs/validation/2026-09-12-runtime-images.md。完整qa:gate的高并发触发Designer预览超时，Docker停止后仍复现；单独Turbo 25/25通过，全仓限并发2且强制重跑46/46通过（4分22秒），门禁固定并发2并保留原超时/断言。

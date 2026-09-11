@@ -1,0 +1,7 @@
+{
+  "schema": "magictools-deployment-config/1",
+  "project": "magictools",
+  "gatewayBind": "127.0.0.1",
+  "gatewayPort": 3000,
+  "waitTimeoutSeconds": 240
+}

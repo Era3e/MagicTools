@@ -39,6 +39,7 @@
 - pnpm smoke [--only <服务>]（冒烟）
 - pnpm images:smoke（构建17镜像并完成独立Compose冷启动、断连恢复和持久化回归）
 - pnpm images:build / images:publish / images:release（干净源码构建与固定digest制品，详见 docs/features/runtime-images.md）
+- pnpm deploy:release / deploy:ssh（公开配置与已有env分离，固定制品部署、回执和回退，详见 docs/features/deployment-receipts.md）
 - pnpm qa:gate（本地门禁）
 - pnpm test:manager:integration（Manager 关键数据库契约，需配置 MANAGER_TEST_DATABASE_URL 为 mt_*test 专用库；不可用即失败）
 - pnpm design:check（设计图 ↔ 前端一致性核对，qa:gate 已含；单独跑秒级出结果）

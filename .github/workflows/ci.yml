@@ -91,6 +91,10 @@ jobs:
           path: |
             .qa/images/
             .qa/runtime/
+            .qa/releases/
+            .qa/deployment-validation/**/summary.json
+            .qa/deployment-validation/**/receipt.json
+            .qa/deployment-validation/**/state.json
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 14

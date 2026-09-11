@@ -56,12 +56,14 @@ pnpm images:release --registry registry.example.com/magictools
 
 制品包含 `release.json`、`compose.json`、`ports.json`、`postgres-init.sql` 和发布回执，运行配置文件有SHA256校验和。秘密值不进入制品。验证工作树仅在显式 `--validation` 下发布为验证制品。
 
-P05的部署入口、配置版本回执与回退仍在本批后续实现。当前开发分支的镜像变量已切换为单服务引用，旧 `infra/deploy.ps1` 尚不适用于新制品；整批完成前不合并此过渡状态。
+P05的本机与SSH部署入口、配置版本回执和回退见 [部署操作说明](deployment-receipts.md)。`infra/deploy.ps1` 已改为调用同一部署流程，不再覆盖env或清理镜像。生产Compose要求显式提供数据库密码与八库URL，外部集成变量透传到对应服务。当前整批仍需完成第二版制品及真实回退验收后合并。
 
 ## CI与证据
 
 CI保留quality、smoke、e2e三个required check名称。qa:gate的构建/单测最多同时执行2个任务，避免多套Vite与动态预览编译争用资源导致测试超时。smoke执行实际镜像冷启动；失败和成功都保存 `.qa/images/` 与 `.qa/runtime/`。main通过全部检查后，有仓库配置才发布不可变清单；缺少配置时在workflow摘要记录未发布。
 
 本地回执在 `.qa/`，不提交Git。CI的runtime-evidence与image-release制品分别保存运行和发布证据。回执绑定源码与运行身份；工作树证据、CI候选证据和生产部署回执应分别核对。
+
+smoke还会启动一次性本机registry，推送已验收的当前制品，执行同制品配置升级、故障恢复和回退的实际部署回归。JSON回执保留，临时env不上传。不同源码SHA的两版本验证使用 `deploy:validate` 单独完成。
 
 新应用模板包含独立镜像、迁移起点及ready接口。`new:app`仍负责生成目录和分配端口，生产Compose与数据库初始化注册需随新增应用补齐；服务清单不一致会在容器验证前失败。

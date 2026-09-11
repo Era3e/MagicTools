@@ -67,6 +67,7 @@ pnpm qa:gate
 | `pnpm smoke [--only <服务>]` | 冒烟 |
 | `pnpm images:smoke` | 构建17镜像并执行独立Compose冷启动、恢复和持久化回归 |
 | `pnpm images:release --registry <host/namespace>` | 干净提交构建、容器验收、推送SHA标签及固定digest制品 |
+| `pnpm deploy:release` / `pnpm deploy:ssh` | 固定制品部署、回执与回退，使用独立公开配置和已有env |
 | `pnpm new:app <name>` | 新建子项目 |
 | `pnpm changeset` | 添加迭代日志 |
 
@@ -79,6 +80,7 @@ pnpm qa:gate
 - 迭代日志：`docs/CHANGELOG.md`
 - Git 工作流：`docs/git-workflow.md`
 - 运行镜像与制品：[docs/features/runtime-images.md](docs/features/runtime-images.md)
+- 部署与回退：[docs/features/deployment-receipts.md](docs/features/deployment-receipts.md)
 - 外部集成：`docs/integrations/`（飞书 / ClawCV / cybercloud）
 
 > **Windows 提示**：PowerShell 执行策略限制，pnpm 一律使用 `pnpm.cmd`。
