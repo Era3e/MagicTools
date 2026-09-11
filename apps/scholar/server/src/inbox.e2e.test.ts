@@ -1,3 +1,4 @@
+// @database-integration: required by test:db
 import { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import { appendOutbox } from "@mt/db";
@@ -37,8 +38,8 @@ let available = false;
 beforeAll(async () => {
   try {
     process.env.MT_LLM_STUB = "1";
-    process.env.GATHERER_DATABASE_URL = "postgres://postgres:postgres@127.0.0.1:5432/gatherer_scholar_e2e";
-    await ensureDatabase("postgres://postgres:postgres@127.0.0.1:5432/gatherer_scholar_e2e");
+    if (!process.env.GATHERER_DATABASE_URL) throw new Error("请通过 pnpm test:db 分配 Gatherer 上游测试库");
+    await ensureDatabase(process.env.GATHERER_DATABASE_URL);
     await ensureDatabase();
     await migrate();
     await gathererPool().query(OUTBOX_DDL);
@@ -47,8 +48,9 @@ beforeAll(async () => {
     app = moduleRef.createNestApplication();
     app.setGlobalPrefix("api/scholar");
     await app.init();
-  } catch {
-    available = false;
+  } catch (error) {
+    // 关键数据库套件必须失败并保留原错误，不能把初始化异常变成跳过。
+    throw error;
   }
 }, 30000);
 

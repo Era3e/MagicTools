@@ -1,3 +1,4 @@
+// @database-integration: required by test:db
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -31,9 +32,10 @@ describe("obsidian", () => {
       writeFileSync(join(vaultDir, "templates", "tmpl.md"), "模板");
       mkdirSync(join(vaultDir, "attachments"));
       writeFileSync(join(vaultDir, "attachments", "img.md"), "附件");
-    } catch {
-      available = false;
-    }
+    } catch (error) {
+    // 关键数据库套件必须失败并保留原错误，不能把初始化异常变成跳过。
+    throw error;
+  }
   }, 30000);
 
   afterAll(async () => {

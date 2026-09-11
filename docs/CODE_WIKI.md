@@ -1363,7 +1363,8 @@ Scholar 双通道检索：
 | `pnpm lint` | `eslint .` | 全局 ESLint（typescript-eslint + react-hooks 规则集） |
 | `pnpm test:infra` | `node --test infra/scripts/lib/*.test.mjs` | Node 原生测试 infra 脚本 |
 | `pnpm smoke [--only <服务>]` | `node infra/scripts/smoke.mjs` | 冒烟：读取 ports.yaml 探活所有服务健康检查 |
-| `pnpm qa:gate` | lint + build + test + coverage + test:infra + docs:lint | ✅ **本地合入前强制门禁，等同 CI quality job** |
+| `pnpm qa:gate` | quality-gate.mjs：lint + build/unit + coverage + infra + docs + design + test:db | ✅ 本地与 CI 共用；生成候选/checkout/run 绑定的阶段证据 |
+| `pnpm test:db` | test-database.mjs：按声明清单初始化隔离库并直接运行关键 Vitest 文件 | ✅ 真实 PostgreSQL/pgvector、skip=0、无缓存；成功清理本次库，失败保留诊断 |
 | `pnpm new:app <name>` | `node infra/scripts/new-app.mjs` | 复制模板 + 分配端口 + 写 ports.yaml |
 | `pnpm ws:create <项目> <任务ID>` / `ws:cleanup` | `workspace.mjs` | Git worktree 管理 |
 | `pnpm changeset` / `release` | changesets CLI | 迭代日志 / 版本号自动生成 |
@@ -1381,7 +1382,7 @@ Scholar 双通道检索：
 ```
 
 - ^build = 先构建上游 workspace 依赖包（config/types/db/ui/model-client/utils）
-- CI 用 actions/cache 缓存 `.turbo` 目录大幅加速
+- CI 用 actions/cache 缓存 `.turbo` 目录中的构建和普通单测结果。数据库测试从普通配置移出并直接强制运行，不复用缓存；桩模式开关进入普通单测环境/hash。配置、文件标记、清单、失败策略和候选证据见 [质量门禁说明](features/quality-evidence.md)。
 
 ### 11.3 四层测试体系
 
@@ -1458,7 +1459,7 @@ flowchart LR
 
 #### Job 1: quality
 - 依赖服务：pgvector/pgvector:pg16（POSTGRES_DB=mt_test）
-- 步骤：pnpm install → 缓存 .turbo → pnpm lint → pnpm build → pnpm test → pnpm test:infra → pnpm docs:lint
+- 步骤：pnpm install → 缓存 .turbo → pnpm qa:gate → 无论成功/失败均保存 `.qa/quality/` artifact。qa:gate 覆盖 lint、build/unit、coverage、infra、docs、design 和全项目关键数据库验证；报告区分 PR head 与实际 checkout，旧运行回执不能代替当前验证。
 
 #### Job 2: smoke（needs quality）
 - 启动 applicant ~ designer 全部 16 个进程（8 web + 8 server）+ gateway

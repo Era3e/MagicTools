@@ -1,0 +1,179 @@
+{
+  "schema": "magictools-database-suites/1",
+  "projects": [
+    {
+      "id": "db",
+      "directory": "packages/db",
+      "files": [
+        {
+          "path": "src/outbox.test.ts",
+          "minimumTests": 3
+        }
+      ]
+    },
+    {
+      "id": "applicant",
+      "directory": "apps/applicant/server",
+      "files": [
+        {
+          "path": "src/interview.e2e.test.ts",
+          "minimumTests": 3
+        },
+        {
+          "path": "src/position.e2e.test.ts",
+          "minimumTests": 9
+        },
+        {
+          "path": "src/resume.e2e.test.ts",
+          "minimumTests": 3
+        }
+      ]
+    },
+    {
+      "id": "investigator",
+      "directory": "apps/investigator/server",
+      "files": [
+        {
+          "path": "src/db.test.ts",
+          "minimumTests": 1
+        },
+        {
+          "path": "src/survey.e2e.test.ts",
+          "minimumTests": 8
+        }
+      ]
+    },
+    {
+      "id": "assessor",
+      "directory": "apps/assessor/server",
+      "files": [
+        {
+          "path": "src/request.e2e.test.ts",
+          "minimumTests": 5
+        }
+      ]
+    },
+    {
+      "id": "manager",
+      "directory": "apps/manager/server",
+      "files": [
+        {
+          "path": "src/import-batch.e2e.test.ts",
+          "minimumTests": 8
+        },
+        {
+          "path": "src/iteration.e2e.test.ts",
+          "minimumTests": 1
+        },
+        {
+          "path": "src/requirement-foundation.e2e.test.ts",
+          "minimumTests": 4
+        },
+        {
+          "path": "src/requirement-revisions.e2e.test.ts",
+          "minimumTests": 11
+        },
+        {
+          "path": "src/requirement.e2e.test.ts",
+          "minimumTests": 6
+        }
+      ]
+    },
+    {
+      "id": "gatherer",
+      "directory": "apps/gatherer/server",
+      "files": [
+        {
+          "path": "src/source.e2e.test.ts",
+          "minimumTests": 5
+        }
+      ]
+    },
+    {
+      "id": "scholar",
+      "directory": "apps/scholar/server",
+      "files": [
+        {
+          "path": "src/entry.e2e.test.ts",
+          "minimumTests": 5
+        },
+        {
+          "path": "src/graph.e2e.test.ts",
+          "minimumTests": 3
+        },
+        {
+          "path": "src/inbox.e2e.test.ts",
+          "minimumTests": 2
+        },
+        {
+          "path": "src/obsidian.e2e.test.ts",
+          "minimumTests": 5
+        },
+        {
+          "path": "src/search.e2e.test.ts",
+          "minimumTests": 3
+        }
+      ]
+    },
+    {
+      "id": "assistant",
+      "directory": "apps/assistant/server",
+      "files": [
+        {
+          "path": "src/action.e2e.test.ts",
+          "minimumTests": 2
+        },
+        {
+          "path": "src/chat.dual.e2e.test.ts",
+          "minimumTests": 5
+        },
+        {
+          "path": "src/chat.e2e.test.ts",
+          "minimumTests": 6
+        },
+        {
+          "path": "src/clarify.e2e.test.ts",
+          "minimumTests": 4
+        },
+        {
+          "path": "src/cybercloud-calls.repo.test.ts",
+          "minimumTests": 2
+        },
+        {
+          "path": "src/data-query.e2e.test.ts",
+          "minimumTests": 3
+        },
+        {
+          "path": "src/feedback.e2e.test.ts",
+          "minimumTests": 3
+        },
+        {
+          "path": "src/intent-log.e2e.test.ts",
+          "minimumTests": 7
+        },
+        {
+          "path": "src/multi-turn.e2e.test.ts",
+          "minimumTests": 5
+        },
+        {
+          "path": "src/trouble.e2e.test.ts",
+          "minimumTests": 2
+        }
+      ]
+    },
+    {
+      "id": "designer",
+      "directory": "apps/designer/server",
+      "files": [
+        {
+          "path": "src/components.e2e.test.ts",
+          "minimumTests": 6
+        },
+        {
+          "path": "src/generate.e2e.test.ts",
+          "minimumTests": 5
+        }
+      ]
+    }
+  ]
+}

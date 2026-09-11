@@ -1,3 +1,4 @@
+// @database-integration: required by test:db
 import { afterAll, describe, expect, it } from "vitest";
 import { ensureDatabase, migrate, pool } from "./db";
 import { insertCybercloudCall, listCybercloudCalls, markVerifyStatus } from "./cybercloud-calls.repo";

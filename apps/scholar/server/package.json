@@ -6,7 +6,8 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/main.js",
     "test": "vitest run",
-    "lint": "tsc --noEmit -p tsconfig.json"
+    "lint": "tsc --noEmit -p tsconfig.json",
+    "test:integration": "node ../../../infra/scripts/test-database.mjs --project scholar"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.0",

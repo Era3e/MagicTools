@@ -1,3 +1,4 @@
+// @database-integration: required by test:db
 import { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import request from "supertest";
@@ -18,9 +19,9 @@ beforeAll(async () => {
     app = moduleRef.createNestApplication();
     app.setGlobalPrefix("api/designer");
     await app.init();
-  } catch (err) {
-    console.warn("[generate.e2e] 数据库不可用，跳过: " + String(err));
-    available = false;
+  } catch (error) {
+    // 关键数据库套件必须失败并保留原错误，不能把初始化异常变成跳过。
+    throw error;
   }
 }, 30000);
 

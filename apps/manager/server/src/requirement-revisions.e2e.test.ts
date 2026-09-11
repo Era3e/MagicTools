@@ -1,3 +1,4 @@
+// @database-integration: required by test:db
 import { type INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import request from "supertest";

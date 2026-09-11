@@ -9,6 +9,7 @@ test-results/
 !.env.template
 *.log
 .run-logs/
+.qa/
 .DS_Store
 
 .stage-assistant-dual-query/
