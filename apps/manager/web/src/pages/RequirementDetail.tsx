@@ -1,4 +1,4 @@
-import { Button, Input, Select, message } from "antd";
+import { Alert, Button, Input, Select, message } from "antd";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { MtStatusTag, tokens, useTheme } from "@mt/ui";
@@ -21,6 +21,10 @@ function priorityColor(priority: string, muted: string): string {
   return muted;
 }
 
+function linkSnapshot(item: Requirement) {
+  return { branch: item.branch, prUrl: item.prUrl, baseBranch: item.branch, basePrUrl: item.prUrl, revision: item.revision };
+}
+
 export default function RequirementDetail() {
   const theme = useTheme();
   const DECK = {
@@ -35,43 +39,64 @@ export default function RequirementDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [item, setItem] = useState<Requirement | null>(null);
-  const [branch, setBranch] = useState("");
-  const [prUrl, setPrUrl] = useState("");
+  const [links, setLinks] = useState({ branch: "", prUrl: "", baseBranch: "", basePrUrl: "", revision: 0 });
+  const [savingLinks, setSavingLinks] = useState(false);
+  const { branch, prUrl } = links;
 
   useEffect(() => {
     if (id) {
       api.getRequirement(id).then((r) => {
         setItem(r);
-        setBranch(r.branch);
-        setPrUrl(r.prUrl);
+        setLinks(linkSnapshot(r));
       });
     }
   }, [id]);
 
   if (!item) return <div style={{ fontFamily: DECK.mono, color: DECK.muted, padding: 40, textAlign: "center" }}>LOADING FLIGHT DATA…</div>;
 
-  const refresh = async () => {
+  const refresh = async (resetLinks = false) => {
     const fresh = await api.getRequirement(item.id);
     setItem(fresh);
+    setLinks((draft) => {
+      const dirty = draft.branch !== draft.baseBranch || draft.prUrl !== draft.basePrUrl;
+      if (resetLinks || !dirty) return linkSnapshot(fresh);
+      // 仅当服务器关联仍等于草稿基准时，允许将草稿重放到新修订。
+      if (fresh.branch === draft.baseBranch && fresh.prUrl === draft.basePrUrl) {
+        return { ...draft, revision: fresh.revision };
+      }
+      return draft;
+    });
   };
 
   const changeStatus = async (status: string) => {
-    await api.patchRequirement(item.id, { status });
-    message.success("状态已更新");
-    refresh();
+    try {
+      await api.patchRequirement(item.id, { status, expectedRevision: item.revision });
+      message.success("状态已更新");
+    } catch (error) {
+      message.error(String(error));
+    }
+    await refresh();
   };
 
   const saveLinks = async () => {
-    await api.patchRequirement(item.id, { branch, prUrl });
-    message.success("已保存关联");
-    refresh();
+    setSavingLinks(true);
+    try {
+      await api.patchRequirement(item.id, { branch, prUrl, expectedRevision: links.revision });
+      message.success("已保存关联");
+      await refresh(true);
+    } catch (error) {
+      message.error(String(error));
+      await refresh();
+    } finally {
+      setSavingLinks(false);
+    }
   };
 
   const refreshPr = async () => {
     try {
-      const out = await api.refreshPr(item.id);
-      setItem(out);
-      message.success("PR 状态已刷新 → " + out.status);
+      await api.refreshPr(item.id);
+      await refresh();
+      message.success("PR 状态已刷新");
     } catch (err) {
       message.error(String(err));
     }
@@ -103,7 +128,9 @@ export default function RequirementDetail() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10, marginBottom: 16 }}>
         <div style={{ border: "1px solid " + DECK.border, background: DECK.panel, padding: "10px 12px" }}>
           <div style={{ fontFamily: DECK.mono, fontSize: 10, color: DECK.muted, marginBottom: 4 }}>STATUS · 当前状态</div>
-          <Select value={item.status} style={{ width: "100%" }} options={STATUS_OPTIONS} onChange={changeStatus} />
+          <Select value={item.status} style={{ width: "100%" }} options={STATUS_OPTIONS.map((option) => ({
+            ...option, disabled: option.value !== item.status && !item.allowedNextStatuses?.includes(option.value),
+          }))} onChange={changeStatus} />
         </div>
         <div style={{ border: "1px solid " + DECK.border, background: DECK.panel, padding: "10px 12px" }}>
           <div style={{ fontFamily: DECK.mono, fontSize: 10, color: DECK.muted, marginBottom: 4 }}>PRIORITY · 优先级</div>
@@ -111,21 +138,26 @@ export default function RequirementDetail() {
             value={item.priority}
             style={{ width: "100%" }}
             options={[{ value: "P0", label: "P0" }, { value: "P1", label: "P1" }, { value: "P2", label: "P2" }]}
-            onChange={(v) => api.patchRequirement(item.id, { priority: v }).then(refresh)}
+            onChange={(v) => api.patchRequirement(item.id, { priority: v, expectedRevision: item.revision })
+              .then(() => refresh()).catch((error) => { message.error(String(error)); void refresh(); })}
           />
         </div>
         <div style={{ border: "1px solid " + DECK.border, background: DECK.panel, padding: "10px 12px" }}>
           <div style={{ fontFamily: DECK.mono, fontSize: 10, color: DECK.muted, marginBottom: 4 }}>BRANCH · 分支</div>
-          <Input variant="borderless" value={branch} onChange={(e) => setBranch(e.target.value)} placeholder="feat-项目-任务ID" style={{ fontFamily: DECK.mono, fontSize: 12 }} />
+          <Input variant="borderless" disabled={savingLinks} value={branch} onChange={(e) => setLinks((draft) => ({ ...draft, branch: e.target.value }))} placeholder="feat-项目-任务ID" style={{ fontFamily: DECK.mono, fontSize: 12 }} />
         </div>
         <div style={{ border: "1px solid " + DECK.border, background: DECK.panel, padding: "10px 12px" }}>
           <div style={{ fontFamily: DECK.mono, fontSize: 10, color: DECK.muted, marginBottom: 4 }}>PR · 关联</div>
-          <Input variant="borderless" value={prUrl} onChange={(e) => setPrUrl(e.target.value)} placeholder="PR 链接" style={{ fontFamily: DECK.mono, fontSize: 12 }} />
+          <Input variant="borderless" disabled={savingLinks} value={prUrl} onChange={(e) => setLinks((draft) => ({ ...draft, prUrl: e.target.value }))} placeholder="PR 链接" style={{ fontFamily: DECK.mono, fontSize: 12 }} />
         </div>
       </div>
 
+      {links.revision !== item.revision ? <Alert type="warning" showIcon
+        message="服务器关联已变化，当前草稿尚未保存。请重新载入关联后再编辑。"
+        description={`服务器分支：${item.branch || "未关联"}；PR：${item.prUrl || "未关联"}`}
+        action={<Button onClick={() => { void refresh(true); }}>重新载入关联</Button>} /> : null}
       <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
-        <Button onClick={saveLinks} style={{ borderRadius: 0 }}>保存关联</Button>
+        <Button loading={savingLinks} onClick={saveLinks} style={{ borderRadius: 0 }}>保存关联</Button>
         <Button onClick={refreshPr} disabled={!item.prUrl} style={{ borderRadius: 0 }}>刷新 PR 状态</Button>
       </div>
 
@@ -135,6 +167,15 @@ export default function RequirementDetail() {
           <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.8 }}>{item.description}</div>
         </section>
       ) : null}
+
+      {item.acceptanceCriteria?.length || item.evidenceRefs?.length ? <section
+        style={{ border: "1px solid " + DECK.border, background: DECK.panel, padding: tokens.spacing.md, marginBottom: tokens.spacing.md }}>
+        <h3>验收与实现证据</h3>
+        <p>项目：{item.project || "未指定"} · 修订 {item.revision} · 人工开发</p>
+        {item.acceptanceCriteria?.length ? <ul>{item.acceptanceCriteria.map((criterion, i) => <li key={i}>{criterion}</li>)}</ul> : null}
+        {item.evidenceRefs?.map((e, i) => <div key={i}><a href={e.url} target="_blank" rel="noreferrer">{e.path}:{e.line}</a></div>)}
+        {item.dependencyRefs?.length ? <p>前置候选：{item.dependencyRefs.join("、")}（需在排期时核验）</p> : null}
+      </section> : null}
 
       {item.sourcePayload ? (
         <details style={{ border: "1px dashed " + DECK.border, padding: "8px 12px", marginBottom: 12 }}>

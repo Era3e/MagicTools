@@ -38,6 +38,7 @@
 - pnpm new:app <name>（新子项目）
 - pnpm smoke [--only <服务>]（冒烟）
 - pnpm qa:gate（本地门禁）
+- pnpm test:manager:integration（Manager 关键数据库契约，需配置 MANAGER_TEST_DATABASE_URL 为 mt_*test 专用库；不可用即失败）
 - pnpm design:check（设计图 ↔ 前端一致性核对，qa:gate 已含；单独跑秒级出结果）
 - pnpm ws:create <项目> <任务ID> / pnpm ws:cleanup <项目> <任务ID>（worktree）
 - pnpm changeset（添加迭代日志）

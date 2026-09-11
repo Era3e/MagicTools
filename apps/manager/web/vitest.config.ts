@@ -12,6 +12,8 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
+    fileParallelism: false,
+    testTimeout: 15000,
     setupFiles: ["./src/test-setup.ts"],
   },
 });

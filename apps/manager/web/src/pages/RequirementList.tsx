@@ -3,6 +3,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { AdminPageHead, MtStatusTag, MtKpiRow, tokens, type MtStatusTagTone } from "@mt/ui";
 import { api, type Requirement } from "../api";
+import CandidateImport from "./CandidateImport";
+import CapabilityList from "./CapabilityList";
 
 const STATUS_MAP: Record<string, { label: string; tone: MtStatusTagTone }> = {
   waiting: { label: "待分析", tone: "neutral" },
@@ -19,6 +21,7 @@ const SOURCE_MAP: Record<string, { label: string }> = {
   manual: { label: "手动" },
   github: { label: "GitHub" },
   cybercloud: { label: "cybercloud" },
+  audit_proposal: { label: "规划候选" },
 };
 
 const PRIORITY_TONE: Record<string, MtStatusTagTone> = { P0: "error", P1: "warning", P2: "neutral" };
@@ -30,6 +33,9 @@ export default function RequirementList() {
   const [creating, setCreating] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [showCapabilities, setShowCapabilities] = useState(false);
+  const [capabilityVersion, setCapabilityVersion] = useState(0);
 
   const refresh = useCallback(() => {
     setLoading(true);
@@ -84,6 +90,8 @@ export default function RequirementList() {
         description="待分析 → 设计 → 开发 → 测试 → 验收 → 完成 · 数字为等宽读数"
         actions={
           <>
+            <Button onClick={() => setImporting(true)}>导入候选</Button>
+            <Button onClick={() => setShowCapabilities(!showCapabilities)}>{showCapabilities ? "返回需求列表" : "查看能力基线"}</Button>
             <Button onClick={poll}>拉取收件箱</Button>
             <Button loading={syncing} onClick={sync}>同步 GitHub</Button>
             <Button type="primary" onClick={() => setCreating(true)}>新建需求</Button>
@@ -91,6 +99,8 @@ export default function RequirementList() {
         }
         kpi={<MtKpiRow items={stats} />}
       />
+      {showCapabilities ? <CapabilityList key={capabilityVersion} /> : null}
+      <div hidden={showCapabilities}>
       <div style={{ display: "flex", gap: tokens.spacing.sm, marginBottom: tokens.spacing.md, flexWrap: "wrap", alignItems: "center" }}>
         <Select allowClear placeholder="状态" style={{ width: 120 }} value={status} onChange={setStatus}
           options={Object.entries(STATUS_MAP).map(([value, v]) => ({ value, label: v.label }))} />
@@ -115,6 +125,10 @@ export default function RequirementList() {
           { title: "更新时间", dataIndex: "updatedAt", width: 170, render: (v: string) => <span style={{ fontFamily: tokens.font.mono, fontSize: 12 }}>{new Date(v).toLocaleString()}</span> },
         ]}
       />
+      </div>
+      {importing ? <CandidateImport open onClose={() => setImporting(false)} onImported={() => {
+        refresh(); setCapabilityVersion((value) => value + 1);
+      }} /> : null}
       <Modal
         title="新建需求"
         open={creating}

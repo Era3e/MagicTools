@@ -784,8 +784,9 @@ export const APPS: AppEntry[] = [
 | 层 | Controller | Service | Repo | 职责 |
 |---|---|---|---|---|
 | 健康 | HealthController | — | — | — |
-| 需求 | RequirementController | RequirementService | RequirementRepo | 7 态生命周期 / 三来源标签（Assessor/手动/GitHub Phantom）/ PR 联动 |
+| 需求 | RequirementController | RequirementService | RequirementRepo | 7 态生命周期 / 事务更新与 revision 冲突 / PR 联动 / 规划验收与来源证据 |
 | 迭代 | IterationController | IterationService | IterationRepo | 迭代管理（增删改查 + 需求关联） |
+| 候选与能力基线 | ImportController / CapabilityController | ImportService | manager_import_batches / manager_import_links / capabilities | 预览、选择确认、剩余批次、稳定来源去重、冲突回滚；基线与规划分开保存 |
 
 **消费事件**：`requirement.created`（ASSESSOR_DATABASE_URL processOutbox）
 **外部集成**：`github/client.ts` — Phantom GitHub Issues 同步（GITHUB_STUB=1）
@@ -804,9 +805,13 @@ export const APPS: AppEntry[] = [
   /requirements/:id  RequirementDetail  飞行日志（仪表卡+简报+时间线）
 
 后台（AdminShell /manager/admin）：
-  /admin/requirements  RequirementList  需求管理表格
+  /admin/requirements  RequirementList  需求管理表格 + 候选导入 + 能力基线视图
   /admin/iterations    IterationList    迭代管理
 ```
+
+2026-09-11 起，手工状态迁移由 `requirement-policy.ts` 约束；字段与状态在行锁事务中合并，新客户端提交 expectedRevision，过期返回 409。PR 同状态不增加修订，不能回退 accepting/done。详情的关联草稿与服务器基准分离，冲突后不会自动使用新版本覆盖旧内容。
+
+候选导入支持 `magictools-requirement-candidates/0.1`：baseline 保存为 capabilities，planned 保存为 waiting/manual 需求；源码观察不等于已验收或已部署。当前不包含完整正文修订历史、批准流程和自动执行。接口、来源与大小上限见 [Manager 候选导入说明](features/manager-candidate-import.md)。关键数据库验证使用 `pnpm test:manager:integration`，并由本地与 CI 共用的 qa:gate 强制执行。
 
 ---
 

@@ -53,7 +53,7 @@
 | # | 功能点 | Spec 章节 | 实际实现文件 | 状态 | E2E 覆盖 |
 |---|-------|----------|-------------|------|---------|
 | M1 | 跨库消费 assessor.outbox（requirement.created） | spec 3.1 | server/main.ts processOutbox(ASSESSOR_DATABASE_URL) | ✅ 已实现 | requirement.e2e.test.ts |
-| M2 | 需求 7 态状态机 | spec 3.2 | server/schemas.ts RequirementStatus 7 值 | ✅ 已实现 | requirement.e2e.test.ts 状态流转 |
+| M2 | 需求 7 态状态机、原子更新与并发修订 | docs/features/manager-candidate-import.md | apps/manager/server/src/requirement-policy.ts + apps/manager/server/src/requirement.repo.ts | ✅ 已实现：统一手工/PR 迁移规则、expectedRevision 冲突、同状态 PR no-op | apps/manager/server/src/requirement-foundation.e2e.test.ts |
 | M3 | 三来源标签（Assessor/手动/GitHub Phantom） | spec 3.2 | server/requirement.repo.ts source 字段三枚举 | ✅ 已实现 | unit + requirement.e2e.test.ts |
 | M4 | PR 状态联动刷新 | spec 3.3 | server/requirement.service.ts syncPrStatus() + apps/manager/server/src/webhook.controller.ts | ✅ 已实现（D-03 兑现，PR #41：POST /webhook/github HMAC-SHA256 签名 + delivery 幂等 + 6 单测） | requirement.e2e.test.ts + webhook.controller.spec.ts |
 | M5 | Phantom GitHub Issues 同步 | spec 3.3 | server/github/client.ts getPhantomIssues() + GITHUB_STUB | ✅ 已实现 | unit（桩） |
@@ -61,6 +61,8 @@
 | M7 | 前台 FLIGHT DECK 七泳道看板 | PR #30 | web/pages/RequirementBoard.tsx COCKPIT_THEME | ✅ 已实现 | manager.spec.ts 页面渲染 |
 | M8 | 前台 RequirementDetail 飞行日志 | PR #31 | web/pages/RequirementDetail.tsx 仪表卡 + 时间线 | ✅ 已实现 | — |
 | M9 | 后台需求管理表格 + 迭代管理 | PR #29 | RequirementList.tsx + IterationList.tsx AdminShell | ✅ 已实现 | manager.spec.ts |
+| M10 | 候选预览、确认与剩余批次 | docs/features/manager-candidate-import.md | apps/manager/server/src/import.service.ts + apps/manager/web/src/pages/CandidateImport.tsx | ✅ 已实现：来源校验、事务去重与冲突回滚；不授权自动开发 | apps/manager/server/src/import-batch.e2e.test.ts + apps/manager/web/src/pages/RequirementList.test.tsx + e2e/tests/manager-import.spec.ts |
+| M11 | 独立能力基线与规划证据 | docs/features/manager-candidate-import.md | apps/manager/web/src/pages/CapabilityList.tsx + apps/manager/web/src/pages/RequirementDetail.tsx | ✅ 已实现：基线不进入需求队列；规划保留证据/验收/依赖 | apps/manager/server/src/import-batch.e2e.test.ts |
 
 ## 5. Gatherer（采集 · 知识主线第一环）
 

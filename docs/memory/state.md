@@ -6,6 +6,8 @@
 
 ## 当前状态快照（2026-09-10 更新）
 
+- **Manager 需求基础与候选导入第一批（2026-09-11，feat-manager-P07-foundation）**：用户在源码评估后要求直接落地。已实现状态/字段原子保存、统一迁移、并发修订、同状态 PR no-op；关联表单保留草稿并阻止换用新修订覆盖旧内容。候选支持预览、选择确认、独立能力基线、waiting/manual 规划、证据保留、来源身份归一、跨批事务去重和冲突回滚，部分确认可继续预览剩余项。CI quality 与本地共用 qa:gate，新增强制 Manager 专用测试库检查。P07 与导入均经独立测试智能体验收通过；qa:gate 通过（新增 Manager 专项 12/12、前端 9/9、infra 10/10、docs 39 文件零错误、设计 126 PASS），HTTP smoke 17/17；真实 Chromium 端到端 4/4、Manager 视觉 2/2、响应式 4/4，既有视觉基线通过未覆盖更新。演示库验证 32 条能力与 26 条规划导入。**验证边界**：本轮使用独立本地 PostgreSQL 16 集群，旧本地数据库不改动；本地无 pgvector，部分旧 Scholar/Assistant 集成及未配置的 outbox 测试仍按既有逻辑 skip，不能视为全平台数据库/真实模型验证完成。另修 Node 20/Windows 不展开测试 glob，test:infra 改显式枚举；.env.template 去掉易误用的全局 DATABASE_URL。正式说明 docs/features/manager-candidate-import.md。当前 revision 仅用于并发保护，完整修订历史/批准与执行队列仍属于后续阶段；没有开启自动开发或合并。
+
 - **D-01/D-02 画布工坊 + D-09 LoRA 编排层落地（2026-09-10，分支 feat/designer-D0102，待验收开 PR）**：
 
   - **输入**：用户要求兑现 mvp-deferred 最后三项真延期（D-01/D-02 Designer 拖拽画布 P2、D-09 LoRA 层 P3）。两项用户拍板：技术栈 dnd-kit + textarea（否决 CodeMirror 6 与原生 DnD）；D-09 做「编排层就绪」（纠错样本实测 10/500、智谱 LoRA 需 Pro 权益，真跑无意义不耗费用）。spec：docs/superpowers/specs/2026-09-10-designer-canvas-design.md + 2026-09-10-assistant-lora-finetune-design.md；plan：2026-09-10-designer-canvas-lora.md。
