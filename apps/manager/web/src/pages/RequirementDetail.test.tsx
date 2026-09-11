@@ -1,13 +1,30 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { Link, MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import RequirementDetail from "./RequirementDetail";
 import { api } from "../api";
+import type { Requirement } from "../api";
 
 vi.mock("../api", () => ({ api: { getRequirement: vi.fn(), patchRequirement: vi.fn(), refreshPr: vi.fn() } }));
 afterEach(() => { cleanup(); vi.resetAllMocks(); });
 
 describe("需求详情并发恢复", () => {
+  it("切换需求后迟到的旧页面请求不能覆盖当前档案", async () => {
+    let resolveOld!: (value: Requirement) => void;
+    const item = { id: "new", revision: 1, title: "新需求档案", description: "", source: "manual", status: "waiting" as const,
+      priority: "P2", branch: "", prUrl: "", timeline: [], labels: [], iterationId: null, sourcePayload: null, sourceRef: "", updatedAt: "2026-09-11T00:00:00Z" };
+    vi.mocked(api.getRequirement).mockImplementation((id) => id === "old"
+      ? new Promise<Requirement>((resolve) => { resolveOld = resolve; }) : Promise.resolve(item));
+    render(<MemoryRouter initialEntries={["/requirements/old"]}><Link to="/requirements/new">切换需求</Link><Routes>
+      <Route path="/requirements/:id" element={<RequirementDetail />} />
+    </Routes></MemoryRouter>);
+    fireEvent.click(screen.getByText("切换需求"));
+    await screen.findByRole("heading", { name: "新需求档案" });
+    await act(async () => { resolveOld({ ...item, id: "old", title: "旧需求档案" }); });
+    await waitFor(() => expect(screen.queryByRole("heading", { name: "旧需求档案" })).toBeNull());
+    expect(screen.getByRole("heading", { name: "新需求档案" })).toBeTruthy();
+  });
+
   it("更新状态保留未保存的关联草稿，并仅在服务器关联未变时更新草稿版本", async () => {
     const initial = { id: "req-2", revision: 1, title: "保留草稿", description: "", source: "manual",
       status: "waiting" as const, priority: "P2", branch: "old-branch", prUrl: "", timeline: [], labels: [],

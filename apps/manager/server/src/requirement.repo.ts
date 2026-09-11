@@ -2,6 +2,7 @@ import { pool } from "./db";
 import { BadRequestException, ConflictException } from "@nestjs/common";
 import { canTransition } from "./requirement-policy";
 import type { PoolClient } from "pg";
+import { getApprovalReadiness, type RequirementRisk } from "./requirement-content";
 
 export const REQUIREMENT_STATUSES = ["waiting", "designing", "todo", "developing", "testing", "accepting", "done"] as const;
 export type RequirementStatus = (typeof REQUIREMENT_STATUSES)[number];
@@ -10,6 +11,12 @@ export const REQUIREMENT_SOURCES = ["assessor", "manual", "github", "cybercloud"
 export interface RequirementRow {
   id: string;
   revision: number;
+  contentRevision: number;
+  approvedContentRevision: number | null;
+  approvalStatus: "unapproved" | "approved" | "outdated";
+  approvalReadiness: { ready: boolean; missing: string[] };
+  scope: string;
+  risk: RequirementRisk;
   project: string;
   acceptanceCriteria: string[];
   evidenceRefs: Array<Record<string, unknown>>;
@@ -34,9 +41,16 @@ export interface RequirementRow {
 export type RequirementMutation = RequirementRow & { transitionApplied?: boolean };
 
 export function mapRow(r: Record<string, unknown>): RequirementRow {
-  return {
+  const contentRevision = Number(r.content_revision ?? 1);
+  const approvedContentRevision = r.approved_content_revision == null ? null : Number(r.approved_content_revision);
+  const row: Omit<RequirementRow, "approvalReadiness"> = {
     id: r.id as string,
     revision: Number(r.revision),
+    contentRevision,
+    approvedContentRevision,
+    approvalStatus: approvedContentRevision === contentRevision ? "approved" : approvedContentRevision == null ? "unapproved" : "outdated",
+    scope: (r.scope as string) ?? "",
+    risk: (r.risk as RequirementRisk) ?? "unassessed",
     project: (r.project as string) ?? "",
     acceptanceCriteria: (r.acceptance_criteria as string[]) ?? [],
     evidenceRefs: (r.evidence_refs as Array<Record<string, unknown>>) ?? [],
@@ -57,6 +71,7 @@ export function mapRow(r: Record<string, unknown>): RequirementRow {
     createdAt: new Date(r.created_at as string).toISOString(),
     updatedAt: new Date(r.updated_at as string).toISOString(),
   };
+  return { ...row, approvalReadiness: getApprovalReadiness(row) };
 }
 
 export async function listRequirements(filters: { status?: string; source?: string; iterationId?: string } = {}): Promise<RequirementRow[]> {
@@ -102,10 +117,12 @@ export async function createRequirement(input: {
   acceptanceCriteria?: string[];
   evidenceRefs?: Array<Record<string, unknown>>;
   dependencyRefs?: string[];
+  scope?: string;
+  risk?: RequirementRisk;
 }, database: Pick<PoolClient, "query"> = pool): Promise<RequirementRow> {
   const rows = await database.query(
-    "INSERT INTO requirements (title, description, source, source_ref, source_payload, priority, branch, pr_url, labels, iteration_id, project, acceptance_criteria, evidence_refs, dependency_refs) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING *",
-    [input.title, input.description ?? "", input.source ?? "manual", input.sourceRef ?? "", input.sourcePayload ? JSON.stringify(input.sourcePayload) : null, input.priority ?? "P2", input.branch ?? "", input.prUrl ?? "", JSON.stringify(input.labels ?? []), input.iterationId ?? null, input.project ?? "", JSON.stringify(input.acceptanceCriteria ?? []), JSON.stringify(input.evidenceRefs ?? []), JSON.stringify(input.dependencyRefs ?? [])]
+    "INSERT INTO requirements (title, description, source, source_ref, source_payload, priority, branch, pr_url, labels, iteration_id, project, acceptance_criteria, evidence_refs, dependency_refs, scope, risk) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING *",
+    [input.title, input.description ?? "", input.source ?? "manual", input.sourceRef ?? "", input.sourcePayload ? JSON.stringify(input.sourcePayload) : null, input.priority ?? "P2", input.branch ?? "", input.prUrl ?? "", JSON.stringify(input.labels ?? []), input.iterationId ?? null, input.project ?? "", JSON.stringify(input.acceptanceCriteria ?? []), JSON.stringify(input.evidenceRefs ?? []), JSON.stringify(input.dependencyRefs ?? []), input.scope ?? "", input.risk ?? "unassessed"]
   );
   return mapRow(rows.rows[0]);
 }
@@ -118,6 +135,11 @@ export async function updateRequirement(id: string, patch: Partial<{
   prUrl: string;
   iterationId: string | null;
   status: RequirementStatus;
+  project: string;
+  scope: string;
+  risk: RequirementRisk;
+  acceptanceCriteria: string[];
+  dependencyRefs: string[];
 }>, options: { note?: string; origin?: "manual" | "github"; expectedRevision?: number } = {}): Promise<RequirementMutation | null> {
   const client = await pool.connect();
   try {
@@ -148,8 +170,8 @@ export async function updateRequirement(id: string, patch: Partial<{
       { at: new Date().toISOString(), from: current.status, to: next.status, ...(options.note ? { note: options.note } : {}) },
     ];
     const rows = await client.query(
-      "UPDATE requirements SET title=$1, description=$2, priority=$3, branch=$4, pr_url=$5, iteration_id=$6, status=$7, timeline=$8, revision=revision+1, updated_at=now() WHERE id=$9 RETURNING *",
-      [next.title, next.description, next.priority, next.branch, next.prUrl, next.iterationId, next.status, JSON.stringify(timeline), id]
+      "UPDATE requirements SET title=$1, description=$2, priority=$3, branch=$4, pr_url=$5, iteration_id=$6, status=$7, timeline=$8, project=$9, scope=$10, risk=$11, acceptance_criteria=$12, dependency_refs=$13, revision=revision+1, updated_at=now() WHERE id=$14 RETURNING *",
+      [next.title, next.description, next.priority, next.branch, next.prUrl, next.iterationId, next.status, JSON.stringify(timeline), next.project, next.scope, next.risk, JSON.stringify(next.acceptanceCriteria), JSON.stringify(next.dependencyRefs), id]
     );
     await client.query("COMMIT");
     return { ...mapRow(rows.rows[0]), ...(options.origin === "github" ? { transitionApplied: true } : {}) };

@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Inject, Param, Patch, Post, Query } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Inject, Param, ParseUUIDPipe, Patch, Post, Query } from "@nestjs/common";
 import { RequirementService } from "./requirement.service";
 
 @Controller()
@@ -18,6 +18,11 @@ export class RequirementController {
   @Get("requirements/:id")
   get(@Param("id") id: string) {
     return this.service.get(id);
+  }
+
+  @Get("requirements/:id/revisions")
+  revisions(@Param("id", ParseUUIDPipe) id: string, @Query() query: unknown) {
+    return this.service.revisions(id, query);
   }
 
   @Post("requirements")

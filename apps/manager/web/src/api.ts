@@ -1,13 +1,16 @@
 const BASE = "/api/manager";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const headers = new Headers(init?.headers);
+  if (!headers.has("Content-Type")) headers.set("Content-Type", "application/json");
   const res = await fetch(BASE + path, {
-    headers: { "Content-Type": "application/json" },
     ...init,
+    headers,
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error((body as { message?: string }).message || "请求失败 " + res.status);
+    const message = res.status === 413 ? "内容过大，请缩短后重试" : (body as { message?: string }).message || "请求失败 " + res.status;
+    throw Object.assign(new Error(message), { status: res.status });
   }
   return res.json() as Promise<T>;
 }
@@ -17,6 +20,12 @@ export type RequirementStatus = "waiting" | "designing" | "todo" | "developing" 
 export interface Requirement {
   id: string;
   revision: number;
+  contentRevision?: number;
+  approvedContentRevision?: number | null;
+  approvalStatus?: "unapproved" | "approved" | "outdated";
+  approvalReadiness?: { ready: boolean; missing: string[] };
+  scope?: string;
+  risk?: RequirementRisk;
   allowedNextStatuses?: RequirementStatus[];
   project?: string;
   acceptanceCriteria?: string[];
@@ -37,6 +46,24 @@ export interface Requirement {
   timeline: Array<{ at: string; from: string; to: string; note?: string }>;
   updatedAt: string;
 }
+
+export type RequirementRisk = "unassessed" | "low" | "medium" | "high";
+export interface RequirementContent {
+  title: string; description: string; project: string; scope: string; risk: RequirementRisk;
+  acceptanceCriteria: string[]; dependencyRefs: string[];
+  evidenceRefs: Array<{ url: string; path: string; line: number }>;
+}
+export interface ContentRevision {
+  contentRevision: number; content: RequirementContent; origin: "backfill" | "created" | "edited";
+  createdFromRevision: number; createdAt: string; changedFields: string[];
+}
+export interface RevisionPage { currentContentRevision: number; total: number; items: ContentRevision[]; nextBefore: number | null }
+export interface ApprovalEvent {
+  id: string; contentRevision: number; requirementRevision: number; decision: "approved" | "revoked";
+  actorId: string; authMethod: "owner-token"; reason: string; createdAt: string;
+}
+export interface ApprovalPolicy { configured: boolean; actorId: string; authMethod: string; automatedExecutionEnabled: false }
+export interface ApprovalInput { expectedRevision: number; expectedContentRevision: number; reason: string }
 
 export interface Iteration {
   id: string;
@@ -90,6 +117,15 @@ export interface Capability {
 }
 
 export const api = {
+  getApprovalPolicy: () => request<ApprovalPolicy>("/meta/approval-policy"),
+  approveRevision: (id: string, input: ApprovalInput, token: string) => request<Requirement>("/requirements/" + id + "/approve-revision", {
+    method: "POST", headers: { "x-manager-approval-token": token }, body: JSON.stringify(input),
+  }),
+  revokeApproval: (id: string, input: ApprovalInput, token: string) => request<Requirement>("/requirements/" + id + "/revoke-approval", {
+    method: "POST", headers: { "x-manager-approval-token": token }, body: JSON.stringify(input),
+  }),
+  getRequirementRevisions: (id: string, before?: number) => request<RevisionPage>("/requirements/" + id + "/revisions" + (before ? "?before=" + before : "")),
+  getApprovalHistory: (id: string, before?: number) => request<{ items: ApprovalEvent[]; nextBefore: number | null }>("/requirements/" + id + "/approvals" + (before ? "?before=" + before : "")),
   previewCandidates: (input: unknown) => request<ImportPreview>("/import-batches/preview", { method: "POST", body: JSON.stringify(input) }),
   getImportBatch: (id: string) => request<ImportPreview>("/import-batches/" + id),
   previewRemainingCandidates: (id: string) => request<ImportPreview>("/import-batches/" + id + "/remaining-preview", { method: "POST" }),
