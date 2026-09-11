@@ -4,6 +4,7 @@ loadRootEnv();
 import "reflect-metadata";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
+import { migrate } from "./db";
 
 const PORT = Number(process.env.PORT ?? __SERVER_PORT__);
 
@@ -11,8 +12,9 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix("api/__NAME__");
   app.enableCors();
+  await migrate();
   await app.listen(PORT);
   console.log("__NAME__-server listening on " + PORT);
 }
 
-bootstrap();
+bootstrap().catch((error) => { console.error("startup failed: " + String(error)); process.exit(1); });

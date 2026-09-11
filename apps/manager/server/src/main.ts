@@ -15,16 +15,20 @@ async function bootstrap() {
   app.enableCors();
   // raw-body 中间件：webhook 签名校验需要原始 body
   app.use(rawBodyMiddleware());
-  await app.listen(PORT);
-  console.log("manager-server listening on " + PORT);
 
   try {
     await ensureDatabase();
     await migrate();
     console.log("migrations applied");
   } catch (err) {
-    console.warn("db unavailable, continuing: " + String(err));
+    await app.close();
+    throw err;
   }
+  await app.listen(PORT);
+  console.log("manager-server ready on " + PORT);
 }
 
-bootstrap();
+bootstrap().catch((error) => {
+  console.error("startup failed: " + String(error));
+  process.exit(1);
+});

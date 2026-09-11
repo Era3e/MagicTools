@@ -76,6 +76,10 @@
         {
           "path": "src/requirement.e2e.test.ts",
           "minimumTests": 6
+        },
+        {
+          "path": "src/runtime-readiness.e2e.test.ts",
+          "minimumTests": 1
         }
       ]
     },

@@ -68,6 +68,20 @@ export function createGateway(ports: PortsConfig, env: NodeJS.ProcessEnv = proce
     );
   }
   app.get("/health", (_req, res) => res.json({ status: "up", service: "gateway" }));
+  app.get("/ready", async (_req, res) => {
+    const targets = Object.entries(ports).filter(([name]) => name !== "gateway").flatMap(([name, port]) => [
+      ...(port.server ? [{ service: name + "-server", port: port.server, path: "/api/" + name + "/health/ready" }] : []),
+      ...(port.web ? [{ service: name + "-web", port: port.web, path: "/" + name + "/" }] : []),
+    ]);
+    const services = await Promise.all(targets.map(async (target) => {
+      try {
+        const response = await fetch("http://" + host(target.service) + ":" + target.port + target.path, { signal: AbortSignal.timeout(3000) });
+        return { service: target.service, ready: response.ok };
+      } catch { return { service: target.service, ready: false }; }
+    }));
+    const ready = services.length > 0 && services.every((service) => service.ready);
+    res.status(ready ? 200 : 503).json({ ready, service: "gateway", services });
+  });
   app.get("/api/health", async (_req, res) => {
     try {
       const probes = await probeAllServices(ports, host);

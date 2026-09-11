@@ -6,6 +6,8 @@
 
 ## 当前状态快照（2026-09-12 更新）
 
+- **P03/P05镜像与发布批次（2026-09-12，feat-infra-P03-runtime）**：基于main531e82a，P03运行切片已独立验收：build60e9dd418cbde78a的17镜像、runtime-7edb3a63b0febb03的9项实际检查均通过并清理；本地registry的publish782381fceab52b16推送/按digest回读17镜像成功。数据库断连进程退出、Assistant漏依赖/端口资源及容器寻址已修复。CI smoke改真实镜像冷启动，main镜像发布改SHA/digest。P05部署回执与回退尚未完成，旧deploy.ps1仍待替换，本批不得按完整交付合并。工作树证据、正式提交、生产部署和真实模型质量分开记录；细节见 docs/features/runtime-images.md 与 docs/validation/2026-09-12-runtime-images.md。完整qa:gate的高并发触发Designer预览超时，Docker停止后仍复现；单独Turbo 25/25通过，全仓限并发2且强制重跑46/46通过（4分22秒），门禁固定并发2并保留原超时/断言。
+
 - **持续落地授权与主线（2026-09-11→12）**：用户明确授权先合并两批，后续实现、独立检查和 CI 无误后直接合并，自动循环至现有 P01–P26 规划全部开发落地，不再逐项等待人工确认。#69 已合入 104eee6；#70 更新 main 后重新通过 quality/smoke/e2e，合入 aeaff9a；合并后的 main CI 也已通过。当前开发工作与部署/真实模型验证分开记录，不用桩或跳过冒充完成。
 
 - **第三批 P01/P02（2026-09-12，feat-infra-P02-quality）**：统一数据库启动器已接入9项目30个关键文件，每文件隔离主库与上游库；清单/标记/普通排除三方一致，初始化错误、skip、零用例和陈旧报告均不能判绿。旧硬编码连接已迁移，普通单测增加 pg I/O 阻断；发现未按数据库分类的 cybercloud-calls.repo.test.ts 后补入关键清单。DB入口独立14条及CLI边界已通过，完整quality证据与最终全仓验收继续执行。使用本轮独立Docker pgvector实例55433；此前遗留硬编码在认证阶段被拒绝后修正，未读写原5432数据库。正式口径见 docs/features/quality-evidence.md。

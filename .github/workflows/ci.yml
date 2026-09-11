@@ -73,23 +73,6 @@ jobs:
   smoke:
     needs: quality
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: pgvector/pgvector:pg16
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: applicant
-        ports:
-          - "5432:5432"
-        options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 5s
-          --health-timeout 3s
-          --health-retries 10
-    env:
-      PORT: "5008"
-      DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/applicant
-      MT_LLM_STUB: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -97,43 +80,20 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
-      - name: 缓存 turbo 构建
-        uses: actions/cache@v4
-        with:
-          path: .turbo
-          key: turbo-${{ runner.os }}-${{ github.sha }}
-          restore-keys: |
-            turbo-${{ runner.os }}-
       - run: pnpm install --frozen-lockfile
-      - run: pnpm build
-      - name: 启动全部服务并冒烟
-        run: |
-          node apps/applicant/server/dist/main.js &
-          (cd apps/applicant/web && node node_modules/vite/bin/vite.js preview --port 4008 --strictPort --host 127.0.0.1) &
-          node apps/gateway/dist/index.js &
-          PORT=5002 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/investigator FEISHU_STUB=1 MT_LLM_STUB=1 node apps/investigator/server/dist/main.js &
-          (cd apps/investigator/web && node node_modules/vite/bin/vite.js preview --port 4002 --strictPort --host 127.0.0.1) &
-          PORT=5003 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/assessor INVESTIGATOR_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/investigator MT_LLM_STUB=1 GITHUB_STUB=1 node apps/assessor/server/dist/main.js &
-          (cd apps/assessor/web && node node_modules/vite/bin/vite.js preview --port 4003 --strictPort --host 127.0.0.1) &
-          PORT=5004 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/manager ASSESSOR_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/assessor GITHUB_STUB=1 node apps/manager/server/dist/main.js &
-          (cd apps/manager/web && node node_modules/vite/bin/vite.js preview --port 4004 --strictPort --host 127.0.0.1) &
-          PORT=5001 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/gatherer FEED_STUB=1 MT_LLM_STUB=1 node apps/gatherer/server/dist/main.js &
-          (cd apps/gatherer/web && node node_modules/vite/bin/vite.js preview --port 4001 --strictPort --host 127.0.0.1) &
-          PORT=5006 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/scholar GATHERER_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/gatherer MT_LLM_STUB=1 node apps/scholar/server/dist/main.js &
-          (cd apps/scholar/web && node node_modules/vite/bin/vite.js preview --port 4006 --strictPort --host 127.0.0.1) &
-          PORT=5007 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/assistant SCHOLAR_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/scholar MT_LLM_STUB=1 CYBERCLOUD_STUB=1 ACTION_STUB=1 CLARIFY_STUB_CONFIDENCE=0.9 node apps/assistant/server/dist/main.js &
-          (cd apps/assistant/web && node node_modules/vite/bin/vite.js preview --port 4007 --strictPort --host 127.0.0.1) &
-          PORT=5005 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/designer MT_LLM_STUB=1 node apps/designer/server/dist/main.js &
-          (cd apps/designer/web && node node_modules/vite/bin/vite.js preview --port 4005 --strictPort --host 127.0.0.1) &
-          sleep 10
-          node infra/scripts/smoke.mjs --only applicant
-          node infra/scripts/smoke.mjs --only investigator
-          node infra/scripts/smoke.mjs --only assessor
-          node infra/scripts/smoke.mjs --only manager
-          node infra/scripts/smoke.mjs --only gatherer
-          node infra/scripts/smoke.mjs --only scholar
-          node infra/scripts/smoke.mjs --only assistant
-          node infra/scripts/smoke.mjs --only designer
+      - name: 构建17镜像并验证独立Compose冷启动
+        run: pnpm images:smoke
+      - name: 保存镜像与运行证据（失败也保留）
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-evidence-${{ github.event.pull_request.head.sha || github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .qa/images/
+            .qa/runtime/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
 
   e2e:
     needs: smoke
@@ -229,54 +189,38 @@ jobs:
     runs-on: ubuntu-latest
     env:
       REGISTRY_HOST: ${{ secrets.REGISTRY_HOST }}
-    strategy:
-      matrix:
-        service:
-          - gateway
-          - applicant-web
-          - applicant-server
-          - gatherer-web
-          - gatherer-server
-          - investigator-web
-          - investigator-server
-          - assessor-web
-          - assessor-server
-          - manager-web
-          - manager-server
-          - designer-web
-          - designer-server
-          - scholar-web
-          - scholar-server
-          - assistant-web
-          - assistant-server
     steps:
       - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
+      - name: 未配置镜像仓库时记录未发布
+        if: env.REGISTRY_HOST == ''
+        run: echo '未配置 REGISTRY_HOST，本轮未发布镜像。' >> "$GITHUB_STEP_SUMMARY"
+      - if: env.REGISTRY_HOST != ''
+        uses: pnpm/action-setup@v4
+      - if: env.REGISTRY_HOST != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
       - if: env.REGISTRY_HOST != ''
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY_HOST }}
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
-      - name: 构建并推送镜像
+      - if: env.REGISTRY_HOST != ''
+        run: pnpm install --frozen-lockfile
+      - name: 发布源码SHA标签与固定digest清单
         if: env.REGISTRY_HOST != ''
-        env:
-          SERVICE: ${{ matrix.service }}
-          IMAGE_PREFIX: ${{ env.REGISTRY_HOST }}/magictools
-        shell: bash
-        run: |
-          set -e
-          case "$SERVICE" in
-            gateway)
-              docker build -f apps/gateway/Dockerfile -t "$IMAGE_PREFIX/gateway:latest" .
-              ;;
-            *-web)
-              app="${SERVICE%%-web}"
-              docker build -f "apps/$app/web/Dockerfile" -t "$IMAGE_PREFIX/$SERVICE:latest" .
-              ;;
-            *-server)
-              app="${SERVICE%%-server}"
-              docker build -f "apps/$app/server/Dockerfile" -t "$IMAGE_PREFIX/$SERVICE:latest" .
-              ;;
-          esac
-          docker push "$IMAGE_PREFIX/$SERVICE:latest"
+        run: pnpm images:release --registry "$REGISTRY_HOST/magictools"
+      - name: 保存发布制品与失败回执
+        if: always() && env.REGISTRY_HOST != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-release-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .qa/images/
+            .qa/releases/
+            .qa/runtime/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30

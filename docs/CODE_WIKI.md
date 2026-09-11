@@ -1361,8 +1361,10 @@ Scholar 双通道检索：
 | `pnpm test:affected` | `turbo run test --affected` | ⭐ 回归层：只跑变更影响的包 |
 | `pnpm coverage` | `turbo run coverage` | Vitest 覆盖率，输出 coverage/（公共包门槛 70/70/70/50） |
 | `pnpm lint` | `eslint .` | 全局 ESLint（typescript-eslint + react-hooks 规则集） |
-| `pnpm test:infra` | `node --test infra/scripts/lib/*.test.mjs` | Node 原生测试 infra 脚本 |
+| `pnpm test:infra` | `node infra/scripts/test-infra.mjs` | Node 原生测试 infra 脚本 |
 | `pnpm smoke [--only <服务>]` | `node infra/scripts/smoke.mjs` | 冒烟：读取 ports.yaml 探活所有服务健康检查 |
+| `pnpm images:smoke` | images-smoke.mjs | 17镜像构建与独立容器全流程回归 |
+| `pnpm images:build` / `images:publish` / `images:release` | 制品构建及仓库digest核验 | 干净提交发布，验证工作树须明确标记 |
 | `pnpm qa:gate` | quality-gate.mjs：lint + build/unit + coverage + infra + docs + design + test:db | ✅ 本地与 CI 共用；生成候选/checkout/run 绑定的阶段证据 |
 | `pnpm test:db` | test-database.mjs：按声明清单初始化隔离库并直接运行关键 Vitest 文件 | ✅ 真实 PostgreSQL/pgvector、skip=0、无缓存；成功清理本次库，失败保留诊断 |
 | `pnpm new:app <name>` | `node infra/scripts/new-app.mjs` | 复制模板 + 分配端口 + 写 ports.yaml |
@@ -1389,92 +1391,46 @@ Scholar 双通道检索：
 | 层 | 工具 | 范围 | 命令 | CI Job |
 |---|---|---|---|---|
 | 1 单元 | Vitest | 公共包核心逻辑 + Service 单测 | `pnpm test` | quality |
-| 2 冒烟 | smoke.mjs fetch | 所有服务健康检查（server /health + web 200） | `pnpm smoke` | smoke |
+| 2 冒烟 | Docker Compose + HTTP/SQL | 17镜像冷启动、数据库恢复、业务与持久化 | `pnpm images:smoke`（本地源码探活仍可用 `pnpm smoke`） | smoke |
 | 3 回归 | Turbo --affected | 仅构建变更影响的包 + 跑对应测试 | `pnpm test:affected` | 本地（CI 全量） |
 | 4 E2E | Playwright chromium | 11 个 spec 全流程真实交互 | `@mt/e2e playwright test` | e2e |
 
-### 11.4 CI 流水线（.github/workflows/ci.yml）
+### 11.4 CI流水线（.github/workflows/ci.yml）
 
-**4 Job 顺序执行（DAG）：**
-
-```
-quality（quality gate）→ smoke → e2e → images（仅 main 分支）
-```
-
-#### CI 流水线流程图（Mermaid）
+quality、smoke、e2e保留原required check名称。三个检查全部通过后，main的images任务才发布制品。
 
 ```mermaid
 flowchart LR
-    classDef trig fill:#eef4ff,stroke:#4c7dff,stroke-width:2px
-    classDef job fill:#fff4e6,stroke:#faad14,stroke-width:2px
-    classDef step fill:#f6ffed,stroke:#52c41a,stroke-width:1px
-    classDef svc fill:#f0f5ff,stroke:#2f54eb,stroke:1px
-    classDef cond fill:#fff0f6,stroke:#eb2f96,stroke-dasharray:5 5
-    classDef out fill:#f9f0ff,stroke:#722ed1,stroke-width:2px
-
-    Trigger[🔔 触发事件<br/>PR / push(main|dev)]:::trig --> Q[Job 1 · quality]:::job
-    Q -->|needs: 无| QSvc[📦 Service: pgvector pg16<br/>POSTGRES_DB=mt_test]:::svc
-    QSvc --> Q1[actions/checkout + setup-node + pnpm]:::step
-    Q1 --> QCache[💾 缓存 .turbo<br/>actions/cache key=turbo-os-sha]:::step
-    QCache --> Q2[pnpm install --frozen-lockfile]:::step
-    Q2 --> Q3[pnpm lint · ESLint 全量]:::step
-    Q3 --> Q4[pnpm build · turbo 并行 16 包]:::step
-    Q4 --> Q5[pnpm test · Vitest 全量 + 覆盖率]:::step
-    Q5 --> Q6[pnpm test:infra · Node 原生测试脚本]:::step
-    Q6 --> Q7[pnpm docs:lint · markdownlint]:::step
-    Q7 --> QOut{❓ quality 全通过?}:::cond
-    QOut -->|✅ Yes| S[Job 2 · smoke<br/>needs: quality]:::job
-    QOut -->|❌ No| Fail[🚫 终止，PR 红]:::out
-
-    S --> SSvc[📦 Service: pgvector pg16<br/>POSTGRES_DB=applicant + 8 环境变量覆盖]:::svc
-    SSvc --> SStub[🧪 全局桩模式<br/>MT_LLM_STUB=1 FEISHU/GITHUB/CYBERCLOUD/FEED=1]:::step
-    SStub --> SBuild[复用缓存后的 dist/]:::step
-    SBuild --> SStart[🚀 启动 17 个进程<br/>gateway + 8 web + 8 server · 后台 &]:::step
-    SStart --> SWait[⌛ sleep 10s 等待健康]:::step
-    SWait --> S8[🔁 smoke.mjs --only × 8<br/>applicant → designer 逐个探活]:::step
-    S8 --> SOut{❓ smoke 全 PASS?}:::cond
-    SOut -->|✅| E[Job 3 · e2e<br/>needs: smoke]:::job
-    SOut -->|❌| Fail
-
-    E --> ESvc[📦 Service: pgvector pg16 · 同 smoke]:::svc
-    ESvc --> EStub[🧪 桩模式开关与 smoke 完全一致]:::step
-    EStub --> EBuild[复用 dist/]:::step
-    EBuild --> EPlay[💻 actions/cache: ~/.cache/ms-playwright<br/>pnpm --filter @mt/e2e exec playwright install chromium]:::step
-    EPlay --> EStart[🚀 启动全服务 17 进程 · 同 smoke]:::step
-    EStart --> ERun[🎭 pnpm --filter @mt/e2e exec playwright test<br/>11 specs 并行 chromium]:::step
-    ERun --> EOut{❓ e2e 全通过?}:::cond
-    EOut -->|✅| Img[Job 4 · images<br/>needs:[quality,smoke,e2e]]:::job
-    EOut -->|❌| Fail
-
-    Img --> ImgIf{🔀 if: github.ref == refs/heads/main<br/>仅 main 分支触发}:::cond
-    ImgIf -->|❌ 其他分支| Skip[⏭️ 跳过镜像构建]:::out
-    ImgIf -->|✅ main| ImgHost{🔐 if: env.REGISTRY_HOST != ''<br/>GitHub Secret 已配置?}:::cond
-    ImgHost -->|❌ 未配置| Skip
-    ImgHost -->|✅ 已配置| ImgLogin[docker/login-action<br/>登录 ACR/GHCR]:::step
-    ImgLogin --> ImgMx[Strategy Matrix × 17<br/>gateway + 8app×web/server]:::step
-    ImgMx --> ImgBuild[docker build<br/>按 SERVICE 选 Dockerfile 路径]:::step
-    ImgBuild --> ImgPush[docker push<br/><REGISTRY_HOST>/magictools/<service>:latest]:::step
-    ImgPush --> Deploy[📦 镜像仓库，供 deploy.ps1 拉取重启]:::out
+    Trigger[PR或main/dev推送] --> Quality[quality: 完整qa:gate]
+    Quality --> Smoke[smoke: 构建17镜像并实际冷启动]
+    Smoke --> E2E[e2e: 浏览器交互与视觉回归]
+    E2E --> Registry{main且仓库已配置}
+    Registry -->|是| Images[images: SHA构建与digest推送回读]
+    Registry -->|否| Unpublished[记录未发布]
+    Images --> Artifact[release.json及运行配置制品]
 ```
 
-#### Job 1: quality
-- 依赖服务：pgvector/pgvector:pg16（POSTGRES_DB=mt_test）
-- 步骤：pnpm install → 缓存 .turbo → pnpm qa:gate → 无论成功/失败均保存 `.qa/quality/` artifact。qa:gate 覆盖 lint、build/unit、coverage、infra、docs、design 和全项目关键数据库验证；报告区分 PR head 与实际 checkout，旧运行回执不能代替当前验证。
+#### quality
 
-#### Job 2: smoke（needs quality）
-- 启动 applicant ~ designer 全部 16 个进程（8 web + 8 server）+ gateway
-- 环境变量：MT_LLM_STUB=1 / FEISHU_STUB=1 / GITHUB_STUB=1 / CYBERCLOUD_STUB=1 / FEED_STUB=1（桩模式避免真实外部调用）
-- 循环执行 `smoke.mjs --only <app>` × 8
+使用真实pgvector测试服务，执行 `pnpm qa:gate`，包含lint、构建/单测、覆盖率、infra、文档、设计映射和关键数据库验证。成功与失败均保存候选提交/checkout/run绑定的quality-evidence。
 
-#### Job 3: e2e（needs smoke）
-- 同 smoke 启动全部服务
-- 安装 Playwright chromium（缓存 ~/.cache/ms-playwright）
-- 运行 `@mt/e2e exec playwright test`
+#### smoke
 
-#### Job 4: images（needs [quality, smoke, e2e]，仅 main 分支触发）
-- Strategy matrix：17 个镜像（gateway + 8 app × 2 web/server）
-- 有 REGISTRY_HOST Secret 才构建推送（缺省自动跳过）
-- 镜像路径：`<REGISTRY_HOST>/magictools/<service>:latest`（Dockerfile 多阶段）
+执行 `pnpm images:smoke`。从实际checkout构建17个独立镜像，在单独Compose项目及数据库卷中启动18容器，检查应用身份、迁移、Web、业务读写、预览编译、数据库断连恢复与容器重建持久化。此任务不使用宿主源码服务代替镜像，结束后清理本轮资源。runtime-evidence包含构建及运行回执，失败也保留。
+
+#### e2e
+
+使用自己的PostgreSQL服务，构建并启动17个源码进程。安装Chromium与CJK字体，先运行空数据库的视觉回归，再运行其余交互测试。外部模型与集成采用明确桩模式，真实模型效果另行评测。
+
+#### images
+
+仅main且配置REGISTRY_HOST时执行 `pnpm images:release --registry <host>/magictools`。使用干净源码SHA构建并验收同一批镜像，逐一推送17镜像并从registry按digest拉回核验，保存release清单与运行配置文件校验和。失败回执也上传；未配置仓库时明确记录未发布。
+
+### 11.5 运行镜像与发布边界
+
+应用镜像的Node运行时为固定digest的Node 22，开发/quality仍覆盖Node 20。生产目录通过pnpm deploy装配，Node服务以UID1000运行；业务镜像包含迁移，Gateway/Assistant带ports.yaml，Designer带动态预览依赖。
+
+业务health为存活，health/ready检查数据库与迁移；Gateway的/ready聚合八个后端和八个Web。迁移成功后才监听，运行中断连返回503并可恢复。制品与回执入口见 [运行镜像说明](features/runtime-images.md)，本地独立验证见 [P03验收](validation/2026-09-12-runtime-images.md)。P05部署回执及回退仍在本批后续完成。
 
 ---
 

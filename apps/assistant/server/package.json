@@ -31,5 +31,9 @@
     "supertest": "^7.0.0",
     "@types/supertest": "^6.0.2",
     "@types/pg": "^8.11.0"
-  }
+  },
+  "files": [
+    "dist",
+    "migrations"
+  ]
 }

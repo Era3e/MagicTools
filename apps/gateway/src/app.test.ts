@@ -5,6 +5,21 @@ import type { AddressInfo } from "node:net";
 import { createGateway, APP_ACCENT } from "./app";
 
 describe("gateway app", () => {
+  it("/ready 只有后端与Web全部就绪时成功", async () => {
+    let ready = false;
+    const backend = express(); backend.get("/api/dummy/health/ready", (_req, res) => res.status(ready ? 200 : 503).json({ ready }));
+    const web = express(); web.get("/dummy/", (_req, res) => res.send("web"));
+    const backendServer = backend.listen(0); const webServer = web.listen(0);
+    try {
+      const gateway = createGateway({ dummy: { server: (backendServer.address() as AddressInfo).port, web: (webServer.address() as AddressInfo).port } }, {});
+      await request(gateway).get("/ready").expect(503);
+      ready = true;
+      const response = await request(gateway).get("/ready").expect(200);
+      expect(response.body.ready).toBe(true);
+      expect(response.body.services).toHaveLength(2);
+    } finally { backendServer.close(); webServer.close(); }
+  });
+
   it("未配置 token 时放行 /health", async () => {
     const app = createGateway({}, {});
     const res = await request(app).get("/health");

@@ -37,6 +37,8 @@
 - pnpm install / pnpm build / pnpm test / pnpm test:affected / pnpm lint / pnpm coverage / pnpm test:infra
 - pnpm new:app <name>（新子项目）
 - pnpm smoke [--only <服务>]（冒烟）
+- pnpm images:smoke（构建17镜像并完成独立Compose冷启动、断连恢复和持久化回归）
+- pnpm images:build / images:publish / images:release（干净源码构建与固定digest制品，详见 docs/features/runtime-images.md）
 - pnpm qa:gate（本地门禁）
 - pnpm test:manager:integration（Manager 关键数据库契约，需配置 MANAGER_TEST_DATABASE_URL 为 mt_*test 专用库；不可用即失败）
 - pnpm design:check（设计图 ↔ 前端一致性核对，qa:gate 已含；单独跑秒级出结果）
@@ -44,3 +46,17 @@
 - pnpm changeset（添加迭代日志）
 
 > 本机 Windows 环境提示：PowerShell 执行策略限制，pnpm 一律使用 pnpm.cmd。
+
+## Agent skills
+
+### Issue tracker
+
+产品规划及需求进度以Manager为入口，GitHub PR承载代码交付；见 `docs/agents/issue-tracker.md`。
+
+### Triage labels
+
+需求生命周期、内容批准和自动执行资格分别核对，不从单一标签推断；见 `docs/agents/triage-labels.md`。
+
+### Domain docs
+
+八应用共享工程设计，子项目设计、实现与验证各有事实源；见 `docs/agents/domain.md`。

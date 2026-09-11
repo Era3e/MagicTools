@@ -58,7 +58,7 @@ pnpm ws:cleanup <项目> <任务ID>
 
 | Name | 值 | 用途 |
 |---|---|---|
-| REGISTRY_HOST | 如 registry.cn-hangzhou.aliyuncs.com（不含 https://，不含命名空间） | 镜像仓库域名，最终镜像路径 = <域名>/magictools/<服务名>:latest（magictools 为 ACR 命名空间） |
+| REGISTRY_HOST | 如 registry.cn-hangzhou.aliyuncs.com（不含 https://，不含命名空间） | 镜像仓库域名，最终镜像路径 = <域名>/magictools/<服务名>:<源码SHA>，制品按registry digest固定（magictools 为 ACR 命名空间） |
 | REGISTRY_USERNAME | 阿里云 ACR 用户名 | images job 登录 |
 | REGISTRY_PASSWORD | ACR 密码/访问凭证 | images job 登录 |
 | DEPLOY_SSH_KEY | ECS 私钥 | 部署脚本（Phase 1 用） |
