@@ -53,7 +53,8 @@ export async function probeHealth(): Promise<HealthProbe[]> {
   // 网关健康
   const gwStarted = Date.now();
   try {
-    const headers = process.env.GATEWAY_TOKEN ? { "x-access-token": process.env.GATEWAY_TOKEN } : undefined;
+    const gwToken = process.env.GATEWAY_ASSISTANT_SERVICE_TOKEN ?? process.env.GATEWAY_TOKEN;
+    const headers = gwToken ? { "x-access-token": gwToken } : undefined;
     const res = await fetch("http://" + host("gateway") + ":" + ports.gateway.web + "/ready", { headers, signal: AbortSignal.timeout(5000) });
     results.push({ service: "gateway", ok: res.ok, status: res.status, ms: Date.now() - gwStarted });
   } catch (err) {
