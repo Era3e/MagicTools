@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import { deploymentFixture } from "./deployment-fixture.mjs";
 import { digestBytes, validateDeploymentConfig } from "./release-artifacts.mjs";
 import { deployRemote } from "../deploy-ssh.mjs";
@@ -9,6 +9,18 @@ import { deployRemote } from "../deploy-ssh.mjs";
 const inputFor = (fixture) => ({ ...fixture, host: "deploy@server.example", stateDirectory: "/opt/magictools/state", secretsFile: "/opt/magictools/existing.env", remoteDirectory: "/opt/magictools/deployer" });
 const outputFor = (fixture) => join(fixture.directory, "transport");
 const reportFor = (directory) => JSON.parse(readFileSync(join(directory, readdirSync(directory)[0], "transport.json"), "utf8"));
+
+test("远端部署公开包包含入口的完整本地依赖，v1与恢复部署不会缺模块", async () => {
+  const fixture = deploymentFixture(); const output = outputFor(fixture);
+  await assert.rejects(deployRemote(inputFor(fixture), { outputDirectory: output, executeTransport: async () => ({ exitCode: 1, stdout: "" }) }));
+  const scripts = join(output, readdirSync(output)[0], "payload/scripts"); const pending = [join(scripts, "deploy-release.mjs")]; const visited = new Set();
+  while (pending.length) {
+    const file = pending.pop(); if (visited.has(file)) continue; visited.add(file);
+    assert.ok(existsSync(file), "远端部署缺少依赖 " + file);
+    for (const match of readFileSync(file, "utf8").matchAll(/from\s+["'](\.[^"']+)["']/g)) pending.push(resolve(dirname(file), match[1]));
+  }
+  assert.ok(visited.size >= 9);
+});
 
 test("SSH子进程失败写失败回执，远端未执行时不报告部署成功", async () => {
   const fixture = deploymentFixture(); const calls = [];

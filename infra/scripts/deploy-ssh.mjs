@@ -6,6 +6,7 @@ import { dirname, join, posix, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { runtimeCatalog } from "./lib/runtime-artifacts.mjs";
 import { digestBytes, releaseFiles, validateDeploymentConfig, validateReleaseManifest } from "./lib/release-artifacts.mjs";
+import { assertRecoveryReceipt } from "./lib/recovery-receipt.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const exec = promisify(execFile);
@@ -33,7 +34,7 @@ export async function deployRemote(options, dependencies = {}) {
     const remoteSecrets = posix.normalize(options.secretsFile);
     const parent = remoteDirectory.replace(/\/$/, "") + "/deploy-" + runId;
     const remotePayload = parent + "/payload";
-    let expectedRelease; let expectedConfig;
+    let expectedRelease; let expectedConfig; let expectedCatalog;
     if (options.rollback) {
       if (options.releaseDirectory || options.configFile) throw new Error("远端回退使用既有成功快照，不能指定新制品或配置");
     } else {
@@ -41,6 +42,7 @@ export async function deployRemote(options, dependencies = {}) {
       expectedConfig = validateDeploymentConfig(parseFile(options.configFile, "公开配置"));
       const releaseDirectory = resolve(options.releaseDirectory);
       const catalog = runtimeCatalog(parseFile(join(releaseDirectory, "ports.json"), "端口配置"));
+      expectedCatalog = catalog;
       const manifest = readFileSync(join(releaseDirectory, "release.json"));
       try { expectedRelease = JSON.parse(manifest.toString("utf8")); } catch { throw new Error("发布清单JSON无效"); }
       validateReleaseManifest(expectedRelease, catalog, { allowValidation: options.allowValidation === true });
@@ -55,7 +57,8 @@ export async function deployRemote(options, dependencies = {}) {
       report.releaseId = expectedRelease.releaseId; report.manifestSha256 = digestBytes(manifest); report.configVersion = expectedConfig.configVersion;
     }
     mkdirSync(join(payload, "scripts/lib"), { recursive: true });
-    for (const name of ["deploy-release.mjs", "lib/runtime-artifacts.mjs", "lib/release-artifacts.mjs", "lib/deployment-state.mjs"]) {
+    for (const name of ["deploy-release.mjs", "lib/runtime-artifacts.mjs", "lib/release-artifacts.mjs", "lib/deployment-state.mjs",
+      "lib/recovery-connections.mjs", "lib/recovery-database.mjs", "lib/recovery-attachment.mjs", "lib/backup-docker.mjs", "lib/backup-catalog.mjs"]) {
       writeFileSync(join(payload, "scripts", name), readFileSync(join(root, "infra/scripts", name)));
     }
     report.host = options.host;
@@ -98,6 +101,7 @@ export async function deployRemote(options, dependencies = {}) {
       const manifest = readFileSync(join(snapshot, "bundle/release.json"));
       expectedRelease = parseFile(join(snapshot, "bundle/release.json"), "回退发布清单");
       const catalog = runtimeCatalog(parseFile(join(snapshot, "bundle/ports.json"), "回退端口配置"));
+      expectedCatalog = catalog;
       validateReleaseManifest(expectedRelease, catalog, { allowValidation: options.allowValidation === true });
       for (const file of expectedRelease.files) if (digestBytes(readFileSync(join(snapshot, "bundle", file.path))) !== file.sha256) throw new Error("回退快照校验失败");
       expectedConfig = validateDeploymentConfig(parseFile(join(snapshot, "config.json"), "回退公开配置"));
@@ -107,6 +111,7 @@ export async function deployRemote(options, dependencies = {}) {
       receipt.releaseId !== expectedRelease.releaseId || receipt.manifestSha256 !== report.manifestSha256 || receipt.configVersion !== report.configVersion ||
       !Array.isArray(receipt.ready) || receipt.ready.length !== expectedRelease.images.length || expectedRelease.images.some((image) =>
         !receipt.ready.some((item) => item.service === image.service && item.reference === image.reference && item.healthy === true && item.platform === expectedRelease.platform && /^sha256:[a-f0-9]{64}$/.test(item.localImageId)))) throw new Error("远端结果与完整制品/配置不一致");
+    Object.assign(report, assertRecoveryReceipt(receipt, expectedConfig.config, expectedCatalog));
     report.success = true; report.remoteOutcome = "succeeded"; report.stage = "succeeded";
   } catch (error) { report.error = String(error); throw error; }
   finally {

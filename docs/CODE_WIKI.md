@@ -324,7 +324,7 @@ MagicTools/
 │  ├─ compose.prod.yml                       # 生产环境编排（待补全）
 │  ├─ postgres-init.sql                      # 多库自举初始化脚本
 │  ├─ deploy.ps1                             # ECS 部署脚本（PowerShell）
-│  ├─ backup.ps1                             # 数据库备份脚本
+│  ├─ backup.ps1                             # Node备份CLI薄包装，保留参数与退出码
 │  ├─ templates/                             # pnpm new:app 模板（server + web 骨架）
 │  └─ scripts/                               # 工程化脚本（全部 .mjs ESM）
 │     ├─ smoke.mjs                           # 冒烟：读取 ports.yaml 探活全部服务
@@ -1767,3 +1767,13 @@ assistant.knowledge
 ---
 
 > 📌 本 Code Wiki 为活文档，随代码迭代同步更新。每次合入 main 时，如文档涉及范围有变动（新增公共包/接口/配置项/子项目），请在 PR 中同步修改本文件对应章节，由 review 环节把关一致性。
+
+## 备份恢复与应用交接
+
+恢复应用交接由`backup-handoff.mjs`生成deployment-config/2，`recovery-database.mjs`检查实际PG/容器/卷/网络并原子领取claim，`recovery-attachment.mjs`在部署锁下保存reserved→initial-verified。`recovery-connections.mjs`绑定八主库和四上游，部署器仅管理17应用，业务网内部隔离，网关独占受控ingress。`recovery-receipt.mjs`负责SSH回读的DB/claim/首次证明/12连接核对；v1的序列化和快照回退保持兼容。实际操作与阶段验收分别见[恢复应用](features/restored-deployment.md)和[验证记录](validation/2026-09-12-restored-deployment.md)。
+
+`backup:create`、`backup:verify`、`backup:restore`由infra/scripts/backup.mjs调度，backup-local.mjs组织源检查、物理备份/原生验证、加密和独立恢复；backup-docker.mjs管理专属资源及进程退出。backup-source.mjs/backup-config-files.mjs同时检查运行与启动生效的配置依赖，backup-crypto.mjs负责文件认证和清单HMAC，backup-metrics.mjs使用微秒计算本机恢复区间。实现与边界见 [备份说明](features/backup-recovery.md) 和 [核心验收](validation/2026-09-12-backup-core.md)。
+
+`backup-store.mjs`统一目录标识、私有文件隔离和锁归属；`backup-retention.mjs`默认保留15份，并在删除前验证全部候选密文，自动创建固定保护本次制品。`backup-alerts.mjs`提供持久失败事件、受限HTTP投递和独立投递回执；CLI前置失败也进入事件路径。`backup-ssh.mjs`上传公开脚本并检查指纹，`backup-export.mjs`/`backup-transfer.mjs`持源锁导出、下载到隔离store、原生恢复验证后发布副本；已验证副本与任务清理失败分别记录。
+
+`backup.ps1`/`restore.ps1`已替换旧单库dump流程，通过静态backup-powershell.mjs以Base64数据传递参数并保留PowerShell文本流；systemd样例与漏跑排查见[定时备份说明](features/backup-scheduling.md)，不自动启用生产任务。本机保留、HTTP告警和同机SSH传输已实测与独立复核；恢复部署正式入口validate-recovery-deployment.mjs完成11项实机及清理，独立18项回读通过，CI以显式config-change复用当前验证制品，完整记录见[恢复验收](validation/2026-09-12-restored-deployment.md)。回执不能代表物理异地或生产保障。P03/P05已合并，main发布run34651552771的17镜像来源、固定digest及推拉日志已独立核验，生产环境部署未验证。

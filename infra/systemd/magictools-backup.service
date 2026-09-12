@@ -1,0 +1,24 @@
+# Example only. Review paths, permissions, capacity, and a successful manual run
+# before installing this unit. Docker access grants host-level privileges.
+[Unit]
+Description=MagicTools verified encrypted PostgreSQL cluster backup
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+User=magictools-backup
+Group=magictools-backup
+SupplementaryGroups=docker
+WorkingDirectory=/opt/magictools/backup-runner
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+EnvironmentFile=/etc/magictools/backup/backup.env
+UMask=0077
+# ${VAR} is one systemd argument even when the configured path contains spaces.
+# No shell or pipeline is involved; nonzero Node exit marks the service failed.
+ExecStart=/usr/bin/node /opt/magictools/backup-runner/infra/scripts/backup.mjs create --container ${MT_BACKUP_CONTAINER} --directory ${MT_BACKUP_DIRECTORY} --credentials-file ${MT_BACKUP_CREDENTIALS_FILE} --key-file ${MT_BACKUP_KEY_FILE} --catalog ${MT_BACKUP_CATALOG} --keep 15 --events-dir ${MT_BACKUP_EVENTS_DIRECTORY}
+TimeoutStartSec=6h
+Restart=no
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=magictools-backup

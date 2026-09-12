@@ -7,6 +7,9 @@ import { pathToFileURL } from "node:url";
 import { runtimeCatalog } from "./lib/runtime-artifacts.mjs";
 import { digestBytes, releaseFiles, renderReleaseCompose, validateDeploymentConfig, validateReleaseManifest } from "./lib/release-artifacts.mjs";
 import { deploymentFailed, deploymentSucceeded, rollbackTarget, validateDeploymentState } from "./lib/deployment-state.mjs";
+import { bindRecoveryConnections, resolvedRecoveryEnvironment } from "./lib/recovery-connections.mjs";
+import { assertRecoveryProjectOwnership, claimRestoredDatabase, verifyRestoredDatabase } from "./lib/recovery-database.mjs";
+import { reserveRecoveryAttachment, recordRecoveryClaim, confirmRecoveryInitialValidation } from "./lib/recovery-attachment.mjs";
 
 const exec = promisify(execFile);
 export function isPathInside(directory, file) {
@@ -47,11 +50,17 @@ export async function executeCompose(context) {
   await docker([...context.composeArgs, ...context.command], context.env, (context.config.waitTimeoutSeconds + 300) * 1000);
 }
 
-export async function verifyDeployment({ composeArgs, env, owner, release, catalog }) {
+export async function resolveCompose({ composeArgs, env }) {
+  const value = await docker([...composeArgs, "config", "--format", "json"], env);
+  try { return JSON.parse(value); } catch { throw new Error("恢复部署的私有连接配置无法解析"); }
+}
+
+export async function verifyDeployment({ composeArgs, env, owner, release, catalog, config }) {
   const ids = (await docker([...composeArgs, "ps", "--all", "--quiet"], env)).split(/\r?\n/).filter(Boolean);
-  if (ids.length !== catalog.length + 1) throw new Error("部署容器数与制品清单不一致");
+  const services = [...catalog.map((item) => item.service), ...(config?.schema === "magictools-deployment-config/2" ? [] : ["postgres"])];
+  if (ids.length !== services.length) throw new Error("部署容器数与制品清单不一致");
   const ready = [];
-  for (const service of [...catalog.map((item) => item.service), "postgres"]) {
+  for (const service of services) {
     const id = await docker([...composeArgs, "ps", "--quiet", service], env);
     if (!/^[a-f0-9]{12,64}$/.test(id)) throw new Error("部署服务未运行：" + service);
     const state = JSON.parse(await docker(["inspect", id, "--format", '{"image":{{json .Image}},"reference":{{json .Config.Image}},"health":{{json (index .State "Health")}},"labels":{{json (index .Config "Labels")}}}'], env));
@@ -110,6 +119,9 @@ export async function deployRelease(options, dependencies = {}) {
     const catalog = runtimeCatalog(jsonFile(join(releaseDirectory, "ports.json"), "端口配置"));
     validateReleaseManifest(release, catalog, { allowValidation: options.allowValidation === true });
     const validated = validateDeploymentConfig(jsonFile(configFile, "公开部署配置")); config = validated.config;
+    const usingRestoredDatabase = config.schema === "magictools-deployment-config/2";
+    const recoveryStateFile = join(stateDirectory, "recovery-binding.json");
+    if (!usingRestoredDatabase && existsSync(recoveryStateFile)) throw new Error("部署目录已绑定恢复数据库，不能切换回自建数据库");
     if (options.allowValidation && (config.gatewayBind !== "127.0.0.1" || !config.project.startsWith("mt-validation-"))) throw new Error("工作树验证制品只能部署到独立本机验证项目");
     if (previousState?.project && previousState.project !== config.project) throw new Error("部署状态目录已绑定其他项目");
     const manifestSha256 = digestBytes(manifestBytes);
@@ -122,15 +134,21 @@ export async function deployRelease(options, dependencies = {}) {
     }
     const rendered = renderReleaseCompose(JSON.parse(contents["compose.json"].toString("utf8")), release, catalog, config);
     for (const service of Object.values(rendered.services)) service.labels = { ...service.labels, "magictools.deployment": owner };
-    const bootstrapHash = digestBytes(contents["postgres-init.sql"]);
-    const bootstrapDirectory = join(stateDirectory, "bootstrap", bootstrapHash); mkdirSync(bootstrapDirectory, { recursive: true });
-    const bootstrapFile = join(bootstrapDirectory, "postgres-init.sql");
-    if (!existsSync(bootstrapFile)) writeFileSync(bootstrapFile, contents["postgres-init.sql"], { flag: "wx" });
-    if (digestBytes(readFileSync(bootstrapFile)) !== bootstrapHash) throw new Error("初始化脚本缓存校验失败");
-    const initialMount = "./postgres-init.sql:/docker-entrypoint-initdb.d/init.sql:ro";
-    if (!rendered.services.postgres.volumes?.includes(initialMount)) throw new Error("数据库初始化挂载与制品契约不符");
-    rendered.services.postgres.volumes = rendered.services.postgres.volumes.map((volume) => volume === initialMount
-      ? { type: "bind", source: bootstrapFile, target: "/docker-entrypoint-initdb.d/init.sql", read_only: true } : volume);
+    if (usingRestoredDatabase) {
+      rendered.networks.default.labels = { "magictools.deployment": owner };
+      rendered.networks.ingress.labels = { ...rendered.networks.ingress.labels, "magictools.deployment": owner };
+    }
+    else {
+      const bootstrapHash = digestBytes(contents["postgres-init.sql"]);
+      const bootstrapDirectory = join(stateDirectory, "bootstrap", bootstrapHash); mkdirSync(bootstrapDirectory, { recursive: true });
+      const bootstrapFile = join(bootstrapDirectory, "postgres-init.sql");
+      if (!existsSync(bootstrapFile)) writeFileSync(bootstrapFile, contents["postgres-init.sql"], { flag: "wx" });
+      if (digestBytes(readFileSync(bootstrapFile)) !== bootstrapHash) throw new Error("初始化脚本缓存校验失败");
+      const initialMount = "./postgres-init.sql:/docker-entrypoint-initdb.d/init.sql:ro";
+      if (!rendered.services.postgres.volumes?.includes(initialMount)) throw new Error("数据库初始化挂载与制品契约不符");
+      rendered.services.postgres.volumes = rendered.services.postgres.volumes.map((volume) => volume === initialMount
+        ? { type: "bind", source: bootstrapFile, target: "/docker-entrypoint-initdb.d/init.sql", read_only: true } : volume);
+    }
     const bundleDirectory = join(attemptDirectory, "bundle"); mkdirSync(bundleDirectory);
     for (const name of releaseFiles) writeFileSync(join(bundleDirectory, name), contents[name]);
     writeFileSync(join(bundleDirectory, "release.json"), manifestBytes);
@@ -143,6 +161,27 @@ export async function deployRelease(options, dependencies = {}) {
     for (const match of JSON.stringify(rendered).matchAll(/\$\{([A-Za-z_][A-Za-z0-9_]*)/g)) delete env[match[1]];
     const composeArgs = ["compose", "--project-name", config.project, "--env-file", secretsFile, "-f", join(attemptDirectory, "compose.json")];
     const context = { composeArgs, env, owner, release, catalog, config };
+    let attachmentInput;
+    if (usingRestoredDatabase) {
+      receipt.stage = "recovery-connections";
+      const secretCompose = await (dependencies.resolveCompose ?? resolveCompose)(context);
+      const connections = bindRecoveryConnections(rendered, catalog, resolvedRecoveryEnvironment(secretCompose, catalog), config.database);
+      Object.assign(env, connections.environment); receipt.databaseConnections = connections.connections;
+      receipt.stage = "recovery-ownership";
+      attachmentInput = { stateDirectory, attemptId, owner, project: config.project, binding: config.database, previousState };
+      // 已有记录先核对绑定，避免用同一state-dir切换数据库。
+      let attachment = existsSync(recoveryStateFile) ? reserveRecoveryAttachment(attachmentInput) : null;
+      const resources = await assertRecoveryProjectOwnership(config.project, owner, dependencies.recoveryIo, { restoredBinding: config.database });
+      attachment ??= reserveRecoveryAttachment({ ...attachmentInput, resources });
+      const claim = await claimRestoredDatabase(config.database, { owner, project: config.project }, dependencies.recoveryIo);
+      recordRecoveryClaim(attachmentInput, claim); receipt.databaseClaim = claim;
+      receipt.stage = "recovery-initial-validation";
+      const first = attachment.phase !== "initial-verified";
+      const database = await verifyRestoredDatabase(config.database, { owner, project: config.project, initial: first }, dependencies.recoveryIo);
+      if (first) attachment = confirmRecoveryInitialValidation(attachmentInput, database, claim);
+      receipt.database = database;
+      receipt.databaseInitialVerification = { verifiedAt: attachment.initialVerifiedAt, catalogSha256: config.database.catalogSha256 };
+    }
     const execute = dependencies.executeCompose ?? executeCompose;
     for (const command of [["config", "--quiet"], ["pull"], ["up", "-d", "--wait", "--wait-timeout", String(config.waitTimeoutSeconds), "--pull", "never"]]) {
       receipt.stage = command[0];
@@ -152,6 +191,14 @@ export async function deployRelease(options, dependencies = {}) {
     receipt.stage = "verify";
     receipt.ready = await (dependencies.verifyDeployment ?? verifyDeployment)(context);
     if (receipt.ready.length !== catalog.length || release.images.some((image) => !receipt.ready.some((item) => item.service === image.service && item.reference === image.reference && item.healthy === true))) throw new Error("部署就绪证据不完整");
+    if (usingRestoredDatabase) {
+      receipt.stage = "recovery-final-validation";
+      await assertRecoveryProjectOwnership(config.project, owner, dependencies.recoveryIo, { restoredBinding: config.database });
+      receipt.database = await verifyRestoredDatabase(config.database, { owner, project: config.project, initial: false }, dependencies.recoveryIo);
+      const claim = await claimRestoredDatabase(config.database, { owner, project: config.project }, dependencies.recoveryIo);
+      const recorded = recordRecoveryClaim(attachmentInput, claim);
+      if (recorded.phase !== "initial-verified") throw new Error("恢复数据库首次验证记录丢失，不能记录成功");
+    }
     if (!secretsPreserved()) throw new Error("部署期间秘密文件发生变化，未记录成功");
     if (!ownsLock()) throw new Error("部署锁所有权发生变化");
     const pointer = { attemptId, releaseId: release.releaseId, manifestSha256, configVersion: validated.configVersion };
