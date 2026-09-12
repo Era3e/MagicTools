@@ -13,7 +13,7 @@ const execute = promisify(execFile);
 const quote = (value) => "'" + value.replaceAll("'", "'\"'\"'") + "'";
 const remotePath = (value) => typeof value === "string" && /^\/[A-Za-z0-9._/-]+$/.test(value) && !value.split("/").includes("..") && posix.normalize(value) !== "/";
 const remoteWithin = (parent, value) => value === parent || value.startsWith(parent.replace(/\/$/, "") + "/");
-const scripts = ["backup.mjs", "backup-export.mjs", ...["backup-store", "backup-retention", "backup-alerts", "backup-transfer", "backup-local", "backup-crypto", "backup-source", "backup-config-files", "backup-docker", "runtime-artifacts"].map((name) => "lib/" + name + ".mjs")];
+const scripts = ["backup.mjs", "backup-export.mjs", ...["backup-store", "backup-retention", "backup-alerts", "backup-transfer", "backup-local", "backup-catalog", "backup-crypto", "backup-source", "backup-config-files", "backup-docker", "runtime-artifacts"].map((name) => "lib/" + name + ".mjs")];
 
 async function executeTransport(command, args) {
   try { const result = await execute(command, args, { windowsHide: true, timeout: 40 * 60_000, maxBuffer: 4 * 1024 * 1024 }); return { exitCode: 0, stdout: result.stdout }; }

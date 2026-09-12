@@ -13,6 +13,7 @@ import { runtimeCatalog } from "./lib/runtime-artifacts.mjs";
 import { digestBytes, validateReleaseManifest } from "./lib/release-artifacts.mjs";
 import { runProcess } from "./lib/validation-process.mjs";
 import { assertDeploymentValidationIsolation } from "./lib/deployment-validation.mjs";
+import { validateRecoveryDeployment } from "./validate-recovery-deployment.mjs";
 
 const registryImage = "registry:2@sha256:a3d8aaa63ed8681a604f1dea0aa03f100d5895b6a58ace528858a7b332415373";
 const docker = (...args) => execFileSync("docker", args, { encoding: "utf8", windowsHide: true, timeout: 120_000, stdio: ["ignore", "pipe", "pipe"] }).trim();
@@ -200,6 +201,8 @@ export async function validateBuildDeployment(buildDirectory, runtime) {
     const result = await publishImages({ buildManifest: join(buildDirectory, "build.json"), runtimeManifest: join(root, ".qa/runtime", runtime.runId, "runtime.json"), registry: "localhost:" + address.split(":")[1] + "/validation", validation: true });
     const report = await validateDeployment(result.directory, result.directory);
     if (!report.success) throw new Error("部署验证失败");
+    const recovery = await validateRecoveryDeployment(result.directory, result.directory, { configChange: true, allowValidation: true });
+    if (!recovery.success) throw new Error("恢复应用验证失败");
   } finally {
     if (docker("ps", "-aq", "--filter", "name=^/" + id + "$")) {
       assert.equal(JSON.parse(docker("inspect", id, "--format", '{{json (index .Config "Labels")}}'))["magictools.validation"], id);

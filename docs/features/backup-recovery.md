@@ -1,6 +1,6 @@
-# 整集群备份与独立恢复（P04实施中）
+# 整集群备份与独立恢复
 
-当前分支已提供创建、校验、恢复、保留清理、失败告警和SSH复制入口。本机八库恢复、保留、HTTP告警和同机隔离容器之间的真实SSH传输已完成实测与独立证据复核；部署交接及整批最终验收仍在进行，不能把数据库回执当成生产上线结果。
+已提供创建、校验、恢复、保留清理、失败告警、SSH复制和恢复应用交接入口。本机八库恢复、保留、HTTP告警、同机真实SSH传输，以及17应用的恢复/回退/故障/外联隔离均已实测并独立复核。源码和候选交付状态见[恢复部署验证记录](../validation/2026-09-12-restored-deployment.md)，数据库或应用回执不等同于生产上线。
 
 ## 准备
 
@@ -107,7 +107,7 @@ pnpm backup:restore --backup /backups/magictools/backup-<backupId> --key-file /p
 docker exec --user postgres recovered-magictools psql -U postgres -d postgres -c "SELECT datname FROM pg_database WHERE NOT datistemplate;"
 ```
 
-应用切换与部署交接还需随P04完成，当前恢复入口不自动修改现有应用连接地址。备份之后的写入没有连续WAL归档保障，不能据此承诺任意时间点恢复或零数据损失。
+恢复入口保留独立数据库，不自动修改现有应用连接地址。需要启动应用时，继续按[恢复应用操作章节](restored-deployment.md)执行`backup:handoff`，生成v2绑定配置后部署17个应用。备份之后的写入没有连续WAL归档保障，不能据此承诺任意时间点恢复或零数据损失。
 
 ## 查看失败与验证记录
 

@@ -2,13 +2,16 @@ import { execFile, execFileSync } from "node:child_process";
 import { promisify } from "node:util";
 import { createServer } from "node:http";
 import { randomBytes } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, writeFileSync, unlinkSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, realpathSync, rmdirSync, writeFileSync, unlinkSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { parse } from "yaml";
 import { verifyBackupManifest } from "./lib/backup-crypto.mjs";
 import { recoveryObservation } from "./lib/backup-metrics.mjs";
 import { captureValidationIdentity } from "./lib/quality-evidence.mjs";
+import { digestBytes, validateDeploymentConfig } from "./lib/release-artifacts.mjs";
+import { assertRecoveryProjectOwnership, claimRestoredDatabase, verifyRestoredDatabase } from "./lib/recovery-database.mjs";
+import { reserveRecoveryAttachment, recordRecoveryClaim, confirmRecoveryInitialValidation } from "./lib/recovery-attachment.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const execute = promisify(execFile);
@@ -23,7 +26,7 @@ export async function validateBackup() {
   const report = { schema: "magictools-backup-validation/1", id, project, success: false, startedAt: new Date().toISOString(),
     mode: { database: "real", containers: "real", encryption: "real", notifications: "local-http", offsite: "not-run" }, checks: [], cleanup: "pending" };
   const source = project + "-source"; const volume = project + "-source-data";
-  const resources = []; let restored;
+  const resources = []; let restored; let handoffClaim; let handoffClaimName; let handoffOwner; let handoffLock;
   const docker = (args, input) => execFileSync("docker", args, { input, encoding: "utf8", windowsHide: true, timeout: 120_000,
     maxBuffer: 4 * 1024 * 1024, env: { ...process.env, POSTGRES_PASSWORD: password, PGPASSWORD: password }, stdio: ["pipe", "pipe", "pipe"] }).trim();
   const sql = (container, database, query) => docker(["exec", "-i", "--user", "postgres", container, "psql", "-X", "-q", "-A", "-t", "-v", "ON_ERROR_STOP=1", "-U", "postgres", "-d", database], query);
@@ -122,6 +125,34 @@ export async function validateBackup() {
       failed.alert.persistence.event !== "written" || failed.alert.persistence.delivery !== "written") throw new Error("real backup failure notification was not confirmed");
     if (sql(restored.container, "manager", "SELECT value FROM backup_validation_marker;") !== id) throw new Error("failed repeated restore changed the target");
     report.checks.push({ name: "existing-target-failure-real-http-notification-and-preservation", status: "passed", eventId: failed.alert.eventId, operationId: failed.operationId });
+    report.stage = "recovery-handoff";
+    const baseConfig = join(directory, "handoff-base.json"); const handoffFile = join(directory, "handoff.json");
+    writeFileSync(baseConfig, JSON.stringify({ schema: "magictools-deployment-config/1", project: project + "-apps", gatewayBind: "127.0.0.1", gatewayPort: 55301, waitTimeoutSeconds: 120 }), { flag: "wx" });
+    const handoff = await command(["handoff", "--backup", created.directory, "--key-file", keyFile, "--restore-receipt", join(directory, "store", "attempt-" + restored.operationId + ".json"),
+      "--config", baseConfig, "--output", handoffFile, "--events-dir", join(directory, "events")]);
+    const config = validateDeploymentConfig(JSON.parse(readFileSync(handoffFile, "utf8")));
+    if (!handoff.success || handoff.configVersion !== config.configVersion || config.config.database.backupId !== created.backupId || config.config.database.restoreOperationId !== restored.operationId ||
+      readFileSync(handoffFile, "utf8").includes(password) || readFileSync(handoffFile, "utf8").includes(readFileSync(keyFile).toString("hex"))) throw new Error("handoff configuration or private-data isolation mismatch");
+    const stateDirectory = join(directory, "handoff-state"); handoffLock = join(stateDirectory, "deploy.lock"); mkdirSync(handoffLock, { recursive: true });
+    const attemptId = randomBytes(8).toString("hex"); writeFileSync(join(handoffLock, "owner.json"), JSON.stringify({ attemptId }), { flag: "wx" });
+    handoffOwner = digestBytes(realpathSync(stateDirectory));
+    const ownership = { owner: handoffOwner, project: config.config.project }; const binding = config.config.database;
+    const available = await assertRecoveryProjectOwnership(ownership.project, ownership.owner);
+    const attachment = { ...ownership, stateDirectory, attemptId, binding, resources: available, previousState: null };
+    reserveRecoveryAttachment(attachment);
+    handoffClaimName = "mt-recovery-" + restored.operationId + "-claim";
+    handoffClaim = await claimRestoredDatabase(binding, ownership);
+    recordRecoveryClaim(attachment, handoffClaim);
+    const initial = await verifyRestoredDatabase(binding, { ...ownership, initial: true });
+    const recorded = confirmRecoveryInitialValidation(attachment, initial, handoffClaim);
+    const reused = await claimRestoredDatabase(binding, ownership);
+    if (recorded.phase !== "initial-verified" || !reused.reused || reused.id !== handoffClaim.id) throw new Error("handoff ownership or durable validation mismatch");
+    let competingRejected = false;
+    try { await claimRestoredDatabase(binding, { owner: digestBytes("competing-state-" + id), project: project + "-other" }); }
+    catch { competingRejected = true; }
+    if (!competingRejected) throw new Error("another state directory claimed the restored database");
+    report.checks.push({ name: "handoff-config-real-claim-and-durable-initial-validation", status: "passed", operationId: handoff.operationId,
+      configVersion: handoff.configVersion, bindingHash: handoff.bindingHash, claim: { name: handoffClaim.name, id: handoffClaim.id }, competingOwnerRejected: true });
     report.success = true; report.stage = "complete";
   } catch (error) {
     report.error = String(error.message).replaceAll(password, "[redacted]").split("\n")[0];
@@ -130,6 +161,18 @@ export async function validateBackup() {
   finally {
     receiver?.closeAllConnections(); receiver?.close();
     const cleanupErrors = [];
+    if (handoffClaimName) {
+      try {
+        const ids = docker(["container", "ls", "-a", "-q", "--filter", "name=^/" + handoffClaimName + "$"]);
+        if (ids) {
+          const meta = JSON.parse(docker(["container", "inspect", handoffClaimName]))[0];
+          if (meta.Config?.Labels?.["magictools.recovery.claim"] !== "1" || meta.Config.Labels["magictools.deployment"] !== handoffOwner ||
+            meta.Config.Labels["magictools.recovery.operation"] !== restored.operationId || (handoffClaim && meta.Id !== handoffClaim.id)) throw new Error("claim ownership mismatch");
+          docker(["rm", "-f", "-v", handoffClaimName]);
+        }
+      } catch { cleanupErrors.push("handoff-claim"); }
+    }
+    if (handoffLock) try { unlinkSync(join(handoffLock, "owner.json")); rmdirSync(handoffLock); } catch { cleanupErrors.push("handoff-lock"); }
     if (restored) {
       for (const [kind, name] of [["container", restored.container], ["network", restored.network], ["volume", restored.volume]]) {
         try {

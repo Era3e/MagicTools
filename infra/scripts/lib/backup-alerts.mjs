@@ -3,8 +3,8 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { validateHeaderName, validateHeaderValue } from "node:http";
 
-const OPERATIONS = ["create", "verify", "restore", "prune", "ssh"];
-const STAGES = ["preflight", "physical-backup", "restore-validation", "encrypt", "cleanup", "decrypt", "physical-validation", "database-startup", "retention", "unlock", "receipt", "ssh-prepare", "ssh-create", "ssh-download", "ssh-verify", "ssh-export", "ssh-cleanup"];
+const OPERATIONS = ["create", "verify", "restore", "prune", "ssh", "handoff"];
+const STAGES = ["preflight", "physical-backup", "restore-validation", "encrypt", "cleanup", "decrypt", "physical-validation", "database-startup", "retention", "unlock", "receipt", "ssh-prepare", "ssh-create", "ssh-download", "ssh-verify", "ssh-export", "ssh-cleanup", "handoff-verify", "handoff-write"];
 
 function failureEvent(input) {
   const operation = OPERATIONS.includes(input.operation) ? input.operation : "unknown";

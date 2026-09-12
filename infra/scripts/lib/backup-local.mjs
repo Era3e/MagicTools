@@ -6,6 +6,8 @@ import { BackupResources, databaseQuery, docker, dockerStream, runDocker, waitFo
 import { decryptBackupStream, encryptBackupStream, signBackupManifest, verifyBackupManifest } from "./backup-crypto.mjs";
 import { BACKUP_FILES, hash, parseJson, writeJson, canonicalDirectory, privateFile, acquireStore, validateBackup } from "./backup-store.mjs";
 import { pruneLockedStore, validateRetentionCount } from "./backup-retention.mjs";
+import { databaseCatalog } from "./backup-catalog.mjs";
+export { databaseCatalog };
 
 
 async function pullImage(source) {
@@ -49,20 +51,6 @@ async function startDatabase(resources, source, volume, name, network) {
     "--platform", source.image.platform, source.image.reference, "postgres", "-c", "config_file=" + source.configFile]);
   await waitForDatabase(name);
   if (await databaseQuery(name, "postgres", "SELECT system_identifier::text FROM pg_control_system();") !== source.systemIdentifier) throw new Error("恢复数据库系统标识不符");
-}
-
-async function databaseCatalog(container, databases) {
-  const global = JSON.parse(await databaseQuery(container, "postgres", `SELECT json_build_object(
-    'databases',(SELECT json_agg(json_build_object('name',datname,'owner',pg_get_userbyid(datdba),'encoding',pg_encoding_to_char(encoding)) ORDER BY datname) FROM pg_database WHERE NOT datistemplate),
-    'roles',(SELECT json_agg(row_to_json(r) ORDER BY rolname) FROM (SELECT rolname,rolsuper,rolinherit,rolcreaterole,rolcreatedb,rolcanlogin,rolreplication,rolbypassrls,rolconnlimit,extract(epoch FROM rolvaliduntil) AS valid_until FROM pg_roles) r),
-    'memberships',(SELECT coalesce(json_agg(row_to_json(m) ORDER BY roleid,member),'[]'::json) FROM (SELECT roleid,member,grantor,admin_option,inherit_option,set_option FROM pg_auth_members) m));`));
-  if (databases.some((name) => !global.databases.some((database) => database.name === name))) throw new Error("恢复数据库未覆盖业务清单");
-  const extensions = [];
-  for (const database of global.databases) {
-    extensions.push({ database: database.name, extensions: JSON.parse(await databaseQuery(container, database.name,
-      "SELECT coalesce(json_agg(json_build_object('name',extname,'version',extversion) ORDER BY extname),'[]'::json) FROM pg_extension;")) });
-  }
-  return { ...global, extensions };
 }
 
 async function finishOperation(resources, store, report, key, result) {

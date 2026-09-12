@@ -9,8 +9,9 @@ import { canonicalDirectory, privateFile } from "./lib/backup-store.mjs";
 
 async function executeBackupCommand(argv) {
   const [command, ...args] = argv;
-  if (!["create", "verify", "restore", "prune", "ssh"].includes(command)) throw new Error("备份操作必须为create、verify、restore、prune或ssh");
-  const accepted = [...(command === "ssh" ? ["host", "container", "remote-directory", "remote-store", "remote-key-file", "remote-credentials-file", "directory", "key-file", "keep", "remote-keep", "ssh-config"] :
+  if (!["create", "verify", "restore", "prune", "ssh", "handoff"].includes(command)) throw new Error("备份操作必须为create、verify、restore、prune、ssh或handoff");
+  const accepted = [...(command === "handoff" ? ["backup", "key-file", "restore-receipt", "config", "output", "catalog"] :
+    command === "ssh" ? ["host", "container", "remote-directory", "remote-store", "remote-key-file", "remote-credentials-file", "directory", "key-file", "keep", "remote-keep", "ssh-config"] :
     command === "create" ? ["container", "directory", "key-file", "credentials-file", "catalog", "keep"] :
     command === "prune" ? ["directory", "key-file", "keep"] :
     command === "restore" ? ["backup", "key-file", "target"] : ["backup", "key-file"]), "notify-config", "events-dir"];
@@ -32,7 +33,7 @@ async function executeBackupCommand(argv) {
       keep, remoteKeep: values["remote-keep"] ? Number(values["remote-keep"]) : 15, sshConfig: values["ssh-config"] }) };
   }
   if (command === "prune") return { success: true, operation: command, ...await pruneBackups({ directory: resolve(values.directory), keyFile: resolve(values["key-file"]), keep }) };
-  if (command === "create") {
+  if (command === "create" || command === "handoff") {
     let ports;
     try {
       if (values.catalog) ports = JSON.parse(readFileSync(resolve(values.catalog), "utf8"));
@@ -41,7 +42,13 @@ async function executeBackupCommand(argv) {
         ports = parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), "../ports.yaml"), "utf8"));
       }
     } catch { throw new Error("数据库所属应用清单无法读取；独立部署脚本须传--catalog ports.json"); }
-    const databases = runtimeCatalog(ports).filter((item) => item.kind === "node" && item.app !== "gateway").map((item) => item.app);
+    const catalog = runtimeCatalog(ports);
+    if (command === "handoff") {
+      const { prepareRecoveryHandoff } = await import("./lib/backup-handoff.mjs");
+      return { success: true, operation: command, ...await prepareRecoveryHandoff({ backupDirectory: resolve(values.backup), keyFile: resolve(values["key-file"]),
+        restoreReceiptFile: resolve(values["restore-receipt"]), configFile: resolve(values.config), outputFile: resolve(values.output), catalog }) };
+    }
+    const databases = catalog.filter((item) => item.kind === "node" && item.app !== "gateway").map((item) => item.app);
     const result = await createBackup({ sourceContainer: values.container, directory: resolve(values.directory), keyFile: resolve(values["key-file"]), credentialsFile: resolve(values["credentials-file"]), databases, keep });
     return { success: true, operation: command, backupId: result.backupId, directory: result.directory, retention: result.retention };
   }
@@ -81,6 +88,6 @@ export async function backupCommand(argv) {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   backupCommand(process.argv.slice(2)).then((result) => console.log(JSON.stringify(result))).catch((error) => {
-    console.error(JSON.stringify({ success: false, error: error.message, operationId: error.operationId, backupId: error.backupId, resources: error.resources, alert: error.alert })); process.exitCode = 1;
+    console.error(JSON.stringify({ success: false, error: error.message, operationId: error.operationId, backupId: error.backupId, output: error.output, resources: error.resources, alert: error.alert })); process.exitCode = 1;
   });
 }

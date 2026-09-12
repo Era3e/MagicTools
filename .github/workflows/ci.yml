@@ -85,6 +85,22 @@ jobs:
         run: pnpm images:smoke
       - name: 验证八库加密备份、独立恢复与本机指标
         run: pnpm backup:validate
+      - name: 保存恢复应用演练证据（仅公开回执）
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: recovery-evidence-${{ github.event.pull_request.head.sha || github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .qa/recovery-deployment/*/summary.json
+            .qa/recovery-deployment/**/receipt.json
+            .qa/recovery-deployment/**/state.json
+            .qa/recovery-deployment/**/recovery-binding.json
+            .qa/recovery-deployment/**/store/attempt-*.json
+            .qa/recovery-deployment/**/store/backup-*/backup.json
+            .qa/recovery-deployment/**/events/*.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
       - name: 保存备份验证证据（排除密钥与私有配置）
         if: always()
         uses: actions/upload-artifact@v4
@@ -96,6 +112,8 @@ jobs:
             .qa/backup-validation/**/store/.magictools-backups.json
             .qa/backup-validation/**/store/backup-*/backup.json
             .qa/backup-validation/**/events/*.json
+            .qa/backup-validation/**/handoff*.json
+            .qa/backup-validation/**/handoff-state/recovery-binding.json
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 14
