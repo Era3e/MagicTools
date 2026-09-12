@@ -4,9 +4,9 @@
 - 本文件记录平台级迭代摘要（阶段、里程碑、关键决策），在每次合入 main 时追加一条（含补记，需注明）；
 - 条目格式：日期、变更摘要、涉及子项目、关联 PR。
 
-## 2026-09-12（P06，网关认证，待合并）
+## 2026-09-12（P06，网关认证，PR #75 已合并）
 
-- **网关用户登录与服务身份细分**（feat-gateway-P06-auth）：网关新增浏览器可用的用户会话登录（GATEWAY_USERS scrypt 口令 + HMAC 签名 cookie 12h 滑动续期 + 登录页/登出路由 + 防暴破锁定），HTML/API 请求分类响应（302 登录页 / 401 JSON）；GATEWAY_USER_APPS 应用级授权（403），admin 与服务身份不受限；GATEWAY_SERVICE_TOKENS 服务身份细分（assistant 已接入，回落 GATEWAY_TOKEN）；未配置 GATEWAY_USERS 时与旧版行为完全一致，P04/P05 验证工具链零影响。配置与行为见 docs/features/gateway-auth.md。
+- **网关用户登录与服务身份细分**（feat-gateway-P06-auth，squash 6bdfcb5）：网关新增浏览器可用的用户会话登录（GATEWAY_USERS scrypt 口令 + HMAC 签名 cookie 12h 滑动续期 + 登录页/登出路由 + 防暴破锁定），HTML/API 请求分类响应（302 登录页 / 401 JSON）；GATEWAY_USER_APPS 应用级授权（403），admin 与服务身份不受限；GATEWAY_SERVICE_TOKENS 服务身份细分（assistant 已接入，回落 GATEWAY_TOKEN）；未配置 GATEWAY_USERS 时与旧版行为完全一致，P04/P05 验证工具链零影响。两轮 0 bug loop 独立验收（首轮 D1 未认证远程 DoS 等五缺陷全部修复后复验通过）；CI 三段绿后合并，main CI 四段（含 images）全绿。配置与行为见 docs/features/gateway-auth.md。
 
 ## 2026-09-12（P04，八库备份与恢复应用交接）
 
