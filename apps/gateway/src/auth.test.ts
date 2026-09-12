@@ -125,7 +125,6 @@ describe("auth 中间件", () => {
   });
 
   it("客户端伪造的 x-gateway-user 头被剥离，不透传下游（D5 回归）", async () => {
-    const hash = await scryptHash("pw", "salt");
     const app = await buildApp({ GATEWAY_TOKEN: "secret" });
     const res = await request(app)
       .get("/api/manager/requirements")
@@ -136,7 +135,6 @@ describe("auth 中间件", () => {
   });
 
   it("全放行模式下伪造身份头同样被剥离", async () => {
-    const hash = await scryptHash("pw", "salt");
     const app = await buildApp({});
     const res = await request(app).get("/api/manager/requirements").set("x-gateway-user", "forged");
     expect(res.status).toBe(200);
