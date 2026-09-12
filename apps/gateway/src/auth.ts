@@ -95,9 +95,9 @@ function parseServiceTokens(raw: string | undefined): Map<string, string> {
 }
 
 function appOfPath(path: string): string | null {
-  const apiMatch = /^\/api\/([a-z-]+)\//.exec(path) ?? /^\/api\/([a-z-]+)$/.exec(path);
+  const apiMatch = /^\/api\/([a-z-]+)(?:\/|$)/.exec(path);
   if (apiMatch) return apiMatch[1];
-  const webMatch = /^\/([a-z-]+)\//.exec(path) ?? (/^\/([a-z-]+)$/.test(path) ? [/^\/([a-z-]+)$/.exec(path)![0], /^\/([a-z-]+)$/.exec(path)![1]] : null);
+  const webMatch = /^\/([a-z-]+)(?:\/|$)/.exec(path);
   if (webMatch && webMatch[1]) return webMatch[1];
   return null;
 }
@@ -106,6 +106,10 @@ function wantsHtml(req: Request): boolean {
   if (req.path.startsWith("/api/")) return false;
   const accept = req.headers.accept ?? "";
   return accept.includes("text/html");
+}
+
+function setGatewayIdentity(req: Request, identity: string): void {
+  req.headers["x-gateway-user"] = identity;
 }
 
 export function createAuthMiddleware(env: NodeJS.ProcessEnv, deps: AuthDeps = {}) {
@@ -127,6 +131,9 @@ export function createAuthMiddleware(env: NodeJS.ProcessEnv, deps: AuthDeps = {}
   };
 
   return function authMiddleware(req: Request, res: Response, next: NextFunction): void {
+    // 剥离客户端伪造的身份头：下游的 x-gateway-user 只能由本中间件按认证结果回填，
+    // 防止全放行/部分放行模式下伪造身份透传（http-proxy-middleware 转发修改后的 req.headers）。
+    delete req.headers["x-gateway-user"];
     if (req.path === "/login" || req.path === "/logout") {
       if (req.method !== "POST" || !req.is("urlencoded")) {
         handleLoginLogout(ctx, req, res, next);
@@ -148,7 +155,7 @@ export function createAuthMiddleware(env: NodeJS.ProcessEnv, deps: AuthDeps = {}
         return;
       }
       if (req.headers["x-access-token"] === ctx.gatewayToken) {
-        res.setHeader("x-gateway-user", "service");
+        setGatewayIdentity(req, "service");
         next();
         return;
       }
@@ -158,13 +165,13 @@ export function createAuthMiddleware(env: NodeJS.ProcessEnv, deps: AuthDeps = {}
     const serviceToken = req.headers["x-access-token"];
     if (typeof serviceToken === "string" && serviceToken) {
       if (ctx.gatewayToken && serviceToken === ctx.gatewayToken) {
-        res.setHeader("x-gateway-user", "service");
+        setGatewayIdentity(req, "service");
         next();
         return;
       }
       const service = ctx.serviceTokens.get(serviceToken);
       if (service) {
-        res.setHeader("x-gateway-user", "service:" + service);
+        setGatewayIdentity(req, "service:" + service);
         next();
         return;
       }
@@ -189,7 +196,7 @@ export function createAuthMiddleware(env: NodeJS.ProcessEnv, deps: AuthDeps = {}
               return;
             }
           }
-          res.setHeader("x-gateway-user", session.user);
+          setGatewayIdentity(req, session.user);
           next();
           return;
         }
@@ -274,8 +281,18 @@ function readUrlencodedBody(req: Request): Promise<Record<string, string>> {
         for (const pair of text.split("&")) {
           const eq = pair.indexOf("=");
           if (eq <= 0) continue;
-          const key = decodeURIComponent(pair.slice(0, eq).replace(/\+/g, " "));
-          const value = decodeURIComponent(pair.slice(eq + 1).replace(/\+/g, " "));
+          // decodeURIComponent 对非法百分号编码（如 %ZZ）抛 URIError；
+          // 该异常在事件回调内不会走到外层 .catch，会击穿进程（未认证远程 DoS）。
+          // 畸形对按无效键处理跳过，映射到 400 由外层 catch 统一响应。
+          let key: string;
+          let value: string;
+          try {
+            key = decodeURIComponent(pair.slice(0, eq).replace(/\+/g, " "));
+            value = decodeURIComponent(pair.slice(eq + 1).replace(/\+/g, " "));
+          } catch {
+            reject(new Error("malformed urlencoded pair"));
+            return;
+          }
           if (!(key in body)) body[key] = value;
         }
       }

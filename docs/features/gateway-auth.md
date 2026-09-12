@@ -33,6 +33,7 @@ P06 在网关提供浏览器可用的用户登录，并把服务间调用身份�
 
 ## 验证
 
-- 单元：`apps/gateway/src/users.test.ts`（11）、`session.test.ts`（7）、`auth.test.ts`（11）——解析/签名/验签/篡改/锁定/通道并行/应用授权。
+- 单元：`apps/gateway/src/users.test.ts`（11）、`session.test.ts`（7）、`auth.test.ts`（14）——解析/签名/验签/篡改/锁定/通道并行/应用授权/畸形编码 400 回归/伪造身份头剥离回归；身份断言在下游请求头侧（等价代理透传结果）。
 - E2E：`e2e/tests/gateway-auth.spec.ts`（4）——独立 3999 认证实例真实浏览器登录/登出/错误文案/401。
-- assistant 回归：action/trouble 测试含服务 token 优先级断言。
+- assistant 回归：action/trouble 测试含服务 token 优先级断言（`GATEWAY_ASSISTANT_SERVICE_TOKEN` 优先、`GATEWAY_TOKEN` 回落两分支）。
+- 独立验收：发现并修复未认证远程 DoS（登录 body 非法百分号编码击穿进程）、x-gateway-user 透传失实（改为请求头注入+入口剥离伪造头）后复验通过。

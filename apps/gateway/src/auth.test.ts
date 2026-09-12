@@ -12,7 +12,9 @@ async function buildApp(env: Record<string, string>) {
   app.get("/health", (_req, res) => res.json({ ok: true }));
   app.get("/applicant/", (_req, res) => res.send("applicant-web"));
   app.get("/scholar/", (_req, res) => res.send("scholar-web"));
-  app.get("/api/manager/requirements", (_req, res) => res.json({ user: res.getHeader("x-gateway-user") ?? null }));
+  // 身份断言在「下游侧」：读请求头（等价于代理转发给业务服务的头），而非网关响应头——
+  // res.setHeader 只影响网关自身响应，验证不了透传（独立验收 D2 教训）。
+  app.get("/api/manager/requirements", (req, res) => res.json({ user: req.headers["x-gateway-user"] ?? null }));
   return app;
 }
 
@@ -110,5 +112,34 @@ describe("auth 中间件", () => {
     const app = await buildApp({ GATEWAY_USERS: "alice:" + hash, GATEWAY_SESSION_SECRET: SECRET });
     await request(app).get("/login").expect(200);
     await request(app).post("/logout").expect(302);
+  });
+
+  it("登录 body 含非法百分号编码返回 400 而不崩进程（D1 回归）", async () => {
+    const hash = await scryptHash("pw", "salt");
+    const app = await buildApp({ GATEWAY_USERS: "alice:" + hash, GATEWAY_SESSION_SECRET: SECRET });
+    // supertest send(string) 会自动设置 urlencoded content-type 且不做二次编码
+    const res = await request(app).post("/login").send("username=%ZZ&password=x");
+    expect(res.status).toBe(400);
+    // 进程存活：同一 app 后续请求仍可正常处理
+    await request(app).get("/login").expect(200);
+  });
+
+  it("客户端伪造的 x-gateway-user 头被剥离，不透传下游（D5 回归）", async () => {
+    const hash = await scryptHash("pw", "salt");
+    const app = await buildApp({ GATEWAY_TOKEN: "secret" });
+    const res = await request(app)
+      .get("/api/manager/requirements")
+      .set("X-Access-Token", "secret")
+      .set("x-gateway-user", "forged-admin");
+    expect(res.status).toBe(200);
+    expect(res.body.user).toBe("service");
+  });
+
+  it("全放行模式下伪造身份头同样被剥离", async () => {
+    const hash = await scryptHash("pw", "salt");
+    const app = await buildApp({});
+    const res = await request(app).get("/api/manager/requirements").set("x-gateway-user", "forged");
+    expect(res.status).toBe(200);
+    expect(res.body.user).toBeNull();
   });
 });

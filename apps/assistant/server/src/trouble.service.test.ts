@@ -17,6 +17,15 @@ describe("probeHealth", () => {
     expect(fetchMock).toHaveBeenCalledWith("http://manager-server:5004/api/manager/health/ready", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("http://gateway:3000/ready", expect.objectContaining({ headers: { "x-access-token": "runtime-test-token" } }));
   });
+  it("网关探测服务 token 优先于 GATEWAY_TOKEN", async () => {
+    vi.stubEnv("MT_PROD", "1");
+    vi.stubEnv("GATEWAY_ASSISTANT_SERVICE_TOKEN", "svc-trouble");
+    vi.stubEnv("GATEWAY_TOKEN", "fallback-trouble");
+    const fetchMock = vi.fn(async () => new Response("{}", { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    await probeHealth();
+    expect(fetchMock).toHaveBeenCalledWith("http://gateway:3000/ready", expect.objectContaining({ headers: { "x-access-token": "svc-trouble" } }));
+  });
   it("探测全部服务并容错单点失败", async () => {
     const fetchMock = vi.fn(async (url: string) => {
       if (String(url).includes("5001")) throw new Error("connection refused");
