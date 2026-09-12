@@ -155,8 +155,9 @@ P03运行契约与P05制品基础补充：
 | 编号 | 能力 | 实现及验证入口 | 状态 |
 |---|---|---|---|
 | P03 | 独立镜像、迁移就绪、断连恢复、Web与业务持久化 | infra/scripts/build-images.mjs + infra/scripts/validate-runtime.mjs + packages/db/src/readiness.ts | ✅ PR72已合并，两份干净SHA、最终候选和main CI均已验证 |
-| P04 | 八库备份、认证加密、独立恢复与应用交接 | infra/scripts/backup.mjs + infra/scripts/validate-backup.mjs + infra/scripts/lib/backup-local.mjs + infra/scripts/lib/backup-ssh.mjs + infra/scripts/lib/backup-handoff.mjs + infra/scripts/lib/recovery-receipt.mjs + infra/scripts/validate-recovery-deployment.mjs | 本地验收完成：正式11项实机和清理、独立18项回读、qa353infra/136DB零跳过；待最终候选CI与合并 |
+| P04 | 八库备份、认证加密、独立恢复与应用交接 | infra/scripts/backup.mjs + infra/scripts/validate-backup.mjs + infra/scripts/lib/backup-local.mjs + infra/scripts/lib/backup-ssh.mjs + infra/scripts/lib/backup-handoff.mjs + infra/scripts/lib/recovery-receipt.mjs + infra/scripts/validate-recovery-deployment.mjs | ✅ PR #74 已合并（761152b）：正式11项实机和清理、独立18项回读、CI三段绿；物理异地与生产调度未验证 |
 | P05 | SHA与registry digest、部署回执、失败恢复及回退 | infra/scripts/publish-images.mjs + infra/scripts/deploy-release.mjs + infra/scripts/deploy-ssh.mjs + infra/scripts/validate-deployment.mjs | ✅ 两SHA升级/故障/回退8项通过，独立八库复验与102个registry对象核验通过；SSH适配器回归通过，生产SSH未验证 |
+| P06 | 网关用户登录与服务身份细分 | apps/gateway/src/auth.ts + apps/gateway/src/users.ts + apps/gateway/src/session.ts + apps/assistant/server/src/action.service.ts + e2e/tests/gateway-auth.spec.ts | ✅ 本批交付：三通道认证（GATEWAY_TOKEN 服务通道/服务 token/用户会话）、应用级授权、防暴破；gateway 44/44 + e2e 4/4 |
 
 | # | 功能点 | Spec 章节 | 实际实现文件 | 状态 | E2E 覆盖 |
 |---|-------|----------|-------------|------|---------|

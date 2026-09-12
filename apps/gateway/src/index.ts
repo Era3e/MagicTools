@@ -8,6 +8,7 @@ import type { PortsConfig } from "./routes";
 
 const ports = loadYamlFile(findPortsFile(process.cwd())) as PortsConfig;
 const app = createGateway(ports);
-app.listen(3000, () => {
-  console.log("gateway listening on http://127.0.0.1:3000");
+const listenPort = Number(process.env.PORT_OVERRIDE ?? 3000);
+app.listen(listenPort, () => {
+  console.log("gateway listening on http://127.0.0.1:" + listenPort);
 });

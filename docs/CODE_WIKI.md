@@ -647,12 +647,13 @@ export const APPS: AppEntry[] = [
 
 **执行流程：**
 
-1. **鉴权中间件**：若 env.GATEWAY_TOKEN 非空，校验请求头 `X-Access-Token`，不一致返回 401；留空 = 本地不鉴权
+1. **鉴权中间件**（[auth.ts](file:///d:/MagicTools/apps/gateway/src/auth.ts)，P06）：三通道并行——①`GATEWAY_TOKEN` 头 `X-Access-Token`（服务/脚本通道，兼容模式与 P04/P05 验证工具链）；②`GATEWAY_SERVICE_TOKENS`（服务身份细分，`服务名:token` 映射，放行全部应用并标记 `x-gateway-user: service:<name>`）；③用户会话 cookie（`GATEWAY_USERS` 配置时启用，HMAC-SHA256 签名、12h 滑动续期、HttpOnly+SameSite=Lax）。未登录浏览器请求 302 → `/login`；API 请求返回 401 JSON；`GATEWAY_USER_APPS` 限定普通用户可访问应用（越界 403，admin 与服务身份不受限）。`GATEWAY_USERS` 非空但缺 `GATEWAY_SESSION_SECRET` 时拒绝启动。登录防暴破：统一错误文案 + 500ms 延迟 + 5 次失败锁 5 分钟（内存计数）。未配置 GATEWAY_USERS 时行为与旧版完全一致
 2. **路由生成**：调用 `buildRoutes(ports, host)` 从 ports.yaml 生成所有代理路由
 3. **Web 尾斜杠补全**：精确匹配 `/<name>` 时 302 重定向到 `/<name>/`
 4. **反向代理**：`createProxyMiddleware` 带 pathFilter，Web 走 `"/"+name` → web 容器 Vite/Nginx；API 走 `"/api/"+name` → NestJS server
 5. **`GET /health`**：返回 `{ status:"up", service:"gateway" }`
-6. **`GET /` 首页**：生成卡片式应用导航页（APP_META 提供 8 应用标题+简介），替代纯反代的 Cannot GET /
+6. **`GET /login` / `POST /login` / `POST /logout`**（auth.ts）：登录表单页（纯 HTML 无外部依赖）与登出；表单 body 由中间件内部解析（16KB 上限）
+7. **`GET /` 首页**：生成卡片式应用导航页（APP_META 提供 8 应用标题+简介），替代纯反代的 Cannot GET /
 
 #### `buildRoutes(ports, host)` → ProxyRoute[]
 

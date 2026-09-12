@@ -30,6 +30,14 @@ for (const shell of shellChecks) test("包装执行环境：" + shell.name + (sh
 });
 const shells = shellChecks.filter((shell) => !shell.skip).map((shell) => shell.command);
 
+// Windows cwd 可携带 8.3 短名（ADMINI~1）或长名（Administrator），取决于父进程环境形态；
+// wrapper 断言只关心「进程确实运行在 scratch 目录」，argv 才是严格透传目标。
+function assertCwd(actual, expected) {
+  const normalize = (value) => (process.platform === "win32" ? value.replace(/\\/g, "/").replace(/[A-Za-z]:/, (drive) => drive.toUpperCase()) : value);
+  const resolveNative = (value) => { try { return realpathSync.native(value); } catch { return realpathSync(value); } };
+  assert.equal(normalize(resolveNative(actual)), normalize(resolveNative(expected)), `cwd 不匹配（actual=${actual} expected=${expected}）`);
+}
+
 function invoke(shell, script, args, directory, environment = {}) {
   return spawnSync(shell, ["-NoLogo", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", script, ...args], {
     cwd: directory, encoding: "utf8", windowsHide: true, timeout: 20_000,
@@ -87,12 +95,16 @@ test("五种 backup 操作和 restore 包装从任意目录原样透传含空格
         const args = [command, "--directory", value, "--key-file", join(scratch, "private key file.key"), "--opaque", '中文 "quoted" $()'];
         const result = invoke(shell, join(infra, "backup.ps1"), args, scratch);
         assert.equal(result.status, 0, result.stderr);
-        assert.deepEqual(JSON.parse(result.stdout.trim()), { argv: args, cwd: scratch });
+        const observed = JSON.parse(result.stdout.trim());
+        assert.deepEqual(observed.argv, args);
+        assertCwd(observed.cwd, scratch);
       }
       const args = ["--backup", value, "--key-file", join(scratch, "private key file.key"), "--target", "mt-restore-wrappers"];
       const result = invoke(shell, join(infra, "restore.ps1"), args, scratch);
       assert.equal(result.status, 0, result.stderr);
-      assert.deepEqual(JSON.parse(result.stdout.trim()), { argv: ["restore", ...args], cwd: scratch });
+      const observed = JSON.parse(result.stdout.trim());
+      assert.deepEqual(observed.argv, ["restore", ...args]);
+      assertCwd(observed.cwd, scratch);
     } finally { cleanupScratch(scratch); }
   }
 });
@@ -168,7 +180,9 @@ test("PowerShell Set-Location 后相对参数使用新的工作目录", { skip: 
       writeFileSync(driver, "Set-Location -LiteralPath $env:MT_WRAPPER_TEST_CWD\n& $env:MT_WRAPPER_TEST_SCRIPT create --directory 'relative archive'\nexit $LASTEXITCODE\n");
       const result = invoke(shell, driver, [], scratch, { MT_WRAPPER_TEST_CWD: requested, MT_WRAPPER_TEST_SCRIPT: join(infra, "backup.ps1") });
       assert.equal(result.status, 0, result.stderr);
-      assert.deepEqual(JSON.parse(result.stdout.trim()), { argv: ["create", "--directory", "relative archive"], cwd: requested });
+      const observed = JSON.parse(result.stdout.trim());
+      assert.deepEqual(observed.argv, ["create", "--directory", "relative archive"]);
+      assertCwd(observed.cwd, requested);
     } finally { cleanupScratch(scratch); }
   }
 });

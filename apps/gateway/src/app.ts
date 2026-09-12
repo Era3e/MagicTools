@@ -1,6 +1,7 @@
 import express from "express";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import { buildRoutes, serviceHost, type PortsConfig } from "./routes";
+import { createAuthMiddleware } from "./auth";
 
 interface HealthProbe {
   service: string;
@@ -39,14 +40,7 @@ async function probeAllServices(ports: PortsConfig, host: (name: string) => stri
 
 export function createGateway(ports: PortsConfig, env: NodeJS.ProcessEnv = process.env) {
   const app = express();
-  app.use((req, res, next) => {
-    const token = env.GATEWAY_TOKEN;
-    if (!token || req.headers["x-access-token"] === token) {
-      next();
-      return;
-    }
-    res.status(401).json({ code: 401, message: "未授权" });
-  });
+  app.use(createAuthMiddleware(env));
   const host = serviceHost(env);
   for (const route of buildRoutes(ports, host)) {
     if (route.path.startsWith("/api/") === false) {

@@ -48,6 +48,36 @@ describe("ActionService", () => {
     expect(fetchMock).toHaveBeenCalledWith("http://gateway:3000/api/manager/requirements", expect.objectContaining({ headers: { "Content-Type": "application/json", "x-access-token": "runtime-test-token" } }));
   });
 
+  it("服务 token 优先于共享 GATEWAY_TOKEN，缺省逐级回落", async () => {
+    const gatewayHeaders = (mock: ReturnType<typeof vi.fn>): unknown => {
+      const call = mock.mock.calls.find(([url]) => String(url).includes("/api/manager/requirements"));
+      return call ? (call[1] as RequestInit).headers : undefined;
+    };
+    const setup = async () => {
+      vi.stubEnv("MT_PROD", "1");
+      const fetchMock = vi.fn(async (url: string) => {
+        if (String(url).includes("chat/completions")) {
+          return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify({ action: "create_requirement", params: { title: "t" } }) } }] }), { status: 200 });
+        }
+        return new Response(JSON.stringify({ id: "r" }), { status: 201 });
+      });
+      vi.stubGlobal("fetch", fetchMock);
+      await new ActionService().execute("创建一个需求叫t");
+      return fetchMock;
+    };
+    vi.stubEnv("GATEWAY_ASSISTANT_SERVICE_TOKEN", "svc-a");
+    vi.stubEnv("GATEWAY_TOKEN", "fallback-token");
+    let fetchMock = await setup();
+    expect(gatewayHeaders(fetchMock)).toMatchObject({ "x-access-token": "svc-a" });
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+    vi.stubEnv("MT_PROD", "1");
+    vi.stubEnv("GATEWAY_TOKEN", "fallback-only");
+    fetchMock = await setup();
+    expect(gatewayHeaders(fetchMock)).toMatchObject({ "x-access-token": "fallback-only" });
+    expect(fetchMock).toHaveBeenCalled();
+  });
+
   it("触发采集缺 sourceId 时友好提示", async () => {
     const fetchMock = vi.fn(async (url: string) => {
       if (String(url).includes("chat/completions")) {

@@ -4,6 +4,10 @@
 - 本文件记录平台级迭代摘要（阶段、里程碑、关键决策），在每次合入 main 时追加一条（含补记，需注明）；
 - 条目格式：日期、变更摘要、涉及子项目、关联 PR。
 
+## 2026-09-12（P06，网关认证，待合并）
+
+- **网关用户登录与服务身份细分**（feat-gateway-P06-auth）：网关新增浏览器可用的用户会话登录（GATEWAY_USERS scrypt 口令 + HMAC 签名 cookie 12h 滑动续期 + 登录页/登出路由 + 防暴破锁定），HTML/API 请求分类响应（302 登录页 / 401 JSON）；GATEWAY_USER_APPS 应用级授权（403），admin 与服务身份不受限；GATEWAY_SERVICE_TOKENS 服务身份细分（assistant 已接入，回落 GATEWAY_TOKEN）；未配置 GATEWAY_USERS 时与旧版行为完全一致，P04/P05 验证工具链零影响。配置与行为见 docs/features/gateway-auth.md。
+
 ## 2026-09-12（P04，八库备份与恢复应用交接）
 
 - **本地完整验收收尾**：正式独立run594bc2f98a44f636完成八库恢复、17应用/12真实连接、Manager隔离、active cron外联阻断、A→B→A、坏密码、拉取/迁移失败、同名替换及清理11项，独立回读18/18通过；原环境容器/网络/卷/镜像和监听保持。修复containerd将digest列入RepoTags的清理兼容，同时保护所有外来RepoTags/RepoDigests。冻结qa53b通过353infra和136真实DB、零跳过；候选CI另行验证。操作章节、发布/备份说明和CI公开证据入口已同步，未启用生产调度或切流。

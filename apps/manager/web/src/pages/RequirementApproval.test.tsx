@@ -57,16 +57,17 @@ describe("需求内容审批", () => {
       <Route path="/requirements/:id" element={<RequirementDetail />} />
     </Routes></MemoryRouter>);
     fireEvent.click(await screen.findByRole("button", { name: "编辑需求内容" }));
-    fireEvent.change(screen.getByLabelText("实施范围"), { target: { value: "我的草稿范围" } });
-    fireEvent.click(screen.getByRole("button", { name: "保存内容" }));
+    fireEvent.change(await screen.findByLabelText("实施范围"), { target: { value: "我的草稿范围" } });
+    fireEvent.click(await screen.findByRole("button", { name: "保存内容" }));
     await waitFor(() => expect(api.patchRequirement).toHaveBeenCalledWith("req-approval", expect.objectContaining({ scope: "我的草稿范围", expectedRevision: 1 })));
     await screen.findByText("需求已变化");
     expect((screen.getByLabelText("实施范围") as HTMLTextAreaElement).value).toBe("我的草稿范围");
+    expect((await screen.findByRole("button", { name: "保存内容" })) as HTMLButtonElement).toBeTruthy();
     expect((screen.getByRole("button", { name: "保存内容" }) as HTMLButtonElement).disabled).toBe(true);
     fireEvent.click(screen.getByRole("button", { name: "放弃草稿，重新载入" }));
     await waitFor(() => expect((screen.getByLabelText("实施范围") as HTMLTextAreaElement).value).toBe("他人新范围"));
     vi.mocked(api.patchRequirement).mockResolvedValue({ ...exampleRequirement, revision: 4, contentRevision: 3 });
-    fireEvent.click(screen.getByRole("button", { name: "保存内容" }));
+    fireEvent.click(await screen.findByRole("button", { name: "保存内容" }));
     await waitFor(() => expect(api.patchRequirement).toHaveBeenLastCalledWith("req-approval", expect.objectContaining({ expectedRevision: 3 })));
   });
 

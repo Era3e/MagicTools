@@ -4,7 +4,10 @@ import { llmChat } from "./llm";
 import { actionSchema } from "./schemas";
 
 const GATEWAY_URL = () => process.env.INTERNAL_GATEWAY_URL ?? (process.env.MT_PROD === "1" ? "http://gateway:3000" : "http://127.0.0.1:3000");
-const gatewayHeaders = (): Record<string, string> => process.env.GATEWAY_TOKEN ? { "x-access-token": process.env.GATEWAY_TOKEN } : {};
+const gatewayHeaders = (): Record<string, string> => {
+  const token = process.env.GATEWAY_ASSISTANT_SERVICE_TOKEN ?? process.env.GATEWAY_TOKEN;
+  return token ? { "x-access-token": token } : {};
+};
 
 const ACTION_PROMPT =
   '你是平台动作解析器。从用户消息解析要执行的动作，只输出 JSON：{action: "create_requirement"|"trigger_collect", params: {title?: 需求标题, description?: 需求描述, sourceId?: 信息源ID}}。{action}';
