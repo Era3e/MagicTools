@@ -1,0 +1,12 @@
+# Example only: this file does not install or enable a scheduled task.
+[Unit]
+Description=Run MagicTools backup daily at 02:30 Asia/Shanghai
+
+[Timer]
+OnCalendar=*-*-* 02:30:00 Asia/Shanghai
+Persistent=true
+AccuracySec=1min
+Unit=magictools-backup.service
+
+[Install]
+WantedBy=timers.target

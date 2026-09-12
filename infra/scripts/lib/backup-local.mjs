@@ -1,68 +1,12 @@
-import { createHash, randomBytes } from "node:crypto";
-import { createReadStream, createWriteStream, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, realpathSync, renameSync, rmdirSync, statSync, unlinkSync, writeFileSync } from "node:fs";
-import { basename, dirname, isAbsolute, join, posix, relative, resolve, sep } from "node:path";
-import { hostname } from "node:os";
+import { randomBytes } from "node:crypto";
+import { createReadStream, createWriteStream, existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, renameSync } from "node:fs";
+import { basename, dirname, join, posix } from "node:path";
 import { inspectBackupSource } from "./backup-source.mjs";
 import { BackupResources, databaseQuery, docker, dockerStream, runDocker, waitForDatabase } from "./backup-docker.mjs";
-import { decryptBackupStream, encryptBackupStream, MAX_BACKUP_FILE_BYTES, signBackupManifest, verifyBackupManifest } from "./backup-crypto.mjs";
-import { isImageRepository } from "./runtime-artifacts.mjs";
+import { decryptBackupStream, encryptBackupStream, signBackupManifest, verifyBackupManifest } from "./backup-crypto.mjs";
+import { BACKUP_FILES, hash, parseJson, writeJson, canonicalDirectory, privateFile, acquireStore, validateBackup } from "./backup-store.mjs";
+import { pruneLockedStore, validateRetentionCount } from "./backup-retention.mjs";
 
-const BACKUP_FILES = ["base.tar", "pg_wal.tar", "backup_manifest"];
-const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
-const parseJson = (file, label) => { try { return JSON.parse(readFileSync(file, "utf8")); } catch { throw new Error(label + "无法读取或JSON无效"); } };
-const writeJson = (file, value) => writeFileSync(file, JSON.stringify(value, null, 2) + "\n", { flag: "wx", mode: 0o600 });
-const within = (parent, file) => { const path = relative(parent, file); return !path || (!path.startsWith(".." + sep) && path !== ".." && !isAbsolute(path)); };
-
-function canonicalDirectory(directory) {
-  let current = resolve(directory); const suffix = [];
-  while (!existsSync(current)) {
-    const parent = dirname(current);
-    if (parent === current) throw new Error("备份目录无法规范化");
-    suffix.unshift(basename(current)); current = parent;
-  }
-  return resolve(realpathSync(current), ...suffix);
-}
-
-function privateFile(file, directory, sizeLimit) {
-  const path = realpathSync(file);
-  if (within(directory, resolve(file)) || within(directory, path) || !statSync(path).isFile() || statSync(path).size > sizeLimit) throw new Error("私有文件必须独立于备份目录且大小有效");
-  return { path, bytes: readFileSync(path) };
-}
-
-function acquireStore(directory, expected, operationId, create = false) {
-  mkdirSync(directory, { recursive: true, mode: 0o700 });
-  const root = realpathSync(directory); const marker = join(root, ".magictools-backups.json");
-  if (!existsSync(marker)) {
-    if (!create || readdirSync(root).length) throw new Error("备份目录不是本工具初始化的空目录");
-    writeJson(marker, { schema: "magictools-backup-store/1", storeId: randomBytes(8).toString("hex"), ...expected });
-  }
-  if (lstatSync(marker).isSymbolicLink()) throw new Error("备份目录标识不能为链接");
-  const store = parseJson(marker, "备份目录标识");
-  if (store.schema !== "magictools-backup-store/1" || !/^[a-f0-9]{16}$/.test(store.storeId) ||
-    Object.entries(expected).some(([key, value]) => store[key] !== value)) throw new Error("备份目录来源或密钥与本次操作不一致");
-  const lock = join(root, ".lock");
-  try { mkdirSync(lock); } catch { throw new Error("备份目录正被使用或锁状态待确认"); }
-  try { writeJson(join(lock, "owner.json"), { operationId, pid: process.pid, host: hostname(), startedAt: new Date().toISOString() }); }
-  catch (error) { try { rmdirSync(lock); } catch {} throw error; }
-  return { root, store, release() {
-    if (parseJson(join(lock, "owner.json"), "备份锁").operationId !== operationId) throw new Error("备份锁归属变化");
-    unlinkSync(join(lock, "owner.json")); rmdirSync(lock);
-  } };
-}
-
-function validateBackup(manifest) {
-  if (manifest.schema !== "magictools-backup/1" || manifest.status !== "complete" || !/^[a-f0-9]{16}$/.test(manifest.backupId) || !/^[a-f0-9]{16}$/.test(manifest.storeId)) throw new Error("备份未完成或身份无效");
-  const source = manifest.source;
-  if (!source || !/^[1-9][0-9]{0,19}$/.test(source.systemIdentifier) || Math.floor(source.serverVersion / 10_000) !== 16 ||
-    !/^linux\/(amd64|arm64)$/.test(source.image?.platform) || !/@sha256:[a-f0-9]{64}$/.test(source.image.reference) || !isImageRepository(source.image.reference.split("@")[0]) ||
-    typeof source.dataDirectory !== "string" || !source.dataDirectory.startsWith("/") || posix.normalize(source.dataDirectory) === "/") throw new Error("备份源身份、平台或布局无效");
-  if (!Array.isArray(manifest.files) || manifest.files.length !== 3 || JSON.stringify(manifest.files.map((file) => file.fileName).sort()) !== JSON.stringify([...BACKUP_FILES].sort()) ||
-    new Set(manifest.files.map((file) => file.nonce)).size !== 3 || manifest.files.some((file) => !Number.isSafeInteger(file.plainBytes) || file.plainBytes < 1 || file.plainBytes > MAX_BACKUP_FILE_BYTES ||
-      file.encryptedBytes !== file.plainBytes || !/^[a-f0-9]{64}$/.test(file.sha256) || !/^[a-f0-9]{24}$/.test(file.nonce) || !/^[a-f0-9]{32}$/.test(file.tag))) throw new Error("备份文件集合或密文元数据无效");
-  if (!Array.isArray(manifest.databases) || !manifest.databases.length || manifest.databases.some((name) => !/^[a-z][a-z0-9_]{0,62}$/.test(name)) ||
-    !/^[a-f0-9]{64}$/.test(manifest.catalogSha256) || !Array.isArray(manifest.walRanges) || !manifest.walRanges.length) throw new Error("备份数据库或恢复证据不完整");
-  return manifest;
-}
 
 async function pullImage(source) {
   const args = ["image", "inspect", "--format", '{"os":{{json .Os}},"architecture":{{json .Architecture}}}', source.image.reference];
@@ -129,13 +73,14 @@ async function finishOperation(resources, store, report, key, result) {
   catch (error) { failure ??= error; report.success = false; report.lockError = error.message; report.stage = "unlock"; }
   report.finishedAt = new Date().toISOString();
   try { if (store) writeJson(join(store.root, "attempt-" + report.operationId + ".json"), { ...report, ...result ? { result } : {} }); }
-  catch (error) { failure ??= error; }
+  catch (error) { failure ??= error; report.stage = "receipt"; }
   finally { key?.fill(0); }
   if (failure) {
     // 尚未向调用者确认的恢复目标属于本轮临时结果；持久回执失败时不能无声遗留。
     resources.preserved.clear();
     try { await resources.cleanup(); } catch (error) { report.cleanupError = error.message; }
     failure.operationId = report.operationId;
+    failure.stage = report.stage; failure.backupId = report.backupId;
     failure.resources = resources.items.map(({ kind, name }) => ({ kind, name }));
     throw failure;
   }
@@ -146,6 +91,7 @@ export async function createBackup(options) {
   const report = { schema: "magictools-backup-attempt/1", operationId: backupId, operation: "create", success: false, stage: "preflight", startedAt: new Date().toISOString() };
   let key; let store; let pending; let result;
   try {
+    const keep = options.keep === undefined ? 15 : options.keep; validateRetentionCount(keep);
     const requested = canonicalDirectory(options.directory);
     const privateKey = privateFile(options.keyFile, requested, 32); key = privateKey.bytes;
     if (key.length !== 32) throw new Error("备份密钥必须为32字节");
@@ -193,9 +139,13 @@ export async function createBackup(options) {
     const destination = join(store.root, "backup-" + backupId);
     if (existsSync(destination)) throw new Error("目标备份已存在");
     renameSync(pending, destination); pending = null;
+    report.backupId = backupId; report.directory = destination;
+    report.stage = "retention";
+    const retention = await pruneLockedStore(store, key, { keep, operationId: backupId, protectedBackupId: backupId });
+    report.retention = retention;
     report.success = true; report.stage = "complete";
-    result = { backupId, directory: destination, manifest };
-  } catch (error) { report.error = error.message; throw error; }
+    result = { backupId, directory: destination, manifest, retention };
+  } catch (error) { report.error = error.message; error.operationId ??= backupId; error.backupId ??= report.backupId; error.stage = report.stage; throw error; }
   finally { await finishOperation(resources, store, report, key); }
   return result;
 }
@@ -210,6 +160,7 @@ export async function restoreBackup(options) {
     if (key.length !== 32 || !/^[a-z][a-z0-9-]{2,62}$/.test(options.targetName ?? "")) throw new Error("恢复目标或密钥无效");
     if (lstatSync(join(backupDirectory, "backup.json")).isSymbolicLink()) throw new Error("备份清单不能为链接");
     const manifest = validateBackup(verifyBackupManifest(parseJson(join(backupDirectory, "backup.json"), "备份清单"), key));
+    report.backupId = manifest.backupId;
     if (basename(backupDirectory) !== "backup-" + manifest.backupId) throw new Error("备份目录与清单身份不符");
     store = acquireStore(dirname(backupDirectory), { storeId: manifest.storeId, keyId: hash(key), systemIdentifier: manifest.source.systemIdentifier }, operationId);
     for (const file of manifest.files) {
@@ -236,7 +187,7 @@ export async function restoreBackup(options) {
     report.success = true; report.stage = "complete"; report.backupId = manifest.backupId;
     result = { operationId, backupId: manifest.backupId, container: options.targetName, network, volume, catalogVerified: true };
     if (!options.verifyOnly) for (const [kind, name] of [["container", options.targetName], ["network", network], ["volume", volume]]) resources.preserve(kind, name);
-  } catch (error) { report.error = error.message; throw error; }
+  } catch (error) { report.error = error.message; error.operationId ??= operationId; error.backupId = report.backupId; error.stage = report.stage; throw error; }
   finally { await finishOperation(resources, store, report, key, result); }
   return result;
 }

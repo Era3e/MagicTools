@@ -1,13 +1,24 @@
-param(
-  [Parameter(Mandatory = $true)][string]$HostName,
-  [string]$BackupDir = "./backups"
-)
+# Serialize user arguments as data before crossing PowerShell's native argv boundary.
+# The fixed bootstrap preserves native PowerShell capture, redirection, and pipelines.
+$ErrorActionPreference = "Stop"
+$backupExit = 1
+$backupConsoleEncoding = [Console]::OutputEncoding
 
-$stamp = Get-Date -Format "yyyyMMdd-HHmmss"
-$file = "magictools-$stamp.dump.gz"
-if (-not (Test-Path $BackupDir)) { New-Item -ItemType Directory -Path $BackupDir | Out-Null }
-ssh $HostName "docker exec magictools-postgres-1 pg_dump -U postgres magictools | gzip > /tmp/$file"
-scp ("{0}:/tmp/{1}" -f $HostName, $file) (Join-Path $BackupDir $file)
-ssh $HostName "rm -f /tmp/$file"
-Get-ChildItem $BackupDir -Filter "*.dump.gz" | Sort-Object LastWriteTime -Descending | Select-Object -Skip 14 | Remove-Item -Force
-Write-Host "备份完成: $file（本地保留最近 15 份）"
+try {
+  $backupNode = @(Get-Command node -CommandType Application -ErrorAction Stop)[0]
+  $backupJson = ConvertTo-Json -InputObject @($args | ForEach-Object { [string]$_ }) -Compress
+  $backupPayload = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($backupJson))
+  $backupArguments = @((Join-Path $PSScriptRoot "scripts/backup-powershell.mjs"), $backupPayload)
+  [Console]::OutputEncoding = New-Object Text.UTF8Encoding($false)
+  # Native stderr is a nonterminating ErrorRecord in Windows PowerShell 5.1.
+  # Neither that record nor a native nonzero exit may abort stream delivery.
+  $ErrorActionPreference = "Continue"
+  $PSNativeCommandUseErrorActionPreference = $false
+  & $backupNode.Source @backupArguments
+  $backupExit = $LASTEXITCODE
+} catch {
+  Write-Error "Unable to start the backup CLI. Check Node.js 20+ and the script path." -ErrorAction Continue
+} finally {
+  [Console]::OutputEncoding = $backupConsoleEncoding
+}
+exit $backupExit

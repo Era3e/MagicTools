@@ -155,7 +155,7 @@ P03运行契约与P05制品基础补充：
 | 编号 | 能力 | 实现及验证入口 | 状态 |
 |---|---|---|---|
 | P03 | 独立镜像、迁移就绪、断连恢复、Web与业务持久化 | infra/scripts/build-images.mjs + infra/scripts/validate-runtime.mjs + packages/db/src/readiness.ts | ✅ PR72已合并，两份干净SHA、最终候选和main CI均已验证 |
-| P04 | 八库备份、认证加密、独立恢复与演练 | infra/scripts/backup.mjs + infra/scripts/validate-backup.mjs + infra/scripts/lib/backup-local.mjs | 进行中：本机核心与指标已实测，SSH/保留/告警/部署切换及最终CI未完成 |
+| P04 | 八库备份、认证加密、独立恢复与演练 | infra/scripts/backup.mjs + infra/scripts/validate-backup.mjs + infra/scripts/lib/backup-local.mjs + infra/scripts/lib/backup-ssh.mjs | 进行中：本机核心、保留、HTTP告警及同机真实SSH已实测并复核；部署交接及整批最终CI未完成 |
 | P05 | SHA与registry digest、部署回执、失败恢复及回退 | infra/scripts/publish-images.mjs + infra/scripts/deploy-release.mjs + infra/scripts/deploy-ssh.mjs + infra/scripts/validate-deployment.mjs | ✅ 两SHA升级/故障/回退8项通过，独立八库复验与102个registry对象核验通过；SSH适配器回归通过，生产SSH未验证 |
 
 | # | 功能点 | Spec 章节 | 实际实现文件 | 状态 | E2E 覆盖 |

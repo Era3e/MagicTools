@@ -95,6 +95,7 @@ jobs:
             .qa/backup-validation/**/store/attempt-*.json
             .qa/backup-validation/**/store/.magictools-backups.json
             .qa/backup-validation/**/store/backup-*/backup.json
+            .qa/backup-validation/**/events/*.json
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 14

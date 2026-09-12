@@ -107,6 +107,11 @@ await check('cached-fixed-digest-allows-backup-when-registry-is-unavailable',asy
   const backup=await createBackup(o);assert.equal(backup.manifest.status,'complete');
   assert.equal(calls.some(args=>args[0]==='pull'),false);assert.equal(state.size,0);
 });
+await check('create-applies-retention-under-the-same-store-lock',async()=>{
+  const o=setup('automatic-retention');const first=await createBackup({...o,keep:1});const second=await createBackup({...o,keep:1});
+  assert.equal(fs.existsSync(first.directory),false);assert.equal(fs.existsSync(second.directory),true);
+  assert.deepEqual(second.retention.removed,[first.backupId]);assert.equal(state.size,0);
+});
 await check('existing-targets-not-covered-or-removed',async()=>{
   const o=setup('existing'),b=await createBackup(o);
   for(const kind of ['container','network','volume']){state.clear();calls=[];const target='review-existing-'+kind,name=kind==='container'?target:target+(kind==='network'?'-net':'-data');state.set(kind+':'+name,{name,id:'foreign',labels:{owner:'someone-else'}});await assert.rejects(restoreBackup({backupDirectory:b.directory,keyFile:o.keyFile,targetName:target}),/目标已存在/);assert.equal(state.size,1);assert.equal(state.get(kind+':'+name).id,'foreign');assert.ok(!calls.some(a=>a[0]==='run'||a.includes('create')||a.includes('rm')))}
@@ -172,6 +177,14 @@ await check('actual-cli-error-json-includes-operation-and-residual-identities',a
     assert.ok(!text.includes(fs.readFileSync(o.keyFile).toString('hex')));assert.ok(!text.includes(JSON.parse(fs.readFileSync(o.credentialsFile,'utf8')).password));
     assert.ok(!state.has('container:review-cli-finalization'));assert.ok(!state.has('network:review-cli-finalization-net'));
   }finally{clearTimeout(timeout);console.error=oldError;process.argv=oldArgv;process.exitCode=oldExit}
+});
+
+await check('automatic-retention-protects-new-backup-during-clock-rollback', async()=>{
+  const o=setup('clock-rollback'); const first=await createBackup({...o,keep:1});
+  const manifest=structuredClone(first.manifest); manifest.completedAt='2099-01-01T00:00:00.000Z';
+  fs.writeFileSync(path.join(first.directory,'backup.json'),JSON.stringify(signBackupManifest(manifest,fs.readFileSync(o.keyFile))));
+  const second=await createBackup({...o,keep:1});
+  assert.ok(fs.existsSync(second.directory)); assert.deepEqual(second.retention.kept,[second.backupId]); assert.deepEqual(second.retention.removed,[first.backupId]);
 });
 
 // 所有Docker与源检查都使用受控边界；真实数据库链路由backup:validate另行执行。

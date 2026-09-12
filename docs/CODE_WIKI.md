@@ -324,7 +324,7 @@ MagicTools/
 │  ├─ compose.prod.yml                       # 生产环境编排（待补全）
 │  ├─ postgres-init.sql                      # 多库自举初始化脚本
 │  ├─ deploy.ps1                             # ECS 部署脚本（PowerShell）
-│  ├─ backup.ps1                             # 旧版仅备份magictools，P04替换中
+│  ├─ backup.ps1                             # Node备份CLI薄包装，保留参数与退出码
 │  ├─ templates/                             # pnpm new:app 模板（server + web 骨架）
 │  └─ scripts/                               # 工程化脚本（全部 .mjs ESM）
 │     ├─ smoke.mjs                           # 冒烟：读取 ports.yaml 探活全部服务
@@ -1772,4 +1772,6 @@ assistant.knowledge
 
 `backup:create`、`backup:verify`、`backup:restore`由infra/scripts/backup.mjs调度，backup-local.mjs组织源检查、物理备份/原生验证、加密和独立恢复；backup-docker.mjs管理专属资源及进程退出。backup-source.mjs/backup-config-files.mjs同时检查运行与启动生效的配置依赖，backup-crypto.mjs负责文件认证和清单HMAC，backup-metrics.mjs使用微秒计算本机恢复区间。实现与边界见 [备份说明](features/backup-recovery.md) 和 [核心验收](validation/2026-09-12-backup-core.md)。
 
-旧backup.ps1仍待本批完整替换，只导出magictools库，不能作为八库备份方案。SSH异机保存、保留/告警/定时任务及应用切换仍未交付；当前本机回执不能代表生产保障。P03/P05已合并，main发布run34651552771的17镜像来源、固定digest及推拉日志已独立核验，生产环境部署未验证。
+`backup-store.mjs`统一目录标识、私有文件隔离和锁归属；`backup-retention.mjs`默认保留15份，并在删除前验证全部候选密文，自动创建固定保护本次制品。`backup-alerts.mjs`提供持久失败事件、受限HTTP投递和独立投递回执；CLI前置失败也进入事件路径。`backup-ssh.mjs`上传公开脚本并检查指纹，`backup-export.mjs`/`backup-transfer.mjs`持源锁导出、下载到隔离store、原生恢复验证后发布副本；已验证副本与任务清理失败分别记录。
+
+`backup.ps1`/`restore.ps1`已替换旧单库dump流程，通过静态backup-powershell.mjs以Base64数据传递参数并保留PowerShell文本流；systemd样例与漏跑排查见[定时备份说明](features/backup-scheduling.md)，不自动启用生产任务。本机保留、HTTP告警和同机SSH传输已实测与独立复核，部署交接尚在完整P04验收中；回执不能代表物理异地或生产保障。P03/P05已合并，main发布run34651552771的17镜像来源、固定digest及推拉日志已独立核验，生产环境部署未验证。

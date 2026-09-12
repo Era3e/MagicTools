@@ -6,6 +6,10 @@
 
 ## 当前状态快照（2026-09-12 更新）
 
+- **P04传输阶段收尾（2026-09-12，待推送阶段候选）**：最终修后qa回执9ae6007ad4b197b83d7f7c5f通过，infra228/228、DB31文件136/136、skip0；smoke17/17。提交前dirty fingerprint6a53e2d2774a18b79c03d9993eb75501f86bc91d752c816593b5686cedcca953，本条与验收文档为门禁后补记，不冒称后续提交指纹。PowerShell两版本独立42次调用全过，重定向绕过问题关闭；systemd仅静态语义，不声称原生运行。真实SSH独立复核通过，细节与原始证据见docs/validation/2026-09-12-backup-retention-transfer.md。接下来按restored-deployment设计/计划完成恢复实例交接，完整P04仍未合并；不得用阶段CI提前完成整个需求。
+
+- **P04保留、告警与传输继续实施（2026-09-12，阶段开发记录）**：核心候选93bf的PR74 CI run34660010365 quality/smoke/e2e全成功，E2E102/0skip；仅证明该核心候选，完整P04仍未合并。新保留独立12项、告警独立13项通过，真实run0abf00edd79f1024执行两份备份keep1、prune幂等、八库/角色/向量恢复及真实本机HTTP故障投递，独立密文摘要/回执/清理复核通过；dirty c1e479bef46ef91924cbd717eac57cf18aa806f7bd2009a39b8e3a781d5de71c，RTO19784ms、区间0.314–11.484s，仅为本机样本。新增SSH源锁导出、下载隔离验证和copy回执，独立19项通过（实际文件/GCM，SSH与PG受控）；修复验证后密文变化可发布及copy回执失败遗留正式目录。同机真实SSH run26b370064292f597随后通过并独立复核，dirty 2dd59c0a1b73cf914c4946e924c112594a7c1088b5510e7609a082094c602998，密文102910026字节、复制全流程28865ms；非物理异地。PowerShell包装修复重定向绕过，改用静态bootstrap+Base64参数和PS文本流，systemd仅提供样例。部署交接设计与计划已落盘，实施及整批最终qa/CI仍待完成；未启用生产调度或真实接收者。详细阶段证据见docs/validation/2026-09-12-backup-retention-transfer.md。
+
 - **P04本机核心实施（2026-09-12，feat-infra-P04-backup）**：基线main f199f8b，完整P04尚未合并。现有create/verify/restore与真实演练入口，完成源配置依赖、物理备份、AES-GCM/HMAC、独立PG恢复及本机RPO/RTO。独立源配置实际问题已全部闭环；编排16组受控边界、加密14项、指标6项独立复验通过，额外缓存离线回归已加入。真实run37ef4dcc212ff7bd通过八库/角色/向量/微秒标记、命令校验及清理，约103MB密文、热镜像恢复19.533秒，恢复点年龄保守区间0.293–11.718秒；仅为该本机样本，源码fingerprint与验证边界见docs/validation/2026-09-12-backup-core.md。Docker上下文与Git均排除.private/backups/备份密钥。SSH异机保存、保留15份、告警/定时任务、旧PS脚本替换、部署交接和完整候选CI继续实施；Manager P04仍developing。
 
 - **P03/P05交付验收（2026-09-12，PR #72）**：17独立镜像、迁移/数据库就绪、不可变制品、本机/SSH部署回执和回退已实现。两份干净SHA制品A=cc03f425939448b3e720b0a29084ae479f9412db（release d90f38182d37e0e8）与B=5355139ec425dd0394f61e1d149ee1063ae1e486（release 31adfd27e83e27a7）分别构建、9项容器验收和发布成功；部署验证c4382360ff95e4b9的升级/移动标签/拉取失败/坏密码/迁移失败/恢复/回退/数据与env保护8项全过。独立智能体775fc054580e另行执行A→B→A，八库唯一marker全保留、env字节不变、PG实例稳定，B的102个registry对象原始摘要通过；本轮验证资源清理通过，未动原5432和共享测试PG。

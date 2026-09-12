@@ -1,4 +1,6 @@
-import { execFileSync } from "node:child_process";
+import { execFile, execFileSync } from "node:child_process";
+import { promisify } from "node:util";
+import { createServer } from "node:http";
 import { randomBytes } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync, unlinkSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -9,15 +11,17 @@ import { recoveryObservation } from "./lib/backup-metrics.mjs";
 import { captureValidationIdentity } from "./lib/quality-evidence.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
+const execute = promisify(execFile);
 
 export async function validateBackup() {
   const id = randomBytes(8).toString("hex"); const project = "mt-validation-backup-" + id;
   const parent = join(root, ".qa/backup-validation"); mkdirSync(parent, { recursive: true });
   const directory = join(parent, id); mkdirSync(directory);
   const keyFile = join(directory, "private.key"); const credentialsFile = join(directory, "private.env");
+  const alertFile = join(directory, "private-alert.env"); let receiver;
   const password = randomBytes(24).toString("hex");
   const report = { schema: "magictools-backup-validation/1", id, project, success: false, startedAt: new Date().toISOString(),
-    mode: { database: "real", containers: "real", encryption: "real", offsite: "not-run" }, checks: [], cleanup: "pending" };
+    mode: { database: "real", containers: "real", encryption: "real", notifications: "local-http", offsite: "not-run" }, checks: [], cleanup: "pending" };
   const source = project + "-source"; const volume = project + "-source-data";
   const resources = []; let restored;
   const docker = (args, input) => execFileSync("docker", args, { input, encoding: "utf8", windowsHide: true, timeout: 120_000,
@@ -52,10 +56,16 @@ export async function validateBackup() {
     sql(source, "postgres", `CREATE ROLE backup_validation_reader LOGIN PASSWORD '${password}';`);
     sql(source, "manager", "GRANT SELECT ON backup_validation_marker TO backup_validation_reader;");
     report.stage = "backup-create";
-    const command = (args) => JSON.parse(execFileSync(process.execPath, [join(root, "infra/scripts/backup.mjs"), ...args],
-      { cwd: root, windowsHide: true, encoding: "utf8", timeout: 15 * 60_000, maxBuffer: 4 * 1024 * 1024 }));
-    const created = command(["create", "--container", source, "--directory", join(directory, "store"), "--key-file", keyFile, "--credentials-file", credentialsFile]);
+    const command = async (args) => JSON.parse((await execute(process.execPath, [join(root, "infra/scripts/backup.mjs"), ...args],
+      { cwd: root, windowsHide: true, encoding: "utf8", timeout: 15 * 60_000, maxBuffer: 4 * 1024 * 1024 })).stdout);
+    const createArgs = ["create", "--container", source, "--directory", join(directory, "store"), "--key-file", keyFile, "--credentials-file", credentialsFile, "--keep", "1"];
+    const previous = await command(createArgs);
+    const created = await command(createArgs);
     if (created.success !== true) throw new Error("backup CLI did not confirm completion");
+    if (existsSync(previous.directory) || !existsSync(created.directory) || created.retention.removed.join() !== previous.backupId || created.retention.kept.join() !== created.backupId) throw new Error("automatic retention did not preserve the new backup");
+    const pruned = await command(["prune", "--directory", join(directory, "store"), "--key-file", keyFile, "--keep", "1"]);
+    if (!pruned.success || pruned.removed.length || pruned.kept.join() !== created.backupId) throw new Error("manual retention is not idempotent");
+    report.checks.push({ name: "automatic-retention-and-idempotent-prune-cli", status: "passed", previousBackupId: previous.backupId, backupId: created.backupId, operationId: pruned.operationId });
     const manifest = verifyBackupManifest(JSON.parse(readFileSync(join(created.directory, "backup.json"), "utf8")), readFileSync(keyFile));
     report.backupId = created.backupId;
     report.checks.push({ name: "create-authenticated-physical-backup", status: "passed", directory: created.directory });
@@ -64,7 +74,7 @@ export async function validateBackup() {
     report.simulatedIncidentAt = sql(source, "postgres", "SELECT clock_timestamp();");
     const restoreStarted = performance.now();
     report.stage = "backup-restore";
-    restored = command(["restore", "--backup", created.directory, "--key-file", keyFile, "--target", project + "-restored"]);
+    restored = await command(["restore", "--backup", created.directory, "--key-file", keyFile, "--target", project + "-restored"]);
     if (restored.success !== true) throw new Error("restore CLI did not confirm completion");
     for (const database of databaseNames) {
       if (sql(restored.container, database, "SELECT value FROM backup_validation_marker;") !== id) throw new Error("restored data boundary mismatch");
@@ -89,18 +99,36 @@ export async function validateBackup() {
     report.checks.push({ name: "restore-eight-databases-roles-vector-and-data-boundary", status: "passed", databases: databaseNames.length,
       elapsedMilliseconds: restoreMilliseconds, catalogVerified: restored.catalogVerified });
     report.stage = "verify-command";
-    const verification = command(["verify", "--backup", created.directory, "--key-file", keyFile]);
+    const verification = await command(["verify", "--backup", created.directory, "--key-file", keyFile]);
     if (verification.success !== true || verification.cleanup !== "passed") throw new Error("verify CLI did not complete");
     for (const kind of ["container", "network", "volume"]) {
       if (docker([kind, "ls", ...(kind === "container" ? ["-a"] : []), "-q", "--filter", "label=magictools.backup.operation=" + verification.operationId])) throw new Error("verify CLI left owned resources");
     }
     report.checks.push({ name: "verify-command-and-resource-cleanup", status: "passed", operationId: verification.operationId });
+    report.stage = "failure-notification";
+    const received = [];
+    receiver = createServer(async (request, response) => {
+      const chunks = []; for await (const chunk of request) chunks.push(chunk);
+      try { received.push(JSON.parse(Buffer.concat(chunks))); response.writeHead(202); response.end(); }
+      catch { response.writeHead(400); response.end(); }
+    });
+    await new Promise((done, reject) => { receiver.once("error", reject); receiver.listen(0, "127.0.0.1", done); });
+    writeFileSync(alertFile, JSON.stringify({ schema: "magictools-backup-alert/1", type: "webhook", url: "http://127.0.0.1:" + receiver.address().port + "/backup" }), { flag: "wx", mode: 0o600 });
+    let failed;
+    try { await command(["restore", "--backup", created.directory, "--key-file", keyFile, "--target", restored.container, "--notify-config", alertFile, "--events-dir", join(directory, "events")]); }
+    catch (error) { if (error.code !== 1) throw error; failed = JSON.parse(error.stderr); }
+    if (!failed || failed.success !== false || failed.alert?.notification.status !== "accepted" || received.length !== 1 ||
+      received[0].event.operationId !== failed.operationId || received[0].event.stage !== "preflight" ||
+      failed.alert.persistence.event !== "written" || failed.alert.persistence.delivery !== "written") throw new Error("real backup failure notification was not confirmed");
+    if (sql(restored.container, "manager", "SELECT value FROM backup_validation_marker;") !== id) throw new Error("failed repeated restore changed the target");
+    report.checks.push({ name: "existing-target-failure-real-http-notification-and-preservation", status: "passed", eventId: failed.alert.eventId, operationId: failed.operationId });
     report.success = true; report.stage = "complete";
   } catch (error) {
     report.error = String(error.message).replaceAll(password, "[redacted]").split("\n")[0];
     if (error.stderr) report.processError = String(error.stderr).replaceAll(password, "[redacted]").split("\n")[0];
   }
   finally {
+    receiver?.closeAllConnections(); receiver?.close();
     const cleanupErrors = [];
     if (restored) {
       for (const [kind, name] of [["container", restored.container], ["network", restored.network], ["volume", restored.volume]]) {
@@ -118,7 +146,7 @@ export async function validateBackup() {
         docker(resource.kind === "container" ? ["rm", "-f", "-v", resource.name] : [resource.kind, "rm", resource.name]);
       } catch { cleanupErrors.push(resource.kind + ":" + resource.name); }
     }
-    for (const file of [keyFile, credentialsFile]) try { if (existsSync(file)) unlinkSync(file); } catch { cleanupErrors.push("private-file"); }
+    for (const file of [keyFile, credentialsFile, alertFile]) try { if (existsSync(file)) unlinkSync(file); } catch { cleanupErrors.push("private-file"); }
     report.cleanup = cleanupErrors.length ? "failed" : "passed"; report.cleanupErrors = cleanupErrors;
     if (cleanupErrors.length) report.success = false;
     if (report.identity) {
