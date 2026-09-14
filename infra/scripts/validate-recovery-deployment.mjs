@@ -178,13 +178,24 @@ export async function validateRecoveryDeployment(previousDirectory, currentDirec
       await until(() => { try { return sinkStats().count === 0; } catch { return false; } }, "接收器就绪");
       const ip = inspect("container", sinkName).NetworkSettings.Networks[infrastructureNetwork].IPAddress; assert.match(ip, /^\d+\.\d+\.\d+\.\d+$/); sinkUrl = "http://" + ip + ":8080/feed/" + id;
       sourceGatherer = serviceContainer(sourceProject, sourceState, sourceReceipt.attemptId, "gatherer-server"); docker(["network", "connect", infrastructureNetwork, sourceGatherer]);
-      const response = await request(sourceConfig.gatewayPort, "/api/gatherer/sources", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ name: "recovery-cron-" + id, type: "json_api", url: sinkUrl, cron: "*/5 * * * * *", options: { llm: false, autoPush: false } }) });
+      const dormantCron = "0 0 31 2 *";
+      const response = await request(sourceConfig.gatewayPort, "/api/gatherer/sources", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ name: "recovery-cron-" + id, type: "json_api", url: sinkUrl, cron: dormantCron, options: { llm: false, autoPush: false } }) });
       assert.equal(response.status, 201); feed = await response.json(); uuid(feed.id); assert.equal(feed.status, "active");
       const collect = await request(sourceConfig.gatewayPort, "/api/gatherer/sources/" + feed.id + "/collect", { method: "POST" }); assert.equal(collect.status, 201);
+      const runBaseline = Number(sql(sourcePg, "gatherer", "SELECT count(*) FROM runs WHERE source_id='" + feed.id + "';"));
+      assert.ok(runBaseline === 1);
+      await delay(6500);
+      const runAfterQuietWindow = Number(sql(sourcePg, "gatherer", "SELECT count(*) FROM runs WHERE source_id='" + feed.id + "';"));
+      assert.equal(runAfterQuietWindow, runBaseline);
       sinkBaseline = sinkStats().count; assert.ok(sinkBaseline > 0);
-      // SourceService.create does not register new cron jobs; only bootstrap does.
-      await delay(6500); assert.equal(sinkStats().count, sinkBaseline);
-      report.outboundControl = { sourceId: feed.id, receiver: sinkName, receiverBaseline: sinkBaseline, sourcePositive: "passed", targetNegative: "pending" };
+      docker(["network", "disconnect", infrastructureNetwork, sourceGatherer]);
+      const activeCron = "*/5 * * * * *";
+      const activation = await request(sourceConfig.gatewayPort, "/api/gatherer/sources/" + feed.id, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ cron: activeCron }) });
+      assert.equal(activation.status, 200);
+      const schedule = await request(sourceConfig.gatewayPort, "/api/gatherer/meta/scheduler-status"); assert.equal(schedule.status, 200);
+      const task = (await schedule.json()).tasks.find((entry) => entry.sourceId === feed.id);
+      assert.deepEqual({ registered: task?.registered, cron: task?.cron }, { registered: true, cron: activeCron });
+      report.outboundControl = { sourceId: feed.id, receiver: sinkName, receiverBaseline: sinkBaseline, sourcePositive: "passed", targetNegative: "pending", sourceScheduler: "registered-after-network-isolation" };
     });
     let restorationStarted;
     await checked("physical-backup-restore-and-authenticated-handoff", async () => {
