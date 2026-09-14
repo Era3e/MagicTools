@@ -70,6 +70,10 @@
           "minimumTests": 4
         },
         {
+          "path": "src/requirement-execution.e2e.test.ts",
+          "minimumTests": 6
+        },
+        {
           "path": "src/requirement-revisions.e2e.test.ts",
           "minimumTests": 11
         },

@@ -2,7 +2,7 @@ import { pool } from "./db";
 import { BadRequestException, ConflictException } from "@nestjs/common";
 import { canTransition } from "./requirement-policy";
 import type { PoolClient } from "pg";
-import { getApprovalReadiness, type RequirementRisk } from "./requirement-content";
+import { getApprovalReadiness, type ExecutionContract, type RequirementRisk } from "./requirement-content";
 
 export const REQUIREMENT_STATUSES = ["waiting", "designing", "todo", "developing", "testing", "accepting", "done"] as const;
 export type RequirementStatus = (typeof REQUIREMENT_STATUSES)[number];
@@ -21,6 +21,7 @@ export interface RequirementRow {
   acceptanceCriteria: string[];
   evidenceRefs: Array<Record<string, unknown>>;
   dependencyRefs: string[];
+  executionContract: ExecutionContract | null;
   automationPolicy: "manual";
   title: string;
   description: string;
@@ -55,6 +56,7 @@ export function mapRow(r: Record<string, unknown>): RequirementRow {
     acceptanceCriteria: (r.acceptance_criteria as string[]) ?? [],
     evidenceRefs: (r.evidence_refs as Array<Record<string, unknown>>) ?? [],
     dependencyRefs: (r.dependency_refs as string[]) ?? [],
+    executionContract: (r.execution_contract as ExecutionContract | null) ?? null,
     automationPolicy: "manual",
     title: r.title as string,
     description: r.description as string,
@@ -117,12 +119,13 @@ export async function createRequirement(input: {
   acceptanceCriteria?: string[];
   evidenceRefs?: Array<Record<string, unknown>>;
   dependencyRefs?: string[];
+  executionContract?: ExecutionContract | null;
   scope?: string;
   risk?: RequirementRisk;
 }, database: Pick<PoolClient, "query"> = pool): Promise<RequirementRow> {
   const rows = await database.query(
-    "INSERT INTO requirements (title, description, source, source_ref, source_payload, priority, branch, pr_url, labels, iteration_id, project, acceptance_criteria, evidence_refs, dependency_refs, scope, risk) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING *",
-    [input.title, input.description ?? "", input.source ?? "manual", input.sourceRef ?? "", input.sourcePayload ? JSON.stringify(input.sourcePayload) : null, input.priority ?? "P2", input.branch ?? "", input.prUrl ?? "", JSON.stringify(input.labels ?? []), input.iterationId ?? null, input.project ?? "", JSON.stringify(input.acceptanceCriteria ?? []), JSON.stringify(input.evidenceRefs ?? []), JSON.stringify(input.dependencyRefs ?? []), input.scope ?? "", input.risk ?? "unassessed"]
+    "INSERT INTO requirements (title, description, source, source_ref, source_payload, priority, branch, pr_url, labels, iteration_id, project, acceptance_criteria, evidence_refs, dependency_refs, scope, risk, execution_contract) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17) RETURNING *",
+    [input.title, input.description ?? "", input.source ?? "manual", input.sourceRef ?? "", input.sourcePayload ? JSON.stringify(input.sourcePayload) : null, input.priority ?? "P2", input.branch ?? "", input.prUrl ?? "", JSON.stringify(input.labels ?? []), input.iterationId ?? null, input.project ?? "", JSON.stringify(input.acceptanceCriteria ?? []), JSON.stringify(input.evidenceRefs ?? []), JSON.stringify(input.dependencyRefs ?? []), input.scope ?? "", input.risk ?? "unassessed", input.executionContract ? JSON.stringify(input.executionContract) : null]
   );
   return mapRow(rows.rows[0]);
 }
@@ -140,6 +143,7 @@ export async function updateRequirement(id: string, patch: Partial<{
   risk: RequirementRisk;
   acceptanceCriteria: string[];
   dependencyRefs: string[];
+  executionContract: ExecutionContract | null;
 }>, options: { note?: string; origin?: "manual" | "github"; expectedRevision?: number } = {}): Promise<RequirementMutation | null> {
   const client = await pool.connect();
   try {
@@ -170,8 +174,8 @@ export async function updateRequirement(id: string, patch: Partial<{
       { at: new Date().toISOString(), from: current.status, to: next.status, ...(options.note ? { note: options.note } : {}) },
     ];
     const rows = await client.query(
-      "UPDATE requirements SET title=$1, description=$2, priority=$3, branch=$4, pr_url=$5, iteration_id=$6, status=$7, timeline=$8, project=$9, scope=$10, risk=$11, acceptance_criteria=$12, dependency_refs=$13, revision=revision+1, updated_at=now() WHERE id=$14 RETURNING *",
-      [next.title, next.description, next.priority, next.branch, next.prUrl, next.iterationId, next.status, JSON.stringify(timeline), next.project, next.scope, next.risk, JSON.stringify(next.acceptanceCriteria), JSON.stringify(next.dependencyRefs), id]
+      "UPDATE requirements SET title=$1, description=$2, priority=$3, branch=$4, pr_url=$5, iteration_id=$6, status=$7, timeline=$8, project=$9, scope=$10, risk=$11, acceptance_criteria=$12, dependency_refs=$13, execution_contract=$14, revision=revision+1, updated_at=now() WHERE id=$15 RETURNING *",
+      [next.title, next.description, next.priority, next.branch, next.prUrl, next.iterationId, next.status, JSON.stringify(timeline), next.project, next.scope, next.risk, JSON.stringify(next.acceptanceCriteria), JSON.stringify(next.dependencyRefs), next.executionContract ? JSON.stringify(next.executionContract) : null, id]
     );
     await client.query("COMMIT");
     return { ...mapRow(rows.rows[0]), ...(options.origin === "github" ? { transitionApplied: true } : {}) };

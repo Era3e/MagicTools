@@ -1,7 +1,7 @@
 import { Alert, Button, Input, Modal, Space, message } from "antd";
 import { useEffect, useState } from "react";
 import { MtStatusTag, tokens, useTheme } from "@mt/ui";
-import { api, type ApprovalPolicy, type Requirement, type RequirementContent } from "../api";
+import { api, type ApprovalPolicy, type ExecutionEligibility, type Requirement, type RequirementContent } from "../api";
 import RequirementContentView, { contentFromRequirement, RISK_LABELS } from "./RequirementContentView";
 import RequirementContentEditor from "./RequirementContentEditor";
 import RequirementHistory from "./RequirementHistory";
@@ -12,6 +12,8 @@ export default function RequirementContentPanel({ item, onUpdated }: { item: Req
   const theme = useTheme();
   const [policy, setPolicy] = useState<ApprovalPolicy | null>(null);
   const [policyError, setPolicyError] = useState("");
+  const [eligibility, setEligibility] = useState<ExecutionEligibility | null>(null);
+  const [eligibilityError, setEligibilityError] = useState("");
   const [target, setTarget] = useState<ApprovalTarget | null>(null);
   const [credential, setCredential] = useState("");
   const [reason, setReason] = useState("");
@@ -29,6 +31,13 @@ export default function RequirementContentPanel({ item, onUpdated }: { item: Req
     return () => { active = false; };
   }, []);
   useEffect(() => { if (stale) setCredential(""); }, [stale]);
+  useEffect(() => {
+    let active = true;
+    setEligibility(null); setEligibilityError("");
+    api.getExecutionEligibility(item.id).then((value) => { if (active) setEligibility(value); })
+      .catch(() => { if (active) setEligibilityError("自动执行门禁读取失败，请刷新后重试"); });
+    return () => { active = false; };
+  }, [item.id, item.revision, item.contentRevision]);
 
   const openApproval = (action: ApprovalTarget["action"]) => {
     setCredential(""); setReason(""); setError(""); setInvalidated(false);
@@ -66,6 +75,12 @@ export default function RequirementContentPanel({ item, onUpdated }: { item: Req
     </Space>
     <p>实施范围：{item.scope || "尚未填写"} · 风险：{RISK_LABELS[item.risk ?? "unassessed"]}</p>
     <p>审批只确认指定版本内容，不触发自动开发，也不代表需求已验收或部署。</p>
+    {eligibility ? <div style={{ marginTop: tokens.spacing.sm }}>
+      <p><strong>自动执行门禁：{eligibility.eligible ? "可执行" : "阻塞"}</strong></p>
+      {eligibility.blockers.length ? <p>{eligibility.blockers.join("、")}</p> : null}
+      {eligibility.dependencies.length ? <p>{eligibility.dependencies.map((dependency) => `${dependency.ref}：${dependency.state}`).join("；")}</p> : null}
+    </div> : null}
+    {eligibilityError ? <Alert type="warning" showIcon message={eligibilityError} /> : null}
     {!item.approvalReadiness?.ready ? <Alert type="warning" showIcon message={"审批前需补齐：" + (item.approvalReadiness?.missing.join("、") || "需求内容")} /> : null}
     {policyError ? <Alert type="error" message={policyError} /> : policy && !policy.configured ? <Alert type="info" message="审批尚未启用，请配置服务端审批凭证" /> : null}
     <Space wrap style={{ marginTop: tokens.spacing.md }}>

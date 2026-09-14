@@ -31,6 +31,7 @@ export interface Requirement {
   acceptanceCriteria?: string[];
   evidenceRefs?: Array<{ url: string; path: string; line: number }>;
   dependencyRefs?: string[];
+  executionContract?: ExecutionContract | null;
   automationPolicy?: "manual";
   title: string;
   description: string;
@@ -48,10 +49,20 @@ export interface Requirement {
 }
 
 export type RequirementRisk = "unassessed" | "low" | "medium" | "high";
+export interface ExecutionContract {
+  repository: string;
+  allowedPaths: string[];
+  acceptanceCommands: string[][];
+  maxDurationMinutes: number;
+  maxAttempts: number;
+  budgetCurrency: "CNY";
+  budgetAmountCents: number;
+}
 export interface RequirementContent {
   title: string; description: string; project: string; scope: string; risk: RequirementRisk;
   acceptanceCriteria: string[]; dependencyRefs: string[];
   evidenceRefs: Array<{ url: string; path: string; line: number }>;
+  executionContract: ExecutionContract | null;
 }
 export interface ContentRevision {
   contentRevision: number; content: RequirementContent; origin: "backfill" | "created" | "edited";
@@ -64,6 +75,15 @@ export interface ApprovalEvent {
 }
 export interface ApprovalPolicy { configured: boolean; actorId: string; authMethod: string; automatedExecutionEnabled: false }
 export interface ApprovalInput { expectedRevision: number; expectedContentRevision: number; reason: string }
+export interface ExecutionEligibility {
+  requirementId: string;
+  eligible: boolean;
+  contractReady: boolean;
+  dependenciesReady: boolean;
+  dependencies: Array<{ ref: string; state: string; requirementId: string | null; capabilityId: string | null }>;
+  automationPolicy: "manual";
+  blockers: string[];
+}
 
 export interface Iteration {
   id: string;
@@ -125,6 +145,7 @@ export const api = {
     method: "POST", headers: { "x-manager-approval-token": token }, body: JSON.stringify(input),
   }),
   getRequirementRevisions: (id: string, before?: number) => request<RevisionPage>("/requirements/" + id + "/revisions" + (before ? "?before=" + before : "")),
+  getExecutionEligibility: (id: string) => request<ExecutionEligibility>("/requirements/" + id + "/execution-eligibility"),
   getApprovalHistory: (id: string, before?: number) => request<{ items: ApprovalEvent[]; nextBefore: number | null }>("/requirements/" + id + "/approvals" + (before ? "?before=" + before : "")),
   previewCandidates: (input: unknown) => request<ImportPreview>("/import-batches/preview", { method: "POST", body: JSON.stringify(input) }),
   getImportBatch: (id: string) => request<ImportPreview>("/import-batches/" + id),

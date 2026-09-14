@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException, NotFoundException } from "@nestjs/common";
 import { processOutbox } from "@mt/db";
 import { GitHubClient } from "./github/client";
-import { assessorPool } from "./db";
+import { assessorPool, pool } from "./db";
 import { requirementInputSchema, requirementPatchSchema } from "./schemas";
 import { MANUAL_TRANSITIONS } from "./requirement-policy";
 import { getRequirementRevisions } from "./requirement-revisions.repo";
@@ -38,9 +38,53 @@ export class RequirementService {
     return { ...row, allowedNextStatuses: MANUAL_TRANSITIONS[row.status] };
   }
 
+  async executionEligibility(id: string) {
+    const row = await getRequirement(id);
+    if (!row) throw new NotFoundException("需求不存在");
+    const blockers: string[] = [];
+    if (row.approvalStatus !== "approved") blockers.push("当前内容未批准");
+    const contractReady = row.executionContract !== null;
+    if (!contractReady) blockers.push("缺少执行契约");
+    if (row.status !== "todo") blockers.push("需求状态不是待开发");
+
+    const dependencies: Array<{ ref: string; state: string; requirementId: string | null; capabilityId: string | null }> = [];
+    if (row.executionContract && row.dependencyRefs.length) {
+      const found = await pool.query(
+        `SELECT l.candidate_id,l.record_kind,l.requirement_id,l.capability_id,r.status
+         FROM manager_import_links l LEFT JOIN requirements r ON r.id=l.requirement_id
+         WHERE l.repository=$1 AND l.candidate_id=ANY($2::text[])`,
+        [row.executionContract.repository.toLowerCase(), row.dependencyRefs]
+      );
+      const links = new Map(found.rows.map((link) => [link.candidate_id as string, link]));
+      for (const ref of row.dependencyRefs) {
+        const link = links.get(ref);
+        if (!link) dependencies.push({ ref, state: "missing", requirementId: null, capabilityId: null });
+        else if (link.record_kind === "planned") {
+          dependencies.push({ ref, state: link.status as string, requirementId: link.requirement_id as string, capabilityId: null });
+        } else {
+          dependencies.push({ ref, state: "baseline-unverified", requirementId: null, capabilityId: link.capability_id as string });
+        }
+      }
+    }
+    const dependenciesReady = dependencies.every((dependency) => dependency.state === "done");
+    if (!dependenciesReady) {
+      blockers.push("依赖未就绪：" + dependencies.filter((dependency) => dependency.state !== "done").map((dependency) => dependency.ref).join("、"));
+    }
+    if (row.automationPolicy === "manual") blockers.push("自动执行未启用");
+    return {
+      requirementId: row.id,
+      eligible: blockers.length === 0,
+      contractReady,
+      dependenciesReady,
+      dependencies,
+      automationPolicy: row.automationPolicy,
+      blockers,
+    };
+  }
+
   create(input: unknown) {
     const parsed = requirementInputSchema.pick({ title: true, description: true, priority: true, project: true,
-      scope: true, risk: true, acceptanceCriteria: true, dependencyRefs: true }).strict().safeParse(input);
+      scope: true, risk: true, acceptanceCriteria: true, dependencyRefs: true, executionContract: true }).strict().safeParse(input);
     if (!parsed.success) throw new BadRequestException("需求参数非法：标题必填，优先级为 P0/P1/P2");
     return createRequirement({ ...parsed.data, source: "manual" });
   }

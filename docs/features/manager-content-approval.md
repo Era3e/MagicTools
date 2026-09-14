@@ -1,6 +1,6 @@
 # 需求内容修订与审批
 
-P08 在既有需求详情页提供内容编辑、版本对比和审批记录。它解决“批准了哪一版需求”的追溯问题，为后续开发任务提供明确输入。当前 `automationPolicy` 仍为 `manual`，批准不会启动开发、合并代码或部署，也不代表产品验收完成。
+P08 在既有需求详情页提供内容编辑、版本对比、审批记录和执行契约。它解决“批准了哪一版需求、允许执行到什么边界”的追溯问题，为后续开发任务提供明确输入。当前 `automationPolicy` 仍为 `manual`，批准不会启动开发、合并代码或部署，也不代表产品验收完成。
 
 ## 使用入口与前提
 
@@ -14,7 +14,8 @@ P08 在既有需求详情页提供内容编辑、版本对比和审批记录。�
 2. 填写标题、描述、所属项目和实施范围，明确本次包含的页面、行为及边界。项目使用小写字母开头的标识，例如 `manager`，可包含数字和连字符。
 3. 选择低、中或高风险。尚未评估的需求可以保存，但不能批准。
 4. 验收条件每行一条，写出能够观察或验证的结果；前置候选编号每行一个，例如 `P07`。记录依赖不等于依赖已经完成。
-5. 点击“保存内容”。保存成功后查看内容修订号；内容没有变化时不会新增修订。来源证据保留导入时的记录，当前表单不编辑证据。
+5. 需要自动执行时补齐执行契约：执行仓库、允许改动路径、验收命令、最长执行时间、最多尝试次数和预算。
+6. 点击“保存内容”。保存成功后查看内容修订号；内容没有变化时不会新增修订。来源证据保留导入时的记录，当前表单不编辑证据。
 
 如果服务器版本已经变化，页面保留你的草稿并禁用保存。先复制需要保留的内容，再点击“放弃草稿，重新载入”，核对最新内容后重新编辑。不能用旧草稿自动覆盖另一窗口的修改。
 
@@ -39,6 +40,23 @@ P08 在既有需求详情页提供内容编辑、版本对比和审批记录。�
 | `revision` | 每次有效字段修改、状态流转、批准或撤销 | 防止旧页面覆盖新数据；重复同一操作不递增 |
 | `contentRevision` | 标题、描述、项目、范围、风险、验收条件、依赖或来源证据改变 | 保存完整内容快照，绑定批准对象 |
 
+执行契约同样属于内容修订。修改允许路径、验收命令、时长、尝试次数或预算都会生成新内容版本，并让旧批准显示为“内容已变化，需重新审批”。
+
+## 填写执行契约
+
+执行契约只在需求进入自动执行队列时使用；当前系统还没有执行器，填写契约不会启动任务。字段约束如下：
+
+| 字段 | 规则 | 用途 |
+|---|---|---|
+| 执行仓库 | GitHub HTTPS 仓库地址 | 与导入候选的仓库身份匹配，解析前置编号 |
+| 允许改动路径 | 相对路径，每行一个；禁止绝对路径、`.`、`..` 和反斜杠 | 后续执行器判断代码是否越界 |
+| 验收命令 | 每行一条，按空格拆分参数；包管理器命令禁止 `exec/dlx/install`、切换目录、修改配置和路径穿越；`node` 只能指向仓库内相对 JS 入口 | 作为结构化参数执行，不拼 shell 字符串 |
+| 最长执行时间 | 1–240 分钟 | 任务超时上限 |
+| 最多尝试次数 | 1–3 次 | 重试上限 |
+| 预算 | 0.01–100000 元，页面以元输入，服务端以分为整数保存 | 后续执行成本上限 |
+
+页面会显示“自动执行门禁”。当前只要自动执行未启用，门禁就是阻塞；此外会逐条列出未批准、状态不是待开发、缺少契约、依赖缺失或未完成等原因。前置编号按同一仓库的导入记录解析：规划需求必须达到“已完成”才算就绪；能力基线只是源码观察，未经验收，不能当作已完成依赖；找不到编号时显示 missing。
+
 优先级、需求状态、分支、PR、迭代属于操作信息，改变它们不会产生内容修订或使批准失效。内容变化后，旧批准保留但显示“内容已变化，需重新审批”。即使后来把文字改回旧内容，也不会自动继承旧批准。
 
 旧客户端暂可省略 PATCH 的 `expectedRevision`，但不能获得页面快照冲突保护；数据库触发器仍会为它的实际内容变更记录新修订。审批请求必须同时携带两个预期版本。
@@ -60,7 +78,7 @@ P08 在既有需求详情页提供内容编辑、版本对比和审批记录。�
 
 真实凭证只由受信配置注入，不应出现在 Git、日志、截图或分享文档中。更换凭证并重启可以撤换访问凭证，既有审批事件保留。生产访问仍需使用现有网关认证和 HTTPS；这一功能没有补齐全平台登录与编辑权限。
 
-升级前备份 Manager 数据库。启动时顺序执行迁移 006/007：为存量需求回填当前内容、建立内容快照与审批事件表，以及版本外键和数据库触发器。运行期间同一行的内容与审批在事务锁下更新。应用没有编辑历史快照或审批事件的 API，但数据库管理员仍可修改数据库，不应宣称审计不可篡改。
+升级前备份 Manager 数据库。启动时顺序执行迁移 006/007/008：为存量需求回填当前内容、建立内容快照与审批事件表、版本外键、数据库触发器和执行契约字段。存量需求的执行契约为空，必须在补齐并重新审批后才能进入未来自动执行队列。运行期间同一行的内容与审批在事务锁下更新。应用没有编辑历史快照或审批事件的 API，但数据库管理员仍可修改数据库，不应宣称审计不可篡改。
 
 代码回滚不会自动回滚数据库。优先保留兼容新增字段和表，旧程序的内容更新仍由触发器记录；如需回滚数据，使用升级前备份并核对升级后的写入，不能直接删除新表来回滚。
 
@@ -73,14 +91,15 @@ P08 在既有需求详情页提供内容编辑、版本对比和审批记录。�
 | PATCH | `/requirements/:id` | 内容白名单字段加 `expectedRevision`；冲突返回 409 |
 | GET | `/requirements/:id/revisions` | `limit` 默认 20、最大 100；`before` 为正整数内容版本；返回 total、items、nextBefore |
 | GET | `/requirements/:id/approvals` | 同样分页；`before` 为事件的 requirementRevision |
+| GET | `/requirements/:id/execution-eligibility` | 返回 eligible、contractReady、dependenciesReady、依赖定位与 blockers；当前 automationPolicy 固定为 manual |
 | GET | `/meta/approval-policy` | 只公开 configured、actorId、authMethod 和自动执行关闭标志，不返回凭证 |
 | POST | `/requirements/:id/approve-revision` | 请求头 `x-manager-approval-token`；JSON 为 expectedRevision、expectedContentRevision、可选 reason |
 | POST | `/requirements/:id/revoke-approval` | 同上；重复请求幂等，撤销后重放旧批准不能重新激活 |
 
-服务端实现位于 `apps/manager/server/src/requirement-content.ts`、`requirement-revisions.repo.ts`、`requirement-approval.service.ts` 与 `migrations/006_requirement_content_revisions.sql`、`007_requirement_approvals.sql`。前端为 `RequirementContentPanel`、`RequirementContentEditor`、`RequirementHistory`、`RequirementContentView`。
+服务端实现位于 `apps/manager/server/src/requirement-content.ts`、`requirement-revisions.repo.ts`、`requirement-approval.service.ts`、`requirement.service.ts` 与 `migrations/006_requirement_content_revisions.sql`、`007_requirement_approvals.sql`、`008_requirement_execution_contract.sql`。前端为 `RequirementContentPanel`、`RequirementContentEditor`、`RequirementHistory`、`RequirementContentView`。
 
-关键验证：`pnpm test:manager:integration`、Manager Web 组件测试，以及 `e2e/tests/manager-approval.spec.ts`。浏览器套件要求服务端和测试进程共用临时审批凭证；CI 在启动服务前生成随机值，无鉴权旁路。该验证覆盖两个视口的真实操作，不证明真实模型效果或生产部署完成。
+关键验证：`pnpm test:manager:integration`（含 `requirement-execution.e2e.test.ts`）、Manager Web 组件测试，以及 `e2e/tests/manager-approval.spec.ts`。浏览器套件要求服务端和测试进程共用临时审批凭证；CI 在启动服务前生成随机值，无鉴权旁路。该验证覆盖两个视口的真实操作，不证明真实模型效果或生产部署完成。
 
 ## 后续执行门禁
 
-定时开发任务还需要独立实现：显式允许自动执行、需求依赖就绪、原子领取与租约、预算和重试上限、隔离工作区、测试报告、PR 结果回写及验收通知。执行时必须再次核对批准绑定的内容版本，不能仅凭“待开发”状态启动任务。
+定时开发任务还需要独立实现：原子领取与租约、隔离工作区、按允许路径审查产物、执行验收命令、测试报告、PR 结果回写及验收通知。执行器领取时必须再次核对批准绑定的内容版本和执行门禁，不能仅凭“待开发”状态启动任务；预算、尝试次数和时长达到上限即停止。

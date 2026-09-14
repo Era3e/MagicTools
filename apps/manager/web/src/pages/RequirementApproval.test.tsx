@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import RequirementDetail from "./RequirementDetail";
 import { api } from "../api";
 import { contentFromRequirement } from "./RequirementContentView";
@@ -8,8 +8,14 @@ import { contentFromRequirement } from "./RequirementContentView";
 vi.mock("../api", () => ({ api: {
   getRequirement: vi.fn(), patchRequirement: vi.fn(), refreshPr: vi.fn(),
   getApprovalPolicy: vi.fn(), approveRevision: vi.fn(), revokeApproval: vi.fn(),
-  getRequirementRevisions: vi.fn(), getApprovalHistory: vi.fn(),
+  getRequirementRevisions: vi.fn(), getApprovalHistory: vi.fn(), getExecutionEligibility: vi.fn(),
 } }));
+beforeEach(() => {
+  vi.mocked(api.getExecutionEligibility).mockResolvedValue({
+    requirementId: "req-approval", eligible: false, contractReady: false, dependenciesReady: true,
+    dependencies: [], automationPolicy: "manual", blockers: ["自动执行未启用"],
+  });
+});
 afterEach(() => { cleanup(); vi.resetAllMocks(); });
 
 const exampleRequirement = {

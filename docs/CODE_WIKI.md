@@ -815,7 +815,7 @@ export const APPS: AppEntry[] = [
 
 候选导入支持 `magictools-requirement-candidates/0.1`：baseline 保存为 capabilities，planned 保存为 waiting/manual 需求；源码观察不等于已验收或已部署。接口、来源与大小上限见 [Manager 候选导入说明](features/manager-candidate-import.md)。关键数据库验证使用 `pnpm test:manager:integration`，并由本地与 CI 共用的 qa:gate 强制执行。
 
-P08 通过迁移 006/007 增加 `contentRevision` 和快照、审批事件。内容八字段改变时递增内容版本，操作信息变更只影响并发版本；批准绑定指定内容，变更后显示 outdated。详情页支持内容编辑、冲突草稿恢复、任意已加载版本对比、审批与撤销及分页审计。审批身份由 `MANAGER_APPROVAL_ACTOR` 配置，`MANAGER_APPROVAL_TOKEN` 未配置时拒绝审批；客户端不能伪造身份。当前仍为 manual，不触发执行、合并、验收或部署。迁移只回填升级时快照，不编造此前历史。操作、配置、API 和验证说明见 [需求内容修订与审批](features/manager-content-approval.md)。
+P08 通过迁移 006/007/008 增加 `contentRevision`、快照、审批事件和执行契约。内容字段或执行契约改变时递增内容版本，操作信息变更只影响并发版本；批准绑定指定内容，变更后显示 outdated。详情页支持内容编辑、冲突草稿恢复、任意已加载版本对比、审批与撤销、分页审计及执行门禁展示。执行契约包含仓库、允许路径、结构化验收命令、时长、尝试次数和分单位预算；依赖按同仓库导入链接解析，只有规划需求 `done` 视为就绪。审批身份由 `MANAGER_APPROVAL_ACTOR` 配置，`MANAGER_APPROVAL_TOKEN` 未配置时拒绝审批；客户端不能伪造身份。当前仍为 manual，不触发执行、合并、验收或部署。迁移只回填升级时快照，不编造此前历史。操作、配置、API 和验证说明见 [需求内容修订与审批](features/manager-content-approval.md)。
 
 ---
 

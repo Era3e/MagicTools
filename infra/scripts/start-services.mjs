@@ -55,6 +55,7 @@ function start(name, cwd, cmd, args, env = {}) {
 // 本地跑全量 e2e 必须与 CI 相同的桩开关，否则 gatherer/investigator/assistant
 // 会真拉 RSS / 真调飞书 / 真查 cybercloud，导致 API 链路用例 500/502。
 const MT_LLM_STUB = { MT_LLM_STUB: "1" };
+const SOURCE_SMOKE_DATABASE_URL = process.env.MT_SOURCE_SMOKE_DATABASE_URL?.replace(/\/+$/, "");
 const SERVER_ENV = {
   gatherer:     { FEED_STUB: "1", ...MT_LLM_STUB },
   investigator: { FEISHU_STUB: "1", ...MT_LLM_STUB },
@@ -67,11 +68,23 @@ const SERVER_ENV = {
   assistant:    { CYBERCLOUD_STUB: "1", ACTION_STUB: "1", CLARIFY_STUB_CONFIDENCE: "0.9", ...MT_LLM_STUB },
   applicant:    { ...MT_LLM_STUB },
 };
+function serverEnvironment(app) {
+  const env = { ...(SERVER_ENV[app] ?? {}) };
+  if (SOURCE_SMOKE_DATABASE_URL) env.DATABASE_URL = `${SOURCE_SMOKE_DATABASE_URL}/${app}_e2e`;
+  else if (app === "manager") env.DATABASE_URL = "postgres://postgres:postgres@127.0.0.1:5432/manager_e2e";
+  if (SOURCE_SMOKE_DATABASE_URL) {
+    if (app === "assessor") env.INVESTIGATOR_DATABASE_URL = `${SOURCE_SMOKE_DATABASE_URL}/investigator_e2e`;
+    if (app === "manager") env.ASSESSOR_DATABASE_URL = `${SOURCE_SMOKE_DATABASE_URL}/assessor_e2e`;
+    if (app === "scholar") env.GATHERER_DATABASE_URL = `${SOURCE_SMOKE_DATABASE_URL}/gatherer_e2e`;
+    if (app === "assistant") env.SCHOLAR_DATABASE_URL = `${SOURCE_SMOKE_DATABASE_URL}/scholar_e2e`;
+  }
+  return env;
+}
 
 const procs = [];
 procs.push(start("gateway", join(ROOT, "apps", "gateway"), "node", ["dist/index.js"]));
 for (const [app, webPort, serverPort] of APPS) {
-  procs.push(start(`${app}-server`, join(ROOT, "apps", app, "server"), "node", ["dist/main.js"], SERVER_ENV[app] ?? {}));
+  procs.push(start(`${app}-server`, join(ROOT, "apps", app, "server"), "node", ["dist/main.js"], serverEnvironment(app)));
   // 用 pnpm.cmd exec vite preview --host 127.0.0.1 --port X --strictPort
   procs.push(start(`${app}-web`, join(ROOT, "apps", app, "web"), "pnpm.cmd", [
     "exec",
