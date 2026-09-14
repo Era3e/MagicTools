@@ -27,6 +27,45 @@ export interface AnalysisRequest {
   updatedAt: string;
 }
 
+export type EvidenceCategory = "routes" | "controller" | "service" | "schema" | "tests";
+
+export interface EvidencePointer {
+  commit: string;
+  path: string;
+  startLine: number;
+  endLine: number;
+  url: string;
+  excerpt: string;
+}
+
+export interface EvidenceCandidate {
+  id: string;
+  taskId: string;
+  title: string;
+  description: string;
+  motivation: "unknown";
+  category: EvidenceCategory;
+  path: string;
+  contentSha256: string;
+  evidence: EvidencePointer;
+  createdAt: string;
+}
+
+export interface EvidenceTask {
+  id: string;
+  repo: string;
+  commitSha: string;
+  commitMessage: string;
+  totalFiles: number;
+  selectedFiles: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EvidenceTaskListItem extends EvidenceTask {
+  candidateCount: number;
+}
+
 export const api = {
   pollInbox: () => request<{ consumed: number; created: number; skipped: number }>("/inbox/poll", { method: "POST" }),
   listRequests: (status?: string) => request<AnalysisRequest[]>(status ? "/requests?status=" + encodeURIComponent(status) : "/requests"),
@@ -38,4 +77,12 @@ export const api = {
     request<AnalysisRequest>("/requests/" + id + "/review", { method: "POST", body: JSON.stringify(input) }),
   push: (id: string) => request<{ pushed: boolean; eventId: string }>("/requests/" + id + "/push", { method: "POST" }),
   githubStatus: () => request<{ tokenConfigured: boolean; stub?: boolean }>("/meta/github-status"),
+  reverseEngineer: (input: { repo: string; commitSha: string }) =>
+    request<{ created: boolean; task: EvidenceTask; candidates: EvidenceCandidate[] }>("/repository-evidence/reverse-engineer", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  listEvidenceTasks: (limit = 50) => request<{ items: EvidenceTaskListItem[] }>(`/repository-evidence/tasks?limit=${limit}`),
+  getEvidenceTask: (id: string) =>
+    request<{ task: EvidenceTask; candidates: EvidenceCandidate[] }>("/repository-evidence/tasks/" + id),
 };

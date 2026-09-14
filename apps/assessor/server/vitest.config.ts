@@ -6,6 +6,6 @@ export default defineConfig({
     setupFiles: ["../../../infra/testing/unit-database-boundary.mjs"],
     fileParallelism: false,
     // 关键数据库套件由 test:db 在独立测试库强制执行，普通单测不依赖数据库。
-    exclude: [...configDefaults.exclude, "src/request.e2e.test.ts"],
+    exclude: [...configDefaults.exclude, "src/request.e2e.test.ts", "src/repository-evidence.e2e.test.ts"],
   },
 });

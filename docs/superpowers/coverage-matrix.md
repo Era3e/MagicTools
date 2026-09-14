@@ -47,6 +47,7 @@
 | S6 | 审核通过推送 Manager（D1） | spec 3.5, state.md fix-d1-d3 | outbox append requirement.created + ReviewComment + 收件箱文案 | ✅ 已实现 | request.e2e.test.ts |
 | S7 | 前台文书风报头 | PR #29 | web/App.tsx BRIEF_THEME（直跳后台） | ✅ 已实现 | — |
 | S8 | 幂等入库（重复推送不重复创建） | spec 3.1 幂等键 | RequestRepo INSERT ON CONFLICT (idempotency_key) | ✅ 已实现 | unit |
+| S9 | 仓库证据采集与需求反向整理 | P10 | server/repository-evidence.* + migrations/004 + web/pages/RepositoryEvidence.tsx | ✅ 已实现：按提交筛选五类源码、行级证据、unknown动机、repo+SHA幂等 | github/client.test.ts + repository-evidence.e2e.test.ts + assessor.spec.ts |
 
 ## 4. Manager（管理 · 需求主线核心）
 

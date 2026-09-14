@@ -44,7 +44,8 @@ const APPS = [
   { name: 'investigator', web: 'apps/investigator/web/src/App.tsx', routes: {
     '/admin/surveys': 'investigator-admin.html', '/admin/surveys/:id': 'investigator-survey-detail.html' } },
   { name: 'assessor', web: 'apps/assessor/web/src/App.tsx', routes: {
-    '/admin/requests': 'assessor-admin.html', '/admin/requests/:id': 'assessor-request-detail.html' } },
+    '/admin/requests': 'assessor-admin.html', '/admin/requests/:id': 'assessor-request-detail.html',
+    '/admin/repository-evidence': 'assessor-repository-evidence.html' } },
 ];
 /* 前台壳设计页（UserShell）与后台壳设计页（AdminShell 业务导航） */
 const FRONT_PAGES = ['applicant-front.html', 'scholar-front.html', 'assistant-front.html', 'assistant-feedback.html',
@@ -54,7 +55,8 @@ const FRONT_PAGES = ['applicant-front.html', 'scholar-front.html', 'assistant-fr
 const ADMIN_PAGES = ['applicant-admin.html', 'scholar-admin.html', 'scholar-settings-admin.html',
   'assistant-admin.html', 'assistant-feedback-admin.html', 'manager-admin.html', 'manager-iteration-admin.html',
   'designer-admin.html', 'designer-history-admin.html', 'gatherer-admin.html', 'gatherer-source-detail.html',
-  'investigator-admin.html', 'investigator-survey-detail.html', 'assessor-admin.html', 'assessor-request-detail.html'];
+  'investigator-admin.html', 'investigator-survey-detail.html', 'assessor-admin.html', 'assessor-request-detail.html',
+  'assessor-repository-evidence.html'];
 
 const results = [];
 const ok = (id, msg) => results.push({ id, level: 'PASS', msg });

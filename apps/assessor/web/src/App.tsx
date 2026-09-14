@@ -2,6 +2,7 @@ import { Navigate, Route, BrowserRouter, Routes, useLocation, useNavigate } from
 import { AdminShell, UserShell, appAccent } from "@mt/ui";
 import RequestList from "./pages/RequestList";
 import RequestDetail from "./pages/RequestDetail";
+import RepositoryEvidence from "./pages/RepositoryEvidence";
 
 const ACCENT = appAccent("assessor");
 
@@ -17,7 +18,10 @@ const BRIEF_THEME = {
   panel: "#ffffff",
 };
 
-const ADMIN_NAV = [{ key: "/admin/requests", label: "分析请求审批" }];
+const ADMIN_NAV = [
+  { key: "/admin/requests", label: "分析请求审批" },
+  { key: "/admin/repository-evidence", label: "仓库证据" },
+];
 
 function AdminRoutes() {
   return (
@@ -25,6 +29,7 @@ function AdminRoutes() {
       <Route path="/admin" element={<Navigate to="/admin/requests" replace />} />
       <Route path="/admin/requests" element={<RequestList />} />
       <Route path="/admin/requests/:id" element={<RequestDetail />} />
+      <Route path="/admin/repository-evidence" element={<RepositoryEvidence />} />
     </Routes>
   );
 }
@@ -39,7 +44,7 @@ function Shell() {
       <AdminShell
         title="评审工坊"
         navItems={ADMIN_NAV}
-        selectedKey="/admin/requests"
+        selectedKey={location.pathname.startsWith("/admin/repository-evidence") ? "/admin/repository-evidence" : "/admin/requests"}
         onNavigate={(key) => navigate(key)}
         eyebrow={ACCENT.controlEyebrow ?? ACCENT.controlKey}
       >

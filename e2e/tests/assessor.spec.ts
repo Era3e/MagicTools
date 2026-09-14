@@ -68,6 +68,24 @@ test("assessor 页面渲染 + 跳转详情 副作用：URL 变化", async ({ pag
   await expect(page).toHaveURL(/\/assessor\/requests\/.+/, { timeout: 8000 });
 });
 
+test("assessor 仓库证据反向整理：API候选与页面证据链接", async ({ page, request }) => {
+  const collected = await request.post("/api/assessor/repository-evidence/reverse-engineer", {
+    data: { repo: "Era3e/MagicTools", commitSha: "f".repeat(40) },
+  });
+  expect(collected.ok()).toBeTruthy();
+  const result = await collected.json();
+  expect(result.task.totalFiles).toBe(7);
+  expect(result.task.selectedFiles).toBe(6);
+  expect(result.candidates).toHaveLength(6);
+  expect(result.candidates.every((item: { motivation: string }) => item.motivation === "unknown")).toBeTruthy();
+
+  await page.goto("/assessor/admin/repository-evidence");
+  await expect(page.getByRole("heading", { name: "仓库证据反向整理" })).toBeVisible();
+  await page.locator("tr", { hasText: "Era3e/MagicTools" }).first().click();
+  await expect(page.getByText("接口行为：src/export.controller.ts")).toBeVisible();
+  await expect(page.getByRole("link", { name: /src\/export\.controller\.ts#L1-L/ })).toBeVisible();
+});
+
 test("assessor D1 推送 Manager 副作用：RequestDetail 按钮点后 POST push + 收件箱提示", async ({ page, request }) => {
   // 造数据
   const survey = await request.post("/api/investigator/surveys", {

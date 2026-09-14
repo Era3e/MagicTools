@@ -369,6 +369,29 @@
       }
     },
     {
+      "id": "page-assessor-repository-evidence",
+      "title": "评审后台 · 仓库证据",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1789376000000,
+      "canvasData": {
+        "x": 0,
+        "y": 5438,
+        "group": 8,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1015,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-p10-evidence",
+          "measuredAt": 1789376000000
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/assessor-repository-evidence.html",
+        "interactions": []
+      }
+    },
+    {
       "id": "page-gatherer-pause-demo",
       "title": "失败演示 · 采集源自动暂停",
       "type": "page",
