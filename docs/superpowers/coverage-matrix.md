@@ -74,13 +74,14 @@
 |---|-------|----------|-------------|------|---------|
 | G1 | 三类源（RSS / JSON / 网页选择器） | spec 3.1 | server/feed/parser.ts（rss-parser + 原生 JSON + cheerio） | ✅ 已实现 | parser.test.ts + source.e2e.test.ts |
 | G2 | 试采 | spec 3.1 | source.service.ts testCollect() | ✅ 已实现 | source.e2e.test.ts |
-| G3 | Cron 调度（node-cron） | spec 3.2 | server/scheduler.ts + SchedulerService | ✅ 已实现（FEED_STUB） | scheduler.test.ts |
+| G3 | Cron 调度与运行回执（node-cron） | spec 3.2 | server/scheduler.ts + source.controller.ts + item.repo.ts | ✅ 已实现：API 变更后刷新注册、返回实际注册状态与最近 run 终态/计数 | scheduler.test.ts + source.e2e.test.ts |
 | G4 | 管道：解析→去重→LLM 富化→入库 | spec 3.3 | collect.service.ts pipeline() | ✅ 已实现 | parser.test.ts + unit |
 | G5 | 去重（contentFingerprint） | spec 3.3 | @mt/utils.contentFingerprint + source.repo.ts 唯一索引 | ✅ 已实现 | unit |
 | G6 | LLM 富化（title/summary/content/category/keywords） | spec 3.3 | llm.ts enrichItem() | ✅ 已实现 | llm.test.ts |
-| G7 | 推送 Scholar（knowledge.item.collected）D1 | spec 3.4 + state.md | ItemList.tsx 按钮 + gatherer/outbox + 收件箱文案 | ✅ 已实现 | gatherer.spec.ts |
+| G7 | 推送 Scholar（knowledge.item.collected）D1 | spec 3.4 + state.md | ItemList.tsx 按钮 + collect.service.ts + gatherer/outbox + 收件箱文案 | ✅ 已实现：手动/自动推送、item ID 稳定事件键、已推送条目跳过 | gatherer.spec.ts + source.e2e.test.ts |
 | G8 | 前台报刊风报头 | PR #29 | web/App.tsx PRESS_THEME（直跳后台） | ✅ 已实现 | — |
 | G9 | 后台 SourceList 编辑列（D3） | state.md fix-d1-d3 | web/pages/SourceList.tsx Modal + PATCH /sources/:id | ✅ 已实现 | — |
+| G10 | 调度实况与死信追踪 | P13 | server/scheduler.ts + operations.repo.ts + web/pages/SourceList.tsx | ✅ 已实现：注册状态、最近 run 回执、死信事件状态与尝试次数 | SourceList.test.tsx + source.e2e.test.ts |
 
 ## 6. Scholar（知识 · 知识主线第二环）
 

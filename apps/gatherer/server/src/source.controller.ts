@@ -1,6 +1,7 @@
 import { BadRequestException, Body, Controller, Get, Inject, Param, Patch, Post, Query } from "@nestjs/common";
 import { CollectService } from "./collect.service";
-import { schedulerStatus } from "./scheduler";
+import { listDeadLetters } from "./operations.repo";
+import { refreshScheduler, schedulerStatus } from "./scheduler";
 import { SourceService } from "./source.service";
 
 @Controller()
@@ -21,13 +22,17 @@ export class SourceController {
   }
 
   @Post("sources")
-  create(@Body() body: { name: string; type?: string; url?: string; cron?: string; options?: Record<string, unknown> }) {
-    return this.service.create(body);
+  async create(@Body() body: { name: string; type?: string; url?: string; cron?: string; options?: Record<string, unknown> }) {
+    const row = await this.service.create(body);
+    await refreshScheduler(this.collectService);
+    return row;
   }
 
   @Patch("sources/:id")
-  update(@Param("id") id: string, @Body() body: Record<string, unknown>) {
-    return this.service.update(id, body as never);
+  async update(@Param("id") id: string, @Body() body: Record<string, unknown>) {
+    const row = await this.service.update(id, body as never);
+    await refreshScheduler(this.collectService);
+    return row;
   }
 
   @Post("sources/:id/test")
@@ -56,5 +61,10 @@ export class SourceController {
   @Get("meta/scheduler-status")
   schedulerStatus() {
     return schedulerStatus();
+  }
+
+  @Get("meta/dead-letters")
+  deadLetters() {
+    return listDeadLetters();
   }
 }
