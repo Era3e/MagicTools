@@ -1,4 +1,4 @@
-// 16 页映射表唯一来源：视觉基线（_visual.spec）与响应式巡检（responsive.spec）共用。
+// 20 页映射表唯一来源：视觉基线（_visual.spec）与响应式巡检（responsive.spec）共用。
 // - name：基线文件名片段与巡检用例名
 // - path：网关代理路径
 // - anchor：页面加载完成后等待的锚点文案（确保内容渲染完再截图/测量）
@@ -14,6 +14,8 @@ export interface VisualPage {
   mask?: string;
   waitFor?: string;
   settleMs?: number;
+  sampleRoute?: "managerDetail" | "assistantConversation";
+  coreText?: string | RegExp;
 }
 
 export const PAGES: VisualPage[] = [
@@ -35,13 +37,15 @@ export const PAGES: VisualPage[] = [
     name: "front-scholar-entry-list",
     path: "/scholar/entries",
     anchor: /知识书院|馆 藏 目 录/,
-    mask: "[data-testid=entry-rows], [data-testid=entry-count]",
+    waitFor: "[data-testid=entry-rows]",
+    coreText: "MagicTools 用户帮助：发布与验证流程",
   },
   {
     name: "front-manager-requirement-board",
     path: "/manager/requirements",
     anchor: /交付驾驶舱|需求在轨/,
-    mask: "[data-testid=board-lanes], [data-testid=board-total]",
+    waitFor: "[data-testid=board-lanes]",
+    coreText: "P14 样板：真实页面与稳定业务数据",
   },
   {
     name: "front-assistant-chat",
@@ -129,5 +133,19 @@ export const PAGES: VisualPage[] = [
     anchor: /ADMIN · REVIEWS|评审请求/,
     waitFor: ".ant-table",
     settleMs: 9000,
+  },
+  {
+    name: "sample-manager-detail",
+    path: "/manager/requirements",
+    anchor: /FLIGHT LOG · 需求档案/,
+    sampleRoute: "managerDetail",
+    coreText: "发布看板、对话与帮助目录三类真实页面样板",
+  },
+  {
+    name: "sample-assistant-long-answer",
+    path: "/assistant/chat",
+    anchor: /智能助手|有问题，就直接问/,
+    sampleRoute: "assistantConversation",
+    coreText: "MagicTools 用户帮助：发布与验证流程",
   },
 ];

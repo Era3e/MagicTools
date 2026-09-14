@@ -29,6 +29,18 @@ describe("llmChat", () => {
     expect(json.intent).toBe("data_query");
   });
 
+  it("桩模式知识回答保留长上下文供页面样板使用", async () => {
+    vi.stubEnv("MT_LLM_STUB", "1");
+    const context = "知识条目：\n1. MagicTools 用户帮助：发布流程包含准备、验证、发布、回读四个阶段。\n用户问题：发布流程是什么";
+    const out = await llmChat([
+      { role: "system", content: "输出 JSON：{answer: ...}。{answer}" },
+      { role: "user", content: context },
+    ]);
+    const json = JSON.parse(out) as { answer: string };
+    expect(json.answer).toContain("MagicTools 用户帮助");
+    expect(json.answer.length).toBeGreaterThan(120);
+  });
+
   it("真实模式调用 chat/completions 并解析意图", async () => {
     const fetchMock = vi.fn(async () =>
       new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify({ intent: "product_inquiry" }) } }] }), { status: 200 })

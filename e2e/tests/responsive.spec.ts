@@ -10,8 +10,12 @@ const VIEWPORTS = [
 ] as const;
 
 for (const vp of VIEWPORTS) {
-  for (const { name, path, anchor } of PAGES) {
+  for (const { name, path, anchor, sampleRoute } of PAGES) {
     test(`[${vp.label}] [${name}] 无横向溢出`, async ({ page }) => {
+      test.skip(
+        Boolean(sampleRoute),
+        "动态样板路由由 _visual.spec.ts 初始化后填充；响应式几何检查不在本套件重复造数"
+      );
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await page.goto(path, { waitUntil: "networkidle", timeout: 45000 });
 

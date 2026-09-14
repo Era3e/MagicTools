@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { PAGES } from "../fixtures/pages";
+import { sampleRoutes, seedBusinessSamples } from "../fixtures/business-samples";
 
 // D-18 跨平台基线：守卫改为「运行平台上是否已存在对应基线文件」——
 // snapshotPathTemplate 含 {platform}，win32/linux 基线独立文件互不干扰。
@@ -13,12 +14,12 @@ import { PAGES } from "../fixtures/pages";
 const isUpdateMode = process.env.PLAYWRIGHT_UPDATE === "1";
 const platform = process.platform as string;
 
-// 16 页映射表（含锚点与 mask）已抽至 ../fixtures/pages，与 responsive.spec 共享唯一来源。
+// 20 页映射表（含锚点、mask 与核心业务断言）已抽至 ../fixtures/pages，与 responsive.spec 共享唯一来源。
 
 // 基线探测：递归扫 snapshots 目录按平台后缀计数。
 // 不按文件名拼接探测——Playwright 会 sanitize 测试名（空格/中括号→'-'，中文与→保留），
 // 拼路径易与实际产物名错位；按「-<platform>.png 后缀数量」判断与命名规则完全解耦。
-// 基线总是整批生成（16 张），≥16 视为该平台基线齐备。
+// 基线总是整批生成（20 张），≥20 视为该平台基线齐备。
 function countPlatformBaselines(platform: string): number {
   const snapshotDir = join(__dirname, "..", "snapshots");
   if (!existsSync(snapshotDir)) return 0;
@@ -39,10 +40,19 @@ test.skip(
   `${platform} 平台基线不足（${platformBaselineCount}/${PAGES.length} 张 -${platform}.png），视觉快照跳过；基线生成见 .github/workflows/visual-baseline.yml`
 );
 
-for (const { name, path, anchor, mask, waitFor, settleMs } of PAGES) {
+test.describe.configure({ mode: "serial" });
+
+test("视觉快照：初始化 P14 样板业务数据", async ({ request }) => {
+  const routes = await seedBusinessSamples(request);
+  expect(routes.managerDetail).toMatch(/\/manager\/requirements\/[0-9a-f-]{36}$/);
+  expect(routes.assistantConversation).toContain("/assistant/chat?conversation=");
+});
+
+for (const { name, path, anchor, mask, waitFor, settleMs, sampleRoute, coreText } of PAGES) {
   test(`视觉快照 [${name}] → ${path}`, async ({ page }) => {
-    // 1. 进入页面，等待网络空闲 + load 事件
-    await page.goto(path, { waitUntil: "networkidle", timeout: 45000 });
+    // 1. 进入页面，等待网络空闲 + load 事件；样板详情/会话使用初始化阶段拿到的真实 ID。
+    const target = sampleRoute ? sampleRoutes[sampleRoute] : path;
+    await page.goto(target, { waitUntil: "networkidle", timeout: 45000 });
 
     // 2. 如果定义了锚点文案，等它可见（确保外壳挂载完）。
     //    fail fast：全页范围内锚点失配立即失败并点名 fixtures——静默降级（main 失败换全页再等 8s）
@@ -58,6 +68,15 @@ for (const { name, path, anchor, mask, waitFor, settleMs } of PAGES) {
     //     容器出现（.ant-table 空库也有表头），替代 fail fast 前靠 8s 锚点超时提供的数据缓冲。
     if (waitFor) {
       await page.locator(waitFor).first().waitFor({ state: "visible", timeout: 8000 });
+    }
+
+    // 2.7 核心业务区防回归：样板页必须看到固定业务内容。遮罩只能用于时间等噪声，
+    //     不能把看板泳道、馆藏列表或长答案整体盖掉。
+    if (coreText) {
+      await expect(
+        page.getByText(coreText).first(),
+        `P14 核心业务内容缺失（页面回归或样板数据失败）：${coreText}`
+      ).toBeVisible({ timeout: 8000 });
     }
 
     // 2.6 并发写收尾：与功能用例共享库的页面，等待并发写用例（创建/更新流程）收尾，

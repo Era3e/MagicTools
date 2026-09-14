@@ -55,7 +55,20 @@ function stubPayloadFor(messages: ChatMessage[]): Record<string, unknown> {
     return { answer: "排查建议：1) 检查异常服务的日志（.run-logs）与数据库连接；2) 确认 Postgres 容器健康；3) 重启对应服务后观察 /health 状态。" };
   }
   if (sysText.includes("{answer")) {
-    return { answer: "桩回答：基于圈定知识的回答。" };
+    const userText = messages
+      .filter((m) => m.role === "user")
+      .map((m) => (typeof m.content === "string" ? m.content : ""))
+      .join("\n");
+    return {
+      answer: [
+        "桩回答：基于圈定知识的回答。",
+        "1. 发布前确认变更范围、验收命令和回退方案。",
+        "2. 发布中固定制品摘要并记录回执。",
+        "3. 发布后回读健康、数据和关键用户路径。",
+        "引用上下文：",
+        userText,
+      ].join("\n"),
+    };
   }
   if (sysText.includes("{params")) {
     return { endpoint: "/api/v1/data/query", params: { metric: "sales" } };
