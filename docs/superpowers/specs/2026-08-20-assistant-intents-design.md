@@ -1,5 +1,7 @@
 # Assistant 意图扩展设计（process_execution / trouble_shooting / complaint_feedback）
 
+> 设计状态：历史设计基线。当前实现以源码、docs/code-wiki/ 与 docs/generated/ 为准，本文件保留当时的设计动机和验收边界。
+
 - 文档类型：子项目设计文档（spec）
 - 创建日期：2026-08-20
 - 状态：✅ 已确认（2026-08-20 用户确认 E1~E3 三项默认值）

@@ -1,5 +1,6 @@
 # Manager（管理者）子系统设计（MVP）
 
+> 设计状态：历史设计基线。当前实现以源码、docs/code-wiki/ 与 docs/generated/ 为准，本文件保留当时的设计动机和验收边界。
 > 本文记录 2026-08-19 的历史 MVP。2026-09-11 的状态/导入行为以 [候选导入说明](../../features/manager-candidate-import.md) 为准，内容修订和审批以 [P08 功能说明](../../features/manager-content-approval.md) 为准。
 
 - 文档类型：子项目设计文档（spec）

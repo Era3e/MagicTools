@@ -59,6 +59,17 @@ jobs:
           restore-keys: |
             turbo-${{ runner.os }}-
       - run: pnpm install --frozen-lockfile
+      - name: 检查接口与功能文档影响证据（PR 事件）
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          curl -fsSL -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${REPOSITORY}/pulls/${PR_NUMBER}/files?per_page=100" \
+            | node -e "let text='';process.stdin.on('data',chunk=>text+=chunk).on('end',()=>{for(const file of JSON.parse(text))console.log(file.filename)})" \
+            | node infra/scripts/lib/docs-facts.mjs --impact-files
       - run: pnpm qa:gate
       - name: 保存候选提交的质量证据（失败也保留）
         if: always()

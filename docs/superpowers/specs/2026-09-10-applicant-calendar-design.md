@@ -1,5 +1,6 @@
 # D-15 投递日历设计（Applicant 前台跨岗位视角）
 
+> 设计状态：历史设计基线。当前实现以源码、docs/code-wiki/ 与 docs/generated/ 为准，本文件保留当时的设计动机和验收边界。
 > 来源：docs/memory/mvp-deferred.md D-15（规划遗漏，P2）——MVP 只有单岗位面试 Tab 列表 + InterviewPage 单份复盘，无跨岗位面试时间轴/日历。
 > 状态：已评审（2026-09-10，方案 B 轻量 schema 扩展 + 前台日历页，用户拍板）。
 
