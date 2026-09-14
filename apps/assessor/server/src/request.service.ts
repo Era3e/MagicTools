@@ -1,5 +1,5 @@
 import { Injectable, BadGatewayException, BadRequestException, NotFoundException } from "@nestjs/common";
-import { appendOutbox, processOutbox } from "@mt/db";
+import { appendOutbox, processOutboxBatch } from "@mt/db";
 import { idempotencyKey } from "@mt/utils";
 import { parseJson } from "@mt/model-client";
 import { GitHubClient } from "./github/client";
@@ -45,43 +45,41 @@ export class RequestService {
 
   async pollInbox() {
     let consumed = 0;
-    await processOutbox(investigatorPool, async (event) => {
-      if (event.event === "researcher.response.push") consumed += 1;
-    });
-    const events = await investigatorPool.query(
-      "SELECT * FROM outbox WHERE event = 'researcher.response.push' AND status = 'done' ORDER BY occurred_at ASC"
-    );
-    const groups = new Map<string, { surveyName: string; eventIds: string[]; items: PushEventPayload[] }>();
-    for (const row of events.rows) {
-      const payload = row.payload as PushEventPayload;
-      const key = payload.surveyName ?? "未命名调研";
-      const g = groups.get(key) ?? { surveyName: key, eventIds: [], items: [] };
-      g.eventIds.push(row.id as string);
-      g.items.push(payload);
-      groups.set(key, g);
-    }
     let created = 0;
     let skipped = 0;
-    for (const g of groups.values()) {
-      const existing = await findRequestByEventIds(g.eventIds);
-      if (existing) {
-        skipped += 1;
-        continue;
+    await processOutboxBatch(investigatorPool, async (events) => {
+      const groups = new Map<string, { surveyName: string; eventIds: string[]; items: PushEventPayload[] }>();
+      for (const event of events) {
+        if (event.event !== "researcher.response.push") continue;
+        consumed += 1;
+        const payload = event.payload as PushEventPayload;
+        const key = payload.surveyName ?? "未命名调研";
+        const g = groups.get(key) ?? { surveyName: key, eventIds: [], items: [] };
+        g.eventIds.push(event.id);
+        g.items.push(payload);
+        groups.set(key, g);
       }
-      await createRequestWithItems({
-        surveyName: g.surveyName,
-        sourceEventIds: g.eventIds,
-        items: g.items
-          .filter((p) => p.responseId)
-          .map((p) => ({
-            responseId: p.responseId as string,
-            structured: p.structured ?? {},
-            sentiment: p.sentiment ?? "neutral",
-            priority: p.priority ?? "P2",
-          })),
-      });
-      created += 1;
-    }
+      for (const g of groups.values()) {
+        const existing = await findRequestByEventIds(g.eventIds);
+        if (existing) {
+          skipped += 1;
+          continue;
+        }
+        await createRequestWithItems({
+          surveyName: g.surveyName,
+          sourceEventIds: g.eventIds,
+          items: g.items
+            .filter((p) => p.responseId)
+            .map((p) => ({
+              responseId: p.responseId as string,
+              structured: p.structured ?? {},
+              sentiment: p.sentiment ?? "neutral",
+              priority: p.priority ?? "P2",
+            })),
+        });
+        created += 1;
+      }
+    });
     return { consumed, created, skipped };
   }
 

@@ -138,7 +138,7 @@
 |---|-------|-----|------|------|
 | C1 | 四层测试体系（单元/冒烟/回归/E2E） | CODE_WIKI 11.3 | Vitest + smoke.mjs + Turbo --affected + Playwright | ✅ 已实现 |
 | C2 | CI 3 门禁（quality/smoke/e2e）+ main 保护 | CODE_WIKI 11.4, AGENTS.md | .github/workflows/ci.yml + branch protection | ✅ 已实现 |
-| C3 | outbox 事件（失败重试 + dead 终态 + 幂等） | CODE_WIKI 7, state.md 决策 37 | @mt/db outbox.ts | ✅ 已实现 |
+| C3 | outbox 租约、批处理与幂等 | docs/features/outbox-reliability.md | packages/db/src/outbox.ts + packages/db/migrations/002_outbox_lease.sql + apps/manager/server/src/requirement.service.ts + apps/assessor/server/src/request.service.ts + apps/scholar/server/src/inbox.service.ts | ✅ 已实现：并发互斥、租约恢复、副作用后 done、重复幂等、失败 retry/dead；测试见 packages/db/src/outbox.test.ts 与三条消费链路 e2e |
 | C4 | @mt/model-client parseJson 四级容错 | state.md PR #26 | model-client/parseJson.ts | ✅ 已实现，5 服务替换 |
 | C5 | 前后台双外壳（前台各异 / 后台统一） | ui-spec.md, CODE_WIKI 8.2 | @mt/ui UserShell / AdminShell + 8 App.tsx 切换 | ✅ 已实现（8 应用全覆盖） |
 | C6 | 0 bug loop 开发/测试分拆验收 | state.md 已知问题 9 | PR 模板复选框 + .github/workflows/ci.yml quality 条件检测（仅 PR 事件） | ✅ 已实现（D-11 兑现，PR #36） |

@@ -16,7 +16,9 @@ const OUTBOX_DDL = `CREATE TABLE IF NOT EXISTS outbox (
   status text NOT NULL DEFAULT 'pending',
   attempts integer NOT NULL DEFAULT 0,
   last_error text,
-  processed_at timestamptz
+  processed_at timestamptz,
+  locked_by text,
+  lease_expires_at timestamptz
 )`;
 
 function payload() {
@@ -99,7 +101,7 @@ describe("inbox", () => {
     const second = await request(app.getHttpServer()).post("/api/scholar/inbox/poll");
     expect(second.status).toBe(201);
     expect(second.body.created).toBe(0);
-    expect(second.body.skipped).toBe(1);
+    expect(second.body.skipped).toBe(0);
     const rows = await pool.query("SELECT count(*)::int AS n FROM entries WHERE source = 'gatherer'");
     expect(rows.rows[0].n).toBe(1);
   });

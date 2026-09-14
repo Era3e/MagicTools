@@ -453,7 +453,8 @@ export interface ApiResponse<T> {
 | `createPool` | [pool.ts](file:///d:/MagicTools/packages/db/src/pool.ts) | `(connectionString: string) => Pool` | 创建 PG 连接池（max=5），单例由子项目 db.ts 持有 |
 | `runMigrations` | [migrations.ts](file:///d:/MagicTools/packages/db/src/migrations.ts) | `(pool: Pool, dir: string) => Promise<void>` | 读取 dir 下 `*.sql` 按文件名升序执行，`schema_migrations` 表去重，事务包裹单文件，失败回滚 |
 | `appendOutbox` | [outbox.ts](file:///d:/MagicTools/packages/db/src/outbox.ts) | `(pool, event: DataEnvelope) => Promise<void>` | 向 outbox 表插入事件，`ON CONFLICT (id) DO NOTHING` 实现幂等 |
-| `processOutbox` | [outbox.ts](file:///d:/MagicTools/packages/db/src/outbox.ts) | `(pool, handler, options?) => Promise<number>` | 批处理 pending/retry 事件（`FOR UPDATE SKIP LOCKED` 锁），成功 → done，失败 → 次数+1；达到 maxAttempts（默认 5）→ **dead 终态**（防止无限重试），返回处理数 |
+| `processOutbox` | [outbox.ts](file:///d:/MagicTools/packages/db/src/outbox.ts) | `(pool, handler, options?) => Promise<number>` | 逐事件领取 pending/retry/过期 processing 事件，写入 processing 租约后执行 handler；成功 → done，失败 → 次数+1，达到 maxAttempts（默认 5）→ dead |
+| `processOutboxBatch` | [outbox.ts](file:///d:/MagicTools/packages/db/src/outbox.ts) | `(pool, batchHandler, options?) => Promise<number>` | 按批领取并传给业务 handler；业务副作用成功后整批确认 done，失败整批释放租约并 retry/dead |
 
 #### outbox 表结构（001_outbox.sql）
 
@@ -468,6 +469,8 @@ export interface ApiResponse<T> {
 | attempts | integer DEFAULT 0 | 已尝试次数 |
 | last_error | text | 最近错误信息（最多 500 字符） |
 | processed_at | timestamptz | 处理完成时间 |
+| locked_by | text | 当前租约持有者 |
+| lease_expires_at | timestamptz | 租约过期时间；过期 processing 可被回收 |
 | 索引 | idx_outbox_pending(status, attempts, occurred_at) | 加速待处理查询 |
 
 #### outbox 事件生命周期状态机图（Mermaid）
@@ -476,11 +479,12 @@ export interface ApiResponse<T> {
 stateDiagram-v2
     direction LR
     [*] --> pending : appendOutbox()\nON CONFLICT DO NOTHING
-    pending --> processing : processOutbox() 5s 轮询\nFOR UPDATE SKIP LOCKED 取批
+    pending --> processing : 领取并写入租约\nFOR UPDATE SKIP LOCKED
     retry --> processing : 同 pending 一起被取到
-    processing --> done : handler() 成功\nUPDATE status=done + processed_at=now()
+    processing --> done : handler() 成功\n仅租约持有者确认
     processing --> retry : handler() 抛错\nattempts < maxAttempts(默认 5)\nUPDATE status=retry + attempts++ + last_error
     processing --> dead : handler() 抛错\nattempts >= maxAttempts\n进入终态防止无限重试
+    processing --> processing : 租约过期后\n新消费者可重新领取
     done --> [*] : 消费完成
     dead --> [*] : ❌ 死信（需人工介入排查）
 

@@ -1,5 +1,5 @@
 import { Injectable, BadRequestException, NotFoundException } from "@nestjs/common";
-import { processOutbox } from "@mt/db";
+import { processOutboxBatch } from "@mt/db";
 import { GitHubClient } from "./github/client";
 import { assessorPool, pool } from "./db";
 import { requirementInputSchema, requirementPatchSchema } from "./schemas";
@@ -101,30 +101,28 @@ export class RequirementService {
 
   async pollInbox() {
     let consumed = 0;
-    await processOutbox(assessorPool, async (event) => {
-      if (event.event === "requirement.created") consumed += 1;
-    });
-    const events = await assessorPool.query(
-      "SELECT * FROM outbox WHERE event = 'requirement.created' AND status = 'done' ORDER BY occurred_at ASC"
-    );
     let created = 0;
     let skipped = 0;
-    for (const row of events.rows) {
-      const payload = row.payload as { requestId?: string; surveyName?: string; analysisMd?: string; designMd?: string; repoUrl?: string; reviewComment?: string };
-      if (await findRequirementByEventId(row.id as string)) {
-        skipped += 1;
-        continue;
+    await processOutboxBatch(assessorPool, async (events) => {
+      for (const event of events) {
+        if (event.event !== "requirement.created") continue;
+        consumed += 1;
+        const payload = event.payload as { requestId?: string; surveyName?: string; analysisMd?: string; designMd?: string; repoUrl?: string; reviewComment?: string };
+        if (await findRequirementByEventId(event.id)) {
+          skipped += 1;
+          continue;
+        }
+        await createRequirement({
+          title: (payload.surveyName ?? "来自 Assessor 的需求") + " · 需求",
+          description: (payload.analysisMd ?? "").slice(0, 2000),
+          source: "assessor",
+          sourceRef: event.id,
+          sourcePayload: payload,
+          labels: ["assessor"],
+        });
+        created += 1;
       }
-      await createRequirement({
-        title: (payload.surveyName ?? "来自 Assessor 的需求") + " · 需求",
-        description: (payload.analysisMd ?? "").slice(0, 2000),
-        source: "assessor",
-        sourceRef: row.id as string,
-        sourcePayload: payload,
-        labels: ["assessor"],
-      });
-      created += 1;
-    }
+    });
     return { consumed, created, skipped };
   }
 
