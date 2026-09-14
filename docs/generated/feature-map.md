@@ -118,6 +118,7 @@
 | As11 | 前台极简双栏对话气泡 | ✅ 已实现 | pages/ChatPage.tsx 异形圆角 + 引用区 + 署名 | ChatPage.test.tsx |
 | As12 | HTTP API 双入口 | ✅ 已实现 | chat.controller.ts HTTP + web 入口 | chat.e2e.test.ts |
 | As13 | 纠错回填到训练语料 | ✅ 已实现 | intent-log PATCH /intent-logs/:id 覆盖路由 | intent-log.e2e.test.ts |
+| As14 | 独立问答评测集与版本比较 | ✅ 已实现 | server/evaluation-suite.* + server/evaluation-scoring.ts + migrations/006_assistant_evaluation_suite.sql + web/pages/IntentLogPage.tsx | evaluation-scoring.test.ts + evaluation-suite.e2e.test.ts + IntentLogPage.evaluation.test.tsx |
 
 ## Designer
 

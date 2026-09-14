@@ -13,6 +13,10 @@ vi.mock("../api", () => ({
     finetuneStatus: vi.fn(),
     finetuneLaunch: vi.fn(),
     correctIntentLog: vi.fn(),
+    evaluationCases: vi.fn(async () => ({ total: 48, bySplit: { dev: 24, regression: 16, holdout: 8 }, byType: { routing: 36, knowledge: 6, action: 6 } })),
+    listEvaluationRuns: vi.fn(async () => []),
+    createEvaluationRun: vi.fn(),
+    compareEvaluationRuns: vi.fn(),
   },
 }));
 

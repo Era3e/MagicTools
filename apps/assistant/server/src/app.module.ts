@@ -5,6 +5,8 @@ import { ChatService } from "./chat.service";
 import { CybercloudService } from "./cybercloud.service";
 import { DirectQueryService } from "./direct-query.service";
 import { EvaluationService } from "./evaluation.service";
+import { EvaluationSuiteController } from "./evaluation-suite.controller";
+import { EvaluationSuiteService } from "./evaluation-suite.service";
 import { FeedbackController } from "./feedback.controller";
 import { FeedbackService } from "./feedback.service";
 import { FinetuneService } from "./finetune.service";
@@ -16,7 +18,7 @@ import { MetaController } from "./meta.controller";
 import { TroubleService } from "./trouble.service";
 
 @Module({
-  controllers: [HealthController, ChatController, MetaController, FeedbackController, IntentLogController],
-  providers: [ChatService, IntentService, KnowledgeService, CybercloudService, DirectQueryService, ActionService, TroubleService, FeedbackService, EvaluationService, FinetuneService],
+  controllers: [HealthController, ChatController, MetaController, FeedbackController, IntentLogController, EvaluationSuiteController],
+  providers: [ChatService, IntentService, KnowledgeService, CybercloudService, DirectQueryService, ActionService, TroubleService, FeedbackService, EvaluationService, EvaluationSuiteService, FinetuneService],
 })
 export class AppModule {}

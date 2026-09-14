@@ -6,6 +6,12 @@
 
 ## 2026-09-15（P15 文档事实源）
 
+## 2026-09-15（P16 独立问答评测）
+
+- **训练/评测隔离与版本化 run**：Assistant 新增 48 条数据库版本化评测样本，覆盖 routing、knowledge、action 与 dev/regression/holdout；意图日志按规范化消息指纹与评测样本隔离，few-shot、回放、JSONL 导出和微调就绪计数不再吞同文评测数据。每次 run 持久化数据集指纹、非秘密配置快照、heartbeat 和全部 case 明细，pass/fail/error/timeout/missing 均落库，崩溃残留的 running run 重启后转 failed；相同 split 与数据集指纹的 run 可输出 fixed/regressed 比较，action 评测只解析参数不触发网关副作用。
+
+## 2026-09-15（P15 文档事实源）
+
 - **模块化 CODE_WIKI 与自动事实索引**：94KB 单文件拆分为平台、公共包、Gateway 与八个业务模块文档；state 只保留当前事实，历史复盘移入 history。coverage-matrix 成为唯一人工功能映射源，`pnpm docs:facts` 从功能表、React Route、Nest Controller 与 Gateway 路由生成功能索引、覆盖视图和接口索引；`test:infra` 拒绝生成物漂移，历史设计必须显式标记为历史基线。
 
 ## 2026-09-15（P14 真实页面样板）

@@ -40,6 +40,11 @@ export const intentCorrectionSchema = z.object({
   ]),
 });
 
+export const evaluationRunSchema = z.object({
+  split: z.enum(["dev", "regression", "holdout"]),
+  label: z.string().trim().min(1).max(80).default("manual"),
+});
+
 export const answerSchema = z.object({
   answer: z.string(),
 });

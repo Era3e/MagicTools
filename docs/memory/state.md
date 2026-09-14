@@ -18,6 +18,7 @@
 
 ## 待办与边界
 
+- **P16 独立问答评测（2026-09-15，开发中）**：新增 migration 006 的 48 条版本化种子（routing 36、knowledge 6、action 6；split dev 24、regression 16、holdout 8）、意图日志消息指纹隔离、持久 evaluation run/item、无秘密配置快照与同数据集版本比较；action 只解析不执行。评测指纹同时排除 few-shot、回放、JSONL 导出与微调就绪计数；run heartbeat 可把崩溃残留的 running 记录恢复为 failed。Assistant 真实数据库强制验证 43/43 零 skip（修复后待重跑），Web 目标测试 11/11 与构建通过；待完整 qa、独立 0 bug 审查和 PR CI。
 - P15 完成前，接口/路由变更必须重复运行 `pnpm docs:facts` 并确认无 diff。
 - P16 起继续问答评测、双知识空间、自动执行队列、隔离执行器与资源面板。
 - 生产独立备份机、真实外部模型效果、生产 HTTPS/用户清单和自动执行合并仍需真实外部配置；不得以桩模式或开发验收冒充生产已启用。

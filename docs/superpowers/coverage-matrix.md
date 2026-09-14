@@ -119,6 +119,7 @@
 | As11 | 前台极简双栏对话气泡 | PR #30 | pages/ChatPage.tsx 异形圆角 + 引用区 + 署名 | ✅ 已实现 | ChatPage.test.tsx |
 | As12 | HTTP API 双入口 | spec 3.1 | chat.controller.ts HTTP + web 入口 | ✅ 已实现 | chat.e2e.test.ts |
 | As13 | 纠错回填到训练语料 | spec 3.7 | intent-log PATCH /intent-logs/:id 覆盖路由 | ✅ 已实现 | intent-log.e2e.test.ts |
+| As14 | 独立问答评测集与版本比较 | P16 | server/evaluation-suite.* + server/evaluation-scoring.ts + migrations/006_assistant_evaluation_suite.sql + web/pages/IntentLogPage.tsx | ✅ 已实现 | evaluation-scoring.test.ts + evaluation-suite.e2e.test.ts + IntentLogPage.evaluation.test.tsx |
 
 ## 8. Designer（设计 · 降级版组件生成器）
 

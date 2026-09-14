@@ -168,6 +168,10 @@
           "minimumTests": 7
         },
         {
+          "path": "src/evaluation-suite.e2e.test.ts",
+          "minimumTests": 4
+        },
+        {
           "path": "src/multi-turn.e2e.test.ts",
           "minimumTests": 5
         },

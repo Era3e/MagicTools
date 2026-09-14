@@ -149,6 +149,11 @@
 | GET | `/api/assistant/conversations` |
 | GET | `/api/assistant/conversations/:id/messages` |
 | DELETE | `/api/assistant/conversations/:id` |
+| GET | `/api/assistant/evaluation-suite/cases` |
+| POST | `/api/assistant/evaluation-suite/runs` |
+| GET | `/api/assistant/evaluation-suite/runs` |
+| GET | `/api/assistant/evaluation-suite/runs/:id` |
+| POST | `/api/assistant/evaluation-suite/runs/:baselineId/compare/:currentId` |
 | GET | `/api/assistant/feedback` |
 | DELETE | `/api/assistant/feedback/:id` |
 | GET | `/api/assistant/health` |
