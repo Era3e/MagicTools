@@ -82,11 +82,13 @@ export class RequirementService {
     };
   }
 
-  create(input: unknown) {
+  async create(input: unknown) {
     const parsed = requirementInputSchema.pick({ title: true, description: true, priority: true, project: true,
       scope: true, risk: true, acceptanceCriteria: true, dependencyRefs: true, executionContract: true }).strict().safeParse(input);
     if (!parsed.success) throw new BadRequestException("需求参数非法：标题必填，优先级为 P0/P1/P2");
-    return createRequirement({ ...parsed.data, source: "manual" });
+    const row = await createRequirement({ ...parsed.data, source: "manual" });
+    if (!row) throw new Error("手动需求写入后未返回记录");
+    return row;
   }
 
   async patch(id: string, input: unknown) {
@@ -112,7 +114,7 @@ export class RequirementService {
           skipped += 1;
           continue;
         }
-        await createRequirement({
+        const createdRow = await createRequirement({
           title: (payload.surveyName ?? "来自 Assessor 的需求") + " · 需求",
           description: (payload.analysisMd ?? "").slice(0, 2000),
           source: "assessor",
@@ -120,7 +122,12 @@ export class RequirementService {
           sourcePayload: payload,
           labels: ["assessor"],
         });
-        created += 1;
+        if (createdRow) created += 1;
+        else {
+          const existing = await findRequirementByEventId(event.id);
+          if (existing) skipped += 1;
+          else throw new Error("Assessor需求写入冲突后无法读取既有需求");
+        }
       }
     });
     return { consumed, created, skipped };
@@ -182,7 +189,7 @@ export class RequirementService {
         }
         continue;
       }
-      await createRequirement({
+      const createdRow = await createRequirement({
         title: issue.title,
         description: issue.body.slice(0, 2000),
         source: "github",
@@ -190,7 +197,8 @@ export class RequirementService {
         sourcePayload,
         labels: issue.labels,
       });
-      created += 1;
+      if (createdRow) created += 1;
+      else skipped += 1;
     }
     return { created, updated, skipped, conflicts };
   }

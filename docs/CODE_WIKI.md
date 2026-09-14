@@ -453,7 +453,7 @@ export interface ApiResponse<T> {
 | `createPool` | [pool.ts](file:///d:/MagicTools/packages/db/src/pool.ts) | `(connectionString: string) => Pool` | 创建 PG 连接池（max=5），单例由子项目 db.ts 持有 |
 | `runMigrations` | [migrations.ts](file:///d:/MagicTools/packages/db/src/migrations.ts) | `(pool: Pool, dir: string) => Promise<void>` | 读取 dir 下 `*.sql` 按文件名升序执行，`schema_migrations` 表去重，事务包裹单文件，失败回滚 |
 | `appendOutbox` | [outbox.ts](file:///d:/MagicTools/packages/db/src/outbox.ts) | `(pool, event: DataEnvelope) => Promise<void>` | 向 outbox 表插入事件，`ON CONFLICT (id) DO NOTHING` 实现幂等 |
-| `processOutbox` | [outbox.ts](file:///d:/MagicTools/packages/db/src/outbox.ts) | `(pool, handler, options?) => Promise<number>` | 逐事件领取 pending/retry/过期 processing 事件，写入 processing 租约后执行 handler；成功 → done，失败 → 次数+1，达到 maxAttempts（默认 5）→ dead |
+| `processOutbox` | [outbox.ts](file:///d:/MagicTools/packages/db/src/outbox.ts) | `(pool, handler, options?) => Promise<number>` | 逐事件领取 pending/retry/过期 processing 事件，写入 processing 租约并递增尝试次数后执行 handler；成功 → done，失败释放租约，达到 maxAttempts（默认 5）→ dead；过期且次数已满的 processing 行领取前直接 dead |
 | `processOutboxBatch` | [outbox.ts](file:///d:/MagicTools/packages/db/src/outbox.ts) | `(pool, batchHandler, options?) => Promise<number>` | 按批领取并传给业务 handler；业务副作用成功后整批确认 done，失败整批释放租约并 retry/dead |
 
 #### outbox 表结构（001_outbox.sql）

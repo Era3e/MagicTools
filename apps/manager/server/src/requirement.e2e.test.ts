@@ -9,6 +9,7 @@ import { AppModule } from "./app.module";
 import { assessorPool, ensureDatabase, migrate, pool } from "./db";
 import { GitHubClient } from "./github/client";
 import { RequirementService } from "./requirement.service";
+import { createRequirement } from "./requirement.repo";
 
 let app: INestApplication;
 let available = false;
@@ -65,6 +66,20 @@ describe("inbox", () => {
     expect(created.status).toBe(201);
     expect(created.body.source).toBe("manual");
     expect(created.body.status).toBe("waiting");
+  });
+
+  it("同来源同事件键并发插入只保留一条需求", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    const sourceRef = idempotencyKey("manager-source-key");
+    const [first, second] = await Promise.all([
+      createRequirement({ title: "并发来源键A", source: "assessor", sourceRef }),
+      createRequirement({ title: "并发来源键B", source: "assessor", sourceRef }),
+    ]);
+    expect(first === null ? "null" : "row").not.toBe(second === null ? "null" : "row");
+    const created = first ?? second;
+    expect(created).not.toBeNull();
+    const rows = await pool.query("SELECT count(*)::int AS count FROM requirements WHERE source='assessor' AND source_ref=$1", [sourceRef]);
+    expect(rows.rows[0].count).toBe(1);
   });
 
   it("非法状态返回 400", async (ctx) => {

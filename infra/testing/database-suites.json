@@ -7,7 +7,7 @@
       "files": [
         {
           "path": "src/outbox.test.ts",
-          "minimumTests": 8
+          "minimumTests": 9
         }
       ]
     },
@@ -49,7 +49,7 @@
       "files": [
         {
           "path": "src/request.e2e.test.ts",
-          "minimumTests": 5
+          "minimumTests": 6
         },
         {
           "path": "src/repository-evidence.e2e.test.ts",
@@ -83,7 +83,7 @@
         },
         {
           "path": "src/requirement.e2e.test.ts",
-          "minimumTests": 6
+          "minimumTests": 7
         },
         {
           "path": "src/runtime-readiness.e2e.test.ts",

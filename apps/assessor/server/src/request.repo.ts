@@ -1,9 +1,11 @@
 import { pool } from "./db";
+import type { PoolClient } from "pg";
 
 export type RequestStatus = "pending" | "draft" | "review" | "approved" | "rejected";
 
 export interface AnalysisRequestRow {
   id: string;
+  sourceKey: string;
   surveyName: string;
   sourceEventIds: string[];
   status: RequestStatus;
@@ -21,6 +23,7 @@ export interface AnalysisRequestRow {
 function mapRow(r: Record<string, unknown>): AnalysisRequestRow {
   return {
     id: r.id as string,
+    sourceKey: (r.source_key as string) ?? "",
     surveyName: r.survey_name as string,
     sourceEventIds: (r.source_event_ids as string[]) ?? [],
     status: r.status as RequestStatus,
@@ -53,23 +56,54 @@ export async function findRequestByEventIds(eventIds: string[]): Promise<Analysi
   return rows.rowCount ? mapRow(rows.rows[0]) : null;
 }
 
+export async function findRequestBySourceKey(sourceKey: string): Promise<AnalysisRequestRow | null> {
+  const rows = await pool.query("SELECT * FROM analysis_requests WHERE source_key = $1 LIMIT 1", [sourceKey]);
+  return rows.rowCount ? mapRow(rows.rows[0]) : null;
+}
+
 export async function createRequestWithItems(input: {
   surveyName: string;
+  sourceKey: string;
   sourceEventIds: string[];
   items: Array<{ responseId: string; structured: Record<string, unknown>; sentiment: string; priority: string }>;
-}): Promise<AnalysisRequestRow> {
-  const rows = await pool.query(
-    "INSERT INTO analysis_requests (survey_name, source_event_ids) VALUES ($1, $2) RETURNING *",
-    [input.surveyName, JSON.stringify(input.sourceEventIds)]
-  );
-  const row = mapRow(rows.rows[0]);
-  for (const item of input.items) {
-    await pool.query(
-      "INSERT INTO analysis_items (request_id, response_id, structured, sentiment, priority) VALUES ($1,$2,$3,$4,$5) ON CONFLICT (request_id, response_id) DO NOTHING",
-      [row.id, item.responseId, JSON.stringify(item.structured), item.sentiment, item.priority]
+}): Promise<{ row: AnalysisRequestRow; created: boolean }> {
+  const client: PoolClient = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const inserted = await client.query(
+      `INSERT INTO analysis_requests (survey_name, source_key, source_event_ids)
+       VALUES ($1,$2,$3)
+       ON CONFLICT (source_key) DO NOTHING
+       RETURNING *`,
+      [input.surveyName, input.sourceKey, JSON.stringify(input.sourceEventIds)]
     );
+    let row = inserted.rowCount ? mapRow(inserted.rows[0]) : null;
+    const created = Boolean(inserted.rowCount);
+    if (!row) {
+      const existing = await client.query("SELECT * FROM analysis_requests WHERE source_key=$1 FOR UPDATE", [input.sourceKey]);
+      if (!existing.rowCount) throw new Error("分析请求写入后无法读取");
+      row = mapRow(existing.rows[0]);
+      const mergedEventIds = [...new Set([...row.sourceEventIds, ...input.sourceEventIds])];
+      const updated = await client.query(
+        "UPDATE analysis_requests SET source_event_ids=$2, updated_at=now() WHERE id=$1 RETURNING *",
+        [row.id, JSON.stringify(mergedEventIds)]
+      );
+      row = mapRow(updated.rows[0]);
+    }
+    for (const item of input.items) {
+      await client.query(
+        "INSERT INTO analysis_items (request_id, response_id, structured, sentiment, priority) VALUES ($1,$2,$3,$4,$5) ON CONFLICT (request_id, response_id) DO NOTHING",
+        [row.id, item.responseId, JSON.stringify(item.structured), item.sentiment, item.priority]
+      );
+    }
+    await client.query("COMMIT");
+    return { row, created };
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
   }
-  return row;
 }
 
 export async function listRequestItems(requestId: string): Promise<Array<{ responseId: string; structured: Record<string, unknown>; sentiment: string; priority: string }>> {
