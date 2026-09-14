@@ -20,6 +20,11 @@ export class RequirementController {
     return this.service.get(id);
   }
 
+  @Get("requirements/:id/execution-eligibility")
+  executionEligibility(@Param("id", ParseUUIDPipe) id: string) {
+    return this.service.executionEligibility(id);
+  }
+
   @Get("requirements/:id/revisions")
   revisions(@Param("id", ParseUUIDPipe) id: string, @Query() query: unknown) {
     return this.service.revisions(id, query);

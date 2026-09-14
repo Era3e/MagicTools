@@ -1,5 +1,15 @@
 export type RequirementRisk = "unassessed" | "low" | "medium" | "high";
 
+export interface ExecutionContract {
+  repository: string;
+  allowedPaths: string[];
+  acceptanceCommands: string[][];
+  maxDurationMinutes: number;
+  maxAttempts: number;
+  budgetCurrency: "CNY";
+  budgetAmountCents: number;
+}
+
 export interface RequirementContent {
   title: string;
   description: string;
@@ -9,9 +19,10 @@ export interface RequirementContent {
   acceptanceCriteria: string[];
   dependencyRefs: string[];
   evidenceRefs: Array<Record<string, unknown>>;
+  executionContract: ExecutionContract | null;
 }
 
-export const CONTENT_FIELDS = ["title", "description", "project", "scope", "risk", "acceptanceCriteria", "dependencyRefs", "evidenceRefs"] as const;
+export const CONTENT_FIELDS = ["title", "description", "project", "scope", "risk", "acceptanceCriteria", "dependencyRefs", "evidenceRefs", "executionContract"] as const;
 
 export function getApprovalReadiness(content: RequirementContent) {
   const missing: string[] = [];

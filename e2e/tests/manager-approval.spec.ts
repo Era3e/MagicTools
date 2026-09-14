@@ -29,6 +29,12 @@ for (const width of [1440, 390]) {
     await expect(page.getByRole("button", { name: "批准本版内容" })).toBeDisabled();
     await page.getByRole("button", { name: "编辑需求内容" }).click();
     await page.getByLabel("实施范围", { exact: true }).fill("仅调整管理者需求详情页");
+    await page.getByLabel("执行仓库", { exact: true }).fill("https://github.com/Era3e/MagicTools");
+    await page.getByLabel("允许改动路径（每行一个）", { exact: true }).fill("apps/manager/server/src\napps/manager/web/src");
+    await page.getByLabel("验收命令（每行一条，空格分隔参数）", { exact: true }).fill("pnpm test:manager:integration");
+    await page.getByLabel("最长执行时间（分钟）", { exact: true }).fill("60");
+    await page.getByLabel("最多尝试次数", { exact: true }).fill("2");
+    await page.getByLabel("预算（元）", { exact: true }).fill("50");
     // AntD 的只读 combobox 被选中值覆盖；点击用户实际可见的选中值打开菜单。
     await page.getByRole("dialog").getByText("尚未评估", { exact: true }).click();
     await page.getByText("低", { exact: true }).click();
@@ -37,9 +43,12 @@ for (const width of [1440, 390]) {
     expect((await saved).ok()).toBe(true);
     await expect(page.getByRole("dialog")).toHaveCount(0);
     await expect(page.getByText("内容修订 2", { exact: true })).toBeVisible();
+    await expect(page.getByText("自动执行门禁：阻塞", { exact: true })).toBeVisible();
+    await expect(page.getByText(/自动执行未启用/)).toBeVisible();
 
     async function decide(action: "approve" | "revoke") {
       await page.getByRole("button", { name: action === "approve" ? "批准本版内容" : "撤销批准", exact: true }).click();
+      await expect(page.getByRole("dialog").getByText("执行契约", { exact: true })).toBeVisible();
       await page.getByLabel("审批凭证", { exact: true }).fill(token!);
       await page.getByLabel("审批说明", { exact: true }).fill(action === "approve" ? "确认本版范围与验收条件" : "重新核对排期");
       const response = page.waitForResponse((res) => res.url().endsWith(endpoint + (action === "approve" ? "/approve-revision" : "/revoke-approval")));

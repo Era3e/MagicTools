@@ -65,6 +65,7 @@
 | M11 | 独立能力基线与规划证据 | docs/features/manager-candidate-import.md | apps/manager/web/src/pages/CapabilityList.tsx + apps/manager/web/src/pages/RequirementDetail.tsx | ✅ 已实现：基线不进入需求队列；规划保留证据/验收/依赖 | apps/manager/server/src/import-batch.e2e.test.ts |
 | M12 | 内容修订与版本比较 | docs/features/manager-content-approval.md | apps/manager/server/src/requirement-revisions.repo.ts + apps/manager/web/src/pages/RequirementHistory.tsx | ✅ 已实现：触发器快照、迁移回填标记、分页与完整内容对比 | apps/manager/server/src/requirement-revisions.e2e.test.ts + apps/manager/web/src/pages/RequirementApproval.test.tsx |
 | M13 | 固定版本审批与撤销 | docs/features/manager-content-approval.md | apps/manager/server/src/requirement-approval.service.ts + apps/manager/web/src/pages/RequirementContentPanel.tsx | ✅ 已实现：双版本冲突、凭证校验、内容变更失效、追加审计；不启用自动执行 | apps/manager/server/src/requirement-revisions.e2e.test.ts + e2e/tests/manager-approval.spec.ts |
+| M14 | 执行契约与自动执行门禁 | docs/features/manager-content-approval.md | apps/manager/server/src/requirement.service.ts + apps/manager/server/migrations/008_requirement_execution_contract.sql + apps/manager/web/src/pages/RequirementContentEditor.tsx | ✅ 已实现：仓库/路径/命令/时长/尝试/预算进入内容修订；未批准、状态不对、依赖未就绪或未启用自动执行均阻塞 | apps/manager/server/src/requirement-execution.e2e.test.ts + apps/manager/web/src/pages/RequirementApproval.review.test.tsx |
 
 ## 5. Gatherer（采集 · 知识主线第一环）
 

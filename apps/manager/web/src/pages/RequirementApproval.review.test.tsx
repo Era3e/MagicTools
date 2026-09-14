@@ -12,7 +12,7 @@ import { contentFromRequirement } from "./RequirementContentView";
 vi.mock("../api", () => ({ api: {
   getRequirement: vi.fn(), patchRequirement: vi.fn(), refreshPr: vi.fn(),
   getApprovalPolicy: vi.fn(), approveRevision: vi.fn(), revokeApproval: vi.fn(),
-  getRequirementRevisions: vi.fn(), getApprovalHistory: vi.fn(),
+  getRequirementRevisions: vi.fn(), getApprovalHistory: vi.fn(), getExecutionEligibility: vi.fn(),
 } }));
 
 const requirement: Requirement = {
@@ -42,6 +42,10 @@ async function openApproval() {
 }
 beforeEach(() => {
   vi.mocked(api.getApprovalPolicy).mockResolvedValue(policy);
+  vi.mocked(api.getExecutionEligibility).mockResolvedValue({
+    requirementId: requirement.id, eligible: false, contractReady: false, dependenciesReady: true,
+    dependencies: [], automationPolicy: "manual", blockers: ["自动执行未启用"],
+  });
   vi.spyOn(message, "success").mockImplementation(() => (() => {}) as ReturnType<typeof message.success>);
   vi.spyOn(message, "warning").mockImplementation(() => (() => {}) as ReturnType<typeof message.warning>);
 });
@@ -63,6 +67,22 @@ describe("P08 独立前端验收", () => {
     await screen.findByText("无法读取审批配置，请刷新页面");
     expect(disabled("批准本版内容")).toBe(true);
     expect(api.approveRevision).not.toHaveBeenCalled();
+  });
+
+  it("展示自动执行门禁结果和依赖状态，读取失败不冒充可执行", async () => {
+    vi.mocked(api.getExecutionEligibility).mockResolvedValueOnce({
+      requirementId: requirement.id, eligible: false, contractReady: true, dependenciesReady: false,
+      dependencies: [{ ref: "P07", state: "developing", requirementId: "dep-a", capabilityId: null }],
+      automationPolicy: "manual", blockers: ["当前内容未批准", "依赖未就绪：P07"],
+    });
+    render(<RequirementContentPanel item={requirement} onUpdated={vi.fn()} />);
+    await screen.findByText("自动执行门禁：阻塞");
+    expect(screen.getByText("当前内容未批准、依赖未就绪：P07")).toBeTruthy();
+    expect(screen.getByText("P07：developing")).toBeTruthy();
+
+    vi.mocked(api.getExecutionEligibility).mockRejectedValueOnce(new Error("offline"));
+    render(<RequirementContentPanel item={requirement} onUpdated={vi.fn()} />);
+    await screen.findByText("自动执行门禁读取失败，请刷新后重试");
   });
 
   it("弹窗打开后版本变化只使原目标失效，不替换内容，且立即清理凭证", async () => {
@@ -150,6 +170,30 @@ describe("P08 独立前端验收", () => {
     await waitFor(() => expect(message.warning).toHaveBeenCalledWith("内容已保存，但页面刷新失败，请重新载入"));
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(api.patchRequirement).toHaveBeenCalledWith("review-a", expect.objectContaining({ expectedRevision: 8, acceptanceCriteria: ["条件一", "条件二"] }));
+  });
+
+  it("编辑并保存执行契约，预算从元转换为分且命令按行结构化", async () => {
+    vi.mocked(api.patchRequirement).mockResolvedValue(requirement);
+    const contract = {
+      repository: "https://github.com/Era3e/MagicTools",
+      allowedPaths: ["apps/manager/server/src"],
+      acceptanceCommands: [["pnpm", "test:manager:integration"]],
+      maxDurationMinutes: 60,
+      maxAttempts: 2,
+      budgetCurrency: "CNY" as const,
+      budgetAmountCents: 5000,
+    };
+    render(<RequirementContentEditor item={{ ...requirement, executionContract: contract }} onClose={vi.fn()} onUpdated={vi.fn()} />);
+    fireEvent.change(screen.getByLabelText("允许改动路径（每行一个）"), { target: { value: "apps/manager/server/src\napps/manager/web/src" } });
+    fireEvent.change(screen.getByLabelText("验收命令（每行一条，空格分隔参数）"), { target: { value: "pnpm test:manager:integration\npnpm.cmd lint" } });
+    fireEvent.change(screen.getByLabelText("预算（元）"), { target: { value: "60.25" } });
+    fireEvent.click(screen.getByRole("button", { name: "保存内容" }));
+    await waitFor(() => expect(api.patchRequirement).toHaveBeenCalledWith("review-a", expect.objectContaining({
+      executionContract: { ...contract, allowedPaths: ["apps/manager/server/src", "apps/manager/web/src"],
+        acceptanceCommands: [["pnpm", "test:manager:integration"], ["pnpm.cmd", "lint"]], budgetAmountCents: 6025 },
+    })));
+    const patch = vi.mocked(api.patchRequirement).mock.calls[0][1];
+    expect(Object.keys(patch).sort()).toEqual(["acceptanceCriteria", "dependencyRefs", "description", "executionContract", "expectedRevision", "project", "risk", "scope", "title"]);
   });
 
   it("内容历史失败不掩盖成功读取的审批记录", async () => {

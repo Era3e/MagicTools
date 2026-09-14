@@ -5,12 +5,13 @@ import type { Requirement, RequirementContent, RequirementRisk } from "../api";
 export const RISK_LABELS: Record<RequirementRisk, string> = { unassessed: "尚未评估", low: "低", medium: "中", high: "高" };
 export const CONTENT_LABELS: Record<string, string> = {
   title: "标题", description: "描述", project: "所属项目", scope: "实施范围", risk: "风险",
-  acceptanceCriteria: "验收条件", dependencyRefs: "前置候选", evidenceRefs: "来源证据",
+  acceptanceCriteria: "验收条件", dependencyRefs: "前置候选", evidenceRefs: "来源证据", executionContract: "执行契约",
 };
 export function contentFromRequirement(item: Requirement): RequirementContent {
   return { title: item.title, description: item.description, project: item.project ?? "", scope: item.scope ?? "",
     risk: item.risk ?? "unassessed", acceptanceCriteria: [...item.acceptanceCriteria ?? []],
-    dependencyRefs: [...item.dependencyRefs ?? []], evidenceRefs: [...item.evidenceRefs ?? []] };
+    dependencyRefs: [...item.dependencyRefs ?? []], evidenceRefs: [...item.evidenceRefs ?? []],
+    executionContract: item.executionContract ?? null };
 }
 
 export default function RequirementContentView({ content }: { content: RequirementContent }) {
@@ -22,6 +23,13 @@ export default function RequirementContentView({ content }: { content: Requireme
     <h5>验收条件</h5>
     {content.acceptanceCriteria.length ? <ul>{content.acceptanceCriteria.map((value, i) => <li key={i}>{value}</li>)}</ul> : <p>尚未填写</p>}
     {content.dependencyRefs.length ? <p>前置候选：{content.dependencyRefs.join("、")}（执行前仍需核验依赖）</p> : null}
+    {content.executionContract ? <>
+      <h5>执行契约</h5>
+      <p>仓库：{content.executionContract.repository}</p>
+      <p>允许路径：{content.executionContract.allowedPaths.join("、")}</p>
+      <p>验收命令：{content.executionContract.acceptanceCommands.map((tokens) => tokens.join(" ")).join("；")}</p>
+      <p>最长 {content.executionContract.maxDurationMinutes} 分钟 · 最多 {content.executionContract.maxAttempts} 次 · 预算 {content.executionContract.budgetAmountCents / 100} 元</p>
+    </> : <p>执行契约：尚未填写；该需求不能进入自动执行队列。</p>}
     <Space direction="vertical" size={tokens.spacing.xs}>{content.evidenceRefs.map((ref, i) =>
       <a key={i} href={ref.url} target="_blank" rel="noreferrer">{ref.path}:{ref.line}</a>)}</Space>
   </div>;
