@@ -136,7 +136,7 @@ async function main() {
         title: "chore(e2e): linux 视觉基线更新（visual-baseline workflow 自动生成）",
         head: BRANCH,
         base: "main",
-        body: `## 变更说明\n\nD-18 基线生成 workflow 产物：${files.length} 张 linux 视觉基线（ubuntu + fonts-noto-cjk 环境）。\n\n**更新原因**：${note}\n\n**合入效果**：CI e2e 视觉用例守卫将检测到 -linux.png 存在，自动从 skip 转为真跑（跨平台像素比对闭环）。\n\n## 自检清单\n\n- [x] **0 bug loop 验收记录**：workflow 自动生成（PLAYWRIGHT_UPDATE=1 + 16 张产物校验 ≥16），生成日志即验收产物\n- [x] 纯基线二进制产物，无代码逻辑变更\n- [x] win32 基线不受影响（平台后缀独立）`,
+        body: `## 变更说明\n\nD-18 基线生成 workflow 产物：${files.length} 张 linux 视觉基线（ubuntu + fonts-noto-cjk 环境）。\n\n**更新原因**：${note}\n\n**合入效果**：CI e2e 视觉用例守卫将检测到 -linux.png 存在，自动从 skip 转为真跑（跨平台像素比对闭环）。\n\n## 自检清单\n\n- [x] **0 bug loop 验收记录**：workflow 自动生成（PLAYWRIGHT_UPDATE=1 + 20 张产物校验 ≥20），生成日志即验收产物\n- [x] 纯基线二进制产物，无代码逻辑变更\n- [x] win32 基线不受影响（平台后缀独立）`,
       }),
     });
     prUrl = pr.html_url;

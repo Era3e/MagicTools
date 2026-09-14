@@ -1403,7 +1403,7 @@ Scholar 双通道检索：
 | 1 单元 | Vitest | 公共包核心逻辑 + Service 单测 | `pnpm test` | quality |
 | 2 冒烟 | Docker Compose + HTTP/SQL | 17镜像冷启动、数据库恢复、业务与持久化 | `pnpm images:smoke`（本地源码探活仍可用 `pnpm smoke`） | smoke |
 | 3 回归 | Turbo --affected | 仅构建变更影响的包 + 跑对应测试 | `pnpm test:affected` | 本地（CI 全量） |
-| 4 E2E | Playwright chromium | 11 个 spec 全流程真实交互 | `@mt/e2e playwright test` | e2e |
+| 4 E2E | Playwright chromium | 17 个 spec 全流程真实交互；视觉基线 20 张，样板页带核心业务断言 | `@mt/e2e playwright test` | e2e |
 
 ### 11.4 CI流水线（.github/workflows/ci.yml）
 
@@ -1430,7 +1430,7 @@ flowchart LR
 
 #### e2e
 
-使用自己的PostgreSQL服务，构建并启动17个源码进程。安装Chromium与CJK字体，先运行空数据库的视觉回归，再运行其余交互测试。外部模型与集成采用明确桩模式，真实模型效果另行评测。
+使用自己的PostgreSQL服务，构建并启动17个源码进程。安装Chromium与CJK字体，先运行视觉回归：套件会通过公开 API 幂等初始化 Manager 详情、Assistant 长对话与 Scholar 帮助目录样板，并在截图前断言核心业务文案；随后运行其余交互测试。外部模型与集成采用明确桩模式，真实模型效果另行评测。
 
 #### images
 

@@ -1,5 +1,5 @@
 # D-18: linux 视觉基线生成 workflow
-# 手动触发（workflow_dispatch）：在 ubuntu 上起桩服务 → PLAYWRIGHT_UPDATE=1 生成 16 页基线
+# 手动触发（workflow_dispatch）：在 ubuntu 上起桩服务 → PLAYWRIGHT_UPDATE=1 生成 20 页基线
 # → 经 REST API 提交到 feat/visual-baseline-linux 分支并开 PR（合入后 CI e2e 自动开始真跑视觉用例）
 #
 # 前置：仓库 Secrets 需配置 VISUAL_BASELINE_TOKEN（PAT，contents:write + pull_request 权限）
@@ -85,8 +85,8 @@ jobs:
         run: |
           COUNT=$(find e2e/snapshots -name "*-linux.png" | wc -l)
           echo "生成 linux 基线 ${COUNT} 张"
-          if [ "$COUNT" -lt 16 ]; then
-            echo "::error::基线数量不足 16（实际 ${COUNT}），检查服务启动与视觉用例日志"
+          if [ "$COUNT" -lt 20 ]; then
+            echo "::error::基线数量不足 20（实际 ${COUNT}），检查服务启动与视觉用例日志"
             exit 1
           fi
       - name: 提交基线并开 PR

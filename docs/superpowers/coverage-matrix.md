@@ -144,7 +144,7 @@
 | C4 | @mt/model-client parseJson 四级容错 | state.md PR #26 | model-client/parseJson.ts | ✅ 已实现，5 服务替换 |
 | C5 | 前后台双外壳（前台各异 / 后台统一） | ui-spec.md, CODE_WIKI 8.2 | @mt/ui UserShell / AdminShell + 8 App.tsx 切换 | ✅ 已实现（8 应用全覆盖） |
 | C6 | 0 bug loop 开发/测试分拆验收 | state.md 已知问题 9 | PR 模板复选框 + .github/workflows/ci.yml quality 条件检测（仅 PR 事件） | ✅ 已实现（D-11 兑现，PR #36） |
-| C7 | 视觉样式回归测试 | 本方案 P0-1c | e2e/tests/_visual.spec.ts Playwright toHaveScreenshot 16 张 + 平台基线感知守卫 | ✅ 已实现（PR #35/#44/#45：win32/linux 双平台基线闭环） |
+| C7 | 视觉样式回归测试 | 本方案 P0-1c + P14 | e2e/tests/_visual.spec.ts Playwright toHaveScreenshot 20 张 + 平台基线感知守卫 + 样板核心业务断言 | ✅ 已实现（PR #35/#44/#45 建立双平台闭环；P14 增加真实业务样板并减少核心区遮罩） |
 | C8 | 前端硬编码色值静态检查 | 本方案 P1-1 | infra/eslint/rules/no-hardcoded-colors.mjs | ✅ 已实现（PR #35） |
 | C9 | 通用页面模式库（patterns） | 本方案 P1-3 | packages/ui/src/patterns/（MagazineList/ControlTable/DetailHero/TimelineBurndown） | ✅ 已实现（PR #35/#40，含 patterns.test.tsx 8 用例） |
 | C10 | ThemePreview 主题横向对比 | 本方案中期 | — | 🚫 未实现（后续 P2，无 deferred 编号） |
@@ -174,3 +174,4 @@ P03运行契约与P05制品基础补充：
 | E8 | 五道质量防线（v2.3.1） | state.md 五防线轮 | e2e/tests/responsive.spec.ts（32 用例）+ .githooks/pre-commit + turbo ^build + packages/ui/src/apps.ts 文案单源 + 视觉锚点 fail fast | ✅ 已实现（PR #56，0 bug loop 验收通过） | responsive 32/32 + drift guard 用例 |
 | E9 | Designer 画布工坊（D-01/D-02 兑现） | designer-canvas-design | apps/designer/web/src/canvas/{schema,registry,codegen}.ts + pages/studio/ 四组件 + apps/designer/server/src/parse.service.ts + migrations/002_canvas_schema.sql | ✅ 已实现（2026-09-10，拖拽画布 + 双向编辑闭环） | designer.spec.ts +4 用例；视觉基线 18 张 |
 | E10 | Assistant LoRA 微调编排层（D-09 兑现） | assistant-lora-finetune-design | packages/model-client/src/finetune.ts + apps/assistant/server/src/finetune.{service,repo}.ts + migrations/005_finetune_jobs.sql + IntentLogPage 微调卡 | ✅ 已实现（2026-09-10，FT_STUB 桩全链路；真跑需样本 ≥500 + FT_LAUNCH_ENABLED=1 + 智谱 Pro 权益） | finetune.test.ts 5 用例 + finetune.service.spec.ts 5 用例 + IntentLogPage.finetune.test.tsx 3 用例 |
+| E11 | E2E 真实页面样板与键盘导航 | P14 | e2e/fixtures/business-samples.ts + e2e/fixtures/pages.ts + e2e/tests/{_visual,business-keyboard}.spec.ts + ChatPage.tsx | ✅ 已实现：Manager 详情 / Assistant 长对话 / Scholar 帮助目录固定数据，核心业务断言与会话键盘操作 | ChatPage.test.tsx + llm.test.ts + business-keyboard.spec.ts + _visual.spec.ts |

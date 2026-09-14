@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button, Input, message } from "antd";
 import { api, type Conversation, type Message, type VerifyResult } from "../api";
 import { MtStatusTag, useTheme, tokens, type MtStatusTagTone } from "@mt/ui";
@@ -99,13 +99,18 @@ export default function ChatPage() {
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages, typing]);
 
-  const open = async (id: string) => {
+  const open = useCallback(async (id: string) => {
     setActiveId(id);
     setMessages(await api.getMessages(id).catch((err) => {
       message.error(String(err));
       return [] as Message[];
     }));
-  };
+  }, []);
+
+  useEffect(() => {
+    const conversationId = new URLSearchParams(window.location.search).get("conversation");
+    if (conversationId) void open(conversationId);
+  }, [open]);
 
   /** 构造失败气泡（演示状态机：failed-auto 静默一次 → failed-idle 可见） */
   const injectFailure = (errCode: string, userText: string) => {
@@ -293,7 +298,16 @@ export default function ChatPage() {
                 <div
                   key={c.id}
                   className="pg-chat-session"
+                  role="button"
+                  aria-label={"打开会话 " + (c.title || "未命名会话")}
+                  tabIndex={0}
                   onClick={() => open(c.id)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      void open(c.id);
+                    }
+                  }}
                   style={{
                     cursor: "pointer",
                     padding: "8px 10px",

@@ -65,6 +65,19 @@ describe("ChatPage", () => {
     expect(msgsCall).toContain("/conversations/c1/messages");
   });
 
+  it("conversation 查询参数自动加载历史会话", async () => {
+    window.history.pushState({}, "", "/assistant/chat?conversation=c1");
+    render(<ChatPage />);
+    expect(await screen.findByText("你好呀，有什么可以帮你？")).toBeTruthy();
+  });
+
+  it("会话条目支持 Enter 键打开", async () => {
+    render(<ChatPage />);
+    const session = await screen.findByRole("button", { name: /打开会话 你好/ });
+    fireEvent.keyDown(session, { key: "Enter" });
+    expect(await screen.findByText("你好呀，有什么可以帮你？")).toBeTruthy();
+  });
+
   it("删除会话调用 DELETE", async () => {
     render(<ChatPage />);
     fireEvent.click(await screen.findByRole("button", { name: /删\s*除/ }));
