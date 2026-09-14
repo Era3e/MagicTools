@@ -6,7 +6,7 @@ import { getApprovalReadiness, type ExecutionContract, type RequirementRisk } fr
 
 export const REQUIREMENT_STATUSES = ["waiting", "designing", "todo", "developing", "testing", "accepting", "done"] as const;
 export type RequirementStatus = (typeof REQUIREMENT_STATUSES)[number];
-export const REQUIREMENT_SOURCES = ["assessor", "manual", "github", "cybercloud"] as const;
+export const REQUIREMENT_SOURCES = ["assessor", "manual", "github", "cybercloud", "audit_proposal", "assistant_badcase"] as const;
 
 export interface RequirementRow {
   id: string;
@@ -123,9 +123,9 @@ export async function createRequirement(input: {
   scope?: string;
   risk?: RequirementRisk;
 }, database: Pick<PoolClient, "query"> = pool): Promise<RequirementRow | null> {
-  const idempotent = input.source === "assessor" && input.sourceRef !== "";
+  const idempotent = (input.source === "assessor" || input.source === "assistant_badcase") && input.sourceRef !== "";
   const conflict = idempotent
-    ? " ON CONFLICT (source, source_ref) WHERE source='assessor' AND source_ref<>'' DO NOTHING"
+    ? ` ON CONFLICT (source, source_ref) WHERE ${input.source === "assessor" ? "source='assessor'" : "source='assistant_badcase'"} AND source_ref<>'' DO NOTHING`
     : "";
   const rows = await database.query(
     "INSERT INTO requirements (title, description, source, source_ref, source_payload, priority, branch, pr_url, labels, iteration_id, project, acceptance_criteria, evidence_refs, dependency_refs, scope, risk, execution_contract) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)" + conflict + " RETURNING *",

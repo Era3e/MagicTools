@@ -3,6 +3,7 @@ import { AdminShell, UserShell, appAccent } from "@mt/ui";
 import ChatPage from "./pages/ChatPage";
 import FeedbackPage from "./pages/FeedbackPage";
 import IntentLogPage from "./pages/IntentLogPage";
+import BadcasePage from "./pages/BadcasePage";
 
 const ACCENT = appAccent("assistant");
 
@@ -25,6 +26,7 @@ const USER_NAV = [{ key: "/chat", label: "对话" }];
 
 const ADMIN_NAV = [
   { key: "/admin/feedback", label: "反馈处理" },
+  { key: "/admin/badcases", label: "Badcase" },
   { key: "/admin/intent-logs", label: "意图日志" },
 ];
 
@@ -45,6 +47,7 @@ function AdminRoutes() {
     <Routes>
       <Route path="/admin" element={<Navigate to="/admin/feedback" replace />} />
       <Route path="/admin/feedback" element={<FeedbackPage />} />
+      <Route path="/admin/badcases" element={<BadcasePage />} />
       <Route path="/admin/intent-logs" element={<IntentLogPage />} />
     </Routes>
   );

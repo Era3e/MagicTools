@@ -35,7 +35,7 @@ export class RequirementService {
   async get(id: string) {
     const row = await getRequirement(id);
     if (!row) throw new NotFoundException("需求不存在");
-    return { ...row, allowedNextStatuses: MANUAL_TRANSITIONS[row.status] };
+    return { ...row, allowedNextStatuses: MANUAL_TRANSITIONS[row.status], url: `/manager/requirements/${row.id}`, prUrl: row.prUrl };
   }
 
   async executionEligibility(id: string) {
@@ -89,6 +89,28 @@ export class RequirementService {
     const row = await createRequirement({ ...parsed.data, source: "manual" });
     if (!row) throw new Error("手动需求写入后未返回记录");
     return row;
+  }
+
+  async createAssistantBadcase(input: unknown) {
+    const parsed = z.object({
+      badcaseId: z.string().uuid(),
+      title: z.string().trim().min(1).max(300),
+      description: z.string().max(20000).default(""),
+      evidence: z.record(z.unknown()).default({}),
+      acceptanceCriteria: z.array(z.string().trim().min(1).max(2000)).max(50).default([]),
+    }).strict().safeParse(input);
+    if (!parsed.success) throw new BadRequestException("Assistant badcase 需求参数非法");
+    const { badcaseId, ...rest } = parsed.data;
+    let row = await createRequirement({
+      ...rest,
+      source: "assistant_badcase",
+      sourceRef: `badcase:${badcaseId}`,
+      sourcePayload: { ...rest.evidence, badcaseId },
+      labels: ["assistant", "badcase"],
+    });
+    if (!row) row = await findRequirementByRef("assistant_badcase", `badcase:${badcaseId}`);
+    if (!row) throw new Error("Assistant badcase 需求幂等冲突后无法读取既有需求");
+    return { ...row, url: `/manager/requirements/${row.id}`, prUrl: row.prUrl };
   }
 
   async patch(id: string, input: unknown) {

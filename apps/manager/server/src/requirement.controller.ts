@@ -35,6 +35,11 @@ export class RequirementController {
     return this.service.create(body);
   }
 
+  @Post("requirements/assistant-badcases")
+  createAssistantBadcase(@Body() body: unknown) {
+    return this.service.createAssistantBadcase(body);
+  }
+
   @Patch("requirements/:id")
   patch(@Param("id") id: string, @Body() body: Record<string, unknown>) {
     return this.service.patch(id, body as never);

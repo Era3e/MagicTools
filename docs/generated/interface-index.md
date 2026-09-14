@@ -138,12 +138,21 @@
 | `/admin/*` |
 | `/admin` |
 | `/admin/feedback` |
+| `/admin/badcases` |
 | `/admin/intent-logs` |
 
 ### 服务 API
 
 | 方法 | 路径 |
 |---|---|
+| GET | `/api/assistant/badcases` |
+| GET | `/api/assistant/badcases/:id` |
+| POST | `/api/assistant/badcases/from-feedback/:feedbackId` |
+| POST | `/api/assistant/badcases/from-evaluation/:runId/:caseKey` |
+| POST | `/api/assistant/badcases/:id/confirm` |
+| POST | `/api/assistant/badcases/:id/regression` |
+| POST | `/api/assistant/badcases/:id/requirement` |
+| POST | `/api/assistant/badcases/:id/close` |
 | POST | `/api/assistant/chat` |
 | GET | `/api/assistant/chat/verify/:taskId` |
 | GET | `/api/assistant/conversations` |
@@ -313,6 +322,7 @@
 | GET | `/api/manager/requirements/:id/execution-eligibility` |
 | GET | `/api/manager/requirements/:id/revisions` |
 | POST | `/api/manager/requirements` |
+| POST | `/api/manager/requirements/assistant-badcases` |
 | PATCH | `/api/manager/requirements/:id` |
 | POST | `/api/manager/requirements/:id/refresh-pr` |
 | POST | `/api/manager/sync/github` |

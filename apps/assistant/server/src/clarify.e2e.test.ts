@@ -33,7 +33,7 @@ afterAll(async () => {
 
 beforeEach(async () => {
   if (!available) return;
-  await pool.query("TRUNCATE conversations, messages, intent_logs, feedback");
+  await pool.query("TRUNCATE assistant_badcases, assistant_traces, conversations, messages, intent_logs, feedback");
 });
 
 describe("clarify", () => {
@@ -46,13 +46,19 @@ describe("clarify", () => {
     expect(res.body.reply).toContain("请选择");
     expect(res.body.clarifyOptions.length).toBeGreaterThanOrEqual(2);
     expect(res.body.actionResult).toEqual({});
-    const logs = await pool.query("SELECT confidence::float AS confidence, corrected_intent FROM intent_logs");
+    const logs = await pool.query("SELECT confidence::float AS confidence, corrected_intent, suggested_intent, trace_id FROM intent_logs");
     expect(logs.rows).toHaveLength(1);
     expect(logs.rows[0].confidence).toBe(0.3);
     expect(logs.rows[0].corrected_intent).toBeNull();
+    expect(logs.rows[0].suggested_intent).toBeNull();
+    expect(logs.rows[0].trace_id).not.toBeNull();
+    const badcases = await pool.query("SELECT source, stage, trace_id FROM assistant_badcases");
+    expect(badcases.rows).toHaveLength(1);
+    expect(badcases.rows[0]).toMatchObject({ source: "user_clarify", stage: "routing" });
+    expect(badcases.rows[0].trace_id).toBe(logs.rows[0].trace_id);
   });
 
-  it("用户按序号确认后执行对应分支并回填纠错", async (ctx) => {
+  it("用户按序号确认后执行对应分支但只写入建议意图", async (ctx) => {
     if (!available) { ctx.skip(); return; }
     const first = await request(app.getHttpServer()).post("/api/assistant/chat").send({ message: "帮我创建一个需求：支持导出功能" });
     const sid = first.body.sessionId;
@@ -61,8 +67,10 @@ describe("clarify", () => {
     expect(confirm.body.clarifying).toBe(false);
     expect(confirm.body.intent).toBe("process_execution");
     expect(confirm.body.actionResult.ok).toBe(true);
-    const logs = await pool.query("SELECT corrected_intent FROM intent_logs ORDER BY created_at");
-    expect(logs.rows[0].corrected_intent).toBe("process_execution");
+    const logs = await pool.query("SELECT corrected_intent, suggested_intent, suggested_source FROM intent_logs ORDER BY created_at");
+    expect(logs.rows[0].corrected_intent).toBeNull();
+    expect(logs.rows[0].suggested_intent).toBe("process_execution");
+    expect(logs.rows[0].suggested_source).toBe("user_clarify");
   });
 
   it("用户选择备选意图同样生效", async (ctx) => {
@@ -75,8 +83,9 @@ describe("clarify", () => {
       .send({ sessionId: first.body.sessionId, message: alt.intent });
     expect(confirm.status).toBe(201);
     expect(confirm.body.intent).toBe(alt.intent);
-    const logs = await pool.query("SELECT corrected_intent FROM intent_logs ORDER BY created_at");
-    expect(logs.rows[0].corrected_intent).toBe(alt.intent);
+    const logs = await pool.query("SELECT corrected_intent, suggested_intent FROM intent_logs ORDER BY created_at");
+    expect(logs.rows[0].corrected_intent).toBeNull();
+    expect(logs.rows[0].suggested_intent).toBe(alt.intent);
   });
 
   it("高置信度（默认）不触发澄清", async (ctx) => {

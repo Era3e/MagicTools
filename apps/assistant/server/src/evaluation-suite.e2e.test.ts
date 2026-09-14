@@ -24,6 +24,7 @@ async function seedKnowledge(message: string) {
 
 beforeAll(async () => {
   process.env.MT_LLM_STUB = "1";
+  process.env.ASSISTANT_ADMIN_AUTH = "disabled";
   process.env.SCHOLAR_DATABASE_URL = SCHOLAR_TEST_URL;
   await ensureDatabase();
   await migrate();

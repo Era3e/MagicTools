@@ -12,6 +12,7 @@ let available = false;
 beforeAll(async () => {
   try {
     process.env.MT_LLM_STUB = "1";
+    process.env.ASSISTANT_ADMIN_AUTH = "disabled";
     await ensureDatabase();
     await migrate();
     available = true;
@@ -31,7 +32,7 @@ afterAll(async () => {
 
 beforeEach(async () => {
   if (!available) return;
-  await pool.query("TRUNCATE conversations, messages, feedback");
+  await pool.query("TRUNCATE assistant_badcases, assistant_traces, conversations, messages, feedback");
 });
 
 describe("complaint_feedback", () => {
@@ -41,9 +42,12 @@ describe("complaint_feedback", () => {
     expect(res.status).toBe(201);
     expect(res.body.intent).toBe("complaint_feedback");
     expect(res.body.reply).toContain("收到");
-    const rows = await pool.query("SELECT content FROM feedback");
+    const rows = await pool.query("SELECT content, conversation_id, user_message_id, intent_log_id FROM feedback");
     expect(rows.rows).toHaveLength(1);
     expect(rows.rows[0].content).toBe("我要投诉，搜索功能不好用");
+    expect(rows.rows[0].conversation_id).not.toBeNull();
+    expect(rows.rows[0].user_message_id).not.toBeNull();
+    expect(rows.rows[0].intent_log_id).not.toBeNull();
   });
 
   it("反馈列表与删除", async (ctx) => {

@@ -71,7 +71,7 @@
         },
         {
           "path": "src/requirement-foundation.e2e.test.ts",
-          "minimumTests": 4
+          "minimumTests": 5
         },
         {
           "path": "src/requirement-execution.e2e.test.ts",
@@ -170,6 +170,10 @@
         {
           "path": "src/evaluation-suite.e2e.test.ts",
           "minimumTests": 4
+        },
+        {
+          "path": "src/badcase.e2e.test.ts",
+          "minimumTests": 5
         },
         {
           "path": "src/multi-turn.e2e.test.ts",

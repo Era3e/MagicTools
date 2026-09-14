@@ -12,6 +12,7 @@ let available = false;
 beforeAll(async () => {
   try {
     process.env.MT_LLM_STUB = "1";
+    process.env.ASSISTANT_ADMIN_AUTH = "disabled";
     await ensureDatabase();
     await migrate();
     available = true;
@@ -71,8 +72,10 @@ describe("intent_logs", () => {
       .send({ correctedIntent: "complaint_feedback" });
     expect(res.status).toBe(201);
     expect(res.body.correctedIntent).toBe("complaint_feedback");
-    const rows = await pool.query("SELECT corrected_intent FROM intent_logs WHERE id = $1", [id]);
+    const rows = await pool.query("SELECT corrected_intent, correction_source, confirmed_at FROM intent_logs WHERE id = $1", [id]);
     expect(rows.rows[0].corrected_intent).toBe("complaint_feedback");
+    expect(rows.rows[0].correction_source).toBe("admin");
+    expect(rows.rows[0].confirmed_at).not.toBeNull();
   });
 
   it("纠错不存在的日志返回 404", async (ctx) => {

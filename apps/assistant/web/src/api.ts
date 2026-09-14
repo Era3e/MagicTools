@@ -114,7 +114,35 @@ export interface Feedback {
   id: string;
   content: string;
   contact: string;
+  conversationId: string | null;
+  userMessageId: string | null;
+  intentLogId: string | null;
+  traceId: string | null;
   createdAt: string;
+}
+
+export interface Badcase {
+  id: string;
+  source: string;
+  stage: string;
+  status: string;
+  title: string;
+  description: string;
+  severity: string;
+  evidence: Record<string, unknown>;
+  expected: Record<string, unknown> | null;
+  traceId: string | null;
+  conversationId: string | null;
+  intentLogId: string | null;
+  feedbackId: string | null;
+  evaluationCaseId: string | null;
+  baselineRunId: string | null;
+  verificationRunId: string | null;
+  requirementId: string | null;
+  requirementUrl: string;
+  fixPrUrl: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Message {
@@ -149,6 +177,15 @@ export const api = {
   deleteConversation: (id: string) => request<{ deleted: boolean }>("/conversations/" + id, { method: "DELETE" }),
   listFeedback: () => request<Feedback[]>("/feedback"),
   deleteFeedback: (id: string) => request<{ deleted: boolean }>("/feedback/" + id, { method: "DELETE" }),
+  listBadcases: () => request<Badcase[]>("/badcases"),
+  createFeedbackBadcase: (feedbackId: string) =>
+    request<Badcase>(`/badcases/from-feedback/${feedbackId}`, { method: "POST", body: JSON.stringify({}) }),
+  confirmBadcase: (id: string, input: { title: string; description?: string; stage: string; severity: string; expected: Record<string, unknown> }) =>
+    request<Badcase>(`/badcases/${id}/confirm`, { method: "POST", body: JSON.stringify(input) }),
+  createBadcaseRegression: (id: string) =>
+    request<Badcase>(`/badcases/${id}/regression`, { method: "POST", body: JSON.stringify({}) }),
+  createBadcaseRequirement: (id: string) =>
+    request<Badcase>(`/badcases/${id}/requirement`, { method: "POST", body: JSON.stringify({}) }),
   listIntentLogs: (filters: { domain?: string; intent?: string } = {}) => {
     const qs = new URLSearchParams();
     if (filters.domain) qs.set("domain", filters.domain);

@@ -1,5 +1,8 @@
 import { Module } from "@nestjs/common";
 import { ActionService } from "./action.service";
+import { BadcaseController } from "./badcase.controller";
+import { BadcaseService } from "./badcase.service";
+import { ManagerClient } from "./manager.client";
 import { ChatController } from "./chat.controller";
 import { ChatService } from "./chat.service";
 import { CybercloudService } from "./cybercloud.service";
@@ -18,7 +21,7 @@ import { MetaController } from "./meta.controller";
 import { TroubleService } from "./trouble.service";
 
 @Module({
-  controllers: [HealthController, ChatController, MetaController, FeedbackController, IntentLogController, EvaluationSuiteController],
-  providers: [ChatService, IntentService, KnowledgeService, CybercloudService, DirectQueryService, ActionService, TroubleService, FeedbackService, EvaluationService, EvaluationSuiteService, FinetuneService],
+  controllers: [HealthController, ChatController, MetaController, FeedbackController, IntentLogController, EvaluationSuiteController, BadcaseController],
+  providers: [ChatService, IntentService, KnowledgeService, CybercloudService, DirectQueryService, ActionService, TroubleService, FeedbackService, EvaluationService, EvaluationSuiteService, FinetuneService, ManagerClient, BadcaseService],
 })
 export class AppModule {}
