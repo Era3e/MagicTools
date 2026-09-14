@@ -108,8 +108,9 @@ function wantsHtml(req: Request): boolean {
   return accept.includes("text/html");
 }
 
-function setGatewayIdentity(req: Request, identity: string): void {
+function setGatewayIdentity(req: Request, identity: string, role: "admin" | "user" = "admin"): void {
   req.headers["x-gateway-user"] = identity;
+  req.headers["x-gateway-role"] = role;
 }
 
 export function createAuthMiddleware(env: NodeJS.ProcessEnv, deps: AuthDeps = {}) {
@@ -134,6 +135,7 @@ export function createAuthMiddleware(env: NodeJS.ProcessEnv, deps: AuthDeps = {}
     // 剥离客户端伪造的身份头：下游的 x-gateway-user 只能由本中间件按认证结果回填，
     // 防止全放行/部分放行模式下伪造身份透传（http-proxy-middleware 转发修改后的 req.headers）。
     delete req.headers["x-gateway-user"];
+    delete req.headers["x-gateway-role"];
     if (req.path === "/login" || req.path === "/logout") {
       if (req.method !== "POST" || !req.is("urlencoded")) {
         handleLoginLogout(ctx, req, res, next);
@@ -196,7 +198,7 @@ export function createAuthMiddleware(env: NodeJS.ProcessEnv, deps: AuthDeps = {}
               return;
             }
           }
-          setGatewayIdentity(req, session.user);
+          setGatewayIdentity(req, session.user, session.role);
           next();
           return;
         }

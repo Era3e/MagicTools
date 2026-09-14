@@ -102,6 +102,11 @@ export async function listEvaluationCases(split?: EvaluationSplit): Promise<Eval
   return rows.rows.map(mapCase);
 }
 
+export async function getEvaluationCaseByCaseKey(caseKey: string): Promise<EvaluationCaseRow | null> {
+  const rows = await pool.query("SELECT * FROM evaluation_cases WHERE case_key = $1", [caseKey]);
+  return rows.rows[0] ? mapCase(rows.rows[0]) : null;
+}
+
 export async function createEvaluationRun(input: {
   split: EvaluationSplit;
   label: string;

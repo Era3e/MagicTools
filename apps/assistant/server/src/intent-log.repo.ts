@@ -8,6 +8,13 @@ export interface IntentLogRow {
   intent: string;
   confidence: number;
   correctedIntent: string | null;
+  suggestedIntent?: string | null;
+  suggestedSource?: string | null;
+  correctionSource?: string | null;
+  confirmedAt?: string | null;
+  traceId?: string | null;
+  conversationId?: string | null;
+  userMessageId?: string | null;
   createdAt: string;
 }
 
@@ -19,14 +26,30 @@ function mapRow(r: Record<string, unknown>): IntentLogRow {
     intent: r.intent as string,
     confidence: Number(r.confidence),
     correctedIntent: (r.corrected_intent as string | null) ?? null,
+    suggestedIntent: (r.suggested_intent as string | null) ?? null,
+    suggestedSource: (r.suggested_source as string | null) ?? null,
+    correctionSource: (r.correction_source as string | null) ?? null,
+    confirmedAt: r.confirmed_at ? new Date(r.confirmed_at as string).toISOString() : null,
+    traceId: (r.trace_id as string | null) ?? null,
+    conversationId: (r.conversation_id as string | null) ?? null,
+    userMessageId: (r.user_message_id as string | null) ?? null,
     createdAt: new Date(r.created_at as string).toISOString(),
   };
 }
 
-export async function insertIntentLog(input: { message: string; domain: Domain; intent: Intent; confidence: number }): Promise<IntentLogRow> {
+export async function insertIntentLog(input: {
+  message: string;
+  domain: Domain;
+  intent: Intent;
+  confidence: number;
+  traceId?: string;
+  conversationId?: string;
+  userMessageId?: string;
+}): Promise<IntentLogRow> {
   const rows = await pool.query(
-    "INSERT INTO intent_logs (message, domain, intent, confidence) VALUES ($1, $2, $3, $4) RETURNING id, message, domain, intent, confidence, corrected_intent, created_at",
-    [input.message, input.domain, input.intent, input.confidence]
+    `INSERT INTO intent_logs (message, domain, intent, confidence, trace_id, conversation_id, user_message_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+    [input.message, input.domain, input.intent, input.confidence, input.traceId ?? null, input.conversationId ?? null, input.userMessageId ?? null]
   );
   return mapRow(rows.rows[0]);
 }
@@ -48,16 +71,33 @@ export async function listIntentLogs(filters: { domain?: string; intent?: string
 
 export async function correctIntentLog(id: string, correctedIntent: string): Promise<IntentLogRow | null> {
   const rows = await pool.query(
-    "UPDATE intent_logs SET corrected_intent = $2 WHERE id = $1 RETURNING id, message, domain, intent, confidence, corrected_intent, created_at",
+    `UPDATE intent_logs
+     SET corrected_intent = $2, correction_source = 'admin', confirmed_at = now()
+     WHERE id = $1 RETURNING *`,
     [id, correctedIntent]
   );
   return rows.rows[0] ? mapRow(rows.rows[0]) : null;
 }
 
+export async function suggestIntentLog(id: string, suggestedIntent: string): Promise<IntentLogRow | null> {
+  const rows = await pool.query(
+    `UPDATE intent_logs
+     SET suggested_intent = $2, suggested_source = 'user_clarify', corrected_intent = NULL,
+         correction_source = NULL, confirmed_at = NULL
+     WHERE id = $1 RETURNING *`,
+    [id, suggestedIntent]
+  );
+  return rows.rows[0] ? mapRow(rows.rows[0]) : null;
+}
+
+export async function attachIntentLogTrace(id: string, traceId: string): Promise<void> {
+  await pool.query("UPDATE intent_logs SET trace_id=$2 WHERE id=$1", [id, traceId]);
+}
+
 /** D-09: 拉取已纠错样本（corrected_intent 非空），用于 few-shot 构造与数据集导出 */
 export async function listCorrectedLogs(limit = 500): Promise<IntentLogRow[]> {
   const rows = await pool.query(
-    "SELECT id, message, domain, intent, confidence, corrected_intent, created_at FROM intent_logs" +
+    "SELECT * FROM intent_logs" +
     " WHERE corrected_intent IS NOT NULL AND corrected_intent <> ''" +
     " AND NOT EXISTS (SELECT 1 FROM evaluation_case_fingerprints f WHERE f.message_fingerprint = intent_logs.message_fingerprint)" +
     " ORDER BY created_at DESC LIMIT $1",

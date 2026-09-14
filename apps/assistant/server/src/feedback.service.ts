@@ -1,12 +1,12 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { deleteFeedback, insertFeedback, listFeedback } from "./feedback.repo";
+import { deleteFeedback, insertFeedback, listFeedback, type FeedbackContext } from "./feedback.repo";
 
 const POLITE_REPLY = "收到你的反馈，我们已经记录并会尽快改进，谢谢！";
 
 @Injectable()
 export class FeedbackService {
-  async collect(content: string): Promise<{ reply: string }> {
-    await insertFeedback(content);
+  async collect(content: string, context: FeedbackContext = {}): Promise<{ reply: string }> {
+    await insertFeedback(content, "", context);
     return { reply: POLITE_REPLY };
   }
 

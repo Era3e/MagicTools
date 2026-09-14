@@ -65,7 +65,7 @@ const SERVER_ENV = {
   manager:      { GITHUB_STUB: "1", DATABASE_URL: "postgres://postgres:postgres@127.0.0.1:5432/manager_e2e", MANAGER_E2E_ISOLATION: "1" },
   designer:     { ...MT_LLM_STUB },
   scholar:      { ...MT_LLM_STUB },
-  assistant:    { CYBERCLOUD_STUB: "1", ACTION_STUB: "1", CLARIFY_STUB_CONFIDENCE: "0.9", ...MT_LLM_STUB },
+  assistant:    { CYBERCLOUD_STUB: "1", ACTION_STUB: "1", CLARIFY_STUB_CONFIDENCE: "0.9", ASSISTANT_ADMIN_AUTH: "disabled", ...MT_LLM_STUB },
   applicant:    { ...MT_LLM_STUB },
 };
 function serverEnvironment(app) {

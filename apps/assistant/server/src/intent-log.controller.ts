@@ -1,4 +1,5 @@
-import { BadRequestException, Body, Controller, Get, HttpCode, Inject, NotFoundException, Param, Post, Query } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, HttpCode, Inject, NotFoundException, Param, Post, Query, Req } from "@nestjs/common";
+import { assertAdmin, type AdminRequest } from "./admin-auth";
 import { EvaluationService } from "./evaluation.service";
 import { FinetuneService } from "./finetune.service";
 import { correctIntentLog, listIntentLogs } from "./intent-log.repo";
@@ -19,7 +20,8 @@ export class IntentLogController {
   }
 
   @Post("intent-logs/:id/correct")
-  async correct(@Param("id") id: string, @Body() body: unknown) {
+  async correct(@Param("id") id: string, @Body() body: unknown, @Req() request: AdminRequest) {
+    assertAdmin(request);
     const parsed = intentCorrectionSchema.safeParse(body);
     if (!parsed.success) throw new BadRequestException("correctedIntent 非法");
     const row = await correctIntentLog(id, parsed.data.correctedIntent);

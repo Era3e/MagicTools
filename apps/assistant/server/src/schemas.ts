@@ -45,6 +45,19 @@ export const evaluationRunSchema = z.object({
   label: z.string().trim().min(1).max(80).default("manual"),
 });
 
+export const badcaseConfirmSchema = z.object({
+  title: z.string().trim().min(1).max(160),
+  description: z.string().trim().max(4000).default(""),
+  stage: z.enum(["routing", "knowledge", "action", "data", "safety", "other"]),
+  severity: z.enum(["low", "medium", "high"]),
+  expected: z.record(z.unknown()),
+});
+
+export const badcaseCloseSchema = z.object({
+  fixPrUrl: z.string().regex(/^https:\/\/github\.com\/[^\s]+\/pull\/\d+$/u),
+  verificationRunId: z.string().uuid(),
+});
+
 export const answerSchema = z.object({
   answer: z.string(),
 });

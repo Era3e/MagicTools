@@ -90,4 +90,21 @@ describe("需求变更契约", () => {
     expect(saved.body.description).toBe("修改后的完整描述");
     expect(saved.body.timeline).toHaveLength(1);
   });
+
+  it("同一 Assistant badcase 幂等创建一条需求", async () => {
+    const input = {
+      badcaseId: randomUUID(),
+      title: "Assistant badcase 幂等需求",
+      description: "由智能助手 badcase 创建",
+      evidence: { traceId: "trace-1" },
+      acceptanceCriteria: ["目标回归样本通过"],
+    };
+    const first = await request(app.getHttpServer()).post("/api/manager/requirements/assistant-badcases").send(input).expect(201);
+    const second = await request(app.getHttpServer()).post("/api/manager/requirements/assistant-badcases").send(input).expect(201);
+    expect(first.body.id).toBe(second.body.id);
+    expect(first.body.source).toBe("assistant_badcase");
+    expect(first.body.sourceRef).toBe("badcase:" + input.badcaseId);
+    const count = await pool.query("SELECT count(*)::int AS n FROM requirements WHERE source='assistant_badcase' AND source_ref=$1", [first.body.sourceRef]);
+    expect(count.rows[0].n).toBe(1);
+  });
 });

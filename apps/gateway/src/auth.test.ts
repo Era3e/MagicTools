@@ -14,7 +14,10 @@ async function buildApp(env: Record<string, string>) {
   app.get("/scholar/", (_req, res) => res.send("scholar-web"));
   // 身份断言在「下游侧」：读请求头（等价于代理转发给业务服务的头），而非网关响应头——
   // res.setHeader 只影响网关自身响应，验证不了透传（独立验收 D2 教训）。
-  app.get("/api/manager/requirements", (req, res) => res.json({ user: req.headers["x-gateway-user"] ?? null }));
+  app.get("/api/manager/requirements", (req, res) => res.json({
+    user: req.headers["x-gateway-user"] ?? null,
+    role: req.headers["x-gateway-role"] ?? null,
+  }));
   return app;
 }
 
@@ -132,6 +135,7 @@ describe("auth 中间件", () => {
       .set("x-gateway-user", "forged-admin");
     expect(res.status).toBe(200);
     expect(res.body.user).toBe("service");
+    expect(res.body.role).toBe("admin");
   });
 
   it("全放行模式下伪造身份头同样被剥离", async () => {
@@ -139,5 +143,6 @@ describe("auth 中间件", () => {
     const res = await request(app).get("/api/manager/requirements").set("x-gateway-user", "forged");
     expect(res.status).toBe(200);
     expect(res.body.user).toBeNull();
+    expect(res.body.role).toBeNull();
   });
 });

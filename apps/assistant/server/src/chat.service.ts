@@ -14,7 +14,9 @@ import { insertCybercloudCall } from "./cybercloud-calls.repo";
 import { CybercloudService } from "./cybercloud.service";
 import { DirectQueryService } from "./direct-query.service";
 import { FeedbackService } from "./feedback.service";
-import { correctIntentLog, insertIntentLog } from "./intent-log.repo";
+import { attachIntentLogTrace, insertIntentLog, suggestIntentLog } from "./intent-log.repo";
+import { BadcaseService } from "./badcase.service";
+import { insertTrace, type TraceStage } from "./trace.repo";
 import type { Intent } from "./llm";
 import { IntentService } from "./intent.service";
 import { KnowledgeService } from "./knowledge.service";
@@ -46,6 +48,15 @@ function resolveClarify(message: string, options: Array<{ label: string; intent:
   return byIntent ? byIntent.intent : null;
 }
 
+function traceStage(intent: Intent): TraceStage {
+  if (intent === "product_inquiry") return "knowledge";
+  if (intent === "data_query") return "data";
+  if (intent === "process_execution") return "action";
+  if (intent === "trouble_shooting") return "trouble";
+  if (intent === "complaint_feedback") return "feedback";
+  return "other";
+}
+
 const CHITCHAT_REPLY =
   "我是智能助手，目前可以：1）回答产品/知识问题（基于 Scholar 圈定内容）；2）查询数据指标（需配置数据源）。试试问我产品功能或数据问题吧。";
 const DATA_QUERY_DEGRADE = "数据查询暂未配置（CYBERCLOUD 未配置），请稍后重试或联系管理员。";
@@ -68,7 +79,8 @@ export class ChatService {
     @Inject(DirectQueryService) private readonly directQuery: DirectQueryService,
     @Inject(ActionService) private readonly actions: ActionService,
     @Inject(TroubleService) private readonly trouble: TroubleService,
-    @Inject(FeedbackService) private readonly feedback: FeedbackService
+    @Inject(FeedbackService) private readonly feedback: FeedbackService,
+    @Inject(BadcaseService) private readonly badcases: BadcaseService
   ) {}
 
   async chat(input: unknown) {
@@ -84,17 +96,29 @@ export class ChatService {
     }
 
     const history = await listMessages(conversationId, 20);
-    await insertMessage({ conversationId, role: "user", content: message, intent: "", citations: [] });
+    const userMessage = await insertMessage({ conversationId, role: "user", content: message, intent: "", citations: [] });
 
     // 澄清确认：上一轮低置信度反问后，用户按序号/意图确认
     const pending = this.pendingClarify.get(conversationId);
     if (pending) {
       const chosen = resolveClarify(message, pending.options);
       if (chosen) {
-        await correctIntentLog(pending.intentLogId, chosen);
+        await suggestIntentLog(pending.intentLogId, chosen);
         this.pendingClarify.delete(conversationId);
-        const result = await this.executeBranch(chosen, pending.originalMessage, history);
-        await insertMessage({ conversationId, role: "assistant", content: result.reply, intent: chosen, citations: result.citations });
+        const result = await this.executeBranch(chosen, pending.originalMessage, history, {
+          conversationId, userMessageId: userMessage.id, intentLogId: pending.intentLogId,
+        });
+        const assistantMessage = await insertMessage({ conversationId, role: "assistant", content: result.reply, intent: chosen, citations: result.citations });
+        await insertTrace({
+          conversationId,
+          userMessageId: userMessage.id,
+          assistantMessageId: assistantMessage.id,
+          intentLogId: pending.intentLogId,
+          stage: traceStage(chosen),
+          status: "completed",
+          route: { domain: "magictools", intent: chosen },
+          result: { ...result },
+        });
         await touchConversation(conversationId);
         return {
           sessionId: conversationId,
@@ -122,7 +146,28 @@ export class ChatService {
       const options = buildClarifyOptions(intent);
       const reply = "我不太确定你的意思，请选择：\n" + options.map((o) => o.label).join("\n");
       this.pendingClarify.set(conversationId, { intentLogId: log.id, options, originalMessage: message });
-      await insertMessage({ conversationId, role: "assistant", content: reply, intent, citations: [] });
+      const assistantMessage = await insertMessage({ conversationId, role: "assistant", content: reply, intent, citations: [] });
+      const trace = await insertTrace({
+        conversationId,
+        userMessageId: userMessage.id,
+        assistantMessageId: assistantMessage.id,
+        intentLogId: log.id,
+        stage: "routing",
+        status: "clarifying",
+        route: { ...route },
+        result: { options },
+      });
+      await attachIntentLogTrace(log.id, trace.id);
+      await this.badcases.createFromClarify({
+        title: message.slice(0, 80),
+        description: "低置信度路由需要管理员确认",
+        evidence: { message, history, route, options },
+        traceId: trace.id,
+        conversationId,
+        userMessageId: userMessage.id,
+        assistantMessageId: assistantMessage.id,
+        intentLogId: log.id,
+      });
       await touchConversation(conversationId);
       return {
         sessionId: conversationId,
@@ -137,11 +182,37 @@ export class ChatService {
       };
     }
 
-    const result = await this.executeBranch(intent, message, history);
+    const feedbackContext = { conversationId, userMessageId: userMessage.id, intentLogId: log.id };
+    let result;
+    try {
+      result = await this.executeBranch(intent, message, history, feedbackContext);
+    } catch (error) {
+      await insertTrace({
+        conversationId,
+        userMessageId: userMessage.id,
+        intentLogId: log.id,
+        stage: traceStage(intent),
+        status: "failed",
+        route: { ...route },
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
     const reply = result.reply;
     const citations = result.citations;
     const actionResult = result.actionResult;
-    await insertMessage({ conversationId, role: "assistant", content: reply, intent, citations });
+    const assistantMessage = await insertMessage({ conversationId, role: "assistant", content: reply, intent, citations });
+    const trace = await insertTrace({
+      conversationId,
+      userMessageId: userMessage.id,
+      assistantMessageId: assistantMessage.id,
+      intentLogId: log.id,
+      stage: traceStage(intent),
+      status: "completed",
+      route: { ...route },
+      result: { reply, citations, actionResult, verify: result.verify, dataSource: result.dataSource },
+    });
+    await attachIntentLogTrace(log.id, trace.id);
     await touchConversation(conversationId);
     return { sessionId: conversationId, reply, intent, domain: route.domain, confidence: route.confidence, clarifying: false, citations, actionResult, verify: result.verify, dataSource: result.dataSource };
   }
@@ -149,7 +220,8 @@ export class ChatService {
   private async executeBranch(
     intent: Intent,
     message: string,
-    history: Array<{ role: "user" | "assistant"; content: string }>
+    history: Array<{ role: "user" | "assistant"; content: string }>,
+    feedbackContext: { conversationId: string; userMessageId: string; intentLogId?: string }
   ): Promise<{ reply: string; citations: Citation[]; actionResult: Record<string, unknown>; verify?: { taskId?: string; status: string }; dataSource?: Record<string, unknown> }> {
     let reply = "";
     let citations: Citation[] = [];
@@ -215,7 +287,7 @@ export class ChatService {
     } else if (intent === "trouble_shooting") {
       reply = (await this.trouble.diagnose(message)).reply;
     } else if (intent === "complaint_feedback") {
-      reply = (await this.feedback.collect(message)).reply;
+      reply = (await this.feedback.collect(message, feedbackContext)).reply;
     } else {
       reply = CHITCHAT_REPLY;
     }
