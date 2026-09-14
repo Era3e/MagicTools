@@ -763,7 +763,9 @@ export const APPS: AppEntry[] = [
 | 健康 | HealthController | — | — | — |
 | 评审 | RequestController | RequestService | RequestRepo | 跨库消费 investigator → 批次聚合幂等入库 → GitHub 仓库上下文（README/目录树）→ LLM 分析+设计 → 五状态审核 → 推送 Manager |
 
-**外部集成**：`github/client.ts` — README/目录/语言抓取，GITHUB_STUB=1 桩
+**外部集成**：`github/client.ts` — README/目录/语言与按提交文件读取；目录或提交清单截断、变更超过200文件时显式失败，GITHUB_STUB=1 桩
+
+**仓库证据反向整理**：`repository-evidence.service.ts` 按提交筛选 routes/controller/service/schema/tests，读取提交下源码内容并生成行级证据候选；`motivation=unknown` 明确标识不可靠推断，任务按 repo+SHA 幂等。
 
 **消费事件**：`researcher.response.push`（跨库连接 INVESTIGATOR_DATABASE_URL，processOutbox 轮询）
 **推送事件**：`requirement.created`（payload: analysisMd/designMd/repoUrl/reviewComment）

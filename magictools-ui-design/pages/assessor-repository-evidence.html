@@ -146,7 +146,7 @@
       .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       [data-icon] { display: inline-flex; align-items: center; justify-content: center; -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: center; mask-position: center; background-color: currentColor; }
     </style>
-    <title>请求详情 · 评审后台</title>
+    <title>评审后台 · 仓库证据</title>
 </head>
 <body class="min-h-screen font-sans antialiased">
 <style>
@@ -202,7 +202,6 @@
   .as-badge[data-tone="warning"] { color: var(--state-warning); border-color: var(--state-warning); background: transparent; }
   .as-badge[data-tone="error"]   { color: var(--state-error);   border-color: var(--state-error);   background: transparent; }
   .as-badge[data-tone="info"]    { color: var(--state-info);    border-color: var(--state-info);    background: transparent; }
-  .as-badge.mono { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.04em; }
   .as-panel { background: var(--surface-1); border: 1px solid var(--mt-hairline); border-radius: var(--radius-md); box-shadow: var(--shadow-1); }
   .as-nav-item:focus-visible, .as-foot-link:focus-visible, .as-btn:focus-visible { outline: 1px solid var(--mt-ink-300); outline-offset: 2px; }
   @media (max-width: 960px) {
@@ -214,121 +213,46 @@
   @media (prefers-reduced-motion: reduce) { .as-nav-item, .as-foot-link, .as-btn, .as-badge, .as-kpi { transition: none; } }
 </style>
 <style>
-  /* ---------- 页面私有 CSS：信息卡 / 意见时间线 / 状态按钮 / 面板入口 ---------- */
-  .sd-stack { display: flex; flex-direction: column; gap: 24px; }
-  .sd-block-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
-  .sd-block-title { margin: 0; font-family: var(--font-display); font-size: 16px; font-weight: 600; line-height: 1.4; color: var(--text-strong); }
-  .sd-block-meta { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.04em; color: var(--text-faint); }
+  /* ---------- 页面私有 CSS：工具栏 / 表格 / 分页 / 操作链接 / 面板入口 ---------- */
+  .as-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 14px 16px; background: var(--surface-1); border: 1px solid var(--mt-hairline); border-radius: var(--radius-md); margin-bottom: 16px; }
+  .as-toolbar-search { position: relative; flex: 1 1 220px; min-width: 180px; max-width: 320px; }
+  .as-toolbar-search input { width: 100%; height: 34px; padding: 0 12px 0 34px; background: var(--surface-2); border: 1px solid var(--mt-hairline); border-radius: var(--radius-md); color: var(--text-body); font-size: 13px; font-family: var(--font-body); outline: none; transition: border-color var(--duration-fast) var(--ease-standard); }
+  .as-toolbar-search input:focus { border-color: var(--mt-ink-400); }
+  .as-toolbar-search input::placeholder { color: var(--text-faint); }
+  .as-toolbar-search i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--text-faint); pointer-events: none; }
+  .as-toolbar-select { height: 34px; padding: 0 28px 0 12px; background: var(--surface-2); border: 1px solid var(--mt-hairline); border-radius: var(--radius-md); color: var(--text-body); font-size: 13px; font-family: var(--font-body); cursor: pointer; appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b98a8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; background-size: 12px; transition: border-color var(--duration-fast) var(--ease-standard); }
+  .as-toolbar-select:focus { border-color: var(--mt-ink-400); outline: none; }
+  .as-toolbar-select option { background: var(--surface-3); color: var(--text-body); }
 
-  /* 请求信息卡 */
-  .sd-info-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 232px;
-    gap: 20px 28px;
-    padding: 20px 22px;
-  }
-  .sd-fields {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px 24px;
-    align-content: start;
-  }
-  .sd-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-  .sd-field-label { font-size: 12px; line-height: 1.4; color: var(--text-muted); }
-  .sd-field-value { font-size: 13.5px; line-height: 1.5; color: var(--text-body); }
-  .sd-field-value.mono { font-family: var(--font-mono); font-size: 12.5px; color: var(--mt-ink-300); }
-  .sd-side {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    padding: 2px 0 2px 24px;
-    border-left: 1px solid var(--mt-hairline);
-  }
-  .sd-doc-link {
-    align-self: flex-start;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    border: none;
-    background: transparent;
-    padding: 0;
-    font-size: 13px;
-    font-family: var(--font-body);
-    color: var(--accent);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    cursor: pointer;
-    transition: color var(--duration-fast) var(--ease-standard);
-  }
-  .sd-doc-link:hover { color: var(--accent-hover); }
-  .sd-doc-link i { width: 14px; height: 14px; flex: none; }
-  .sd-side-actions { display: flex; flex-direction: column; gap: 8px; margin-top: auto; }
-  .sd-side-actions .as-btn { width: 100%; }
+  .as-table-wrap { background: var(--surface-1); border: 1px solid var(--mt-hairline); border-radius: var(--radius-md); overflow: hidden; overflow-x: auto; }
+  .as-table { width: 100%; border-collapse: collapse; font-size: 13px; font-family: var(--font-body); min-width: 860px; }
+  .as-table thead th { padding: 11px 14px; text-align: left; font-weight: 600; font-size: 11.5px; letter-spacing: 0.04em; color: var(--text-muted); background: var(--surface-2); border-bottom: 1px solid var(--mt-hairline); white-space: nowrap; }
+  .as-table tbody td { padding: 11px 14px; border-bottom: 1px solid var(--mt-hairline); color: var(--text-body); vertical-align: middle; }
+  .as-table tbody tr:last-child td { border-bottom: none; }
+  .as-table tbody tr { transition: background-color var(--duration-fast) var(--ease-standard); }
+  .as-table tbody tr:hover { background: var(--surface-2); }
+  .as-table .col-mono { font-family: var(--font-mono); font-size: 12px; color: var(--mt-ink-300); white-space: nowrap; }
+  .as-table .col-date { font-size: 12px; color: var(--text-muted); white-space: nowrap; font-family: var(--font-mono); }
 
-  /* 通过 / 驳回 状态描边按钮（as-btn 变体自定义，颜色全部走状态令牌） */
-  .sd-btn-success {
-    background: transparent;
-    border: 1px solid var(--state-success);
-    color: var(--state-success);
-  }
-  .sd-btn-success:hover {
-    background: var(--state-success-bg);
-    border-color: var(--state-success);
-    color: var(--state-success-text);
-  }
-  .sd-btn-error {
-    border-color: var(--state-error);
-    color: var(--state-error);
-  }
-  .sd-btn-error:hover {
-    background: var(--state-error-bg);
-    border-color: var(--state-error);
-    color: var(--state-error-text);
-  }
+  .as-action-link { display: inline-flex; align-items: center; gap: 4px; padding: 3px 7px; border: none; background: transparent; color: var(--text-muted); font-size: 12px; font-family: var(--font-body); cursor: pointer; border-radius: var(--radius-sm); text-decoration: none; transition: color var(--duration-fast) var(--ease-standard), background-color var(--duration-fast) var(--ease-standard); }
+  .as-action-link:hover { color: var(--mt-ink-300); background: var(--surface-3); }
+  .as-action-link i { width: 13px; height: 13px; }
 
-  /* 意见时间线 */
-  .sd-timeline { padding: 18px 20px 8px; }
-  .sd-tl-list {
-    list-style: none;
-    margin: 0;
-    padding: 0 0 12px 18px;
-    border-left: 1px solid var(--mt-hairline-strong);
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-  }
-  .sd-tl-item { position: relative; }
-  .sd-tl-item::before {
-    content: "";
-    position: absolute;
-    left: -23px;
-    top: 4px;
-    width: 9px;
-    height: 9px;
-    border-radius: 9999px;
-    background: var(--surface-4);
-    box-shadow: 0 0 0 3px var(--surface-1);
-  }
-  .sd-tl-item.is-adopted::before { background: var(--state-success); }
-  .sd-tl-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .sd-tl-name { font-size: 13px; font-weight: 600; color: var(--text-strong); }
-  .sd-tl-time {
-    font-family: var(--font-mono);
-    font-size: 11.5px;
-    letter-spacing: 0.02em;
-    color: var(--text-faint);
-    font-variant-numeric: tabular-nums;
-  }
-  .sd-tl-status { margin-left: auto; }
-  .sd-tl-text { margin: 5px 0 0; font-size: 13px; line-height: 1.65; color: var(--text-muted); max-width: 680px; }
+  .as-pagination { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; background: var(--surface-1); border: 1px solid var(--mt-hairline); border-radius: var(--radius-md); margin-top: 16px; flex-wrap: wrap; }
+  .as-pagination-info { font-size: 12px; color: var(--text-muted); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .as-pagination-controls { display: flex; align-items: center; gap: 4px; }
+  .as-page-btn { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 28px; padding: 0 6px; border: 1px solid transparent; border-radius: var(--radius-sm); background: transparent; color: var(--text-muted); font-size: 12px; font-family: var(--font-mono); font-weight: 500; cursor: pointer; transition: background-color var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard), border-color var(--duration-fast) var(--ease-standard); }
+  .as-page-btn:hover { background: var(--surface-2); color: var(--text-body); }
+  .as-page-btn[data-active="true"] { background: var(--surface-3); border-color: var(--mt-hairline-strong); color: var(--text-strong); }
+  .as-page-btn i { width: 14px; height: 14px; }
 
-  /* 分析文档入口面板（同款母版样式） */
+  /* 分析文档入口面板 */
   .as-doc-panel {
     display: flex;
     align-items: center;
     gap: 16px;
     padding: 22px 24px;
-    margin-top: 0;
+    margin-top: 20px;
   }
   .as-doc-panel-icon {
     display: flex;
@@ -349,13 +273,13 @@
   .as-doc-panel-btn { flex: none; }
 
   @media (max-width: 960px) {
-    .sd-info-grid { grid-template-columns: 1fr; }
-    .sd-fields { grid-template-columns: 1fr; }
-    .sd-side { border-left: none; border-top: 1px solid var(--mt-hairline); padding: 16px 0 0; }
+    .as-toolbar { gap: 8px; padding: 12px; }
+    .as-toolbar-search { flex: 1 1 100%; max-width: none; }
+    .as-pagination { flex-direction: column; align-items: flex-start; }
     .as-doc-panel { flex-direction: column; align-items: flex-start; gap: 14px; }
     .as-doc-panel-btn { align-self: flex-end; }
   }
-  @media (prefers-reduced-motion: reduce) { .sd-doc-link, .sd-btn-success, .sd-btn-error { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .as-action-link, .as-page-btn, .as-table tbody tr { transition: none; } }
 
   /* ---- R5 修正：窄屏侧栏降级（≤720px 收窄为 56px 图标列） ---- */
   @media (max-width: 720px) {
@@ -388,7 +312,7 @@
     </div>
     <nav class="as-nav" aria-label="后台主导航">
       <div class="as-nav-group">控制台</div>
-      <a class="as-nav-item" data-nav-key="overview" href="#">
+      <a class="as-nav-item" data-nav-key="overview" data-active="true" href="#">
         <i data-lucide="layout-dashboard"></i><span>总览</span>
       </a>
       <a class="as-nav-item" data-nav-key="settings" href="#">
@@ -398,10 +322,10 @@
         <i data-lucide="scroll-text"></i><span>访问日志</span>
       </a>
       <div class="as-nav-group">业务</div>
-      <a class="as-nav-item" data-nav-key="requests" data-active="true" href="./assessor-admin.html">
+      <a class="as-nav-item" data-nav-key="requests" href="./assessor-admin.html">
         <i data-lucide="clipboard-check"></i><span>分析请求审批</span>
       </a>
-      <a class="as-nav-item" data-nav-key="repository-evidence" href="./assessor-repository-evidence.html">
+      <a class="as-nav-item" data-nav-key="repository-evidence" data-active="true" href="./assessor-repository-evidence.html">
         <i data-lucide="git-commit-horizontal"></i><span>仓库证据</span>
       </a>
     </nav>
@@ -419,7 +343,7 @@
       <div class="as-crumbs">
         <span class="as-crumb-root">评审后台</span>
         <span class="as-crumb-sep">/</span>
-        <span class="as-crumb-current">请求详情</span>
+        <span class="as-crumb-current">仓库证据</span>
       </div>
       <div class="as-topbar-right">
         <span class="as-version">V2.2</span>
@@ -430,128 +354,116 @@
       <div class="as-pagehead">
         <div class="as-pagehead-row">
           <div class="as-pagehead-main">
-            <div class="as-page-eyebrow">ADMIN · REQUEST DETAIL</div>
-            <h1 class="as-page-title">定价分析报告 · 第九稿</h1>
+            <div class="as-page-eyebrow">ADMIN · REPOSITORY EVIDENCE</div>
+            <h1 class="as-page-title">仓库证据反向整理</h1>
             <div class="as-page-badges">
-              <span class="as-badge mono">RV-2026-128</span>
-              <span class="as-badge" data-tone="warning">评审中</span>
-              <span class="as-badge" data-tone="error">高优先级</span>
+              <span class="as-badge" data-tone="info">SHA · EVIDENCE</span>
             </div>
-            <p class="as-page-desc">查看评审请求信息、各轮意见处理进度与分析文档入口。</p>
+            <p class="as-page-desc">按提交读取路由、Controller、Service、Schema 与测试文件，生成带源码行号的反向需求证据。</p>
+          </div>
+          <div class="as-page-actions">
+            <button type="button" class="as-btn as-btn-ghost"><i data-lucide="refresh-cw"></i><span>刷新任务</span></button>
+            <button type="button" class="as-btn as-btn-primary"><i data-lucide="git-commit-horizontal"></i><span>反向整理</span></button>
           </div>
         </div>
         <div class="as-kpirow">
-          <div class="as-kpi"><span class="as-kpi-label">评审轮次</span><span class="as-kpi-value">3</span></div>
-          <div class="as-kpi"><span class="as-kpi-label">意见条数</span><span class="as-kpi-value">11</span></div>
-          <div class="as-kpi"><span class="as-kpi-label">已采纳</span><span class="as-kpi-value">7</span></div>
-          <div class="as-kpi"><span class="as-kpi-label">平均响应</span><span class="as-kpi-value">4.2h</span></div>
+          <div class="as-kpi"><span class="as-kpi-label">采集任务</span><span class="as-kpi-value">12</span></div>
+          <div class="as-kpi"><span class="as-kpi-label">候选证据</span><span class="as-kpi-value">58</span></div>
+          <div class="as-kpi"><span class="as-kpi-label">最近提交</span><span class="as-kpi-value">d1aca97</span></div>
+          <div class="as-kpi"><span class="as-kpi-label">动机标注</span><span class="as-kpi-value">unknown</span></div>
         </div>
       </div>
       <div class="as-content-body">
-        <div class="sd-stack">
 
-          <section aria-label="请求信息">
-            <div class="sd-block-head">
-              <h2 class="sd-block-title">请求信息</h2>
-              <span class="sd-block-meta">提交于 2026-09-08</span>
-            </div>
-            <div class="as-panel">
-              <div class="sd-info-grid">
-                <div class="sd-fields">
-                  <div class="sd-field">
-                    <span class="sd-field-label">请求编号</span>
-                    <span class="sd-field-value mono">RV-2026-128</span>
-                  </div>
-                  <div class="sd-field">
-                    <span class="sd-field-label">来源</span>
-                    <span class="sd-field-value"><span class="as-badge" data-tone="info">调研</span></span>
-                  </div>
-                  <div class="sd-field">
-                    <span class="sd-field-label">提交人</span>
-                    <span class="sd-field-value mono">zhao.xue</span>
-                  </div>
-                  <div class="sd-field">
-                    <span class="sd-field-label">当前轮次</span>
-                    <span class="sd-field-value mono">ROUND 3</span>
-                  </div>
-                  <div class="sd-field sd-field-wide">
-                    <span class="sd-field-label">关联原文档</span>
-                    <button type="button" class="sd-doc-link"><i data-lucide="file-text"></i><span>查看原文档</span></button>
-                  </div>
-                </div>
-                <div class="sd-side">
-                  <div class="sd-side-actions">
-                    <button type="button" class="as-btn sd-btn-success"><i data-lucide="check"></i><span>通过</span></button>
-                    <button type="button" class="as-btn as-btn-ghost sd-btn-error"><i data-lucide="x"></i><span>驳回</span></button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section aria-label="意见时间线">
-            <div class="sd-block-head">
-              <h2 class="sd-block-title">意见时间线</h2>
-              <span class="sd-block-meta">共 11 条 · 显示最近 5 条</span>
-            </div>
-            <div class="as-panel">
-              <div class="sd-timeline">
-                <ul class="sd-tl-list">
-                  <li class="sd-tl-item">
-                    <div class="sd-tl-head">
-                      <span class="sd-tl-name">李芳</span>
-                      <span class="sd-tl-time">2026-09-11 09:52</span>
-                      <span class="sd-tl-status"><span class="as-badge" data-tone="warning">待定</span></span>
-                    </div>
-                    <p class="sd-tl-text">第三节竞品对比缺少北美市场样本，建议补充两份公开财报数据后再进入终审。</p>
-                  </li>
-                  <li class="sd-tl-item is-adopted">
-                    <div class="sd-tl-head">
-                      <span class="sd-tl-name">王强</span>
-                      <span class="sd-tl-time">2026-09-10 16:34</span>
-                      <span class="sd-tl-status"><span class="as-badge" data-tone="success">已采纳</span></span>
-                    </div>
-                    <p class="sd-tl-text">价格弹性测算的假设条件应前置到摘要中，避免读者误解结论口径，已在第九稿修订。</p>
-                  </li>
-                  <li class="sd-tl-item is-adopted">
-                    <div class="sd-tl-head">
-                      <span class="sd-tl-name">陈刚</span>
-                      <span class="sd-tl-time">2026-09-10 11:07</span>
-                      <span class="sd-tl-status"><span class="as-badge" data-tone="success">已采纳</span></span>
-                    </div>
-                    <p class="sd-tl-text">图表 4 的纵轴单位不统一，阶梯档位建议改用同一量纲并标注数据截止日期。</p>
-                  </li>
-                  <li class="sd-tl-item is-adopted">
-                    <div class="sd-tl-head">
-                      <span class="sd-tl-name">刘洋</span>
-                      <span class="sd-tl-time">2026-09-09 18:45</span>
-                      <span class="sd-tl-status"><span class="as-badge" data-tone="success">已采纳</span></span>
-                    </div>
-                    <p class="sd-tl-text">风险一节缺少对汇率波动的敏感性说明，已补充 5% 波动区间的情景测算。</p>
-                  </li>
-                  <li class="sd-tl-item is-adopted">
-                    <div class="sd-tl-head">
-                      <span class="sd-tl-name">周明</span>
-                      <span class="sd-tl-time">2026-09-09 10:21</span>
-                      <span class="sd-tl-status"><span class="as-badge" data-tone="success">已采纳</span></span>
-                    </div>
-                    <p class="sd-tl-text">术语表缺少「席位阶梯计价」定义，首次出现处已加脚注并同步附录。</p>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </section>
-
-          <section class="as-panel as-doc-panel" aria-label="分析文档入口">
-            <span class="as-doc-panel-icon"><i data-lucide="bar-chart-3"></i></span>
-            <div class="as-doc-panel-text">
-              <div class="as-doc-panel-title">同类报告趋势</div>
-              <p class="as-doc-panel-desc">查看同类定价分析报告的评审通过与修订趋势</p>
-            </div>
-            <button type="button" class="as-btn as-btn-ghost as-doc-panel-btn"><i data-lucide="arrow-right"></i><span>进入</span></button>
-          </section>
-
+        <div class="as-toolbar">
+          <div class="as-toolbar-search">
+            <i data-lucide="search"></i>
+            <input type="text" placeholder="搜索仓库、提交或路径..." />
+          </div>
+          <select class="as-toolbar-select" aria-label="状态筛选">
+            <option value="all">全部状态</option>
+            <option value="unassigned">待分配</option>
+            <option value="reviewing">评审中</option>
+            <option value="approved">已通过</option>
+            <option value="rejected">已驳回</option>
+          </select>
+          <select class="as-toolbar-select" aria-label="优先级筛选">
+            <option value="all">全部优先级</option>
+            <option value="high">高</option>
+            <option value="medium">中</option>
+            <option value="low">低</option>
+          </select>
+          <select class="as-toolbar-select" aria-label="排序">
+            <option value="date">提交日期</option>
+            <option value="priority">优先级</option>
+            <option value="status">状态</option>
+            <option value="id">编号</option>
+          </select>
         </div>
+
+        <div class="as-table-wrap">
+          <table class="as-table">
+            <thead>
+              <tr>
+                <th>提交</th>
+                <th>仓库</th>
+                <th>提交信息</th>
+                <th>变更/命中</th>
+                <th>候选</th>
+                <th>更新日期</th>
+                <th>证据</th>
+              </tr>
+            </thead>
+            <tbody>
+<tr>
+  <td class="col-mono">d1aca97</td>
+  <td>Era3e/MagicTools</td>
+  <td>feat: add repository evidence</td>
+  <td>21 / 6</td>
+  <td><span class="as-badge" data-tone="info">6</span></td>
+  <td class="col-date">2026-09-14</td>
+  <td><button type="button" class="as-action-link"><i data-lucide="external-link"></i>源码</button></td>
+</tr>
+<tr>
+  <td class="col-mono">1e22065</td>
+  <td>Era3e/MagicTools</td>
+  <td>fix: harden outbox leases</td>
+  <td>18 / 4</td>
+  <td><span class="as-badge" data-tone="info">4</span></td>
+  <td class="col-date">2026-09-14</td>
+  <td><button type="button" class="as-action-link"><i data-lucide="external-link"></i>源码</button></td>
+</tr>
+<tr>
+  <td class="col-mono">4d84787</td>
+  <td>Era3e/MagicTools</td>
+  <td>feat: requirement execution contract</td>
+  <td>35 / 9</td>
+  <td><span class="as-badge" data-tone="info">9</span></td>
+  <td class="col-date">2026-09-14</td>
+  <td><button type="button" class="as-action-link"><i data-lucide="external-link"></i>源码</button></td>
+</tr>          </tbody>
+          </table>
+        </div>
+
+        <div class="as-pagination">
+          <span class="as-pagination-info">共 12 个任务 · 第 1 / 2 页</span>
+          <div class="as-pagination-controls">
+            <button type="button" class="as-page-btn" disabled><i data-lucide="chevron-left"></i></button>
+            <button type="button" class="as-page-btn" data-active="true">1</button>
+            <button type="button" class="as-page-btn">2</button>
+            <button type="button" class="as-page-btn"><i data-lucide="chevron-right"></i></button>
+          </div>
+        </div>
+
+        <section class="as-panel as-doc-panel" aria-label="行级证据说明">
+          <span class="as-doc-panel-icon"><i data-lucide="bar-chart-3"></i></span>
+          <div class="as-doc-panel-text">
+            <div class="as-doc-panel-title">行级证据</div>
+            <p class="as-doc-panel-desc">每个候选均绑定提交、路径、行号、链接与片段</p>
+          </div>
+          <button type="button" class="as-btn as-btn-ghost as-doc-panel-btn"><i data-lucide="arrow-right"></i><span>进入</span></button>
+        </section>
+
       </div>
     </main>
   </div>

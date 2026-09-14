@@ -50,6 +50,10 @@
         {
           "path": "src/request.e2e.test.ts",
           "minimumTests": 5
+        },
+        {
+          "path": "src/repository-evidence.e2e.test.ts",
+          "minimumTests": 3
         }
       ]
     },
