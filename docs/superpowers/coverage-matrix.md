@@ -55,8 +55,8 @@
 | M1 | 跨库消费 assessor.outbox（requirement.created） | spec 3.1 | server/main.ts processOutbox(ASSESSOR_DATABASE_URL) | ✅ 已实现 | requirement.e2e.test.ts |
 | M2 | 需求 7 态状态机、原子更新与并发修订 | docs/features/manager-candidate-import.md | apps/manager/server/src/requirement-policy.ts + apps/manager/server/src/requirement.repo.ts | ✅ 已实现：统一手工/PR 迁移规则、expectedRevision 冲突、同状态 PR no-op | apps/manager/server/src/requirement-foundation.e2e.test.ts |
 | M3 | 三来源标签（Assessor/手动/GitHub Phantom） | spec 3.2 | server/requirement.repo.ts source 字段三枚举 | ✅ 已实现 | unit + requirement.e2e.test.ts |
-| M4 | PR 状态联动刷新 | spec 3.3 | server/requirement.service.ts syncPrStatus() + apps/manager/server/src/webhook.controller.ts | ✅ 已实现（D-03 兑现，PR #41：POST /webhook/github HMAC-SHA256 签名 + delivery 幂等 + 6 单测） | requirement.e2e.test.ts + webhook.controller.spec.ts |
-| M5 | Phantom GitHub Issues 同步 | spec 3.3 | server/github/client.ts getPhantomIssues() + GITHUB_STUB | ✅ 已实现 | unit（桩） |
+| M4 | PR 状态联动刷新与持久 Webhook | docs/features/manager-github-sync.md | apps/manager/server/src/webhook.controller.ts + apps/manager/server/src/webhook.repo.ts + apps/manager/server/migrations/010_github_sync_and_webhooks.sql | ✅ 已实现：生产强制 HMAC、持久 delivery 租约、过期恢复、按 PR updated_at 防乱序 | apps/manager/server/src/webhook.controller.spec.ts + apps/manager/server/src/webhook.persistence.e2e.test.ts + apps/manager/server/src/requirement-foundation.e2e.test.ts |
+| M5 | GitHub Issues 分页同步与更新 | docs/features/manager-github-sync.md | apps/manager/server/src/github/client.ts + apps/manager/server/src/requirement.service.ts | ✅ 已实现：100×20 分页、排除 PR、既有 Issue 内容更新与并发冲突计数 | apps/manager/server/src/github/client.test.ts + apps/manager/server/src/requirement.e2e.test.ts |
 | M6 | 迭代管理（CRUD + 需求关联） | spec 3.4 | server/iteration.*, web/pages/IterationList.tsx | ✅ 已实现 | iteration.e2e.test.ts |
 | M7 | 前台 FLIGHT DECK 七泳道看板 | PR #30 | web/pages/RequirementBoard.tsx COCKPIT_THEME | ✅ 已实现 | manager.spec.ts 页面渲染 |
 | M8 | 前台 RequirementDetail 飞行日志 | PR #31 | web/pages/RequirementDetail.tsx 仪表卡 + 时间线 | ✅ 已实现 | — |

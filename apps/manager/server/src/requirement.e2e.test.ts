@@ -2,11 +2,13 @@
 import { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import request from "supertest";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { appendOutbox } from "@mt/db";
 import { idempotencyKey } from "@mt/utils";
 import { AppModule } from "./app.module";
 import { assessorPool, ensureDatabase, migrate, pool } from "./db";
+import { GitHubClient } from "./github/client";
+import { RequirementService } from "./requirement.service";
 
 let app: INestApplication;
 let available = false;
@@ -113,5 +115,30 @@ describe("inbox", () => {
       .send({ repo: "Era3e/MagicTools" });
     delete process.env.GITHUB_STUB;
     expect(res2.body.created).toBe(0);
+  });
+
+  it("同步时更新已存在Issue的标题描述和标签", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    const ref = "Era3e/MagicTools#777";
+    await pool.query("DELETE FROM requirements WHERE source='github' AND source_ref=$1", [ref]);
+    await request(app.getHttpServer()).post("/api/manager/requirements").send({
+      title: "旧标题", description: "旧描述",
+    }).expect(201);
+    await pool.query(
+      "UPDATE requirements SET source='github', source_ref=$1, labels='[]'::jsonb WHERE title='旧标题'",
+      [ref],
+    );
+    const listIssues = vi.spyOn(GitHubClient.prototype, "listIssues").mockResolvedValueOnce([{
+      number: 777, title: "新标题", body: "新描述", state: "open",
+      labels: ["bug", "priority:P1"], url: "https://github.com/Era3e/MagicTools/issues/777",
+    }]);
+
+    const result = await new RequirementService().syncGithub("Era3e/MagicTools");
+
+    expect(result).toMatchObject({ created: 0, updated: 1, skipped: 0, conflicts: 0 });
+    const row = await pool.query("SELECT title, description, labels FROM requirements WHERE source='github' AND source_ref=$1", [ref]);
+    expect(row.rows[0]).toMatchObject({ title: "新标题", description: "新描述", labels: ["bug", "priority:P1"] });
+    expect(listIssues).toHaveBeenCalledWith("Era3e/MagicTools");
+    listIssues.mockRestore();
   });
 });

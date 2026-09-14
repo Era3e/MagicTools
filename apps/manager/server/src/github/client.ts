@@ -21,6 +21,7 @@ export interface GitHubPr {
 export class GitHubClient {
   private readonly token: string;
   private readonly baseUrl: string;
+  private readonly maxPages = 20;
   private stub = false;
 
   constructor(config: GitHubConfig = {}) {
@@ -55,22 +56,32 @@ export class GitHubClient {
     const match = repo.trim().match(/^([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+)$/);
     if (!match) throw new Error("仓库格式应为 owner/repo");
     const [, owner, name] = match;
-    const items = (await this.getJson("/repos/" + owner + "/" + name + "/issues?state=open&per_page=50")) as Array<{
+    const result: GitHubIssue[] = [];
+    for (let page = 1; page <= this.maxPages; page += 1) {
+      const items = (await this.getJson(`/repos/${owner}/${name}/issues?state=all&per_page=100&page=${page}`)) as Array<{
       number: number;
       title: string;
       body?: string;
       state: string;
       labels?: Array<{ name?: string }>;
       html_url: string;
+      pull_request?: unknown;
     }>;
-    return items.map((i) => ({
-      number: i.number,
-      title: i.title,
-      body: i.body ?? "",
-      state: i.state,
-      labels: (i.labels ?? []).map((l) => l.name ?? "").filter(Boolean),
-      url: i.html_url,
-    }));
+    const issues = items
+      .filter((item) => !item.pull_request)
+      .map((item) => ({
+        number: item.number,
+        title: item.title,
+        body: item.body ?? "",
+        state: item.state,
+        labels: (item.labels ?? []).map((label) => label.name ?? "").filter(Boolean),
+        url: item.html_url,
+      }));
+    result.push(...issues);
+    if (items.length < 100) break;
+    if (page === this.maxPages) throw new Error(`GitHub issues超过${this.maxPages * 100}条，请缩小同步范围`);
+    }
+    return result;
   }
 
   async getPr(repo: string, prNumber: number): Promise<GitHubPr> {
