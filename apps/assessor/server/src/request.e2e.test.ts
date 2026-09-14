@@ -7,6 +7,7 @@ import { appendOutbox } from "@mt/db";
 import { idempotencyKey } from "@mt/utils";
 import { AppModule } from "./app.module";
 import { ensureDatabase, investigatorPool, migrate, pool } from "./db";
+import { createRequestWithItems } from "./request.repo";
 
 let app: INestApplication;
 let available = false;
@@ -73,6 +74,51 @@ describe("inbox", () => {
     expect(res.status).toBe(200);
     expect(res.body.repoUrl).toBe("Era3e/MagicTools");
     expect(res.body.repoContext).toHaveProperty("readme");
+  });
+
+  it("请求与明细原子写入，重复来源键追加并保持幂等", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    const sourceKey = "survey:atomic";
+    await pool.query("DELETE FROM analysis_requests WHERE source_key=$1", [sourceKey]);
+    const cyclicStructured: Record<string, unknown> = {};
+    cyclicStructured.self = cyclicStructured;
+    const invalid = createRequestWithItems({
+      surveyName: "原子写入",
+      sourceKey,
+      sourceEventIds: ["atomic-failed"],
+      items: [
+        { responseId: "atomic-r1", structured: {}, sentiment: "neutral", priority: "P2" },
+        { responseId: "atomic-r2", structured: cyclicStructured, sentiment: "neutral", priority: "P2" },
+      ],
+    });
+    await expect(invalid).rejects.toThrow();
+    const failed = await pool.query("SELECT count(*)::int AS count FROM analysis_requests WHERE source_key=$1", [sourceKey]);
+    expect(failed.rows[0].count).toBe(0);
+
+    const first = await createRequestWithItems({
+      surveyName: "原子写入",
+      sourceKey,
+      sourceEventIds: ["atomic-e1", "atomic-e2"],
+      items: [
+        { responseId: "atomic-r1", structured: {}, sentiment: "neutral", priority: "P2" },
+        { responseId: "atomic-r2", structured: {}, sentiment: "neutral", priority: "P2" },
+      ],
+    });
+    expect(first.created).toBe(true);
+    const second = await createRequestWithItems({
+      surveyName: "原子写入",
+      sourceKey,
+      sourceEventIds: ["atomic-e2", "atomic-e3"],
+      items: [
+        { responseId: "atomic-r2", structured: { updated: true }, sentiment: "neutral", priority: "P1" },
+        { responseId: "atomic-r3", structured: {}, sentiment: "neutral", priority: "P2" },
+      ],
+    });
+    expect(second.created).toBe(false);
+    expect(second.row.id).toBe(first.row.id);
+    expect(new Set(second.row.sourceEventIds)).toEqual(new Set(["atomic-e1", "atomic-e2", "atomic-e3"]));
+    const items = await pool.query("SELECT response_id FROM analysis_items WHERE request_id=$1 ORDER BY response_id", [first.row.id]);
+    expect(items.rows.map((row) => row.response_id)).toEqual(["atomic-r1", "atomic-r2", "atomic-r3"]);
   });
 
   it("generate 生成分析方案并置 draft（桩）", async (ctx) => {

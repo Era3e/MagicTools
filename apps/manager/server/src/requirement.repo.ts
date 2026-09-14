@@ -122,11 +122,22 @@ export async function createRequirement(input: {
   executionContract?: ExecutionContract | null;
   scope?: string;
   risk?: RequirementRisk;
-}, database: Pick<PoolClient, "query"> = pool): Promise<RequirementRow> {
+}, database: Pick<PoolClient, "query"> = pool): Promise<RequirementRow | null> {
+  const idempotent = input.source === "assessor" && input.sourceRef !== "";
+  const conflict = idempotent
+    ? " ON CONFLICT (source, source_ref) WHERE source='assessor' AND source_ref<>'' DO NOTHING"
+    : "";
   const rows = await database.query(
-    "INSERT INTO requirements (title, description, source, source_ref, source_payload, priority, branch, pr_url, labels, iteration_id, project, acceptance_criteria, evidence_refs, dependency_refs, scope, risk, execution_contract) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17) RETURNING *",
+    "INSERT INTO requirements (title, description, source, source_ref, source_payload, priority, branch, pr_url, labels, iteration_id, project, acceptance_criteria, evidence_refs, dependency_refs, scope, risk, execution_contract) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)" + conflict + " RETURNING *",
     [input.title, input.description ?? "", input.source ?? "manual", input.sourceRef ?? "", input.sourcePayload ? JSON.stringify(input.sourcePayload) : null, input.priority ?? "P2", input.branch ?? "", input.prUrl ?? "", JSON.stringify(input.labels ?? []), input.iterationId ?? null, input.project ?? "", JSON.stringify(input.acceptanceCriteria ?? []), JSON.stringify(input.evidenceRefs ?? []), JSON.stringify(input.dependencyRefs ?? []), input.scope ?? "", input.risk ?? "unassessed", input.executionContract ? JSON.stringify(input.executionContract) : null]
   );
+  if (!rows.rowCount && idempotent) {
+    return null;
+  }
+  if (!rows.rowCount && !idempotent) {
+    throw new Error("需求写入后未返回记录");
+  }
+  if (!rows.rowCount) return null;
   return mapRow(rows.rows[0]);
 }
 

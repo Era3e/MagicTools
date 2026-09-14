@@ -39,9 +39,18 @@ async function claimOutbox(
   pool: Pool,
   options: Required<Pick<ProcessOutboxOptions, "batchSize" | "maxAttempts" | "consumerId" | "leaseMilliseconds">>
 ) {
+  await pool.query(
+    `UPDATE outbox
+     SET status='dead', locked_by=NULL, lease_expires_at=NULL,
+         last_error=COALESCE(last_error, 'lease expired after max attempts')
+     WHERE status='processing' AND attempts >= $1
+       AND (lease_expires_at IS NULL OR lease_expires_at < now())`,
+    [options.maxAttempts]
+  );
   const rows = await pool.query(
     `UPDATE outbox AS target
-     SET status = 'processing', locked_by = $1, lease_expires_at = now() + ($2 * interval '1 millisecond')
+     SET status = 'processing', attempts = target.attempts + 1,
+         locked_by = $1, lease_expires_at = now() + ($2 * interval '1 millisecond')
      WHERE target.id IN (
        SELECT id FROM outbox
        WHERE (status IN ('pending', 'retry') AND attempts < $3)
@@ -81,7 +90,7 @@ export async function processOutbox(
       );
     } catch (err) {
       // 达到最大重试次数后进入 dead 终态，避免永久停在 retry
-      const attempts = Number(row.attempts) + 1;
+      const attempts = Number(row.attempts);
       const status = attempts >= claimOptions.maxAttempts ? "dead" : "retry";
       await pool.query(
         "UPDATE outbox SET status = $2, attempts = $3, last_error = $4, locked_by = NULL, lease_expires_at = NULL WHERE id = $1 AND status = 'processing' AND locked_by = $5",
@@ -116,7 +125,7 @@ export async function processOutboxBatch(
     }
   } catch (err) {
     for (const row of rows) {
-      const attempts = Number(row.attempts) + 1;
+      const attempts = Number(row.attempts);
       const status = attempts >= claimOptions.maxAttempts ? "dead" : "retry";
       await pool.query(
         "UPDATE outbox SET status = $2, attempts = $3, last_error = $4, locked_by = NULL, lease_expires_at = NULL WHERE id = $1 AND status = 'processing' AND locked_by = $5",

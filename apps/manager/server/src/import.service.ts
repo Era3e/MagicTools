@@ -97,6 +97,7 @@ export class ImportService {
             sourcePayload: { ...row, repository: bundle.repository }, labels: [row.project, "待确认规划"], project: row.project,
             acceptanceCriteria: row.acceptance_criteria, evidenceRefs: row.evidence, dependencyRefs: row.depends_on,
           }, client);
+          if (!requirement) throw new ConflictException("规划需求写入后未返回记录：" + row.candidate_id);
           targetId = requirement.id;
           created.planned += 1;
         }

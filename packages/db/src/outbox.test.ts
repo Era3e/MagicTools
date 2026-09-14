@@ -186,7 +186,7 @@ describe("outbox", () => {
       occurredAt: new Date().toISOString(),
     });
     await pool.query(
-      "UPDATE outbox SET status='processing', locked_by='crashed-consumer', lease_expires_at=now()-interval '1 second' WHERE id=$1",
+      "UPDATE outbox SET status='processing', attempts=1, locked_by='crashed-consumer', lease_expires_at=now()-interval '1 second' WHERE id=$1",
       ["t-expired"]
     );
     const handled: string[] = [];
@@ -195,8 +195,30 @@ describe("outbox", () => {
     });
     expect(count).toBe(1);
     expect(handled).toEqual(["t-expired"]);
-    const row = await pool.query("SELECT status, locked_by FROM outbox WHERE id=$1", ["t-expired"]);
-    expect(row.rows[0]).toMatchObject({ status: "done", locked_by: null });
+    const row = await pool.query("SELECT status, attempts, locked_by FROM outbox WHERE id=$1", ["t-expired"]);
+    expect(row.rows[0]).toMatchObject({ status: "done", attempts: 2, locked_by: null });
+  });
+
+  it("租约过期且尝试次数已满时先进入dead不再执行业务", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    await pool.query("DELETE FROM outbox WHERE id = $1", ["t-crash-dead"]);
+    await appendOutbox(pool, {
+      id: "t-crash-dead",
+      event: "test.crash-dead",
+      source: "applicant",
+      payload: {},
+      occurredAt: new Date().toISOString(),
+    });
+    await pool.query(
+      "UPDATE outbox SET status='processing',attempts=2,locked_by='crashed',lease_expires_at=now()-interval '1 second' WHERE id=$1",
+      ["t-crash-dead"]
+    );
+    let handled = 0;
+    const count = await processOutbox(pool, async () => { handled += 1; }, { maxAttempts: 2 });
+    expect(count).toBe(0);
+    expect(handled).toBe(0);
+    const row = await pool.query("SELECT status,attempts,locked_by FROM outbox WHERE id=$1", ["t-crash-dead"]);
+    expect(row.rows[0]).toMatchObject({ status: "dead", attempts: 2, locked_by: null });
   });
 
   it("批量业务失败时整批释放租约并可重试", async (ctx) => {

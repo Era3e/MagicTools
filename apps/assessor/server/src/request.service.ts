@@ -7,7 +7,6 @@ import { investigatorPool, pool } from "./db";
 import { llmChat } from "./llm";
 import {
   createRequestWithItems,
-  findRequestByEventIds,
   getRequest,
   listRequestItems,
   listRequests,
@@ -48,25 +47,22 @@ export class RequestService {
     let created = 0;
     let skipped = 0;
     await processOutboxBatch(investigatorPool, async (events) => {
-      const groups = new Map<string, { surveyName: string; eventIds: string[]; items: PushEventPayload[] }>();
+      const groups = new Map<string, { surveyName: string; sourceKey: string; eventIds: string[]; items: PushEventPayload[] }>();
       for (const event of events) {
         if (event.event !== "researcher.response.push") continue;
         consumed += 1;
         const payload = event.payload as PushEventPayload;
-        const key = payload.surveyName ?? "未命名调研";
-        const g = groups.get(key) ?? { surveyName: key, eventIds: [], items: [] };
+        const surveyName = payload.surveyName ?? "未命名调研";
+        const key = payload.surveyId ? `survey:${payload.surveyId}` : `survey-name:${surveyName}`;
+        const g = groups.get(key) ?? { surveyName, sourceKey: key, eventIds: [], items: [] };
         g.eventIds.push(event.id);
         g.items.push(payload);
         groups.set(key, g);
       }
       for (const g of groups.values()) {
-        const existing = await findRequestByEventIds(g.eventIds);
-        if (existing) {
-          skipped += 1;
-          continue;
-        }
-        await createRequestWithItems({
+        const result = await createRequestWithItems({
           surveyName: g.surveyName,
+          sourceKey: g.sourceKey,
           sourceEventIds: g.eventIds,
           items: g.items
             .filter((p) => p.responseId)
@@ -77,7 +73,8 @@ export class RequestService {
               priority: p.priority ?? "P2",
             })),
         });
-        created += 1;
+        if (result.created) created += 1;
+        else skipped += 1;
       }
     });
     return { consumed, created, skipped };
