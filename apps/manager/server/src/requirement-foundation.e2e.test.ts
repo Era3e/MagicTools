@@ -37,13 +37,13 @@ describe("需求变更契约", () => {
     const priorStub = process.env.GITHUB_STUB;
     process.env.GITHUB_STUB = "1";
     try {
-      const payload = { action: "closed", pull_request: { html_url: prUrl, state: "closed", merged: true } };
+      const payload = { action: "closed", pull_request: { html_url: prUrl, state: "closed", merged: true, updated_at: "2026-09-14T10:00:00Z" } };
       await request(app.getHttpServer()).post("/api/manager/webhook/github")
         .set("x-github-event", "pull_request").set("x-github-delivery", randomUUID()).send(payload).expect(200);
       const first = await request(app.getHttpServer()).get("/api/manager/requirements/" + created.body.id).expect(200);
       const duplicate = await request(app.getHttpServer()).post("/api/manager/webhook/github")
         .set("x-github-event", "pull_request").set("x-github-delivery", randomUUID()).send(payload).expect(200);
-      expect(duplicate.body.action).toBe("skipped");
+      expect(duplicate.body.action).toBe("out_of_order");
       const second = await request(app.getHttpServer()).get("/api/manager/requirements/" + created.body.id).expect(200);
       expect(second.body.revision).toBe(first.body.revision);
       await request(app.getHttpServer()).patch("/api/manager/requirements/" + created.body.id)

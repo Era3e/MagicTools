@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, NotFoundException } from "@nestjs/common";
+import { Injectable, BadRequestException, ConflictException, NotFoundException } from "@nestjs/common";
 import { processOutboxBatch } from "@mt/db";
 import { GitHubClient } from "./github/client";
 import { assessorPool, pool } from "./db";
@@ -146,11 +146,40 @@ export class RequirementService {
   async syncGithub(repo: string) {
     const issues = await new GitHubClient().listIssues(repo);
     let created = 0;
+    let updated = 0;
     let skipped = 0;
+    let conflicts = 0;
     for (const issue of issues) {
       const ref = repo + "#" + issue.number;
-      if (await findRequirementByRef("github", ref)) {
-        skipped += 1;
+      const existing = await findRequirementByRef("github", ref);
+      const sourcePayload = {
+        issue,
+        repository: repo,
+        synchronizedAt: new Date().toISOString(),
+      };
+      if (existing) {
+        const previousIssue = (existing.sourcePayload as { issue?: typeof issue } | null)?.issue;
+        const changed = existing.title !== issue.title ||
+          existing.description !== issue.body.slice(0, 2000) ||
+          JSON.stringify(existing.labels) !== JSON.stringify(issue.labels) ||
+          previousIssue?.state !== issue.state ||
+          previousIssue?.body !== issue.body;
+        if (!changed) {
+          skipped += 1;
+          continue;
+        }
+        try {
+          await updateRequirement(existing.id, {
+            title: issue.title,
+            description: issue.body.slice(0, 2000),
+            labels: issue.labels,
+            sourcePayload,
+          }, { expectedRevision: existing.revision });
+          updated += 1;
+        } catch (error) {
+          if (error instanceof ConflictException) conflicts += 1;
+          else throw error;
+        }
         continue;
       }
       await createRequirement({
@@ -158,10 +187,11 @@ export class RequirementService {
         description: issue.body.slice(0, 2000),
         source: "github",
         sourceRef: ref,
+        sourcePayload,
         labels: issue.labels,
       });
       created += 1;
     }
-    return { created, skipped };
+    return { created, updated, skipped, conflicts };
   }
 }

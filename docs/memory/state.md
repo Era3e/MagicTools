@@ -6,6 +6,8 @@
 
 ## 当前状态快照（2026-09-12 更新）
 
+- **P11 GitHub同步与持久Webhook（2026-09-14，本地验收通过）**：在最新main `1e22065` 新开 `feat-manager-P11-sync`。Issues改为100×20分页、排除PR、超2000显式失败，既有Issue标题/描述/标签/状态变化经expectedRevision更新并返回conflicts；Webhook新增github_webhook_deliveries持久领取、60秒租约、异常同delivery重试、过期恢复、payload摘要，除显式GITHUB_STUB=1外强制secret与原始请求体验签，回执仅当前锁持有者可更新，PR事件按updated_at与github_last_event_at事务内串行化。独立0 bug审查发现的非生产无secret可处理、错误delivery永久卡死、旧消费者可回写新租约均已修复并补回归。GitHub client单测5/5、Webhook单测10/10、Manager DB43/43通过；完整qa回执 `.qa/quality/aa3684faed9b96fd1f3cc6e4/quality.json` 通过（infra353/353、DB32文件零跳过），smoke17/17，Manager目标浏览器链路6/6。待最终指纹qa后提交PR并等待CI。
+
 - **P12 Outbox可靠性（2026-09-14，本地验收通过）**：在最新main `4d8478` 新开 `feat-db-P12-outbox`。公共包新增 `processing` 租约（locked_by/lease_expires_at）、原子领取、过期回收、租约持有者条件回写和 `processOutboxBatch`；Assessor/Manager/Scholar 业务副作用移入批handler，完成后才确认done。独立审查未发现阻塞缺陷，边界为租约过期后的at-least-once需业务幂等。完整qa回执 `.qa/quality/7fc9f1371a4037f443fa951a/quality.json` 通过（infra353/353、DB32文件150/150零跳过）；smoke17/17；Manager/Assessor/Scholar目标浏览器链路10/10。
 
 - **P08执行契约补尾（2026-09-14，本地验收通过）**：在最新main新开 `feat-manager-P08-execution`，新增迁移008 `execution_contract`，契约字段包含归一化GitHub仓库、允许路径、受控结构化验收命令、1–240分钟、1–3次尝试和分单位预算，并纳入内容触发器；修改预算等契约会使旧批准outdated。服务端新增 `GET /requirements/:id/execution-eligibility`，统一返回eligible/contractReady/dependenciesReady/依赖定位/blockers；依赖按同仓库 `manager_import_links` 解析，规划需求仅done就绪，基线unverified、缺失missing。前端内容编辑弹窗支持契约字段，详情面板展示门禁与依赖状态。本批automationPolicy仍为manual，不实现领取租约、执行器或自动合并；源码启动脚本支持 `MT_SOURCE_SMOKE_DATABASE_URL` 让本地冒烟避开5432。最终qa回执 `.qa/quality/5a43991380347ff8b678357c/quality.json`，infra353/353、DB31文件零跳过，smoke17/17；功能E2E97/97通过，本地Windows视觉基线存在既有动态数据遮罩漂移，交由CI Linux基线裁决。

@@ -28,12 +28,12 @@ export interface RequirementRow {
   source: string;
   sourceRef: string;
   sourcePayload: Record<string, unknown> | null;
+  labels: string[];
   status: RequirementStatus;
   priority: string;
   iterationId: string | null;
   branch: string;
   prUrl: string;
-  labels: string[];
   timeline: Array<{ at: string; from: string; to: string; note?: string }>;
   createdAt: string;
   updatedAt: string;
@@ -138,6 +138,8 @@ export async function updateRequirement(id: string, patch: Partial<{
   prUrl: string;
   iterationId: string | null;
   status: RequirementStatus;
+  sourcePayload?: Record<string, unknown> | null;
+  labels?: string[];
   project: string;
   scope: string;
   risk: RequirementRisk;
@@ -174,8 +176,8 @@ export async function updateRequirement(id: string, patch: Partial<{
       { at: new Date().toISOString(), from: current.status, to: next.status, ...(options.note ? { note: options.note } : {}) },
     ];
     const rows = await client.query(
-      "UPDATE requirements SET title=$1, description=$2, priority=$3, branch=$4, pr_url=$5, iteration_id=$6, status=$7, timeline=$8, project=$9, scope=$10, risk=$11, acceptance_criteria=$12, dependency_refs=$13, execution_contract=$14, revision=revision+1, updated_at=now() WHERE id=$15 RETURNING *",
-      [next.title, next.description, next.priority, next.branch, next.prUrl, next.iterationId, next.status, JSON.stringify(timeline), next.project, next.scope, next.risk, JSON.stringify(next.acceptanceCriteria), JSON.stringify(next.dependencyRefs), next.executionContract ? JSON.stringify(next.executionContract) : null, id]
+      "UPDATE requirements SET title=$1, description=$2, priority=$3, branch=$4, pr_url=$5, iteration_id=$6, status=$7, timeline=$8, project=$9, scope=$10, risk=$11, acceptance_criteria=$12, dependency_refs=$13, execution_contract=$14, source_payload=$15, labels=$16, revision=revision+1, updated_at=now() WHERE id=$17 RETURNING *",
+      [next.title, next.description, next.priority, next.branch, next.prUrl, next.iterationId, next.status, JSON.stringify(timeline), next.project, next.scope, next.risk, JSON.stringify(next.acceptanceCriteria), JSON.stringify(next.dependencyRefs), next.executionContract ? JSON.stringify(next.executionContract) : null, next.sourcePayload ? JSON.stringify(next.sourcePayload) : null, JSON.stringify(next.labels), id]
     );
     await client.query("COMMIT");
     return { ...mapRow(rows.rows[0]), ...(options.origin === "github" ? { transitionApplied: true } : {}) };

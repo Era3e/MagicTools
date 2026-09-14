@@ -794,8 +794,9 @@ export const APPS: AppEntry[] = [
 | 候选与能力基线 | ImportController / CapabilityController | ImportService | manager_import_batches / manager_import_links / capabilities | 预览、选择确认、剩余批次、稳定来源去重、冲突回滚；基线与规划分开保存 |
 | 内容修订与审批 | RequirementController / RequirementApprovalController | RequirementApprovalService | requirement_revisions / requirement_approvals | 数据库触发器保存内容快照；行锁与双版本审批；单用户凭证身份；追加批准/撤销记录 |
 
-**消费事件**：`requirement.created`（ASSESSOR_DATABASE_URL processOutbox）
+**消费事件**：`requirement.created`（ASSESSOR_DATABASE_URL processOutboxBatch，业务入库后确认 done）
 **外部集成**：`github/client.ts` — Phantom GitHub Issues 同步（GITHUB_STUB=1）
+**GitHub 同步与 Webhook**：Issues 分页拉全并排除 PR，既有内容变化经 `expectedRevision` 更新；PR Webhook 除显式桩模式外强制 HMAC 且只对原始请求体验签，`github_webhook_deliveries` 持久领取 delivery、恢复过期租约与异常重试，并仅允许当前锁持有者回写，按 `github_last_event_at` 拒绝乱序回调。
 
 #### 需求 7 态状态机
 

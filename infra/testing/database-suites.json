@@ -84,6 +84,10 @@
         {
           "path": "src/runtime-readiness.e2e.test.ts",
           "minimumTests": 1
+        },
+        {
+          "path": "src/webhook.persistence.e2e.test.ts",
+          "minimumTests": 5
         }
       ]
     },

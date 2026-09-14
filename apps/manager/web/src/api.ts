@@ -168,7 +168,7 @@ export const api = {
   patchRequirement: (id: string, patch: Record<string, unknown>) =>
     request<Requirement>("/requirements/" + id, { method: "PATCH", body: JSON.stringify(patch) }),
   refreshPr: (id: string) => request<Requirement>("/requirements/" + id + "/refresh-pr", { method: "POST" }),
-  syncGithub: (repo: string) => request<{ created: number; skipped: number }>("/sync/github", { method: "POST", body: JSON.stringify({ repo }) }),
+  syncGithub: (repo: string) => request<{ created: number; updated: number; skipped: number; conflicts: number }>("/sync/github", { method: "POST", body: JSON.stringify({ repo }) }),
   listIterations: () => request<Iteration[]>("/iterations"),
   createIteration: (input: { name: string; startDate?: string | null; endDate?: string | null }) =>
     request<Iteration>("/iterations", { method: "POST", body: JSON.stringify(input) }),

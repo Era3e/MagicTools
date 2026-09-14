@@ -72,7 +72,7 @@ export default function RequirementList() {
     setSyncing(true);
     try {
       const out = await api.syncGithub("Era3e/MagicTools");
-      message.success("GitHub 同步：新建 " + out.created + " 条");
+      message.success(`GitHub 同步：新建 ${out.created} 条，更新 ${out.updated} 条` + (out.conflicts ? `，${out.conflicts} 条冲突待重试` : ""));
       refresh();
     } catch (err) {
       message.error(String(err));

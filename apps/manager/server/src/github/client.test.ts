@@ -18,6 +18,32 @@ describe("GitHubClient", () => {
     expect(issues[0].labels).toEqual(["bug"]);
   });
 
+  it("分页拉取全部issues并排除PR", async () => {
+    const issue = (number: number): {
+      number: number; title: string; body: string; state: string;
+      labels: Array<{ name: string }>; html_url: string; pull_request?: unknown;
+    } => ({
+      number, title: `需求${number}`, body: "描述", state: "open",
+      labels: [{ name: "enhancement" }], html_url: `https://github.com/x/y/issues/${number}`,
+    });
+    const firstPage = Array.from({ length: 100 }, (_, index) => issue(index + 1));
+    firstPage[9] = { ...firstPage[9], pull_request: { url: "https://api.github.com/x/y/pulls/10" } };
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify(firstPage), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify([issue(101)]), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const client = new GitHubClient({ token: "" });
+
+    const issues = await client.listIssues("Era3e/MagicTools");
+
+    expect(issues).toHaveLength(100);
+    expect(issues.some((item) => item.number === 10)).toBe(false);
+    expect(issues.some((item) => item.number === 101)).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[0][0]).toContain("issues?state=all&per_page=100&page=1");
+    expect(fetchMock.mock.calls[1][0]).toContain("issues?state=all&per_page=100&page=2");
+  });
+
   it("查询 PR 状态", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ state: "open", merged: false, html_url: "u" }), { status: 200 })));
     const c = new GitHubClient({ token: "" });
