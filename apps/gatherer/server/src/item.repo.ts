@@ -47,6 +47,23 @@ export async function listItems(filters: { sourceId?: string; pushed?: string } 
   return rows.rows.map(mapRow);
 }
 
+export async function listUnpushedItemsBySource(sourceId: string): Promise<ItemRow[]> {
+  const rows = await pool.query(
+    "SELECT * FROM items WHERE source_id = $1 AND pushed_at IS NULL ORDER BY created_at DESC",
+    [sourceId]
+  );
+  return rows.rows.map(mapRow);
+}
+
+export async function listItemsByIds(ids: string[]): Promise<ItemRow[]> {
+  if (!ids.length) return [];
+  const rows = await pool.query(
+    "SELECT * FROM items WHERE id::text = ANY($1::text[]) ORDER BY created_at DESC",
+    [ids]
+  );
+  return rows.rows.map(mapRow);
+}
+
 export async function upsertItem(input: {
   sourceId: string;
   url: string;
@@ -58,12 +75,12 @@ export async function upsertItem(input: {
   keywords: string[];
   summary: string;
   llmEnriched: boolean;
-}): Promise<boolean> {
+}): Promise<string | null> {
   const rows = await pool.query(
     "INSERT INTO items (source_id, url, title, content, published_at, fingerprint, category, keywords, summary, llm_enriched) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT (source_id, fingerprint) DO NOTHING RETURNING id",
     [input.sourceId, input.url, input.title, input.content, input.publishedAt ?? null, input.fingerprint, input.category, JSON.stringify(input.keywords), input.summary, input.llmEnriched]
   );
-  return (rows.rowCount ?? 0) > 0;
+  return rows.rowCount ? (rows.rows[0].id as string) : null;
 }
 
 export async function startRun(sourceId: string): Promise<string> {
@@ -72,7 +89,7 @@ export async function startRun(sourceId: string): Promise<string> {
 }
 
 export async function finishRun(runId: string, stats: { fetchedCount: number; newCount: number; error?: string }): Promise<void> {
-  await pool.query("UPDATE runs SET finished_at = now(), fetched_count = $2, new_count = $3, error = $4 WHERE id = $1", [runId, stats.fetchedCount, stats.newCount, stats.error ?? null]);
+  await pool.query("UPDATE runs SET finished_at = now(), status = 'success', fetched_count = $2, new_count = $3, error = $4 WHERE id = $1", [runId, stats.fetchedCount, stats.newCount, stats.error ?? null]);
 }
 
 export async function markPushed(ids: string[]): Promise<void> {

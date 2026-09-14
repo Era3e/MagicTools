@@ -4,7 +4,7 @@ import { contentFingerprint, idempotencyKey } from "@mt/utils";
 import { parseJson } from "@mt/model-client";
 import { pool } from "./db";
 import { parseFeed, type ParsedItem } from "./feed/parser";
-import { finishRun, listItems, markPushed, startRun, upsertItem, markRunDead } from "./item.repo";
+import { finishRun, listItems, listItemsByIds, listUnpushedItemsBySource, markPushed, startRun, upsertItem, markRunDead } from "./item.repo";
 import { llmChat } from "./llm";
 import { enrichSchema } from "./schemas";
 import { getSource, touchRun } from "./source.repo";
@@ -48,7 +48,6 @@ export class CollectService {
     let created = 0;
     const options = source.options as { llm?: boolean; autoPush?: boolean };
     const llmOn = options?.llm !== false;
-    const insertedIds: string[] = [];
     for (const item of items) {
       const fingerprint = contentFingerprint(item.url + "|" + item.title);
       let enriched = { summary: "", category: "", keywords: [] as string[] };
@@ -79,10 +78,12 @@ export class CollectService {
     }
     await touchRun(sourceId);
     await finishRun(runId, { fetchedCount: items.length, newCount: created });
-    if (options?.autoPush && insertedIds.length > 0) {
-      await this.push(insertedIds);
+    let pushReceipt = { pushedCount: 0, skippedCount: 0, eventIds: [] as string[] };
+    if (options?.autoPush) {
+      const pendingItems = await listUnpushedItemsBySource(sourceId);
+      if (pendingItems.length) pushReceipt = await this.push(pendingItems.map((item) => item.id));
     }
-    return { fetched: items.length, new: created, skipped: items.length - created };
+    return { fetched: items.length, new: created, skipped: items.length - created, ...pushReceipt };
   }
 
   items(filters: { sourceId?: string; pushed?: string }) {
@@ -106,11 +107,12 @@ export class CollectService {
   }
 
   async push(ids: string[]) {
-    const items = await listItems();
-    const targets = items.filter((i) => ids.includes(i.id));
+    const items = await listItemsByIds(ids);
+    const requested = new Set(ids);
+    const targets = items.filter((i) => requested.has(i.id) && !i.pushedAt);
     const eventIds: string[] = [];
     for (const item of targets) {
-      const eventId = idempotencyKey("gatherer-item-push");
+      const eventId = "gatherer-item-push-" + item.id;
       await appendOutbox(pool, {
         id: eventId,
         event: "knowledge.item.collected",
@@ -130,6 +132,6 @@ export class CollectService {
       eventIds.push(eventId);
     }
     await markPushed(targets.map((i) => i.id));
-    return { pushedCount: targets.length, eventIds };
+    return { pushedCount: targets.length, skippedCount: ids.length - targets.length, eventIds };
   }
 }

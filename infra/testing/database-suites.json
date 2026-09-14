@@ -101,7 +101,7 @@
       "files": [
         {
           "path": "src/source.e2e.test.ts",
-          "minimumTests": 5
+          "minimumTests": 8
         }
       ]
     },

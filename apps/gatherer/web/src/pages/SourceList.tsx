@@ -1,8 +1,8 @@
-import { Button, Form, Input, Modal, Select, Table, message } from "antd";
+import { Button, Checkbox, Form, Input, Modal, Select, Table, message } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { AdminPageHead, AdminToolbar, AdminToolbarCount, MtKpiRow, MtStatusTag, tokens, type MtStatusTagTone } from "@mt/ui";
-import { api, type Source } from "../api";
+import { api, type DeadLetter, type SchedulerTask, type Source } from "../api";
 import FailLab from "./FailLab";
 
 const TYPE_MAP: Record<string, { label: string; tone: MtStatusTagTone }> = {
@@ -19,11 +19,20 @@ export default function SourceList() {
   const [typeFilter, setTypeFilter] = useState<string | undefined>();
   const [statusFilter, setStatusFilter] = useState<string | undefined>();
   const [keyword, setKeyword] = useState("");
-  const [form] = Form.useForm<{ name: string; type: string; url: string; cron?: string }>();
+  const [schedulerTasks, setSchedulerTasks] = useState<SchedulerTask[]>([]);
+  const [deadLetters, setDeadLetters] = useState<DeadLetter[]>([]);
+  const [form] = Form.useForm<{ name: string; type: string; url: string; cron?: string; autoPush?: boolean }>();
 
   const refresh = useCallback(() => {
     setLoading(true);
-    api.listSources().then(setItems).catch((err) => message.error(String(err))).finally(() => setLoading(false));
+    Promise.all([api.listSources(), api.schedulerStatus(), api.listDeadLetters()])
+      .then(([sources, scheduler, dead]) => {
+        setItems(sources);
+        setSchedulerTasks(scheduler.tasks);
+        setDeadLetters(dead);
+      })
+      .catch((err) => message.error(String(err)))
+      .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
@@ -46,9 +55,9 @@ export default function SourceList() {
       { label: "在册源", value: items.length, unit: "个" },
       { label: "运行中", value: items.filter((s) => s.status === "active").length, unit: "个" },
       { label: "已暂停", value: items.filter((s) => s.status !== "active").length, unit: "个" },
-      { label: "定时任务", value: items.filter((s) => s.cron).length, unit: "个" },
+      { label: "已注册调度", value: schedulerTasks.filter((task) => task.registered).length, unit: "个" },
     ],
-    [items]
+    [items, schedulerTasks]
   );
 
   const toggleStatus = async (row: Source) => {
@@ -135,6 +144,16 @@ export default function SourceList() {
             ),
           },
           { title: "Cron", dataIndex: "cron", width: 130, render: (v: string) => <span style={{ fontFamily: tokens.font.mono, fontSize: 12, color: v ? undefined : tokens.dark.textFaint }}>{v || "—"}</span> },
+          {
+            title: "自动推送",
+            dataIndex: "options",
+            width: 100,
+            render: (value: Record<string, unknown>) => (
+              <MtStatusTag tone={value?.autoPush ? "success" : "neutral"} mono>
+                {value?.autoPush ? "开启" : "关闭"}
+              </MtStatusTag>
+            ),
+          },
           { title: "URL", dataIndex: "url", width: 220, ellipsis: true, render: (v: string) => <span style={{ fontFamily: tokens.font.mono, fontSize: 12 }}>{v}</span> },
           { title: "最近采集", dataIndex: "lastRunAt", width: 170, render: (v: string | null) => <span style={{ fontFamily: tokens.font.mono, fontSize: 12 }}>{v ? new Date(v).toLocaleString() : "—"}</span> },
           {
@@ -148,7 +167,7 @@ export default function SourceList() {
                   style={{ paddingInline: 4 }}
                   onClick={() => {
                     setEditing(row);
-                    form.setFieldsValue({ name: row.name, type: row.type, url: row.url, cron: row.cron || undefined });
+                    form.setFieldsValue({ name: row.name, type: row.type, url: row.url, cron: row.cron || undefined, autoPush: row.options?.autoPush === true });
                   }}
                 >
                   编辑
@@ -164,12 +183,92 @@ export default function SourceList() {
           },
         ]}
       />
+      <section aria-labelledby="operations-title" style={{ marginTop: tokens.spacing.xl }}>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: tokens.spacing.md, marginBottom: tokens.spacing.md }}>
+          <h2 id="operations-title" style={{ margin: 0, fontFamily: tokens.font.display, fontSize: 22, fontWeight: 600 }}>
+            调度实况
+          </h2>
+          <span style={{ fontFamily: tokens.font.mono, fontSize: 12, color: tokens.dark.textFaint }}>SCHEDULER · DEAD LETTERS</span>
+        </div>
+        <Table<SchedulerTask>
+          rowKey="sourceId"
+          dataSource={schedulerTasks}
+          pagination={false}
+          size="small"
+          locale={{ emptyText: "暂无有效定时源" }}
+          columns={[
+            { title: "源名称", dataIndex: "name" },
+            { title: "Cron", dataIndex: "cron", width: 130, render: (v: string) => <span style={{ fontFamily: tokens.font.mono, fontSize: 12 }}>{v || "—"}</span> },
+            {
+              title: "注册状态",
+              dataIndex: "registered",
+              width: 110,
+              render: (v: boolean) => (
+                <MtStatusTag tone={v ? "success" : "warning"} showDot={v}>
+                  {v ? "已注册" : "未注册"}
+                </MtStatusTag>
+              ),
+            },
+            {
+              title: "最近运行",
+              dataIndex: "lastRunStatus",
+              width: 130,
+              render: (v: SchedulerTask["lastRunStatus"]) => (
+                <MtStatusTag tone={v === "success" ? "success" : v === "dead" ? "error" : v === "running" ? "info" : "neutral"}>
+                  {v === "not_run" ? "未运行" : v}
+                </MtStatusTag>
+              ),
+            },
+            {
+              title: "拉取 / 新增",
+              width: 110,
+              render: (_: unknown, row) => (
+                <span style={{ fontFamily: tokens.font.mono, fontSize: 12 }}>
+                  {row.lastRunFetchedCount === null ? "—" : `${row.lastRunFetchedCount} / ${row.lastRunNewCount}`}
+                </span>
+              ),
+            },
+            {
+              title: "运行时间",
+              dataIndex: "lastRunAt",
+              width: 170,
+              render: (v: string | null) => <span style={{ fontFamily: tokens.font.mono, fontSize: 12 }}>{v ? new Date(v).toLocaleString() : "—"}</span>,
+            },
+            { title: "错误", dataIndex: "lastRunError", ellipsis: true, render: (v: string | null) => <span style={{ fontSize: 12 }}>{v || "—"}</span> },
+          ]}
+        />
+        <h3 style={{ margin: `${tokens.spacing.lg} 0 ${tokens.spacing.md}`, fontSize: 16 }}>死信追踪</h3>
+        <Table<DeadLetter>
+          rowKey="id"
+          dataSource={deadLetters}
+          pagination={false}
+          size="small"
+          locale={{ emptyText: "暂无死信" }}
+          columns={[
+            { title: "来源", dataIndex: "sourceId", width: 220, ellipsis: true, render: (v: string) => <span style={{ fontFamily: tokens.font.mono, fontSize: 12 }}>{v}</span> },
+            { title: "运行", dataIndex: "runId", width: 220, ellipsis: true, render: (v: string) => <span style={{ fontFamily: tokens.font.mono, fontSize: 12 }}>{v}</span> },
+            { title: "错误", dataIndex: "error", ellipsis: true },
+            {
+              title: "事件状态",
+              dataIndex: "status",
+              width: 130,
+              render: (v: string, row) => <span style={{ fontFamily: tokens.font.mono, fontSize: 12 }}>{v} · {row.attempts}次</span>,
+            },
+            {
+              title: "发生时间",
+              dataIndex: "occurredAt",
+              width: 170,
+              render: (v: string) => <span style={{ fontFamily: tokens.font.mono, fontSize: 12 }}>{new Date(v).toLocaleString()}</span>,
+            },
+          ]}
+        />
+      </section>
       <FailLab />
       <Modal title="新增采集源" open={creating} onCancel={() => setCreating(false)} footer={null}>
         <Form
           layout="vertical"
           onFinish={async (values) => {
-            await api.createSource(values);
+            await api.createSource({ ...values, options: { autoPush: values.autoPush === true } });
             message.success("已创建");
             setCreating(false);
             refresh();
@@ -187,6 +286,9 @@ export default function SourceList() {
           <Form.Item name="cron" label="定时表达式（可选）">
             <Input placeholder="如 0 * * * *（每小时）" />
           </Form.Item>
+          <Form.Item name="autoPush" label="采集后自动推送" valuePropName="checked" initialValue={false}>
+            <Checkbox>新条目写入后立即推送 Scholar</Checkbox>
+          </Form.Item>
           <Button type="primary" htmlType="submit">保存</Button>
         </Form>
       </Modal>
@@ -201,7 +303,7 @@ export default function SourceList() {
           const values = await form.validateFields();
           if (!editing) return;
           try {
-            await api.updateSource(editing.id, values);
+            await api.updateSource(editing.id, { ...values, options: { ...editing.options, autoPush: values.autoPush === true } });
             message.success("已更新");
             setEditing(null);
             form.resetFields();
@@ -229,6 +331,9 @@ export default function SourceList() {
           </Form.Item>
           <Form.Item name="cron" label="定时表达式（可选）">
             <Input placeholder="如 0 * * * *（每小时）" />
+          </Form.Item>
+          <Form.Item name="autoPush" label="采集后自动推送" valuePropName="checked">
+            <Checkbox>新条目写入后立即推送 Scholar</Checkbox>
           </Form.Item>
         </Form>
       </Modal>

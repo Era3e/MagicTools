@@ -38,6 +38,30 @@ export interface Item {
   pushedAt: string | null;
 }
 
+export interface SchedulerTask {
+  sourceId: string;
+  name: string;
+  cron: string;
+  registered: boolean;
+  lastRunAt: string | null;
+  lastRunStatus: "not_run" | "running" | "success" | "dead";
+  lastRunFetchedCount: number | null;
+  lastRunNewCount: number | null;
+  lastRunError: string | null;
+}
+
+export interface DeadLetter {
+  id: string;
+  sourceId: string;
+  runId: string;
+  error: string;
+  maxAttempts: number;
+  status: string;
+  attempts: number;
+  lastError: string | null;
+  occurredAt: string;
+}
+
 export const api = {
   listSources: () => request<Source[]>("/sources"),
   getSource: (id: string) => request<Source>("/sources/" + id),
@@ -49,5 +73,6 @@ export const api = {
   collectSource: (id: string) => request<{ fetched: number; new: number; skipped: number }>("/sources/" + id + "/collect", { method: "POST" }),
   listItems: (sourceId: string) => request<Item[]>("/items?sourceId=" + encodeURIComponent(sourceId)),
   pushItems: (ids: string[]) => request<{ pushedCount: number; eventIds: string[] }>("/items/push", { method: "POST", body: JSON.stringify({ ids }) }),
-  schedulerStatus: () => request<{ tasks: Array<{ sourceId: string; name: string; cron: string }> }>("/meta/scheduler-status"),
+  schedulerStatus: () => request<{ tasks: SchedulerTask[] }>("/meta/scheduler-status"),
+  listDeadLetters: () => request<DeadLetter[]>("/meta/dead-letters"),
 };
