@@ -1,24 +1,23 @@
-# MagicTools 即时记忆（docs/memory）
+# MagicTools 当前状态
 
-> 机制说明：本目录是 AI 会话的持久记忆。会话启动协议：先读 AGENTS.md → 本目录 → 相关子项目设计文档。
-> 即时更新：每完成一个功能 / 关键决策 / 迭代结束，即刻追加条目，禁止事后批量补记。
-> 本文件定位「当前状态快照」，历史细节见 docs/CHANGELOG.md 与 docs/superpowers/specs/、plans/。
+> 本文件只保留仍然影响当前判断的事实、待办和边界。已完成迭代复盘见 [history.md](history.md)。
 
-## 当前状态快照（2026-09-12 更新）
+## 当前基线
 
-- **P14 真实页面样板与稳定业务数据（2026-09-15，本地验收通过）**：视觉基线 18→20 张，新增 Manager 详情与 Assistant 长答案；样板只由 Playwright 通过公开 API 幂等创建，不改变业务默认数据。Manager 看板与 Scholar 目录撤掉核心区整块遮罩，`coreText` 保证核心内容缺失时截图先失败。Assistant 支持 `?conversation=` 装载历史，会话条目补 role/tabIndex/Enter/Space；桩模式知识回答输出固定发布要点与上下文。验证：Assistant Web 5/5、Assistant LLM 10/10、键盘 3/3、视觉 21/21、功能 E2E 90/90（另有 4 个动态样板响应式显式 skip）、审批凭证补跑 3/3、smoke 17/17、完整qa 7阶段通过；PR #83 已创建并 rebase 到 `51fff70` 后重跑 CI。Windows 基线已更新，Linux 基线需 main 合入后手动 dispatch visual-baseline。
+- 远端 main 快照：`02fe8a7`（P14 Linux 视觉基线）；P14 合并后 Release 已通过，main CI 以 run `34882825502` 为最终验收。
+- 质量口径：目标测试、完整 `qa:gate`、17 服务 smoke、独立 0 bug loop、PR quality/smoke/e2e、合并后 Release 与 main CI 四段。
+- 当前执行：P15 统一功能映射与文档事实源；CODE_WIKI 已拆分，功能/接口索引由 `pnpm docs:facts` 生成。
 
-- **P13 Gatherer自动推送与调度回执（2026-09-15，PR #82 已合并）**：修复 `insertedIds` 未收集导致 autoPush 永不推送的问题；`upsertItem` 返回新 ID，autoPush 推送源内未推送条目并在推送前中断后可补发；推送事件 ID 固定为 `gatherer-item-push-<itemId>`，已推送条目返回 skipped 且重复请求不追加事件。`finishRun` 置 success，API 新建/更新源后串行刷新 cron 注册；调度状态返回实际注册、最近 run 终态/计数/错误，新增死信查询 API 和后台「调度实况」区域，源表单可开关自动推送。恢复演练同步新调度契约：源端先用不会触发的 cron 验证正控，断开接收器网络后再激活高频 cron，恢复端仍验证任务运行但不可外联。目标单测7/7、前端4/4、真实Gatherer DB 8/8零跳过（含201条历史待推回归）；独立复审确认P1关闭。完整qa回执通过，PR #82 三段 CI 全绿后合并为 `51fff70`。
+## 当前事实源
 
-- **P12可靠性补尾（2026-09-14，本地完整验收通过）**：针对独立审查发现的三个缺陷完成修复：outbox 领取时原子递增 `attempts`，过期且次数已满的 `processing` 先置 `dead`，崩溃路径不会无限租约回收；Assessor `analysis_requests` 增加稳定 `source_key`，请求头与明细同事务写入，存量行使用 `legacy:<id>`，重放追加缺失事件和明细；Manager 增加 Assessor `(source,source_ref)` 部分唯一索引，并发冲突返回 `null`，poll 回读后计 skipped，迁移前显式检测存量重复并拒绝自动合并。独立复审确认业务修复有效，唯一 revise 原因为旧基线；已 rebase 到 `4ed7618`。最终验证：三个目标包 TypeScript、目标 ESLint、docs 66文件0错误、db outbox 9/9、Assessor 9/9、Manager 44/44零跳过；Node20+pgvector 完整qa回执 `.qa/quality/a3c9bdecb12dc664a5d41f20/quality.json` 通过，smoke17/17。待推送PR并等待CI合并。
-- **P11 GitHub同步与持久Webhook（2026-09-14，本地验收通过）**：在最新main `1e22065` 新开 `feat-manager-P11-sync`。Issues改为100×20分页、排除PR、超2000显式失败，既有Issue标题/描述/标签/状态变化经expectedRevision更新并返回conflicts；Webhook新增github_webhook_deliveries持久领取、60秒租约、异常同delivery重试、过期恢复、payload摘要，除显式GITHUB_STUB=1外强制secret与原始请求体验签，回执仅当前锁持有者可更新，PR事件按updated_at与github_last_event_at事务内串行化。独立0 bug审查发现的非生产无secret可处理、错误delivery永久卡死、旧消费者可回写新租约均已修复并补回归。GitHub client单测5/5、Webhook单测10/10、Manager DB43/43通过；完整qa回执 `.qa/quality/aa3684faed9b96fd1f3cc6e4/quality.json` 通过（infra353/353、DB32文件零跳过），smoke17/17，Manager目标浏览器链路6/6。待最终指纹qa后提交PR并等待CI。
+- 功能映射与覆盖状态：`docs/superpowers/coverage-matrix.md`；
+- 功能与接口生成索引：`docs/generated/`；
+- 模块实现文档：`docs/code-wiki/`；
+- 设计基线：`docs/superpowers/specs/`（已交付为历史基线，执行中可短暂标记当前基线）；
+- 历史复盘：`docs/memory/history.md`。
 
-- **P12 Outbox可靠性（2026-09-14，本地验收通过）**：在最新main `4d8478` 新开 `feat-db-P12-outbox`。公共包新增 `processing` 租约（locked_by/lease_expires_at）、原子领取、过期回收、租约持有者条件回写和 `processOutboxBatch`；Assessor/Manager/Scholar 业务副作用移入批handler，完成后才确认done。独立审查未发现阻塞缺陷，边界为租约过期后的at-least-once需业务幂等。完整qa回执 `.qa/quality/7fc9f1371a4037f443fa951a/quality.json` 通过（infra353/353、DB32文件150/150零跳过）；smoke17/17；Manager/Assessor/Scholar目标浏览器链路10/10。
+## 待办与边界
 
-- **P10 仓库证据采集与需求反向整理（2026-09-14，本地核心验收通过）**：在最新main内容 `d1aca97` 新开 `feat-assessor-P10-evidence`。GitHub Client 按提交读取变更清单和文件/父提交内容，目录/提交清单截断、变更超过200文件显式失败；Assessor 筛选 routes/controller/service/schema/tests，新增任务与候选表、精确首末变更行证据、内容哈希、repo+SHA幂等和后台「仓库证据」页面，不可推断动机固定为unknown；删除文件读取父提交内容并让证据链接指向删除前源码。独立静态审查发现的设计导航缺同步、patch行号不精确和本地临时文件均已修复。GitHub client单测7/7、P10真实DB 3/3（共10/10）、Server/Web类型检查、目标ESLint、docs 66文件0错误和design 130 PASS/0 FAIL通过；当前沙箱限制完整本地qa/smoke/E2E，待PR CI的标准Node环境完整裁决。
-
-- **P08执行契约补尾（2026-09-14，本地验收通过）**：在最新main新开 `feat-manager-P08-execution`，新增迁移008 `execution_contract`，契约字段包含归一化GitHub仓库、允许路径、受控结构化验收命令、1–240分钟、1–3次尝试和分单位预算，并纳入内容触发器；修改预算等契约会使旧批准outdated。服务端新增 `GET /requirements/:id/execution-eligibility`，统一返回eligible/contractReady/dependenciesReady/依赖定位/blockers；依赖按同仓库 `manager_import_links` 解析，规划需求仅done就绪，基线unverified、缺失missing。前端内容编辑弹窗支持契约字段，详情面板展示门禁与依赖状态。本批automationPolicy仍为manual，不实现领取租约、执行器或自动合并；源码启动脚本支持 `MT_SOURCE_SMOKE_DATABASE_URL` 让本地冒烟避开5432。最终qa回执 `.qa/quality/5a43991380347ff8b678357c/quality.json`，infra353/353、DB31文件零跳过，smoke17/17；功能E2E97/97通过，本地Windows视觉基线存在既有动态数据遮罩漂移，交由CI Linux基线裁决。
-
-- **P06合并闭环与CI修复实录（2026-09-12，PR #75 → 6bdfcb5）**：PR #75 首轮 CI quality 43秒即死——根因是D5返工时 auth.test.ts 两处用例遗留未使用的 `const hash`（eslint no-unused-vars 首阶段挂掉；教训：**修复后必须重跑完整 qa:gate，不能依赖修复前的门禁结果**）。本地合并 origin/main（815ede3 版本bump+CHANGELOG，零冲突）后复现修复，途中处置 gatherer-web build `ENOTEMPTY`（29个残留 node 进程锁 dist——**会话收尾必须杀净服务进程**）。qa:gate 7阶段全绿（回执50d80a5b925fff9008a976eb）后推送 2e48974，CI run 34689112392 三段全绿，squash 合并 **6bdfcb5**，本地 main 已同步，分支已删。**合并后 Release #124 422 失败**：P06 changeset 误引用 `"@mt/gateway": patch`——apps/* 私有包（private:true 无 version）不参与发版，`changeset version` no-op → "No commits between main and changeset-release/main"；按 P04 `backup-recovery.md` 空引用先例改为 `---\n---`（仅迭代日志语义，等下个 packages 批次一并消费），737efcf 直推 main（owner bypass PR 规则），Release #125 绿。**main CI #344/#345 四段全绿（quality/smoke/e2e/images）**，P06 完全闭环。**P06 内容**：GATEWAY_USERS 会话登录（scrypt$salt$hex+HMAC Cookie+限流）/GATEWAY_SERVICE_TOKENS 服务身份/GATEWAY_TOKEN 共享三通道；两轮 0 bug loop 验收（首轮 D1 高危 DoS 等五缺陷全修复）。
-
-- **P04合并闭环与本会话接续（2026-09-12）**：本会话按用户授权（无需再逐项确认）核验PR #74验收记录与CI三段绿（quality/smoke/e2e全过，images skipped为无registry预期）后转正并squash合并**761152b**。CI `pull_request` 无 types 限制（默认 opened/synchronize/reopened），ready 转换不触发重跑——head SHA 5986667 上的绿灯即最终核验。PR #73（release）按三件套处理：bot已消费P04 changeset更新head至c1bc361，补body两勾选+close/reopen触发CI（run 34678664848，quality✅/smoke✅/e2e进行中），三段绿后squash。本地main已同步761152b；far只读调研发现P06只读报告（work/P06-权限边界现状与实施建议.md）已随work/目录清理丢失，P系列清单不在仓库/GitHub Issues/本地manager库（旧schema无P数据），以文档证据链（restored-deployment.md:96、runtime-images.md:19、P04 plan:40三处一致）确认P06=生产用户登录与服务权限。
+- P15 完成前，接口/路由变更必须重复运行 `pnpm docs:facts` 并确认无 diff。
+- P16 起继续问答评测、双知识空间、自动执行队列、隔离执行器与资源面板。
+- 生产独立备份机、真实外部模型效果、生产 HTTPS/用户清单和自动执行合并仍需真实外部配置；不得以桩模式或开发验收冒充生产已启用。

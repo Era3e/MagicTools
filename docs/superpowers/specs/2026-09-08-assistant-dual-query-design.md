@@ -1,5 +1,6 @@
 # Assistant 双路数据查询与质量兜底设计
 
+> 设计状态：历史设计基线。当前实现以源码、docs/code-wiki/ 与 docs/generated/ 为准，本文件保留当时的设计动机和验收边界。
 > 日期：2026-09-08
 > 状态：已评审通过（用户拍板：全量规划分阶段落地 / 双路对比 / 直连先行 / 直连为主+差异标签）
 > 关联：docs/superpowers/specs/2026-08-20-assistant-design.md、docs/integrations/cybercloud-setup.md

@@ -17,3 +17,4 @@ function run(args) {
 // Node 20/Windows 不展开 shell glob，显式枚举后跨平台执行同一批测试。
 run(["--test", ...tests]);
 run([join(lib, "docs-guard.mjs")]);
+run([join(lib, "docs-facts.mjs"), "--check"]);

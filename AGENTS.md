@@ -4,7 +4,7 @@
 
 1. 读本文件；
 2. 读 docs/memory/ 下全部记忆文件（当前状态、关键决策、进行中任务、已知问题）；
-3. 读任务涉及子项目的相关文档：docs/superpowers/specs/（设计）、docs/superpowers/plans/（实施计划）、docs/CHANGELOG.md（迭代日志）；
+3. 读任务涉及子项目的相关文档：docs/code-wiki/（模块实现）、docs/generated/（功能与接口事实索引）、docs/superpowers/specs/（历史设计）、docs/superpowers/plans/（实施计划）、docs/CHANGELOG.md（迭代日志）；
 4. 之后才能开始任何开发动作。
 
 ## 项目速览
@@ -18,7 +18,7 @@
 
 1. TDD：先写失败测试再实现；禁止 TODO/TBD 占位符
 2. 提交遵循 Conventional Commits（中文 subject，动词开头，不超过 50 字）
-3. 每个任务完成即刻更新 docs/memory/ 与 changeset（迭代日志）；**合 main 前追加 docs/CHANGELOG.md 条目并核对 CODE_WIKI.md 涉及章节**（PR 模板「沉淀层文档已同步」勾选，CI 强制检测；coverage-matrix ✅ 行由 test:infra 内 drift guard 校验路径真实性）
+3. 每个任务完成即刻更新 docs/memory/ 与 changeset（迭代日志）；**合 main 前追加 docs/CHANGELOG.md 条目并核对 docs/code-wiki/ 涉及模块**（PR 模板「沉淀层文档已同步」勾选，CI 强制检测；coverage-matrix ✅ 行由 test:infra 内 drift guard 校验路径真实性；页面路由、服务接口或 coverage-matrix 变更后必须运行 `pnpm docs:facts` 并提交 `docs/generated/`）
 4. 分支命名 feat-<项目>-<任务ID>-<描述>；一个任务一个 worktree；会话收尾必须执行收尾协议（见 docs/git-workflow.md）
 5. 质量门禁：合入前本地跑 pnpm qa:gate，冒烟 pnpm smoke，全绿才可提交
 6. 开发与测试分拆不同智能体（0 bug loop）：开发 agent 完成后必须由测试 agent 独立验收
@@ -41,6 +41,7 @@
 - pnpm images:build / images:publish / images:release（干净源码构建与固定digest制品，详见 docs/features/runtime-images.md）
 - pnpm deploy:release / deploy:ssh（公开配置与已有env分离，固定制品部署、回执和回退，详见 docs/features/deployment-receipts.md）
 - pnpm qa:gate（本地门禁）
+- pnpm docs:facts（功能映射与接口索引生成；test:infra 会校验生成物未漂移）
 - pnpm test:manager:integration（Manager 关键数据库契约，需配置 MANAGER_TEST_DATABASE_URL 为 mt_*test 专用库；不可用即失败）
 - pnpm design:check（设计图 ↔ 前端一致性核对，qa:gate 已含；单独跑秒级出结果）
 - pnpm ws:create <项目> <任务ID> / pnpm ws:cleanup <项目> <任务ID>（worktree）
