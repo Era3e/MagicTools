@@ -7,7 +7,7 @@
       "files": [
         {
           "path": "src/outbox.test.ts",
-          "minimumTests": 3
+          "minimumTests": 8
         }
       ]
     },
