@@ -84,8 +84,12 @@ function stubPayloadFor(messages: ChatMessage[]): Record<string, unknown> {
       .filter((m) => m.role === "user")
       .map((m) => (typeof m.content === "string" ? m.content : ""))
       .join("\n");
-    if (/采集/.test(userText)) return { action: "trigger_collect", params: { sourceId: "" } };
-    return { action: "create_requirement", params: { title: "桩需求：自动创建", description: "" } };
+    if (/采集/.test(userText)) {
+      const source = userText.match(/信息源\s+([A-Za-z0-9_-]+)/);
+      return { action: "trigger_collect", params: { sourceId: source?.[1] ?? "" } };
+    }
+    const title = userText.match(/需求[:：]\s*(.+)/);
+    return { action: "create_requirement", params: { title: title?.[1]?.trim() ?? "", description: "" } };
   }
   return {};
 }

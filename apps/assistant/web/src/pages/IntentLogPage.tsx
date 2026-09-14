@@ -2,7 +2,15 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Modal, Select, Table, Typography, message } from "antd";
 import { DownloadOutlined, FileSearchOutlined, PlayCircleOutlined } from "@ant-design/icons";
 import { AdminPageHead, MtStatusTag, MtKpiRow, MtEmptyState, tokens } from "@mt/ui";
-import { api, type IntentLog, type CybercloudCall } from "../api";
+import {
+  api,
+  type IntentLog,
+  type CybercloudCall,
+  type EvaluationCaseSummary,
+  type EvaluationComparison,
+  type EvaluationRun,
+  type EvaluationSplit,
+} from "../api";
 
 const DOMAIN_LABEL: Record<string, { label: string }> = {
   cybercloud: { label: "cybercloud" },
@@ -33,6 +41,12 @@ interface ReplayData {
   misses: Array<{ message: string; predicted: string; actual: string }>;
 }
 
+interface SplitCounts {
+  dev: number;
+  regression: number;
+  holdout: number;
+}
+
 function callStats(list: CybercloudCall[], route: string) {
   const rows = list.filter((c) => c.route === route);
   if (rows.length === 0) {
@@ -57,6 +71,13 @@ export default function IntentLogPage() {
   const [calls, setCalls] = useState<CybercloudCall[]>([]);
   const [ftStatus, setFtStatus] = useState<Awaited<ReturnType<typeof api.finetuneStatus>> | null>(null);
   const [ftLaunching, setFtLaunching] = useState(false);
+  const [evaluationSuite, setEvaluationSuite] = useState<EvaluationCaseSummary | null>(null);
+  const [evaluationRuns, setEvaluationRuns] = useState<EvaluationRun[]>([]);
+  const [evaluationSplit, setEvaluationSplit] = useState<EvaluationSplit>("dev");
+  const [evaluationRunning, setEvaluationRunning] = useState(false);
+  const [baselineRunId, setBaselineRunId] = useState<string>();
+  const [currentRunId, setCurrentRunId] = useState<string>();
+  const [comparison, setComparison] = useState<EvaluationComparison | null>(null);
 
   const refresh = useCallback(() => {
     setLoading(true);
@@ -78,12 +99,23 @@ export default function IntentLogPage() {
     api.finetuneStatus().then(setFtStatus).catch(() => setFtStatus(null));
   }, []);
 
+  const refreshEvaluationSuite = useCallback(() => {
+    api.evaluationCases().then(setEvaluationSuite).catch(() => setEvaluationSuite(null));
+    api.listEvaluationRuns().then((runs) => {
+      const list = Array.isArray(runs) ? runs : [];
+      setEvaluationRuns(list);
+      setBaselineRunId((old) => old ?? list[0]?.id);
+      setCurrentRunId((old) => old ?? list[0]?.id);
+    }).catch(() => setEvaluationRuns([]));
+  }, []);
+
   useEffect(() => {
     refresh();
     refreshEvaluation();
     refreshCalls();
     refreshFinetune();
-  }, [refresh, refreshEvaluation, refreshCalls, refreshFinetune]);
+    refreshEvaluationSuite();
+  }, [refresh, refreshEvaluation, refreshCalls, refreshFinetune, refreshEvaluationSuite]);
 
   // 存在进行中的微调任务时 5s 轮询，终态即停
   useEffect(() => {
@@ -145,6 +177,34 @@ export default function IntentLogPage() {
     }
   };
 
+  const runEvaluation = async () => {
+    setEvaluationRunning(true);
+    try {
+      const run = await api.createEvaluationRun(evaluationSplit, "manual");
+      setEvaluationRuns((old) => [run, ...old]);
+      setCurrentRunId(run.id);
+      message.success("评测完成：" + run.passCount + "/" + run.expectedTotal + " 通过");
+    } catch (err) {
+      message.error(String(err));
+    } finally {
+      setEvaluationRunning(false);
+    }
+  };
+
+  const compareRuns = async () => {
+    if (!baselineRunId || !currentRunId) {
+      message.warning("请选择 baseline 和 current");
+      return;
+    }
+    try {
+      const result = await api.compareEvaluationRuns(baselineRunId, currentRunId);
+      setComparison(result);
+      message.success("比较完成：regressed " + result.summary.regressed);
+    } catch (err) {
+      message.error(String(err));
+    }
+  };
+
   const downloadDataset = async () => {
     try {
       const r = await api.exportDataset();
@@ -193,6 +253,17 @@ export default function IntentLogPage() {
 
   const lowConf = useMemo(() => items.filter((i) => i.confidence < 0.6).length, [items]);
   const correctedCount = items.filter((i) => i.correctedIntent).length;
+  const splitCounts: SplitCounts | null = evaluationSuite
+    ? {
+        dev: evaluationSuite.bySplit?.dev ?? 0,
+        regression: evaluationSuite.bySplit?.regression ?? 0,
+        holdout: evaluationSuite.bySplit?.holdout ?? 0,
+      }
+    : null;
+  const runOptions = evaluationRuns.map((run) => ({
+    value: run.id,
+    label: run.id.slice(0, 8) + " · " + run.label + " · " + run.split,
+  }));
 
   return (
     <div>
@@ -249,6 +320,102 @@ export default function IntentLogPage() {
           </div>
         </div>
       )}
+
+      <div
+        data-testid="evaluation-suite-card"
+        data-latest-run={evaluationRuns[0]?.id ?? ""}
+        data-comparison-fixed={comparison?.summary.fixed ?? ""}
+        style={{ marginBottom: tokens.spacing.md }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: tokens.spacing.sm, marginBottom: tokens.spacing.sm, flexWrap: "wrap" }}>
+          <div style={{ fontFamily: tokens.font.mono, fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: tokens.color.textSecondary }}>
+            EVALUATION · 独立评测与版本比较
+          </div>
+          <MtStatusTag tone={evaluationSuite ? "success" : "warning"} showDot>
+            {evaluationSuite ? "训练/评测已隔离" : "评测集状态不可用"}
+          </MtStatusTag>
+          <span style={{ flex: 1 }} />
+          <Select
+            value={evaluationSplit}
+            onChange={(value) => setEvaluationSplit(value)}
+            style={{ width: 120 }}
+            options={[
+              { value: "dev", label: "dev" },
+              { value: "regression", label: "regression" },
+              { value: "holdout", label: "holdout" },
+            ]}
+          />
+          <Button loading={evaluationRunning} onClick={runEvaluation}>运行评测</Button>
+          <Button disabled={!baselineRunId || !currentRunId} onClick={compareRuns}>比较版本</Button>
+        </div>
+        <MtKpiRow
+          items={[
+            { label: "评测样本", value: evaluationSuite?.total ?? "--", unit: evaluationSuite ? "条" : undefined },
+            { label: "dev", value: splitCounts ? splitCounts.dev : "--", unit: splitCounts ? "条" : undefined },
+            { label: "regression", value: splitCounts ? splitCounts.regression : "--", unit: splitCounts ? "条" : undefined },
+            { label: "holdout", value: splitCounts ? splitCounts.holdout : "--", unit: splitCounts ? "条" : undefined },
+          ]}
+        />
+        {splitCounts && (
+          <Typography.Text type="secondary" style={{ display: "block", marginTop: tokens.spacing.xs, fontSize: 12 }}>
+            dev {splitCounts.dev} · regression {splitCounts.regression} · holdout {splitCounts.holdout}
+          </Typography.Text>
+        )}
+        <div style={{ display: "flex", gap: tokens.spacing.sm, marginTop: tokens.spacing.sm, flexWrap: "wrap", alignItems: "center" }}>
+          <Select placeholder="baseline" value={baselineRunId} onChange={setBaselineRunId} style={{ minWidth: 260 }} options={runOptions} />
+          <Select placeholder="current" value={currentRunId} onChange={setCurrentRunId} style={{ minWidth: 260 }} options={runOptions} />
+        </div>
+        {evaluationRuns.length > 0 ? (
+          <Table<EvaluationRun>
+            rowKey="id"
+            size="small"
+            style={{ marginTop: tokens.spacing.sm }}
+            dataSource={evaluationRuns}
+            pagination={{ pageSize: 5 }}
+            columns={[
+              { title: "run", dataIndex: "id", width: 120, ellipsis: true, render: (v: string) => <MtStatusTag mono>{v}</MtStatusTag> },
+              { title: "标签", dataIndex: "label", width: 120 },
+              { title: "split", dataIndex: "split", width: 110, render: (v: string) => <MtStatusTag mono>{v}</MtStatusTag> },
+              { title: "状态", dataIndex: "status", width: 110, render: (v: string) => <MtStatusTag tone={v === "completed" ? "success" : v === "failed" ? "error" : "warning"}>{v}</MtStatusTag> },
+              { title: "通过", width: 100, align: "right", render: (_, row) => row.passCount + "/" + row.expectedTotal },
+              { title: "异常", width: 150, align: "right", render: (_, row) => row.failCount + " / " + row.errorCount + " / " + row.timeoutCount + " / " + row.missingCount },
+            ]}
+          />
+        ) : (
+          <Typography.Text type="secondary" style={{ display: "block", marginTop: tokens.spacing.sm }}>暂无持久评测 run。</Typography.Text>
+        )}
+        {comparison && (
+          <div style={{ marginTop: tokens.spacing.md }}>
+            <Typography.Paragraph style={{ fontSize: 12, fontWeight: 600, marginBottom: tokens.spacing.sm }}>
+              fixed {comparison.summary.fixed} · regressed {comparison.summary.regressed} · error {comparison.summary.error} · timeout {comparison.summary.timeout} · missing {comparison.summary.missing}
+            </Typography.Paragraph>
+            <MtKpiRow
+              items={[
+                { label: "fixed", value: comparison.summary.fixed, unit: "条" },
+                { label: "regressed", value: comparison.summary.regressed, unit: "条" },
+                { label: "error", value: comparison.summary.error, unit: "条" },
+                { label: "timeout", value: comparison.summary.timeout, unit: "条" },
+                { label: "missing", value: comparison.summary.missing, unit: "条" },
+              ]}
+            />
+            {comparison.transitions.length > 0 && (
+              <Table
+                rowKey="caseId"
+                size="small"
+                style={{ marginTop: tokens.spacing.sm }}
+                dataSource={comparison.transitions}
+                pagination={{ pageSize: 5 }}
+                columns={[
+                  { title: "case", dataIndex: "caseId", ellipsis: true },
+                  { title: "baseline", dataIndex: "baseline", width: 110 },
+                  { title: "current", dataIndex: "current", width: 110 },
+                  { title: "变化", dataIndex: "kind", width: 110, render: (v: string) => <MtStatusTag tone={v === "regressed" || v === "error" || v === "missing" ? "error" : v === "fixed" ? "success" : "neutral"} mono>{v}</MtStatusTag> },
+                ]}
+              />
+            )}
+          </div>
+        )}
+      </div>
 
       {datasetCount !== null && (
         <div style={{ marginBottom: tokens.spacing.md }}>

@@ -98,7 +98,7 @@ describe("intent_logs", () => {
 
   it("D-09 回放评估对已纠错样本返回命中率", async (ctx) => {
     if (!available) { ctx.skip(); return; }
-    await request(app.getHttpServer()).post("/api/assistant/chat").send({ message: "查询本月销售额" });
+    await request(app.getHttpServer()).post("/api/assistant/chat").send({ message: "查询本月销售额和毛利" });
     const list = await request(app.getHttpServer()).get("/api/assistant/intent-logs");
     const id = list.body[0].id;
     // 真实判定 data_query，故意纠错为 trouble_shooting 制造 miss
@@ -114,7 +114,7 @@ describe("intent_logs", () => {
 
   it("D-09 数据集导出 JSONL 每行可解析且含纠错标签", async (ctx) => {
     if (!available) { ctx.skip(); return; }
-    await request(app.getHttpServer()).post("/api/assistant/chat").send({ message: "帮我创建一个需求：支持导出功能" });
+    await request(app.getHttpServer()).post("/api/assistant/chat").send({ message: "帮我创建一个需求：支持权限审计" });
     const list = await request(app.getHttpServer()).get("/api/assistant/intent-logs");
     const id = list.body[0].id;
     await request(app.getHttpServer()).post("/api/assistant/intent-logs/" + id + "/correct").send({ correctedIntent: "process_execution" });

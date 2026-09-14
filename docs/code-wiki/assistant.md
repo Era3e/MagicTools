@@ -23,6 +23,7 @@
 | 故障排查 | TroubleService | 全服务 /health 探测聚合 + LLM 排查建议 |
 | 反馈 | FeedbackController + FeedbackService | complaint_feedback：落库 + 前端反馈页可查 |
 | 意图日志 | IntentLogController + EvaluationService | 可观测层：{domain,intent,confidence} 日志列表 + 纠错回填 API + 混淆矩阵/回放评估 + JSONL 数据集导出 |
+| 独立评测 | EvaluationSuiteController + EvaluationSuiteService | 数据库版本化评测集：routing/knowledge/action × dev/regression/holdout；消息指纹隔离训练样本，持久 run 明细与同数据集版本比较；action 只解析不执行 |
 | 微调编排 | FinetuneService + FinetuneRepo | **LoRA 编排层（D-09，2026-09-10）**：finetune_jobs 表（migrations/005）+ 500 样本就绪门禁 + FT_LAUNCH_ENABLED 真跑开关（缺省关）+ status 远端刷新降级快照；数据链 = exportDataset JSONL → @mt/model-client finetune 四端点（FT_STUB 桩）；IntentLogPage 微调卡（进度/发起/5s 轮询）。真跑需智谱 Pro 权益，模型切换走 ZHIPU_MODEL |
 | 元信息 | MetaController | 支持的意图清单 / 系统状态 / data-source-status 探活 |
 
@@ -50,7 +51,15 @@
 后台（AdminShell /assistant/admin）：
   /admin/feedback      FeedbackPage   反馈提交 + 历史查看
   /admin/intent-logs   IntentLogPage  意图日志可观测 + 纠错回填 + 路由评估卡（混淆矩阵/回放）+
-                                       数据查询监控卡（v2.3：MtKpiRow 双路成功率/延迟 + cybercloud_calls 明细表）
+                                      独立评测卡（48 条种子数据、持久 run、版本比较）+
+                                      数据查询监控卡（v2.3：MtKpiRow 双路成功率/延迟 + cybercloud_calls 明细表）
 ```
+
+### 评测与隔离契约
+
+- `evaluation_cases` 存储 routing / knowledge / action 三类真值，split 覆盖 dev、regression、holdout。
+- `intent_logs.message_fingerprint` 与 `evaluation_case_fingerprints` 使用同一规范化指纹，评测消息不会进入 few-shot、回放评估或微调 JSONL。
+- `evaluation_runs` / `evaluation_run_items` 保存数据集指纹、配置快照、每个 case 的实际输出和 pass/fail/error/timeout/missing；比较接口拒绝不同 split 或不同数据集指纹的 run。
+- 配置快照只记录 provider、model、桩模式、key 是否配置等非秘密字段；action 评测只调用解析器，不调用网关。
 
 ---

@@ -78,6 +78,38 @@ export interface CybercloudCall {
   createdAt: string;
 }
 
+export type EvaluationSplit = "dev" | "regression" | "holdout";
+
+export interface EvaluationCaseSummary {
+  total: number;
+  bySplit: Record<EvaluationSplit, number>;
+  byType: { routing: number; knowledge: number; action: number };
+}
+
+export interface EvaluationRun {
+  id: string;
+  label: string;
+  split: EvaluationSplit;
+  datasetFingerprint: string;
+  configSnapshot: Record<string, unknown>;
+  status: "running" | "completed" | "failed" | "interrupted";
+  expectedTotal: number;
+  passCount: number;
+  failCount: number;
+  errorCount: number;
+  timeoutCount: number;
+  missingCount: number;
+  error: string | null;
+  startedAt: string;
+  finishedAt: string | null;
+  itemCount?: number;
+}
+
+export interface EvaluationComparison {
+  summary: { fixed: number; regressed: number; error: number; timeout: number; missing: number; unchanged: number };
+  transitions: Array<{ caseId: string; baseline: string; current: string; kind: string }>;
+}
+
 export interface Feedback {
   id: string;
   content: string;
@@ -153,4 +185,13 @@ export const api = {
   finetuneLaunch: () =>
     request<{ jobId: string; sampleCount: number; remoteJobId: string }>("/intent-logs/finetune", { method: "POST", body: JSON.stringify({}) }),
   listCybercloudCalls: () => request<CybercloudCall[]>("/meta/cybercloud-calls"),
+  evaluationCases: () => request<EvaluationCaseSummary>("/evaluation-suite/cases"),
+  createEvaluationRun: (split: EvaluationSplit, label: string) =>
+    request<EvaluationRun>("/evaluation-suite/runs", { method: "POST", body: JSON.stringify({ split, label }) }),
+  listEvaluationRuns: () => request<EvaluationRun[]>("/evaluation-suite/runs"),
+  compareEvaluationRuns: (baselineId: string, currentId: string) =>
+    request<EvaluationComparison>(`/evaluation-suite/runs/${baselineId}/compare/${currentId}`, {
+      method: "POST",
+      body: JSON.stringify({}),
+    }),
 };

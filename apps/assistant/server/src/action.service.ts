@@ -14,12 +14,16 @@ const ACTION_PROMPT =
 
 @Injectable()
 export class ActionService {
-  async execute(message: string): Promise<{ reply: string; actionResult: Record<string, unknown> }> {
+  async parse(message: string): Promise<{ action: string; params: Record<string, unknown> }> {
     const raw = await llmChat([
       { role: "system", content: ACTION_PROMPT },
       { role: "user", content: message },
     ]);
-    const spec = actionSchema.parse(parseJson(raw));
+    return actionSchema.parse(parseJson(raw));
+  }
+
+  async execute(message: string): Promise<{ reply: string; actionResult: Record<string, unknown> }> {
+    const spec = await this.parse(message);
 
     if (process.env.ACTION_STUB === "1") {
       return {

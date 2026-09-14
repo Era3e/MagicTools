@@ -47,7 +47,7 @@ PostgreSQL 单实例（pgvector/pgvector:pg16），使用 `infra/postgres-init.s
 | manager | 管理 | 同上 |
 | gatherer | 采集 | 同上 |
 | scholar | 知识 | apps/scholar/server/migrations |
-| assistant | 助手 | apps/assistant/server/migrations（3 个：core/feedback/intent_logs） |
+| assistant | 助手 | apps/assistant/server/migrations（6 个：core/feedback/intent_logs/cybercloud_calls/finetune_jobs/evaluation_suite） |
 | designer | 设计 | apps/designer/server/migrations |
 | mt_test | E2E 测试共享 | — |
 

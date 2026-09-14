@@ -58,8 +58,9 @@ export async function correctIntentLog(id: string, correctedIntent: string): Pro
 export async function listCorrectedLogs(limit = 500): Promise<IntentLogRow[]> {
   const rows = await pool.query(
     "SELECT id, message, domain, intent, confidence, corrected_intent, created_at FROM intent_logs" +
-      " WHERE corrected_intent IS NOT NULL AND corrected_intent <> ''" +
-      " ORDER BY created_at DESC LIMIT $1",
+    " WHERE corrected_intent IS NOT NULL AND corrected_intent <> ''" +
+    " AND NOT EXISTS (SELECT 1 FROM evaluation_case_fingerprints f WHERE f.message_fingerprint = intent_logs.message_fingerprint)" +
+    " ORDER BY created_at DESC LIMIT $1",
     [limit]
   );
   return rows.rows.map(mapRow);
@@ -67,7 +68,11 @@ export async function listCorrectedLogs(limit = 500): Promise<IntentLogRow[]> {
 
 /** D-09 LoRA: 纠错样本计数（就绪度门禁指标） */
 export async function countCorrectedLogs(): Promise<number> {
-  const rows = await pool.query("SELECT count(*)::int AS n FROM intent_logs WHERE corrected_intent IS NOT NULL AND corrected_intent <> ''");
+  const rows = await pool.query(
+    "SELECT count(*)::int AS n FROM intent_logs" +
+      " WHERE corrected_intent IS NOT NULL AND corrected_intent <> ''" +
+      " AND NOT EXISTS (SELECT 1 FROM evaluation_case_fingerprints f WHERE f.message_fingerprint = intent_logs.message_fingerprint)"
+  );
   return Number(rows.rows[0]?.n ?? 0);
 }
 
