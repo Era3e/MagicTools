@@ -1,6 +1,6 @@
 # LLM 智能层
 
-> 文档状态：当前模块事实源快照（2026-09-15）。源码级功能与接口索引以 `docs/generated/` 为准；本文件用于理解模块结构、边界和实现方式。
+> 文档状态：当前模块事实源快照（2026-09-16）。源码级功能与接口索引以 `docs/generated/` 为准；本文件用于理解模块结构、边界和实现方式。
 
 ## 10. LLM 智能层
 
@@ -55,5 +55,13 @@ const vectors = await llm.embed(["文档1", "文档2"]);  // Promise<number[][]>
 Scholar 双通道检索：
 1. 全文检索：`to_tsvector('english', content) @@ plainto_tsquery(?)` + pg_trgm 相似度
 2. 向量检索：`embedding <=> $1 ORDER BY 1 LIMIT n`（余弦距离，pgvector 操作符）
+
+### 10.4 调用控制、用量与追踪
+
+- `ChatOptions` / `EmbedOptions` 支持 `signal`、`timeoutMs` 和 `context`；微调请求支持 `signal` 与 `timeoutMs`。默认 120 秒，供应商可配置 `defaultTimeoutMs`。
+- 外部取消、超时和流式消费方提前退出都会中止底层请求；429/5xx 最多重试 3 次，取消和超时不重试。
+- 每次尝试输出 `UsageLog`：真实请求/生效模型、success/error/timeout/cancelled、attempt/attempts、耗时、错误、taskId/traceId 与上下文。
+- 流式请求开启 `stream_options.include_usage=true`；供应商未返回 usage 时 token 为 NULL、来源为 `unknown`。
+- 7 个调用模型的服务通过 `recordModelCall` 异步写本服务 `model_calls` 表；写库失败只告警不影响业务，`NODE_ENV=test` 不落库。
 
 ---

@@ -17,6 +17,7 @@ import { FeedbackService } from "./feedback.service";
 import { attachIntentLogTrace, insertIntentLog, suggestIntentLog } from "./intent-log.repo";
 import { BadcaseService } from "./badcase.service";
 import { insertTrace, type TraceStage } from "./trace.repo";
+import { runWithModelCallContext } from "@mt/model-client";
 import type { Intent } from "./llm";
 import { IntentService } from "./intent.service";
 import { KnowledgeService } from "./knowledge.service";
@@ -97,6 +98,7 @@ export class ChatService {
 
     const history = await listMessages(conversationId, 20);
     const userMessage = await insertMessage({ conversationId, role: "user", content: message, intent: "", citations: [] });
+    const requestContext = { service: "assistant", metadata: { conversationId, userMessageId: userMessage.id } };
 
     // 澄清确认：上一轮低置信度反问后，用户按序号/意图确认
     const pending = this.pendingClarify.get(conversationId);
@@ -105,9 +107,12 @@ export class ChatService {
       if (chosen) {
         await suggestIntentLog(pending.intentLogId, chosen);
         this.pendingClarify.delete(conversationId);
-        const result = await this.executeBranch(chosen, pending.originalMessage, history, {
-          conversationId, userMessageId: userMessage.id, intentLogId: pending.intentLogId,
-        });
+        const result = await runWithModelCallContext(
+          { ...requestContext, traceId: pending.intentLogId, taskId: pending.intentLogId },
+          () => this.executeBranch(chosen, pending.originalMessage, history, {
+            conversationId, userMessageId: userMessage.id, intentLogId: pending.intentLogId,
+          })
+        );
         const assistantMessage = await insertMessage({ conversationId, role: "assistant", content: result.reply, intent: chosen, citations: result.citations });
         await insertTrace({
           conversationId,
@@ -134,9 +139,12 @@ export class ChatService {
       this.pendingClarify.delete(conversationId);
     }
 
-    const route = await this.intentService.classify(
-      message,
-      history.map((m) => ({ role: m.role, content: m.content }))
+    const route = await runWithModelCallContext(
+      { ...requestContext, operation: "intent-classification" },
+      () => this.intentService.classify(
+        message,
+        history.map((m) => ({ role: m.role, content: m.content }))
+      )
     );
     const intent = route.intent;
     const log = await insertIntentLog({ message, domain: route.domain, intent: route.intent, confidence: route.confidence });
@@ -185,7 +193,10 @@ export class ChatService {
     const feedbackContext = { conversationId, userMessageId: userMessage.id, intentLogId: log.id };
     let result;
     try {
-      result = await this.executeBranch(intent, message, history, feedbackContext);
+      result = await runWithModelCallContext(
+        { ...requestContext, traceId: log.id, taskId: log.id },
+        () => this.executeBranch(intent, message, history, feedbackContext)
+      );
     } catch (error) {
       await insertTrace({
         conversationId,

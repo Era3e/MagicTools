@@ -90,5 +90,32 @@ describe("createFinetuneClient（智谱微调 API）", () => {
       const c = createFinetuneClient(BASE);
       await expect(c.getJob(KEY, "job-1")).rejects.toThrow(/403/);
     });
+
+    it("timeout 会中止底层请求", async () => {
+      const signals: AbortSignal[] = [];
+      const fetchMock = vi.fn((_url: string, init: RequestInit) => new Promise((_resolve, reject) => {
+        signals.push(init.signal!);
+        init.signal!.addEventListener("abort", () => reject(init.signal!.reason), { once: true });
+      }));
+      vi.stubGlobal("fetch", fetchMock);
+      const c = createFinetuneClient(BASE);
+      await expect(c.getJob(KEY, "job-1", { timeoutMs: 10 })).rejects.toThrow(/超时/);
+      expect(signals[0].aborted).toBe(true);
+    });
+
+    it("外部 signal 取消会中止底层请求", async () => {
+      const controller = new AbortController();
+      const signals: AbortSignal[] = [];
+      const fetchMock = vi.fn((_url: string, init: RequestInit) => new Promise((_resolve, reject) => {
+        signals.push(init.signal!);
+        init.signal!.addEventListener("abort", () => reject(init.signal!.reason), { once: true });
+      }));
+      vi.stubGlobal("fetch", fetchMock);
+      const c = createFinetuneClient(BASE);
+      const pending = c.listEvents(KEY, "job-1", 20, { signal: controller.signal });
+      setTimeout(() => controller.abort(new Error("job cancelled")), 10);
+      await expect(pending).rejects.toThrow(/job cancelled|aborted/i);
+      expect(signals[0].aborted).toBe(true);
+    });
   });
 });

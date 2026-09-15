@@ -1,4 +1,6 @@
-import { createModelClient, type ChatMessage, type ChatOptions } from "@mt/model-client";
+import { recordModelCall } from "@mt/db";
+import { createModelClient, type ChatMessage, type ChatOptions, type EmbedOptions, type UsageLog } from "@mt/model-client";
+import { pool } from "./db";
 import { DEEPSEEK, ZHIPU } from "@mt/model-client";
 
 export const EMBEDDING_DIMS = 1024;
@@ -20,13 +22,18 @@ let chatClientProvider = "";
 function getChatClient(): ReturnType<typeof createModelClient> {
   const provider = process.env.LLM_PROVIDER === "zhipu" || !process.env.DEEPSEEK_API_KEY ? ZHIPU : DEEPSEEK;
   if (!chatClientCache || chatClientProvider !== provider.name) {
-    chatClientCache = createModelClient(provider, (u) => console.log("[llm]", u.model, u.ms + "ms"));
+    chatClientCache = createModelClient(provider, persistUsage);
     chatClientProvider = provider.name;
   }
   return chatClientCache;
 }
 // 向量化固定走智谱 embedding-2（DeepSeek 无 embedding 端点）
-const embedClient = createModelClient(ZHIPU, () => {});
+const embedClient = createModelClient(ZHIPU, persistUsage);
+function persistUsage(usage: UsageLog): void {
+  console.log("[llm]", usage.model, usage.ms + "ms", usage.status);
+  if (process.env.NODE_ENV === "test") return;
+  void recordModelCall(pool, { ...usage, service: "assistant", latencyMs: usage.ms }).catch((error) => console.error("[model-call] persist failed", error));
+}
 
 export async function llmChat(messages: ChatMessage[], options?: ChatOptions): Promise<string> {
   if (process.env.MT_LLM_STUB === "1") {
@@ -113,11 +120,11 @@ export function classifyIntent(text: string): Intent {
   return "product_inquiry";
 }
 
-export async function embed(texts: string[]): Promise<number[][]> {
+export async function embed(texts: string[], options?: EmbedOptions): Promise<number[][]> {
   if (process.env.MT_LLM_STUB === "1") {
     return texts.map((t) => pseudoVector(t, EMBEDDING_DIMS));
   }
-  return embedClient.embed(texts);
+  return embedClient.embed(texts, options);
 }
 
 /** 桩模式确定性伪向量：字符 bigram 哈希打点后单位化（与 scholar 桩向量算法一致，保证检索相似性） */

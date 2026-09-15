@@ -1,7 +1,13 @@
+import { recordModelCall } from "@mt/db";
 import { createModelClient, type ChatMessage, type ChatOptions } from "@mt/model-client";
 import { ZHIPU } from "@mt/model-client";
+import { pool } from "./db";
 
-const client = createModelClient(ZHIPU, (u) => console.log("[llm]", u.model, u.ms + "ms"));
+const client = createModelClient(ZHIPU, (usage) => {
+  console.log("[llm]", usage.model, usage.ms + "ms", usage.status);
+  if (process.env.NODE_ENV === "test") return;
+  void recordModelCall(pool, { ...usage, service: "designer", latencyMs: usage.ms }).catch((error) => console.error("[model-call] persist failed", error));
+});
 
 export const STUB_COMPONENT_NAME = "GreetingCard";
 export const STUB_COMPONENT_DESCRIPTION = "示例问候卡片（桩模式）";

@@ -7,20 +7,55 @@ export interface ChatMessage {
   content: string | ContentPart[];
 }
 
-export interface ChatOptions {
+export interface ModelCallContext {
+  service?: string;
+  operation?: string;
+  taskId?: string;
+  traceId?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface RequestCancellation {
+  signal?: AbortSignal;
+  timeoutMs?: number;
+  context?: ModelCallContext;
+}
+
+export type ChatOptions = RequestCancellation & {
   model?: string;
   temperature?: number;
   maxTokens?: number;
   stream?: boolean;
   vision?: boolean;
-}
+};
+
+export type EmbedOptions = RequestCancellation;
+
+export type ModelCallOperation = "chat" | "chat-stream" | "embedding";
+export type ModelCallStatus = "success" | "error" | "timeout" | "cancelled";
+export type ModelTokenSource = "provider" | "unknown";
 
 export interface UsageLog {
+  id: string;
+  service: string;
+  operation: ModelCallOperation;
   provider: string;
   model: string;
-  inputTokens: number;
-  outputTokens: number;
+  requestedModel?: string | null;
+  effectiveModel: string;
+  status: ModelCallStatus;
+  attempt: number;
+  attempts: number;
+  inputTokens: number | null;
+  outputTokens: number | null;
+  tokenSource: ModelTokenSource;
   ms: number;
+  taskId?: string | null;
+  traceId?: string | null;
+  errorCode?: string | null;
+  errorMessage?: string | null;
+  cancelled: boolean;
+  context: Record<string, unknown>;
 }
 
 export interface ModelProviderConfig {
@@ -32,4 +67,5 @@ export interface ModelProviderConfig {
   envModelKey?: string;
   visionModel?: string;
   embeddingModel?: string;
+  defaultTimeoutMs?: number;
 }
