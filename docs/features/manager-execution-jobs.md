@@ -1,6 +1,6 @@
 # Manager 自动执行任务租约
 
-P22 在需求执行契约之上增加持久任务队列。它回答三个可靠性问题：同一需求修订不会被并发执行多次、崩溃执行者不能冒用旧租约回写、服务重启后悬挂执行会被显式恢复而不是永远占用队列。本批只提供队列与回写契约，真实隔离编码执行器由 P23 接入。
+P22 在需求执行契约之上增加持久任务队列。它回答三个可靠性问题：同一需求修订不会被并发执行多次、崩溃执行者不能冒用旧租约回写、服务重启后悬挂执行会被显式恢复而不是永远占用队列。P23 起可由[隔离编码执行器](isolated-executor.md)领取并执行。
 
 ## 数据模型
 
@@ -35,7 +35,7 @@ P22 在需求执行契约之上增加持久任务队列。它回答三个可靠�
 | POST | `/execution-jobs/:id/cancel` | owner 取消 queued/running job |
 | POST | `/execution-jobs/recover` | executor 将过期 running run 置为 expired，并恢复 job |
 
-领取请求的 `executorId` 只允许 1-100 位 `A-Za-z0-9._-`；`leaseMilliseconds` 为 5 秒到 1 小时，默认 60 秒，并被契约 `maxDurationMinutes` 截断。执行契约快照随 job 保存，后续修订不会改变已排队任务的授权边界。
+领取请求的 `executorId` 只允许 1-100 位 `A-Za-z0-9._-`；`leaseMilliseconds` 为 5 秒到 1 小时，默认 60 秒，并被契约 `maxDurationMinutes` 截断。领取响应除一次性 run token 外，还返回只读需求标题、描述、范围和验收标准，供执行器写入任务文件。执行契约快照随 job 保存，后续修订不会改变已排队任务的授权边界。
 
 ## 生命周期
 
@@ -48,4 +48,4 @@ P22 在需求执行契约之上增加持久任务队列。它回答三个可靠�
 
 ## 验证与边界
 
-真实数据库用例 `apps/manager/server/src/execution-jobs.e2e.test.ts` 覆盖硬门禁、重复排队、并发领取唯一 run、过期回写拒绝、恢复重试、重试上限、内容变化隔离、取消和执行器鉴权。本批没有启动真实编码进程，也没有创建 PR、发送通知或自动合并；live executor 结论为 `not-run`。生产启用前必须配置独立 executor token，并确保只有 P23 执行器所在身份能访问该凭证。
+真实数据库用例 `apps/manager/server/src/execution-jobs.e2e.test.ts` 覆盖硬门禁、重复排队、并发领取唯一 run、领取需求上下文、过期回写拒绝、恢复重试、重试上限、内容变化隔离、取消和执行器鉴权。P23 执行器编排已由基础设施测试验证；真实生产 Codex/GitHub 运行仍取决于外部凭证，未运行时保持 `not-run`。生产启用前必须配置独立 executor token，并确保只有执行器身份能访问 Manager 和 GitHub 凭证。

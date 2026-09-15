@@ -17,6 +17,7 @@
 | `pnpm lint` | `eslint .` | 全局 ESLint（typescript-eslint + react-hooks 规则集） |
 | `pnpm test:infra` | `node infra/scripts/test-infra.mjs` | Node 原生测试 infra 脚本 |
 | `pnpm smoke [--only <服务>]` | `node infra/scripts/smoke.mjs` | 冒烟：读取 ports.yaml 探活所有服务健康检查 |
+| `pnpm executor [--check-config] [--once]` | `node infra/scripts/executor.mjs` | 隔离编码执行器：领取 P22 任务、白名单环境运行编码 CLI、候选 SHA 独立验收并创建 PR |
 | `pnpm images:smoke` | images-smoke.mjs | 17镜像构建与独立容器全流程回归 |
 | `pnpm images:build` / `images:publish` / `images:release` | 制品构建及仓库digest核验 | 干净提交发布，验证工作树须明确标记 |
 | `pnpm qa:gate` | quality-gate.mjs：lint + build/unit + coverage + infra + docs + design + test:db | ✅ 本地与 CI 共用；生成候选/checkout/run 绑定的阶段证据 |

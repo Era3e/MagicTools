@@ -115,6 +115,12 @@ describe("自动执行任务租约", () => {
     expect(claimedBody.jobId).toBe(first.body.id);
     expect(claimedBody.attempt).toBe(1);
     expect(claimedBody.runToken).toMatch(/^[0-9a-f-]{36}$/);
+    expect(claimedBody.requirement).toMatchObject({
+      title: "唯一活动执行需求",
+      description: "描述自动执行目标",
+      scope: "仅任务队列可靠性",
+      acceptanceCriteria: ["任务租约可靠"],
+    });
     const detail = await request(app.getHttpServer()).get(`/api/manager/execution-jobs/${first.body.id}`).expect(200);
     expect(detail.body).toMatchObject({ status: "running", attempts: 1 });
     expect(detail.body.runs).toHaveLength(1);

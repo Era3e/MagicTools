@@ -37,6 +37,7 @@
 - pnpm install / pnpm build / pnpm test / pnpm test:affected / pnpm lint / pnpm coverage / pnpm test:infra
 - pnpm new:app <name>（新子项目）
 - pnpm smoke [--only <服务>]（冒烟）
+- pnpm executor --check-config（隔离编码执行器配置检查；真实运行需独立 Manager/GitHub/编码 CLI 配置）
 - pnpm images:smoke（构建17镜像并完成独立Compose冷启动、断连恢复和持久化回归）
 - pnpm images:build / images:publish / images:release（干净源码构建与固定digest制品，详见 docs/features/runtime-images.md）
 - pnpm deploy:release / deploy:ssh（公开配置与已有env分离，固定制品部署、回执和回退，详见 docs/features/deployment-receipts.md）
