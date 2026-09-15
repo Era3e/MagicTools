@@ -52,10 +52,8 @@ export async function seedBusinessSamples(request: APIRequestContext) {
   const publicVersionResponse = await request.get("/api/scholar/public/version/current");
   let publishedSample = false;
   if (publicVersionResponse.ok()) {
-    const currentVersion = await publicVersionResponse.json();
     const publicEntries = await json(request, "/api/scholar/public/entries");
-    publishedSample = publicEntries.some((entry: { id: string }) => entry.id === scholar.id) &&
-      currentVersion.deploymentRef === "e2e-p14-business-samples";
+    publishedSample = publicEntries.some((entry: { id: string }) => entry.id === scholar.id);
   }
   if (!publishedSample) {
     const version = await post<{ id: string }>(request, "/api/scholar/spaces/product/versions", {
