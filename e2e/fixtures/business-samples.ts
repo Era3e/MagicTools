@@ -38,8 +38,35 @@ export async function seedBusinessSamples(request: APIRequestContext) {
       summary: "覆盖发布准备、验证、回读、回退与用户帮助写作口径。",
       category: SAMPLE_CATEGORY,
       tags: ["用户帮助", "发布流程", "P14"],
+      spaceKey: "product",
+      sourceRevision: "e2e-p14-business-sample",
     });
     await patch(request, "/api/scholar/entries/" + scholar.id, { assistantScope: true });
+  } else if (scholar.spaceKey !== "product" || !scholar.assistantScope) {
+    await patch(request, "/api/scholar/entries/" + scholar.id, {
+      assistantScope: true,
+      spaceKey: "product",
+    });
+  }
+
+  const publicVersionResponse = await request.get("/api/scholar/public/version/current");
+  let publishedSample = false;
+  if (publicVersionResponse.ok()) {
+    const currentVersion = await publicVersionResponse.json();
+    const publicEntries = await json(request, "/api/scholar/public/entries");
+    publishedSample = publicEntries.some((entry: { id: string }) => entry.id === scholar.id) &&
+      currentVersion.deploymentRef === "e2e-p14-business-samples";
+  }
+  if (!publishedSample) {
+    const version = await post<{ id: string }>(request, "/api/scholar/spaces/product/versions", {
+      version: "p14-samples-" + Date.now(),
+      sourceRevision: "e2e-p14-business-sample",
+    });
+    await post(request, "/api/scholar/versions/" + version.id + "/publish", {
+      entryIds: [scholar.id],
+      deploymentRef: "e2e-p14-business-samples",
+      publishedBy: "e2e-visual",
+    });
   }
 
   const requirements = await json(request, "/api/manager/requirements");
