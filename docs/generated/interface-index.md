@@ -303,6 +303,16 @@
 
 | 方法 | 路径 |
 |---|---|
+| POST | `/api/manager/requirements/:id/execution-jobs` |
+| GET | `/api/manager/requirements/:id/execution-jobs` |
+| GET | `/api/manager/execution-jobs` |
+| GET | `/api/manager/execution-jobs/:id` |
+| POST | `/api/manager/execution-jobs/claim` |
+| POST | `/api/manager/execution-jobs/recover` |
+| POST | `/api/manager/execution-jobs/:id/heartbeat` |
+| POST | `/api/manager/execution-jobs/:id/complete` |
+| POST | `/api/manager/execution-jobs/:id/fail` |
+| POST | `/api/manager/execution-jobs/:id/cancel` |
 | GET | `/api/manager/health` |
 | GET | `/api/manager/health/ready` |
 | POST | `/api/manager/import-batches/preview` |

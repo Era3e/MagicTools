@@ -22,7 +22,7 @@ export interface RequirementRow {
   evidenceRefs: Array<Record<string, unknown>>;
   dependencyRefs: string[];
   executionContract: ExecutionContract | null;
-  automationPolicy: "manual";
+  automationPolicy: "manual" | "owner-token";
   title: string;
   description: string;
   source: string;
@@ -57,7 +57,7 @@ export function mapRow(r: Record<string, unknown>): RequirementRow {
     evidenceRefs: (r.evidence_refs as Array<Record<string, unknown>>) ?? [],
     dependencyRefs: (r.dependency_refs as string[]) ?? [],
     executionContract: (r.execution_contract as ExecutionContract | null) ?? null,
-    automationPolicy: "manual",
+    automationPolicy: (r.automation_policy as "manual" | "owner-token" | undefined) ?? "manual",
     title: r.title as string,
     description: r.description as string,
     source: r.source as string,
