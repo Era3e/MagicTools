@@ -62,6 +62,84 @@ describe("entries", () => {
     expect(filtered.body[0].title).toBe("B");
   });
 
+  it("sourceRef 导入幂等并携带来源与需求证据", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    const body = {
+      sourceRef: "P20-D01",
+      title: "系统由哪些边界组成？",
+      content: "代码入口与事实源：docs/code-wiki/overview.md",
+      summary: "系统边界",
+      category: "开发导航",
+      tags: ["开发知识"],
+      spaceKey: "development",
+      sourceRevision: "commit-p20",
+      sourceUrl: "https://github.com/Era3e/MagicTools/blob/commit-p20/docs/code-wiki/overview.md",
+      requirementId: "P20",
+    };
+    const first = await request(app.getHttpServer()).post("/api/scholar/entries").send(body);
+    expect(first.status).toBe(201);
+    expect(first.body.source).toBe("manual");
+    expect(first.body.sourceRef).toBe("P20-D01");
+    expect(first.body.sourceUrl).toContain("docs/code-wiki/overview.md");
+    expect(first.body.requirementId).toBe("P20");
+
+    const second = await request(app.getHttpServer()).post("/api/scholar/entries").send(body);
+    expect(second.status).toBe(201);
+    expect(second.body.id).toBe(first.body.id);
+    const count = await pool.query("SELECT count(*)::int AS n FROM entries WHERE source_ref='P20-D01'");
+    expect(count.rows[0].n).toBe(1);
+  });
+
+  it("sourceRef 内容变化生成新修订且重复导入不再递增", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    const base = {
+      sourceRef: "P20-D02",
+      title: "配置事实源在哪？",
+      content: "第一版内容",
+      spaceKey: "development",
+    };
+    const first = await request(app.getHttpServer()).post("/api/scholar/entries").send(base);
+    expect(first.status).toBe(201);
+
+    const changed = await request(app.getHttpServer()).post("/api/scholar/entries").send({
+      ...base,
+      content: "第二版内容",
+      sourceRevision: "commit-p20-v2",
+    });
+    expect(changed.status).toBe(201);
+    expect(changed.body.id).toBe(first.body.id);
+    expect(changed.body.content).toBe("第二版内容");
+    expect(changed.body.revisionNo).toBe(2);
+    expect(changed.body.sourceRevision).toBe("commit-p20-v2");
+
+    const replay = await request(app.getHttpServer()).post("/api/scholar/entries").send({
+      ...base,
+      content: "第二版内容",
+      sourceRevision: "commit-p20-v2",
+    });
+    expect(replay.status).toBe(201);
+    expect(replay.body.id).toBe(first.body.id);
+    expect(replay.body.revisionNo).toBe(2);
+    expect((await pool.query("SELECT count(*)::int AS n FROM entry_revisions WHERE entry_id=$1", [first.body.id])).rows[0].n).toBe(2);
+  });
+
+  it("管理列表和检索支持 development 空间过滤", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    await request(app.getHttpServer()).post("/api/scholar/entries").send({
+      title: "内部代码入口", content: "development only source path", spaceKey: "development",
+    });
+    await request(app.getHttpServer()).post("/api/scholar/entries").send({
+      title: "公开用户任务", content: "product help task", spaceKey: "product",
+    });
+    const list = await request(app.getHttpServer()).get("/api/scholar/entries?spaceKey=development");
+    expect(list.status).toBe(200);
+    expect(list.body.map((item: { title: string }) => item.title)).toEqual(["内部代码入口"]);
+
+    const search = await request(app.getHttpServer()).get("/api/scholar/entries/search?q=source&mode=fts&spaceKey=development");
+    expect(search.status).toBe(200);
+    expect(search.body.map((item: { title: string }) => item.title)).toEqual(["内部代码入口"]);
+  });
+
   it("PATCH /api/scholar/entries/:id 更新圈定标记与分类", async (ctx) => {
     if (!available) { ctx.skip(); return; }
     const created = await request(app.getHttpServer()).post("/api/scholar/entries").send({ title: "C" });

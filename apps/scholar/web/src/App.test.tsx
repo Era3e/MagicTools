@@ -8,12 +8,15 @@ describe("App", () => {
     vi.unstubAllGlobals();
   });
 
-  it("前台路由渲染书院外壳与馆藏条目", async () => {
+  it("前台路由渲染书院外壳与用户帮助", async () => {
     window.history.pushState({}, "", "/scholar/entries");
     vi.stubGlobal(
       "fetch",
       vi.fn(async (url: string) => {
-        if (String(url).includes("/api/scholar/entries")) {
+        if (String(url).includes("/api/scholar/public/version/current")) {
+          return new Response(JSON.stringify({ id: "v1", version: "p20-1", sourceRevision: "main@test", deploymentRef: "registry@test" }), { status: 200 });
+        }
+        if (String(url).includes("/api/scholar/public/entries")) {
           return new Response(
             JSON.stringify([
               {
@@ -26,6 +29,14 @@ describe("App", () => {
                 category: "",
                 tags: [],
                 assistantScope: false,
+                spaceKey: "product",
+                status: "published",
+                sourceRevision: "main@test",
+                sourceUrl: "",
+                productVersion: "p20-1",
+                productVersionId: "v1",
+                deploymentRef: "registry@test",
+                requirementLinks: [],
                 createdAt: "2026-01-01T00:00:00Z",
                 updatedAt: "2026-01-01T00:00:00Z",
               },

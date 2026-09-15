@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const entryInputSchema = z.object({
+  sourceRef: z.string().regex(/^P20-[UD][0-9]{2}$/).optional(),
   title: z.string().min(1),
   content: z.string().default(""),
   summary: z.string().default(""),
@@ -61,6 +62,7 @@ export const searchQuerySchema = z.object({
   q: z.string().min(1),
   mode: z.enum(["fts", "vector"]).default("fts"),
   limit: z.coerce.number().int().min(1).max(50).default(10),
+  spaceKey: z.enum(["development", "product"]).optional(),
 });
 
 export const publicSearchInputSchema = z.object({

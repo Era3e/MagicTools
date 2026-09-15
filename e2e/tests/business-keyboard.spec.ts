@@ -32,7 +32,7 @@ test("P14 样板键盘导航：Assistant 会话 Enter 装载长对话", async ({
 
 test("P14 样板键盘导航：Scholar 检索框保留帮助条目", async ({ page }) => {
   await page.goto("/scholar/entries");
-  const search = page.getByPlaceholder("检索书名 / 分类…");
+  const search = page.getByPlaceholder("搜索任务，例如：简历、需求、引用");
   await search.focus();
   await search.pressSequentially("用户帮助");
   await expect(page.getByText(SCHOLAR_SAMPLE_TITLE).first()).toBeVisible();

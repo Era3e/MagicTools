@@ -121,10 +121,14 @@
           "path": "src/inbox.e2e.test.ts",
           "minimumTests": 2
         },
-        {
-          "path": "src/knowledge-space.e2e.test.ts",
-          "minimumTests": 8
-        },
+      {
+        "path": "src/knowledge-space.e2e.test.ts",
+        "minimumTests": 8
+      },
+      {
+        "path": "src/knowledge-bundle.e2e.test.ts",
+        "minimumTests": 3
+      },
         {
           "path": "src/obsidian.e2e.test.ts",
           "minimumTests": 5

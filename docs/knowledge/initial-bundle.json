@@ -1,0 +1,771 @@
+{
+  "schema": "magictools-knowledge-bundle/1",
+  "generatedFrom": "outputs/MagicTools-P20-内容基线.md",
+  "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+  "notes": [
+    "历史原因没有可靠证据时必须保留“历史原因：未知”，禁止从当前代码反推动机。",
+    "P20 之前产品帮助没有稳定发布入口；未找到可靠历史记录说明此前入口为何未上线，历史原因未知。"
+  ],
+  "entries": [
+    {
+      "stableId": "P20-U01",
+      "kind": "product",
+      "title": "登录并进入授权应用",
+      "project": "gateway",
+      "content": "目标与入口：打开局域网或生产入口，使用管理员分配的账号登录，从首页选择应用\n结果校验：登录后能看到授权应用卡片；未授权应用不可进入\n异常口径：账号锁定或无权限时按页面提示处理；不要共享会话 Cookie",
+      "summary": "登录后能看到授权应用卡片；未授权应用不可进入",
+      "category": "用户帮助",
+      "tags": [
+        "用户帮助",
+        "P20",
+        "核心任务"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/docs/code-wiki/gateway.md",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "登录后能看到授权应用卡片；未授权应用不可进入；异常口径：账号锁定或无权限时按页面提示处理；不要共享会话 Cookie"
+    },
+    {
+      "stableId": "P20-U02",
+      "kind": "product",
+      "title": "登记岗位并解析 JD",
+      "project": "applicant",
+      "content": "目标与入口：Applicant → 岗位博览墙 → 新建岗位，粘贴 JD\n结果校验：岗位保存后展示公司、岗位、状态与解析出的要点\n异常口径：解析失败时保留原文，可重试或手动补齐",
+      "summary": "岗位保存后展示公司、岗位、状态与解析出的要点",
+      "category": "用户帮助",
+      "tags": [
+        "用户帮助",
+        "P20",
+        "核心任务"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/docs/code-wiki/applicant.md",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "岗位保存后展示公司、岗位、状态与解析出的要点；异常口径：解析失败时保留原文，可重试或手动补齐"
+    },
+    {
+      "stableId": "P20-U03",
+      "kind": "product",
+      "title": "用截图识别岗位信息",
+      "project": "applicant",
+      "content": "目标与入口：Applicant → 岗位新建/编辑 → 上传 JD 截图\n结果校验：系统回填可识别的岗位字段，原图信息不丢失\n异常口径：无视觉模型配置时提示能力不可用，不伪造识别结果",
+      "summary": "系统回填可识别的岗位字段，原图信息不丢失",
+      "category": "用户帮助",
+      "tags": [
+        "用户帮助",
+        "P20",
+        "核心任务"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/docs/code-wiki/applicant.md",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "系统回填可识别的岗位字段，原图信息不丢失；异常口径：无视觉模型配置时提示能力不可用，不伪造识别结果"
+    },
+    {
+      "stableId": "P20-U04",
+      "kind": "product",
+      "title": "管理投递日历与面试",
+      "project": "applicant",
+      "content": "目标与入口：Applicant → 投递日历 / 岗位详情 → 面试\n结果校验：日历展示投递、待跟进与计划面试；面试完成后可复盘\n异常口径：计划面试未填写问答时不强制提交复盘",
+      "summary": "日历展示投递、待跟进与计划面试；面试完成后可复盘",
+      "category": "用户帮助",
+      "tags": [
+        "用户帮助",
+        "P20",
+        "核心任务"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/docs/code-wiki/applicant.md",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "日历展示投递、待跟进与计划面试；面试完成后可复盘；异常口径：计划面试未填写问答时不强制提交复盘"
+    },
+    {
+      "stableId": "P20-U05",
+      "kind": "product",
+      "title": "分析、改写和匹配简历",
+      "project": "applicant",
+      "content": "目标与入口：Applicant → 简历工坊 → 选择简历执行分析/改写/匹配\n结果校验：三项操作生成对应结果；匹配目标岗位明确\n异常口径：ClawCV 不可用时按降级提示处理，失败不当作成功",
+      "summary": "三项操作生成对应结果；匹配目标岗位明确",
+      "category": "用户帮助",
+      "tags": [
+        "用户帮助",
+        "P20",
+        "核心任务"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/docs/code-wiki/applicant.md",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "三项操作生成对应结果；匹配目标岗位明确；异常口径：ClawCV 不可用时按降级提示处理，失败不当作成功"
+    },
+    {
+      "stableId": "P20-U06",
+      "kind": "product",
+      "title": "配置飞书调研源",
+      "project": "investigator",
+      "content": "目标与入口：Investigator 后台 → 调研主题 → 新建/编辑\n结果校验：保存后能看到源、字段映射与启停状态\n异常口径：飞书配置错误时查看状态提示；桩模式不能代表真实连通",
+      "summary": "保存后能看到源、字段映射与启停状态",
+      "category": "用户帮助",
+      "tags": [
+        "用户帮助",
+        "P20",
+        "核心任务"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/docs/code-wiki/investigator.md",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "保存后能看到源、字段映射与启停状态；异常口径：飞书配置错误时查看状态提示；桩模式不能代表真实连通"
+    },
+    {
+      "stableId": "P20-U07",
+      "kind": "product",
+      "title": "拉取并结构化调研反馈",
+      "project": "investigator",
+      "content": "目标与入口：Investigator 后台 → 调研详情 → 同步\n结果校验：手动同步生成筛选后的响应记录\n异常口径：失败记录进入可追踪状态，不静默丢数据",
+      "summary": "手动同步生成筛选后的响应记录",
+      "category": "用户帮助",
+      "tags": [
+        "用户帮助",
+        "P20",
+        "核心任务"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/docs/code-wiki/investigator.md",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "手动同步生成筛选后的响应记录；异常口径：失败记录进入可追踪状态，不静默丢数据"
+    },
+    {
+      "stableId": "P20-U08",
+      "kind": "product",
+      "title": "推送调研结果进入评审",
+      "project": "investigator",
+      "content": "目标与入口：Investigator 调研详情 → 推送 Assessor\n结果校验：Assessor 后台出现对应评审请求；重复推送不生成重复请求\n异常口径：推送失败可查看事件状态；不要绕过页面重复刷写",
+      "summary": "Assessor 后台出现对应评审请求；重复推送不生成重复请求",
+      "category": "用户帮助",
+      "tags": [
+        "用户帮助",
+        "P20",
+        "核心任务"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/docs/code-wiki/investigator.md",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "Assessor 后台出现对应评审请求；重复推送不生成重复请求；异常口径：推送失败可查看事件状态；不要绕过页面重复刷写"
+    },
+    {
+      "stableId": "P20-U09",
+      "kind": "product",
+      "title": "查看仓库证据和需求评审",
+      "project": "assessor",
+      "content": "目标与入口：Assessor 后台 → 评审请求 / 仓库证据\n结果校验：详情展示分析、设计、来源与行级证据\n异常口径：`unknown` 动机表示历史原因未知，不得推断成确定结论",
+      "summary": "详情展示分析、设计、来源与行级证据",
+      "category": "用户帮助",
+      "tags": [
+        "用户帮助",
+        "P20",
+        "核心任务"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/docs/code-wiki/assessor.md",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "详情展示分析、设计、来源与行级证据；异常口径：`unknown` 动机表示历史原因未知，不得推断成确定结论"
+    },
+    {
+      "stableId": "P20-U10",
+      "kind": "product",
+      "title": "审核需求并推送 Manager",
+      "project": "assessor",
+      "content": "目标与入口：Assessor 评审详情 → 审核 → 推送\n结果校验：审核状态更新，Manager 出现关联需求\n异常口径：审核被拒时必须填写理由；推送失败不改变审核结论",
+      "summary": "审核状态更新，Manager 出现关联需求",
+      "category": "用户帮助",
+      "tags": [
+        "用户帮助",
+        "P20",
+        "核心任务"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/docs/code-wiki/assessor.md",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "审核状态更新，Manager 出现关联需求；异常口径：审核被拒时必须填写理由；推送失败不改变审核结论"
+    },
+    {
+      "stableId": "P20-U11",
+      "kind": "product",
+      "title": "查看需求看板与详情",
+      "project": "manager",
+      "content": "目标与入口：Manager → 需求看板 / 需求详情\n结果校验：七态泳道、优先级、PR 标记、时间线和详情一致\n异常口径：PR 状态滞后时以页面刷新与详情证据为准",
+      "summary": "七态泳道、优先级、PR 标记、时间线和详情一致",
+      "category": "用户帮助",
+      "tags": [
+        "用户帮助",
+        "P20",
+        "核心任务"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/docs/code-wiki/manager.md",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "七态泳道、优先级、PR 标记、时间线和详情一致；异常口径：PR 状态滞后时以页面刷新与详情证据为准"
+    },
+    {
+      "stableId": "P20-U12",
+      "kind": "product",
+      "title": "编辑需求并完成审批",
+      "project": "manager",
+      "content": "目标与入口：Manager 需求详情 → 内容编辑 → 版本对比 → 审批\n结果校验：批准绑定固定内容版本；内容变化后旧批准显示过期\n异常口径：并发冲突先比较草稿与服务器版本，不能静默覆盖",
+      "summary": "批准绑定固定内容版本；内容变化后旧批准显示过期",
+      "category": "用户帮助",
+      "tags": [
+        "用户帮助",
+        "P20",
+        "核心任务"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/docs/code-wiki/manager.md",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "批准绑定固定内容版本；内容变化后旧批准显示过期；异常口径：并发冲突先比较草稿与服务器版本，不能静默覆盖"
+    },
+    {
+      "stableId": "P20-U13",
+      "kind": "product",
+      "title": "导入候选需求和能力基线",
+      "project": "manager",
+      "content": "目标与入口：Manager 后台 → 需求管理 → 候选导入\n结果校验：预览、确认、剩余批次和冲突结果清晰；基线与待办分开\n异常口径：导入只是立项，不代表已实现或已部署",
+      "summary": "预览、确认、剩余批次和冲突结果清晰；基线与待办分开",
+      "category": "用户帮助",
+      "tags": [
+        "用户帮助",
+        "P20",
+        "核心任务"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/docs/code-wiki/manager.md",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "预览、确认、剩余批次和冲突结果清晰；基线与待办分开；异常口径：导入只是立项，不代表已实现或已部署"
+    },
+    {
+      "stableId": "P20-U14",
+      "kind": "product",
+      "title": "配置信息源并试采",
+      "project": "gatherer",
+      "content": "目标与入口：Gatherer 后台 → 信息源 → 新建/编辑/试采\n结果校验：RSS、JSON、网页选择器解析结果符合预期\n异常口径：试采失败保留错误信息；选择器需回到来源页面核对",
+      "summary": "RSS、JSON、网页选择器解析结果符合预期",
+      "category": "用户帮助",
+      "tags": [
+        "用户帮助",
+        "P20",
+        "核心任务"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/docs/code-wiki/gatherer.md",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "RSS、JSON、网页选择器解析结果符合预期；异常口径：试采失败保留错误信息；选择器需回到来源页面核对"
+    },
+    {
+      "stableId": "P20-U15",
+      "kind": "product",
+      "title": "采集、推送和追踪知识条目",
+      "project": "gatherer",
+      "content": "目标与入口：Gatherer 后台 → 信息源/条目 → 采集、推送、调度实况\n结果校验：条目按内容指纹去重；推送后 Scholar 收件箱可审核\n异常口径：死信在调度实况中追踪；重复推送不产生重复事件",
+      "summary": "条目按内容指纹去重；推送后 Scholar 收件箱可审核",
+      "category": "用户帮助",
+      "tags": [
+        "用户帮助",
+        "P20",
+        "核心任务"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/docs/code-wiki/gatherer.md",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "条目按内容指纹去重；推送后 Scholar 收件箱可审核；异常口径：死信在调度实况中追踪；重复推送不产生重复事件"
+    },
+    {
+      "stableId": "P20-U16",
+      "kind": "product",
+      "title": "检索用户帮助与知识",
+      "project": "scholar",
+      "content": "目标与入口：Scholar → 馆藏检索 / 用户帮助\n结果校验：公共入口只返回当前发布版本；关键词能命中相关内容\n异常口径：未命中时返回空结果，不生成无引用答案",
+      "summary": "公共入口只返回当前发布版本；关键词能命中相关内容",
+      "category": "用户帮助",
+      "tags": [
+        "用户帮助",
+        "P20",
+        "核心任务"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/docs/code-wiki/scholar.md",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "公共入口只返回当前发布版本；关键词能命中相关内容；异常口径：未命中时返回空结果，不生成无引用答案"
+    },
+    {
+      "stableId": "P20-U17",
+      "kind": "product",
+      "title": "发布产品帮助版本",
+      "project": "scholar",
+      "content": "目标与入口：Scholar 后台 → 知识空间/版本\n结果校验：发布记录绑定条目修订和部署标识；撤权、下架即时影响公共入口\n异常口径：发布后编辑进入草稿，不能改变已发布快照",
+      "summary": "发布记录绑定条目修订和部署标识；撤权、下架即时影响公共入口",
+      "category": "用户帮助",
+      "tags": [
+        "用户帮助",
+        "P20",
+        "核心任务"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/docs/code-wiki/scholar.md",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "发布记录绑定条目修订和部署标识；撤权、下架即时影响公共入口；异常口径：发布后编辑进入草稿，不能改变已发布快照"
+    },
+    {
+      "stableId": "P20-U18",
+      "kind": "product",
+      "title": "提问并核对引用",
+      "project": "assistant",
+      "content": "目标与入口：Assistant → 对话 → 产品咨询\n结果校验：答案仅保留可映射引用；引用含版本、修订、分块和证据\n异常口径：无相关知识时明确说明未找到；不虚构编号",
+      "summary": "答案仅保留可映射引用；引用含版本、修订、分块和证据",
+      "category": "用户帮助",
+      "tags": [
+        "用户帮助",
+        "P20",
+        "核心任务"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/docs/code-wiki/assistant.md",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "答案仅保留可映射引用；引用含版本、修订、分块和证据；异常口径：无相关知识时明确说明未找到；不虚构编号"
+    },
+    {
+      "stableId": "P20-U19",
+      "kind": "product",
+      "title": "反馈问题并跟踪闭环",
+      "project": "assistant",
+      "content": "目标与入口：Assistant 后台 → 反馈 / badcase\n结果校验：用户反馈进入记录；管理员确认后可生成回归样本和需求\n异常口径：用户澄清不等于管理员核验；关闭需满足证据条件",
+      "summary": "用户反馈进入记录；管理员确认后可生成回归样本和需求",
+      "category": "用户帮助",
+      "tags": [
+        "用户帮助",
+        "P20",
+        "核心任务"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/docs/code-wiki/assistant.md",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "用户反馈进入记录；管理员确认后可生成回归样本和需求；异常口径：用户澄清不等于管理员核验；关闭需满足证据条件"
+    },
+    {
+      "stableId": "P20-U20",
+      "kind": "product",
+      "title": "生成与沉淀 UI 组件",
+      "project": "designer",
+      "content": "目标与入口：Designer → 委托生成 → 画布工坊 → 组件库\n结果校验：生成、预览、双向编辑、审核和 PR 流程可追踪\n异常口径：沙箱预览失败时显示原因；不把未审核代码当作组件库成品",
+      "summary": "生成、预览、双向编辑、审核和 PR 流程可追踪",
+      "category": "用户帮助",
+      "tags": [
+        "用户帮助",
+        "P20",
+        "核心任务"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/docs/code-wiki/designer.md",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "生成、预览、双向编辑、审核和 PR 流程可追踪；异常口径：沙箱预览失败时显示原因；不把未审核代码当作组件库成品"
+    },
+    {
+      "stableId": "P20-D01",
+      "kind": "development",
+      "title": "系统由哪些边界组成？",
+      "project": "overview",
+      "content": "问题：系统由哪些边界组成？\n代码入口与事实源：`docs/code-wiki/overview.md`；`apps/*/<name>/{web,server}`；`infra/ports.yaml`\n验收口径：8 个业务项目 + 1 个 Gateway + 6 个公共包，每个业务项目有独立 web/server/DB",
+      "summary": "`docs/code-wiki/overview.md`；`apps/*/<name>/{web,server}`；`infra/ports.yaml`",
+      "category": "开发导航",
+      "tags": [
+        "开发知识",
+        "P20",
+        "代码入口"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/docs/code-wiki/overview.md",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "8 个业务项目 + 1 个 Gateway + 6 个公共包，每个业务项目有独立 web/server/DB"
+    },
+    {
+      "stableId": "P20-D02",
+      "kind": "development",
+      "title": "外部请求如何路由和鉴权？",
+      "project": "gateway",
+      "content": "问题：外部请求如何路由和鉴权？\n代码入口与事实源：`apps/gateway/src/app.ts`、`auth.ts`、`routes.ts`\n验收口径：服务 Token、服务细分 Token、用户会话三通道；用户权限按应用控制",
+      "summary": "`apps/gateway/src/app.ts`、`auth.ts`、`routes.ts`",
+      "category": "开发导航",
+      "tags": [
+        "开发知识",
+        "P20",
+        "代码入口"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/apps/gateway/src/app.ts",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "服务 Token、服务细分 Token、用户会话三通道；用户权限按应用控制"
+    },
+    {
+      "stableId": "P20-D03",
+      "kind": "development",
+      "title": "跨项目事件如何保证可靠？",
+      "project": "db",
+      "content": "问题：跨项目事件如何保证可靠？\n代码入口与事实源：`packages/db/src/outbox.ts`；Investigator/Assessor/Gatherer/Manager/Scholar 的消费入口\n验收口径：租约、幂等键、重试与 dead 终态可复核；副作用成功后才确认",
+      "summary": "`packages/db/src/outbox.ts`；Investigator/Assessor/Gatherer/Manager/Scholar 的消费入口",
+      "category": "开发导航",
+      "tags": [
+        "开发知识",
+        "P20",
+        "代码入口"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/packages/db/src/outbox.ts",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "租约、幂等键、重试与 dead 终态可复核；副作用成功后才确认"
+    },
+    {
+      "stableId": "P20-D04",
+      "kind": "development",
+      "title": "飞书 Bitable 如何进入系统？",
+      "project": "investigator",
+      "content": "问题：飞书 Bitable 如何进入系统？\n代码入口与事实源：`apps/investigator/server/src/feishu/client.ts`、`survey.service.ts`\n验收口径：拉取、字段映射、结构化、筛选和 outbox 推送均有测试证据",
+      "summary": "`apps/investigator/server/src/feishu/client.ts`、`survey.service.ts`",
+      "category": "开发导航",
+      "tags": [
+        "开发知识",
+        "P20",
+        "代码入口"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/apps/investigator/server/src/feishu/client.ts",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "拉取、字段映射、结构化、筛选和 outbox 推送均有测试证据"
+    },
+    {
+      "stableId": "P20-D05",
+      "kind": "development",
+      "title": "需求评审如何获得仓库上下文？",
+      "project": "assessor",
+      "content": "问题：需求评审如何获得仓库上下文？\n代码入口与事实源：`apps/assessor/server/src/github/client.ts`、`request.service.ts`\n验收口径：README、目录、语言与提交文件读取受限；截断和超限必须显式失败",
+      "summary": "`apps/assessor/server/src/github/client.ts`、`request.service.ts`",
+      "category": "开发导航",
+      "tags": [
+        "开发知识",
+        "P20",
+        "代码入口"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/apps/assessor/server/src/github/client.ts",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "README、目录、语言与提交文件读取受限；截断和超限必须显式失败"
+    },
+    {
+      "stableId": "P20-D06",
+      "kind": "development",
+      "title": "仓库证据为什么能反向整理需求？",
+      "project": "assessor",
+      "content": "问题：仓库证据为什么能反向整理需求？\n代码入口与事实源：`apps/assessor/server/src/repository-evidence.*`；`docs/features/assessor-repository-evidence.md`\n验收口径：行级证据按 repo+SHA 幂等；`motivation=unknown` 表示历史原因未知",
+      "summary": "`apps/assessor/server/src/repository-evidence.*`；`docs/features/assessor-repository-evidence.md`",
+      "category": "开发导航",
+      "tags": [
+        "开发知识",
+        "P20",
+        "代码入口"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/docs/features/assessor-repository-evidence.md",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "行级证据按 repo+SHA 幂等；`motivation=unknown` 表示历史原因未知"
+    },
+    {
+      "stableId": "P20-D07",
+      "kind": "development",
+      "title": "需求状态如何避免并发覆盖？",
+      "project": "manager",
+      "content": "问题：需求状态如何避免并发覆盖？\n代码入口与事实源：`apps/manager/server/src/requirement-policy.ts`、`requirement.repo.ts`\n验收口径：七态迁移受限；`expectedRevision` 过期返回 409，同状态 PR 不追加修订",
+      "summary": "`apps/manager/server/src/requirement-policy.ts`、`requirement.repo.ts`",
+      "category": "开发导航",
+      "tags": [
+        "开发知识",
+        "P20",
+        "代码入口"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/apps/manager/server/src/requirement-policy.ts",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "七态迁移受限；`expectedRevision` 过期返回 409，同状态 PR 不追加修订"
+    },
+    {
+      "stableId": "P20-D08",
+      "kind": "development",
+      "title": "需求内容审批绑定什么版本？",
+      "project": "manager",
+      "content": "问题：需求内容审批绑定什么版本？\n代码入口与事实源：`requirement-approval.service.ts`、`requirement-revisions.repo.ts`、迁移 006-008\n验收口径：批准绑定内容修订；内容或执行契约变化后旧批准过期",
+      "summary": "`requirement-approval.service.ts`、`requirement-revisions.repo.ts`、迁移 006-008",
+      "category": "开发导航",
+      "tags": [
+        "开发知识",
+        "P20",
+        "代码入口"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/docs/code-wiki/manager.md",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "批准绑定内容修订；内容或执行契约变化后旧批准过期"
+    },
+    {
+      "stableId": "P20-D09",
+      "kind": "development",
+      "title": "GitHub Issue 与 Webhook 如何防乱序？",
+      "project": "manager",
+      "content": "问题：GitHub Issue 与 Webhook 如何防乱序？\n代码入口与事实源：`apps/manager/server/src/github/client.ts`、`webhook.controller.ts`、`webhook.repo.ts`\n验收口径：生产强制 HMAC；持久 delivery 租约、过期恢复和 updated_at 顺序守卫",
+      "summary": "`apps/manager/server/src/github/client.ts`、`webhook.controller.ts`、`webhook.repo.ts`",
+      "category": "开发导航",
+      "tags": [
+        "开发知识",
+        "P20",
+        "代码入口"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/apps/manager/server/src/github/client.ts",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "生产强制 HMAC；持久 delivery 租约、过期恢复和 updated_at 顺序守卫"
+    },
+    {
+      "stableId": "P20-D10",
+      "kind": "development",
+      "title": "候选导入如何区分基线与需求？",
+      "project": "manager",
+      "content": "问题：候选导入如何区分基线与需求？\n代码入口与事实源：`apps/manager/server/src/import.service.ts`；`docs/features/manager-candidate-import.md`\n验收口径：capabilities 与 waiting/manual 需求分开保存；源码观察不等于已验收",
+      "summary": "`apps/manager/server/src/import.service.ts`；`docs/features/manager-candidate-import.md`",
+      "category": "开发导航",
+      "tags": [
+        "开发知识",
+        "P20",
+        "代码入口"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/apps/manager/server/src/import.service.ts",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "capabilities 与 waiting/manual 需求分开保存；源码观察不等于已验收"
+    },
+    {
+      "stableId": "P20-D11",
+      "kind": "development",
+      "title": "三类采集源的解析入口在哪里？",
+      "project": "gatherer",
+      "content": "问题：三类采集源的解析入口在哪里？\n代码入口与事实源：`apps/gatherer/server/src/feed/parser.ts`\n验收口径：RSS、JSON、网页选择器解析结果与错误路径均能测试",
+      "summary": "`apps/gatherer/server/src/feed/parser.ts`",
+      "category": "开发导航",
+      "tags": [
+        "开发知识",
+        "P20",
+        "代码入口"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/apps/gatherer/server/src/feed/parser.ts",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "RSS、JSON、网页选择器解析结果与错误路径均能测试"
+    },
+    {
+      "stableId": "P20-D12",
+      "kind": "development",
+      "title": "采集调度和死信在哪里看？",
+      "project": "gatherer",
+      "content": "问题：采集调度和死信在哪里看？\n代码入口与事实源：`apps/gatherer/server/src/scheduler.ts`、`operations.repo.ts`；`/meta/scheduler-status`、`/meta/dead-letters`\n验收口径：API 变更后刷新注册；最近 run、终态计数和 dead letter 可追踪",
+      "summary": "`apps/gatherer/server/src/scheduler.ts`、`operations.repo.ts`；`/meta/scheduler-status`、`/meta/dead-letters`",
+      "category": "开发导航",
+      "tags": [
+        "开发知识",
+        "P20",
+        "代码入口"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/apps/gatherer/server/src/scheduler.ts",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "API 变更后刷新注册；最近 run、终态计数和 dead letter 可追踪"
+    },
+    {
+      "stableId": "P20-D13",
+      "kind": "development",
+      "title": "知识空间如何隔离开发与产品内容？",
+      "project": "scholar",
+      "content": "问题：知识空间如何隔离开发与产品内容？\n代码入口与事实源：`apps/scholar/server/src/knowledge-space.*`；迁移 `003_knowledge_spaces.sql`\n验收口径：development/product 权限、成员、发布与撤权行为由服务端控制",
+      "summary": "`apps/scholar/server/src/knowledge-space.*`；迁移 `003_knowledge_spaces.sql`",
+      "category": "开发导航",
+      "tags": [
+        "开发知识",
+        "P20",
+        "代码入口"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/docs/code-wiki/scholar.md",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "development/product 权限、成员、发布与撤权行为由服务端控制"
+    },
+    {
+      "stableId": "P20-D14",
+      "kind": "development",
+      "title": "公共检索为什么返回发布快照？",
+      "project": "scholar",
+      "content": "问题：公共检索为什么返回发布快照？\n代码入口与事实源：`knowledge-space.service.ts`、`search.repo.ts`、`entry-chunks.ts`；P19 设计文档\n验收口径：固定 product/public/published/current version；发布后草稿词不可召回",
+      "summary": "`knowledge-space.service.ts`、`search.repo.ts`、`entry-chunks.ts`；P19 设计文档",
+      "category": "开发导航",
+      "tags": [
+        "开发知识",
+        "P20",
+        "代码入口"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/docs/code-wiki/scholar.md",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "固定 product/public/published/current version；发布后草稿词不可召回"
+    },
+    {
+      "stableId": "P20-D15",
+      "kind": "development",
+      "title": "长文档和无关近邻如何处理？",
+      "project": "scholar",
+      "content": "问题：长文档和无关近邻如何处理？\n代码入口与事实源：`entry_chunks` 分块、FTS+向量合并排序、向量-only 门槛\n验收口径：非零字符区间命中后半段；低于门槛的向量候选被拒绝",
+      "summary": "`entry_chunks` 分块、FTS+向量合并排序、向量-only 门槛",
+      "category": "开发导航",
+      "tags": [
+        "开发知识",
+        "P20",
+        "代码入口"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/docs/code-wiki/scholar.md",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "非零字符区间命中后半段；低于门槛的向量候选被拒绝"
+    },
+    {
+      "stableId": "P20-D16",
+      "kind": "development",
+      "title": "Assistant 如何避免虚构引用？",
+      "project": "assistant",
+      "content": "问题：Assistant 如何避免虚构引用？\n代码入口与事实源：`apps/assistant/server/src/scholar.client.ts`、`knowledge.service.ts`\n验收口径：模型只输出候选编号；服务端映射有效编号，全部无效时降级真实证据",
+      "summary": "`apps/assistant/server/src/scholar.client.ts`、`knowledge.service.ts`",
+      "category": "开发导航",
+      "tags": [
+        "开发知识",
+        "P20",
+        "代码入口"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/apps/assistant/server/src/scholar.client.ts",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "模型只输出候选编号；服务端映射有效编号，全部无效时降级真实证据"
+    },
+    {
+      "stableId": "P20-D17",
+      "kind": "development",
+      "title": "意图路由和评测数据如何隔离？",
+      "project": "assistant",
+      "content": "问题：意图路由和评测数据如何隔离？\n代码入口与事实源：`intent.service.ts`、`evaluation-suite.*`、消息指纹表\n验收口径：评测样本不进入 few-shot、回放或微调导出；run 绑定同数据集指纹",
+      "summary": "`intent.service.ts`、`evaluation-suite.*`、消息指纹表",
+      "category": "开发导航",
+      "tags": [
+        "开发知识",
+        "P20",
+        "代码入口"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/docs/code-wiki/assistant.md",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "评测样本不进入 few-shot、回放或微调导出；run 绑定同数据集指纹"
+    },
+    {
+      "stableId": "P20-D18",
+      "kind": "development",
+      "title": "badcase 如何闭环到需求和回归？",
+      "project": "assistant",
+      "content": "问题：badcase 如何闭环到需求和回归？\n代码入口与事实源：`apps/assistant/server/src/badcase.*`、`ManagerClient`；Manager 迁移 012\n验收口径：trace、回归样本、修复 PR、baseline 和目标结果必须满足关闭条件",
+      "summary": "`apps/assistant/server/src/badcase.*`、`ManagerClient`；Manager 迁移 012",
+      "category": "开发导航",
+      "tags": [
+        "开发知识",
+        "P20",
+        "代码入口"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/docs/code-wiki/assistant.md",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "trace、回归样本、修复 PR、baseline 和目标结果必须满足关闭条件"
+    },
+    {
+      "stableId": "P20-D19",
+      "kind": "development",
+      "title": "组件生成如何保证双向编辑？",
+      "project": "designer",
+      "content": "问题：组件生成如何保证双向编辑？\n代码入口与事实源：`apps/designer/web/src/canvas/{schema,registry,codegen}.ts`；`apps/designer/server/src/parse.service.ts`\n验收口径：schema 与白名单 TSX 可互转；解析失败返回 reason/line",
+      "summary": "`apps/designer/web/src/canvas/{schema,registry,codegen}.ts`；`apps/designer/server/src/parse.service.ts`",
+      "category": "开发导航",
+      "tags": [
+        "开发知识",
+        "P20",
+        "代码入口"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/apps/designer/server/src/parse.service.ts",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "schema 与白名单 TSX 可互转；解析失败返回 reason/line"
+    },
+    {
+      "stableId": "P20-D20",
+      "kind": "development",
+      "title": "文档和接口索引何时更新？",
+      "project": "docs",
+      "content": "问题：文档和接口索引何时更新？\n代码入口与事实源：`docs/superpowers/coverage-matrix.md` 为事实源；运行 `pnpm docs:facts` 生成 `docs/generated/*`\n验收口径：路由、接口或功能状态变更后生成物不能漂移；历史设计必须标注版本",
+      "summary": "`docs/superpowers/coverage-matrix.md` 为事实源；运行 `pnpm docs:facts` 生成 `docs/generated/*`",
+      "category": "开发导航",
+      "tags": [
+        "开发知识",
+        "P20",
+        "代码入口"
+      ],
+      "sourceRevision": "main@0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e",
+      "sourceUrl": "https://github.com/Era3e/MagicTools/blob/0f9432b959e6dd1ae6c45ad3ecc46df1cd69103e/docs/superpowers/coverage-matrix.md",
+      "requirementId": "P20",
+      "requirementUrl": "",
+      "validation": "路由、接口或功能状态变更后生成物不能漂移；历史设计必须标注版本"
+    }
+  ]
+}

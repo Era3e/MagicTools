@@ -232,7 +232,8 @@ jobs:
           # 并发 spec 会与视觉用例同时写库，页面数据行数漂移导致像素比对必失败
           pnpm --filter @mt/e2e exec playwright test _visual.spec.ts
           # 其余功能用例并发跑（会写库，但不影响已完成的视觉比对）
-          pnpm --filter @mt/e2e exec playwright test --grep-invert "视觉快照"
+          # 功能用例共享 product 发布快照；串行确保后一个 fixture 能看到并保留前一个条目。
+          pnpm --filter @mt/e2e exec playwright test --grep-invert "视觉快照" --workers=1
 
   images:
     if: github.ref == 'refs/heads/main'

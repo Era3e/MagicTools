@@ -12,6 +12,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+export interface RequirementLink {
+  requirementId: string;
+  requirementUrl: string;
+  source: string;
+}
+
 export interface Entry {
   id: string;
   source: "gatherer" | "manual" | "obsidian";
@@ -22,12 +28,48 @@ export interface Entry {
   category: string;
   tags: string[];
   assistantScope: boolean;
+  spaceKey: "development" | "product";
+  status: "draft" | "published" | "archived";
+  sourceRevision: string;
+  sourceUrl?: string;
+  requirementId?: string;
+  requirementUrl?: string;
+  requirementLinks?: RequirementLink[];
   createdAt: string;
   updatedAt: string;
 }
 
 export interface SearchHit extends Entry {
   score: number;
+}
+
+
+export interface PublicEntry extends Entry {
+  sourceUrl: string;
+  productVersion: string;
+  productVersionId: string;
+  deploymentRef: string;
+  requirementLinks: RequirementLink[];
+}
+
+export interface PublicSearchCandidate {
+  entryId: string;
+  source: string;
+  title: string;
+  category: string;
+  content: string;
+  revisionId: string;
+  revisionNo: number;
+  sourceRevision: string;
+  sourceUrl: string;
+  productVersion: string;
+  deploymentRef: string;
+  chunkNo: number;
+  charStart: number;
+  charEnd: number;
+  score: number;
+  channels: Array<"fts" | "vector">;
+  requirementLinks: RequirementLink[];
 }
 
 export interface GraphNode {
@@ -54,10 +96,11 @@ export interface ConflictInfo {
 }
 
 export const api = {
-  listEntries: (filters: { source?: string; category?: string } = {}) => {
+  listEntries: (filters: { source?: string; category?: string; spaceKey?: "development" | "product" } = {}) => {
     const qs = new URLSearchParams();
     if (filters.source) qs.set("source", filters.source);
     if (filters.category) qs.set("category", filters.category);
+    if (filters.spaceKey) qs.set("spaceKey", filters.spaceKey);
     const s = qs.toString();
     return request<Entry[]>("/entries" + (s ? "?" + s : ""));
   },
@@ -67,8 +110,16 @@ export const api = {
     request<Entry>("/entries/" + id, { method: "PATCH", body: JSON.stringify(patch) }),
   scopeCategory: (category: string, scope: boolean) =>
     request<{ updated: number }>("/entries/scope-category", { method: "POST", body: JSON.stringify({ category, scope }) }),
-  search: (q: string, mode: "fts" | "vector", limit = 10) =>
-    request<SearchHit[]>("/entries/search?q=" + encodeURIComponent(q) + "&mode=" + mode + "&limit=" + limit),
+  search: (q: string, mode: "fts" | "vector", limit = 10, spaceKey?: "development" | "product") =>
+    request<SearchHit[]>("/entries/search?q=" + encodeURIComponent(q) + "&mode=" + mode + "&limit=" + limit + (spaceKey ? "&spaceKey=" + spaceKey : "")),
+  currentPublicVersion: () =>
+    request<{ id: string; version: string; sourceRevision: string; deploymentRef: string }>("/public/version/current"),
+  listPublicEntries: () => request<PublicEntry[]>("/public/entries"),
+  publicSearch: (q: string, limit = 5) =>
+    request<{ candidates: PublicSearchCandidate[] }>("/public/search", {
+      method: "POST",
+      body: JSON.stringify({ q, limit }),
+    }),
   pollInbox: () => request<{ consumed: number; created: number; skipped: number }>("/inbox/poll", { method: "POST" }),
   generateGraph: () => request<{ entities: number; relations: number }>("/graph/generate", { method: "POST" }),
   getGraph: () => request<{ nodes: GraphNode[]; edges: GraphEdge[] }>("/graph"),

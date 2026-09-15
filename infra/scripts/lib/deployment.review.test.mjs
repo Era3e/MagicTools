@@ -9,6 +9,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { syncBuiltinESMExports } from "node:module";
 import { parse } from "yaml";
 import { deployRelease } from "../deploy-release.mjs";
+import { explicitLoopbackRegistryBinding, loopbackRegistryHost, waitForDockerRegistryPush, waitForStableLoopbackRegistry } from "../validate-deployment.mjs";
 import { digestBytes } from "./release-artifacts.mjs";
 import { runtimeCatalog } from "./runtime-artifacts.mjs";
 import { deploymentSucceeded, validateDeploymentState } from "./deployment-state.mjs";
@@ -76,6 +77,49 @@ test("独立验收：同名制品内容变化不能作为无变化重部署丢�
   const updated = deploymentSucceeded(deploymentSucceeded(null, first), next);
   assert.equal(updated.previous?.attemptId, first.attemptId);
   assert.equal(updated.previous?.manifestSha256, first.manifestSha256);
+});
+
+test("独立验收：本机验证registry地址保持IPv4回环，避免Windows解析到IPv6", () => {
+  assert.equal(loopbackRegistryHost("127.0.0.1:62379"), "127.0.0.1:62379");
+  for (const address of ["localhost:62379", "[::1]:62379", "0.0.0.0:62379", "127.0.0.1"]) {
+    assert.throws(() => loopbackRegistryHost(address), /IPv4回环/);
+  }
+});
+
+test("独立验收：测试registry使用显式回环端口绑定，不依赖Docker随机HostPort", () => {
+  assert.equal(explicitLoopbackRegistryBinding(53872), "127.0.0.1:53872:5000");
+  assert.equal(explicitLoopbackRegistryBinding(53872).includes("::"), false);
+  for (const port of [undefined, 0, 65536, 53872.5, "53872"]) assert.throws(() => explicitLoopbackRegistryBinding(port), /端口非法/);
+});
+
+test("独立验收：本机验证registry需要连续就绪，过滤端口代理瞬态抖动", async () => {
+  const results = [false, true, false, ...Array(12).fill(true)].map((ok) => ({ ok }));
+  const request = async () => results.shift() ?? { ok: true };
+  assert.equal(await waitForStableLoopbackRegistry("127.0.0.1:55999", request, 1), true);
+  let failures = 0;
+  const unstable = async () => { failures += 1; throw new Error("port proxy not ready"); };
+  assert.equal(await waitForStableLoopbackRegistry("127.0.0.1:55999", unstable, 1), false);
+  assert.equal(failures, 100);
+});
+
+test("独立验收：HTTP就绪后仍必须用Docker真实推送确认registry可用", async () => {
+  const commands = []; let failures = 0;
+  const run = async (...args) => {
+    commands.push(args.join(" "));
+    if (args[0] === "push") {
+      failures += 1;
+      if (failures < 3) throw new Error("port proxy accepts HTTP but blocks Docker CLI");
+    }
+  };
+  assert.equal(await waitForDockerRegistryPush("127.0.0.1:55999", { run, attempts: 3, waitMs: 1 }), true);
+  assert.equal(failures, 3);
+  assert.ok(commands.filter((command) => command.startsWith("tag registry:2@sha256:")).length >= 2);
+  assert.ok(commands.some((command) => /^push 127\.0\.0\.1:55999\/validation\/readiness:[a-f0-9]{16}$/.test(command)));
+
+  const unavailable = async (...args) => {
+    if (args[0] === "push") throw new Error("connection refused");
+  };
+  assert.equal(await waitForDockerRegistryPush("127.0.0.1:55999", { run: unavailable, attempts: 2, waitMs: 1 }), false);
 });
 
 test("独立验收：就绪验证未完成时没有成功状态，同目录并发部署被锁拒绝", async () => {
