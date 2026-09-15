@@ -15,6 +15,14 @@ vi.mock("../api", () => ({ api: {
   getRequirementRevisions: vi.fn(), getApprovalHistory: vi.fn(), getExecutionEligibility: vi.fn(),
 } }));
 
+const PermissiveRequest = class extends Request {
+  constructor(input: string, init?: RequestInit) {
+    const { signal, ...rest } = init ?? {};
+    super(input, rest);
+    if (signal) Object.defineProperty(this, "signal", { value: signal });
+  }
+};
+
 const requirement: Requirement = {
   id: "review-a", revision: 8, contentRevision: 3, approvedContentRevision: null,
   approvalStatus: "unapproved", approvalReadiness: { ready: true, missing: [] },
@@ -41,6 +49,7 @@ async function openApproval() {
   fireEvent.change(secret(), { target: { value: credential } });
 }
 beforeEach(() => {
+  vi.stubGlobal("Request", PermissiveRequest);
   vi.mocked(api.getApprovalPolicy).mockResolvedValue(policy);
   vi.mocked(api.getExecutionEligibility).mockResolvedValue({
     requirementId: requirement.id, eligible: false, contractReady: false, dependenciesReady: true,
@@ -49,7 +58,7 @@ beforeEach(() => {
   vi.spyOn(message, "success").mockImplementation(() => (() => {}) as ReturnType<typeof message.success>);
   vi.spyOn(message, "warning").mockImplementation(() => (() => {}) as ReturnType<typeof message.warning>);
 });
-afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.resetAllMocks(); });
+afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.restoreAllMocks(); vi.resetAllMocks(); });
 
 describe("P08 独立前端验收", () => {
   it("策略未读取、未配置或读取失败时审批默认禁用，内容仍可编辑", async () => {

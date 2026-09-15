@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import RepositoryEvidence from "./RepositoryEvidence";
 
 afterEach(() => vi.unstubAllGlobals());
@@ -29,6 +29,9 @@ describe("RepositoryEvidence", () => {
     expect(await screen.findByText("接口行为：src/export.controller.ts")).toBeTruthy();
     expect(screen.getByText("unknown")).toBeTruthy();
     expect(screen.getByRole("link", { name: /src\/export\.controller\.ts#L1-L4/ })).toHaveProperty("href");
-    expect(fetchMock).toHaveBeenCalledTimes(3);
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
+    await waitFor(() =>
+      expect((screen.getByRole("button", { name: /反向整理/ }) as HTMLButtonElement).disabled).toBe(false)
+    );
   });
 });
