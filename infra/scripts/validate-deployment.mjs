@@ -16,6 +16,10 @@ import { assertDeploymentValidationIsolation } from "./lib/deployment-validation
 import { validateRecoveryDeployment } from "./validate-recovery-deployment.mjs";
 
 const registryImage = "registry:2@sha256:a3d8aaa63ed8681a604f1dea0aa03f100d5895b6a58ace528858a7b332415373";
+export function loopbackRegistryHost(address) {
+  assert.match(address, /^127\.0\.0\.1:[0-9]+$/, "测试registry必须绑定IPv4回环地址");
+  return "127.0.0.1:" + address.split(":")[1];
+}
 const docker = (...args) => execFileSync("docker", args, { encoding: "utf8", windowsHide: true, timeout: 120_000, stdio: ["ignore", "pipe", "pipe"] }).trim();
 async function runDocker(...args) {
   const result = await runProcess("docker", args, { cwd: root, timeoutMs: 8 * 60_000 });
@@ -198,7 +202,7 @@ export async function validateBuildDeployment(buildDirectory, runtime) {
       await delay(200);
     }
     assert.equal(ready, true, "测试registry未就绪");
-    const result = await publishImages({ buildManifest: join(buildDirectory, "build.json"), runtimeManifest: join(root, ".qa/runtime", runtime.runId, "runtime.json"), registry: "localhost:" + address.split(":")[1] + "/validation", validation: true });
+    const result = await publishImages({ buildManifest: join(buildDirectory, "build.json"), runtimeManifest: join(root, ".qa/runtime", runtime.runId, "runtime.json"), registry: loopbackRegistryHost(address) + "/validation", validation: true });
     const report = await validateDeployment(result.directory, result.directory);
     if (!report.success) throw new Error("部署验证失败");
     const recovery = await validateRecoveryDeployment(result.directory, result.directory, { configChange: true, allowValidation: true });
