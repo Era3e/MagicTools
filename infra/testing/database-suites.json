@@ -180,6 +180,10 @@
           "minimumTests": 7
         },
         {
+          "path": "src/model-calls.e2e.test.ts",
+          "minimumTests": 2
+        },
+        {
           "path": "src/evaluation-suite.e2e.test.ts",
           "minimumTests": 4
         },

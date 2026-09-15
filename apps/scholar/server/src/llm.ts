@@ -1,9 +1,15 @@
-import { createModelClient, type ChatMessage, type ChatOptions } from "@mt/model-client";
+import { recordModelCall } from "@mt/db";
+import { createModelClient, type ChatMessage, type ChatOptions, type EmbedOptions } from "@mt/model-client";
 import { ZHIPU } from "@mt/model-client";
+import { pool } from "./db";
 
 export const EMBEDDING_DIMS = 1024;
 
-const client = createModelClient(ZHIPU, (u) => console.log("[llm]", u.model, u.ms + "ms"));
+const client = createModelClient(ZHIPU, (usage) => {
+  console.log("[llm]", usage.model, usage.ms + "ms", usage.status);
+  if (process.env.NODE_ENV === "test") return;
+  void recordModelCall(pool, { ...usage, service: "scholar", latencyMs: usage.ms }).catch((error) => console.error("[model-call] persist failed", error));
+});
 
 export async function llmChat(messages: ChatMessage[], options?: ChatOptions): Promise<string> {
   if (process.env.MT_LLM_STUB === "1") {
@@ -32,11 +38,11 @@ function stubPayloadFor(messages: ChatMessage[]): Record<string, unknown> {
   return {};
 }
 
-export async function embed(texts: string[]): Promise<number[][]> {
+export async function embed(texts: string[], options?: EmbedOptions): Promise<number[][]> {
   if (process.env.MT_LLM_STUB === "1") {
     return texts.map((t) => pseudoVector(t, EMBEDDING_DIMS));
   }
-  return client.embed(texts);
+  return client.embed(texts, options);
 }
 
 /** 桩模式确定性伪向量：字符 bigram 哈希打点后单位化（1024 维），共享 bigram 的文本在桩模式下仍具检索相似性 */
