@@ -10,6 +10,7 @@ test-results/
 !.env.production.template
 *.log
 .run-logs/
+.executor-runs/
 .qa/
 .private/
 backups/

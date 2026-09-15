@@ -65,6 +65,7 @@ pnpm qa:gate
 | `pnpm coverage` | 覆盖率（公共包设 70/70/70/50 门槛） |
 | `pnpm qa:gate` | 本地与CI共用：lint、构建/单测、coverage、infra、docs、design与真实数据库验证 |
 | `pnpm smoke [--only <服务>]` | 冒烟 |
+| `pnpm executor [--check-config] [--once]` | 隔离编码执行器：领取自动执行任务、独立验收并创建 PR |
 | `pnpm images:smoke` | 构建17镜像并执行独立Compose冷启动、恢复和持久化回归 |
 | `pnpm images:release --registry <host/namespace>` | 干净提交构建、容器验收、推送SHA标签及固定digest制品 |
 | `pnpm deploy:release` / `pnpm deploy:ssh` | 固定制品部署、回执与回退，使用独立公开配置和已有env |

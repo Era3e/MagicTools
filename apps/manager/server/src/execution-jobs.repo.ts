@@ -59,6 +59,12 @@ export interface ClaimedExecutionJob {
   requirementRevision: number;
   contentRevision: number;
   contract: ExecutionContract;
+  requirement: {
+    title: string;
+    description: string;
+    scope: string;
+    acceptanceCriteria: string[];
+  };
 }
 
 function toDate(value: Date | string | null): string | null {
@@ -160,7 +166,9 @@ export async function claimExecutionJob(input: ClaimExecutionJobInput): Promise<
       await client.query("BEGIN");
       const found = await client.query(
         `SELECT j.*, r.content_revision AS current_content_revision,
-                r.approved_content_revision, r.status AS requirement_status
+                r.approved_content_revision, r.status AS requirement_status,
+                r.title AS requirement_title, r.description AS requirement_description,
+                r.scope AS requirement_scope, r.acceptance_criteria AS requirement_acceptance_criteria
          FROM execution_jobs j
          JOIN requirements r ON r.id=j.requirement_id
          WHERE j.status IN ('queued','retry') AND j.attempts < j.max_attempts
@@ -221,6 +229,12 @@ export async function claimExecutionJob(input: ClaimExecutionJobInput): Promise<
         requirementRevision: Number(row.requirement_revision),
         contentRevision,
         contract,
+        requirement: {
+          title: row.requirement_title as string,
+          description: (row.requirement_description as string) ?? "",
+          scope: (row.requirement_scope as string) ?? "",
+          acceptanceCriteria: ((row.requirement_acceptance_criteria as string[]) ?? []),
+        },
       };
     }
     return null;
