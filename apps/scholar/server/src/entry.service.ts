@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { embed } from "./llm";
 import { entryInputSchema, entryPatchSchema } from "./schemas";
-import { createEntry, findEntryBySourceRef, getEntry, listEntries, setCategoryScope, updateEntry } from "./entry.repo";
+import { createEntry, findEntryBySourceRef, getEntry, listEntries, setCategoryScope, updateEntry, type EntryRow } from "./entry.repo";
 
 @Injectable()
 export class EntryService {
@@ -20,7 +20,7 @@ export class EntryService {
     if (!parsed.success) throw new BadRequestException("标题必填");
     if (parsed.data.sourceRef) {
       const existing = await findEntryBySourceRef("manual", parsed.data.sourceRef);
-      if (existing) return existing;
+      if (existing) return this.syncSourceRefEntry(existing, parsed.data);
     }
     const [vec] = await embed([(parsed.data.title + "\\n" + parsed.data.content).slice(0, 3000)]);
     const row = await createEntry({
@@ -40,9 +40,23 @@ export class EntryService {
     });
     if (!row) {
       const concurrent = parsed.data.sourceRef ? await findEntryBySourceRef("manual", parsed.data.sourceRef) : null;
-      if (concurrent) return concurrent;
+      if (concurrent) return this.syncSourceRefEntry(concurrent, parsed.data);
       throw new BadRequestException("条目创建失败");
     }
+    return row;
+  }
+
+  private async syncSourceRefEntry(
+    existing: EntryRow,
+    data: ReturnType<typeof entryInputSchema.parse>
+  ) {
+    const patch: Parameters<typeof updateEntry>[1] = { ...data };
+    if (data.title !== existing.title || data.content !== existing.content) {
+      const [vec] = await embed([(data.title + "\\n" + data.content).slice(0, 3000)]);
+      patch.embedding = vec;
+    }
+    const row = await updateEntry(existing.id, patch);
+    if (!row) throw new BadRequestException("条目创建失败");
     return row;
   }
 

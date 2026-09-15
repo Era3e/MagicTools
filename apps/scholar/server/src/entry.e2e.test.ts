@@ -90,6 +90,39 @@ describe("entries", () => {
     expect(count.rows[0].n).toBe(1);
   });
 
+  it("sourceRef 内容变化生成新修订且重复导入不再递增", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    const base = {
+      sourceRef: "P20-D02",
+      title: "配置事实源在哪？",
+      content: "第一版内容",
+      spaceKey: "development",
+    };
+    const first = await request(app.getHttpServer()).post("/api/scholar/entries").send(base);
+    expect(first.status).toBe(201);
+
+    const changed = await request(app.getHttpServer()).post("/api/scholar/entries").send({
+      ...base,
+      content: "第二版内容",
+      sourceRevision: "commit-p20-v2",
+    });
+    expect(changed.status).toBe(201);
+    expect(changed.body.id).toBe(first.body.id);
+    expect(changed.body.content).toBe("第二版内容");
+    expect(changed.body.revisionNo).toBe(2);
+    expect(changed.body.sourceRevision).toBe("commit-p20-v2");
+
+    const replay = await request(app.getHttpServer()).post("/api/scholar/entries").send({
+      ...base,
+      content: "第二版内容",
+      sourceRevision: "commit-p20-v2",
+    });
+    expect(replay.status).toBe(201);
+    expect(replay.body.id).toBe(first.body.id);
+    expect(replay.body.revisionNo).toBe(2);
+    expect((await pool.query("SELECT count(*)::int AS n FROM entry_revisions WHERE entry_id=$1", [first.body.id])).rows[0].n).toBe(2);
+  });
+
   it("管理列表和检索支持 development 空间过滤", async (ctx) => {
     if (!available) { ctx.skip(); return; }
     await request(app.getHttpServer()).post("/api/scholar/entries").send({

@@ -231,8 +231,12 @@ export async function updateEntry(id: string, patch: {
         [id, patch.requirementId, patch.requirementUrl ?? "", patch.source ?? "manual"]
       );
     }
-    const contentChanged = patch.title !== undefined || patch.content !== undefined || patch.summary !== undefined ||
-      patch.category !== undefined || patch.tags !== undefined;
+    const contentChanged =
+      (patch.title !== undefined && patch.title !== current.title) ||
+      (patch.content !== undefined && patch.content !== current.content) ||
+      (patch.summary !== undefined && patch.summary !== current.summary) ||
+      (patch.category !== undefined && patch.category !== current.category) ||
+      (patch.tags !== undefined && JSON.stringify(patch.tags) !== JSON.stringify(current.tags));
     const metadataChanged =
       (patch.sourceRevision !== undefined && patch.sourceRevision !== current.source_revision) ||
       (patch.sourceUrl !== undefined && patch.sourceUrl !== current.source_url) ||

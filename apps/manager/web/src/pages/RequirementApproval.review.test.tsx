@@ -42,6 +42,13 @@ function deferred<T>() {
   const promise = new Promise<T>((yes, no) => { resolve = yes; reject = no; });
   return { promise, resolve, reject };
 }
+const PermissiveRequest = class extends Request {
+  constructor(input: string, init?: RequestInit) {
+    const { signal, ...rest } = init ?? {};
+    super(input, rest);
+    if (signal) Object.defineProperty(this, "signal", { value: signal });
+  }
+};
 async function openApproval() {
   await waitFor(() => expect(disabled("批准本版内容")).toBe(false));
   fireEvent.click(screen.getByRole("button", { name: "批准本版内容" }));
