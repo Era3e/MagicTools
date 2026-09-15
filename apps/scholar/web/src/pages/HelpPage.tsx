@@ -53,9 +53,9 @@ export default function HelpPage() {
           />
           {version ? (
             <Space wrap size={8}>
-              <Tag color="green">版本 {version.version}</Tag>
-              <Tag>来源 {version.sourceRevision}</Tag>
-              <Tag>部署 {version.deploymentRef}</Tag>
+              <Tag color="green" style={versionTagStyle}>版本 {version.version}</Tag>
+              <Tag style={versionTagStyle}>来源 {version.sourceRevision}</Tag>
+              <Tag style={versionTagStyle}>部署 {version.deploymentRef}</Tag>
             </Space>
           ) : null}
         </Space>
@@ -96,3 +96,10 @@ export default function HelpPage() {
     </Space>
   );
 }
+
+const versionTagStyle = {
+  maxWidth: "100%",
+  whiteSpace: "break-spaces",
+  wordBreak: "break-all",
+  marginInlineEnd: 0,
+} as const;
