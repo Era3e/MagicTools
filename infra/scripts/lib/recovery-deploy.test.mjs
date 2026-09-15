@@ -54,11 +54,11 @@ function remoteDeployment(context, receipt, rollback = false) {
 const readState = (context, file = "state.json") => JSON.parse(readFileSync(join(context.options.stateDirectory, file), "utf8"));
 
 // 真文件/状态机；Docker、PG与Compose为I/O替身，实际容器部署另行验证。
-test("部署已恢复数据库只启动17应用，绑定12连接并保存验证阶段和不可变制品", async (t) => {
+test("部署已恢复数据库只启动17应用，绑定11连接并保存验证阶段和不可变制品", async (t) => {
   const context = fixture(t); const before = readFileSync(context.options.secretsFile);
   const result = await deployRelease(context.options, context.dependencies);
   assert.equal(result.success, true); assert.equal(result.ready.length, 17); assert.equal(result.database.restoreOperationId, context.world.binding.restoreOperationId);
-  assert.equal(result.databaseConnections.length, 12); assert.equal(result.database.internalNetwork, true);
+  assert.equal(result.databaseConnections.length, 11); assert.equal(result.database.internalNetwork, true);
   assert.deepEqual(context.commands, ["config", "pull", "up"]);
   assert.ok(readFileSync(context.options.secretsFile).equals(before));
   for (const [name, value] of Object.entries(context.files)) assert.equal(readFileSync(join(context.options.releaseDirectory, name), "utf8"), value);

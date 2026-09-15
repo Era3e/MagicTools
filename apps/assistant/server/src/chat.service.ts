@@ -230,10 +230,8 @@ export class ChatService {
     let dataSource: Record<string, unknown> | undefined;
     if (intent === "product_inquiry") {
       // 检索时带上最近用户消息，帮助指代消解（如「那它有什么动作呢」）
-      const searchQuery = [
-        ...history.filter((h) => h.role === "user").map((h) => h.content).slice(-2),
-        message,
-      ].join("；");
+      const historyParts = history.filter((h) => h.role === "user").map((h) => h.content).slice(-2);
+      const searchQuery = [message, ...historyParts].join("；").slice(0, 500);
       const result = await this.knowledge.answer(searchQuery);
       reply = result.reply;
       citations = result.citations;

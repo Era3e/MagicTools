@@ -79,7 +79,7 @@
 
 ## 备份恢复与应用交接
 
-恢复应用交接由`backup-handoff.mjs`生成deployment-config/2，`recovery-database.mjs`检查实际PG/容器/卷/网络并原子领取claim，`recovery-attachment.mjs`在部署锁下保存reserved→initial-verified。`recovery-connections.mjs`绑定八主库和四上游，部署器仅管理17应用，业务网内部隔离，网关独占受控ingress。`recovery-receipt.mjs`负责SSH回读的DB/claim/首次证明/12连接核对；v1的序列化和快照回退保持兼容。实际操作与阶段验收分别见[恢复应用](features/restored-deployment.md)和[验证记录](validation/2026-09-12-restored-deployment.md)。
+恢复应用交接由`backup-handoff.mjs`生成deployment-config/2，`recovery-database.mjs`检查实际PG/容器/卷/网络并原子领取claim，`recovery-attachment.mjs`在部署锁下保存reserved→initial-verified。`recovery-connections.mjs`绑定八主库和三上游（P19 后 Assistant 检索走 Gateway HTTP，不再恢复 Scholar 直连），部署器仅管理17应用，业务网内部隔离，网关独占受控ingress。`recovery-receipt.mjs`负责SSH回读的DB/claim/首次证明/11连接核对；v1的序列化和快照回退保持兼容。实际操作与阶段验收分别见[恢复应用](features/restored-deployment.md)和[验证记录](validation/2026-09-12-restored-deployment.md)。
 
 `backup:create`、`backup:verify`、`backup:restore`由infra/scripts/backup.mjs调度，backup-local.mjs组织源检查、物理备份/原生验证、加密和独立恢复；backup-docker.mjs管理专属资源及进程退出。backup-source.mjs/backup-config-files.mjs同时检查运行与启动生效的配置依赖，backup-crypto.mjs负责文件认证和清单HMAC，backup-metrics.mjs使用微秒计算本机恢复区间。实现与边界见 [备份说明](features/backup-recovery.md) 和 [核心验收](validation/2026-09-12-backup-core.md)。
 

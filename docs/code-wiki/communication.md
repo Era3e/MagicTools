@@ -8,7 +8,7 @@
 
 ```
 同步 REST：适合同一子项目内 web → server（经 gateway 反代）
-          如 assistant → scholar（SCHOLAR_DATABASE_URL 直连也可）
+          以及 assistant → scholar（P19 起知识检索固定经 Gateway 调公共 API）
 
 outbox 事件表：适合跨子项目异步解耦（失败重试 + dead 终态）
   生产者：appendOutbox(pool, { id:event-uuid, event:"xxx", source, payload, occurredAt })
@@ -146,10 +146,11 @@ sequenceDiagram
     Note over C,CC: 第三环：Assistant 问答闭环
     用户->>C: ChatPage 提问
     C->>C: IntentService 双层路由\n(系统归属 → 域内意图)\n→ 判定 product_inquiry
-    C->>S: KnowledgeService 跨库 SCHOLAR_DATABASE_URL\n查询 圈定=true 的 entry 集合
-    S-->>C: 返回命中条目(title, content 片段)
-    C->>LLM: chat(system+引用条目+用户问题) 生成答案\n要求在末尾附引用来源
-    LLM-->>C: 回答 + 引用链接
+    C->>S: ScholarClient 经 Gateway POST /api/scholar/public/search
+    S-->>C: 返回发布修订分块候选(candidateNo, evidence, revision, version)
+    C->>LLM: chat(system+编号候选+用户问题) 生成答案与 citations编号
+    LLM-->>C: 回答 + 候选编号
+    C->>C: 只映射真实候选编号为 revision/version/chunk/evidence 引用
     C-->>用户: ChatPage 气泡 + 虚线引用区展示
 
     alt 其他意图分流

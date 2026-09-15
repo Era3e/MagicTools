@@ -53,7 +53,7 @@ export function createDatabasePlan({ baseUrl, project, runId }) {
     throw new Error("测试入口必须使用 postgres 库的管理连接，不能使用业务库");
   }
   if (!DATABASE_PROJECTS.includes(project) || !/^[a-z0-9]{4,16}$/.test(runId ?? "")) throw new Error("测试项目或运行命名空间无效");
-  const upstream = { assessor: ["investigator"], manager: ["assessor"], scholar: ["gatherer"], assistant: ["scholar"] };
+  const upstream = { assessor: ["investigator"], manager: ["assessor"], scholar: ["gatherer"] };
   const roles = [project, ...upstream[project] ?? []];
   const databases = roles.map((role) => {
     const name = `mt_${runId}_${project}_${role}_test`;

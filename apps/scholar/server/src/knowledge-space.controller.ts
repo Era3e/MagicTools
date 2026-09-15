@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Inject, Param, Post, Put, Query, Req } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Post, Put, Query, Req } from "@nestjs/common";
 import { KnowledgeSpaceService, type HttpRequest } from "./knowledge-space.service";
 
 @Controller()
@@ -53,6 +53,12 @@ export class KnowledgeSpaceController {
   @Get("public/entries/search")
   search(@Query("q") q?: string, @Query("mode") mode?: string, @Query("limit") limit?: string) {
     return this.service.publicSearch({ q, mode, limit });
+  }
+
+  @Post("public/search")
+  @HttpCode(200)
+  searchUnified(@Body() body: unknown) {
+    return this.service.publicSearchUnified(body);
   }
 
   @Get("public/entries")

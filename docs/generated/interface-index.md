@@ -371,6 +371,7 @@
 | POST | `/api/scholar/versions/:id/publish` |
 | GET | `/api/scholar/public/version/current` |
 | GET | `/api/scholar/public/entries/search` |
+| POST | `/api/scholar/public/search` |
 | GET | `/api/scholar/public/entries` |
 | GET | `/api/scholar/public/entries/:id` |
 | POST | `/api/scholar/entries/:id/requirement-links` |

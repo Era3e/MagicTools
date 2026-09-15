@@ -163,7 +163,7 @@ chore: 升级 turbo 至 2.1
 | CYBERCLOUD_BASE_URL / API_KEY / AGENT_ID / USERNAME / PASSWORD / JWT | cybercloud 智能体平台 | assistant |
 | MT_LLM_STUB / FEISHU_STUB / GITHUB_STUB / CYBERCLOUD_STUB / FEED_STUB / ACTION_STUB | **桩模式开关（CI 用，=1 跳过真实外部调用）** | CI/smoke/e2e |
 | MT_PROD | 生产网关 host 解析（=1 时用 Docker Compose 服务名） | gateway |
-| <NAME>_DATABASE_URL | 跨库直连上游 outbox（INVESTIGATOR_/ASSESSOR_/GATHERER_/SCHOLAR_） | assessor/manager/scholar/assistant |
+| <NAME>_DATABASE_URL | 跨库直连上游 outbox（INVESTIGATOR_/ASSESSOR_/GATHERER_）；Assistant→Scholar 检索走 Gateway HTTP | assessor/manager/scholar |
 
 ### 13.2 数据库连接约定（本地单实例多库）
 

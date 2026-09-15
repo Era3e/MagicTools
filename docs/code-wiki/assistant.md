@@ -14,7 +14,7 @@
 | 健康 | HealthController | — |
 | 对话 | ChatController + ChatService | HTTP + 网页双入口、多轮持久化、调用 IntentService 路由；**双路编排（CYBERCLOUD_MODE=dual 默认）：直连先行秒回 + 智能体后台核验，双路全故障降级文案** |
 | 意图 | IntentService | **双层路由（系统归属→域内意图）** / 规则+模型双轨 / 置信度输出、低置信度澄清反问闭环；**few-shot 在线学习（纠错样本注入 system prompt，60s TTL 缓存）** |
-| 知识问答 | KnowledgeService | 连接 Scholar SCHOLAR_DATABASE_URL → 查圈定条目 → 生成带引用回答 |
+| 知识问答 | KnowledgeService + ScholarClient | 经 Gateway 调 Scholar 公共混合检索 → 编号候选上下文 → 模型引用编号 → 服务端映射为 revision/version/chunk/evidence 引用 |
 | 数据查询·智能体 | CybercloudService | **真实 cybercloud 对接**（SPKI DER 公钥加密登录/JWT 提取/双头认证/401 自动重登/智能体 block 对话），桩模式 CYBERCLOUD_STUB=1；元数据/ERROR 不降维/postApi/探活（data-source-status） |
 | 数据查询·直连 | DirectQueryService | **五步流水线（双路架构 2026-09-08）**：indicators 缓存 → LLM 指标匹配+时间解析 → getReportStructure 防御解析 → 列匹配 → 去分组 queryByStructure 聚合 |
 | 数据核验 | VerifyTaskRegistry + CompareService | 五终态状态机（60s 超时/10min TTL/迟到终态守卫）+ 数值归一对比（万/亿/k/% + 1% 容差），divergent 时 VerifyBadge 标注 |

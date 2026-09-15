@@ -2,7 +2,6 @@ const UPSTREAMS = [
   ["assessor-server", "INVESTIGATOR_DATABASE_URL", "investigator"],
   ["manager-server", "ASSESSOR_DATABASE_URL", "assessor"],
   ["scholar-server", "GATHERER_DATABASE_URL", "gatherer"],
-  ["assistant-server", "SCHOLAR_DATABASE_URL", "scholar"],
 ];
 
 export function recoveryConnectionFields(catalog) {

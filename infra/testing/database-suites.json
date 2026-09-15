@@ -130,6 +130,10 @@
           "minimumTests": 5
         },
         {
+          "path": "src/public-search.e2e.test.ts",
+          "minimumTests": 4
+        },
+        {
           "path": "src/search.e2e.test.ts",
           "minimumTests": 3
         }
@@ -181,7 +185,7 @@
         },
         {
           "path": "src/multi-turn.e2e.test.ts",
-          "minimumTests": 5
+          "minimumTests": 6
         },
         {
           "path": "src/trouble.e2e.test.ts",

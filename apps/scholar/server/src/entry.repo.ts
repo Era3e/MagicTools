@@ -1,4 +1,6 @@
 import { pool } from "./db";
+import { embed } from "./llm";
+import { splitEntryContent } from "./entry-chunks";
 
 export interface EntryRow {
   id: string;
@@ -110,6 +112,17 @@ async function insertRevision(
       embedding, metadata.createdBy ?? ""]
   );
   const revisionId = rows.rows[0].id as string;
+  const slices = splitEntryContent(values.content);
+  const vectors = await embed(slices.map((slice) => values.title + "\n" + slice.content));
+  for (const [index, slice] of slices.entries()) {
+    await client.query(
+      `INSERT INTO entry_chunks
+        (entry_id,revision_id,chunk_no,content,char_start,char_end,embedding)
+       VALUES ($1,$2,$3,$4,$5,$6,$7::vector)`,
+      [entryId, revisionId, index + 1, slice.content, slice.charStart, slice.charEnd,
+        "[" + vectors[index].join(",") + "]"]
+    );
+  }
   await client.query(
     `INSERT INTO revision_requirement_links (revision_id,requirement_id,requirement_url,source)
      SELECT $1,requirement_id,requirement_url,source FROM entry_requirement_links WHERE entry_id=$2`,
