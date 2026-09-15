@@ -9,7 +9,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { syncBuiltinESMExports } from "node:module";
 import { parse } from "yaml";
 import { deployRelease } from "../deploy-release.mjs";
-import { loopbackRegistryHost, waitForStableLoopbackRegistry } from "../validate-deployment.mjs";
+import { loopbackRegistryHost, waitForDockerRegistryPush, waitForStableLoopbackRegistry } from "../validate-deployment.mjs";
 import { digestBytes } from "./release-artifacts.mjs";
 import { runtimeCatalog } from "./runtime-artifacts.mjs";
 import { deploymentSucceeded, validateDeploymentState } from "./deployment-state.mjs";
@@ -94,6 +94,26 @@ test("独立验收：本机验证registry需要连续就绪，过滤端口代理
   const unstable = async () => { failures += 1; throw new Error("port proxy not ready"); };
   assert.equal(await waitForStableLoopbackRegistry("127.0.0.1:55999", unstable, 1), false);
   assert.equal(failures, 100);
+});
+
+test("独立验收：HTTP就绪后仍必须用Docker真实推送确认registry可用", async () => {
+  const commands = []; let failures = 0;
+  const run = async (...args) => {
+    commands.push(args.join(" "));
+    if (args[0] === "push") {
+      failures += 1;
+      if (failures < 3) throw new Error("port proxy accepts HTTP but blocks Docker CLI");
+    }
+  };
+  assert.equal(await waitForDockerRegistryPush("127.0.0.1:55999", { run, attempts: 3, waitMs: 1 }), true);
+  assert.equal(failures, 3);
+  assert.ok(commands.filter((command) => command.startsWith("tag registry:2@sha256:")).length >= 2);
+  assert.ok(commands.some((command) => /^push 127\.0\.0\.1:55999\/validation\/readiness:[a-f0-9]{16}$/.test(command)));
+
+  const unavailable = async (...args) => {
+    if (args[0] === "push") throw new Error("connection refused");
+  };
+  assert.equal(await waitForDockerRegistryPush("127.0.0.1:55999", { run: unavailable, attempts: 2, waitMs: 1 }), false);
 });
 
 test("独立验收：就绪验证未完成时没有成功状态，同目录并发部署被锁拒绝", async () => {

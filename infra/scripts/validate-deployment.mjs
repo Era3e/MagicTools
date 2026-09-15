@@ -34,6 +34,23 @@ export async function waitForStableLoopbackRegistry(address, request = fetch, wa
   }
   return false;
 }
+export async function waitForDockerRegistryPush(address, { source = registryImage, run = runDocker, attempts = 5, waitMs = 1_000 } = {}) {
+  const probe = loopbackRegistryHost(address) + "/validation/readiness:" + randomBytes(8).toString("hex");
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      await run("tag", source, probe);
+      await run("push", probe);
+      return true;
+    } catch (error) {
+      if (attempt === attempts) {
+        console.error("测试registry Docker真实推送探针失败：" + String(error));
+        return false;
+      }
+      await delay(waitMs);
+    }
+  }
+  return false;
+}
 const docker = (...args) => execFileSync("docker", args, { encoding: "utf8", windowsHide: true, timeout: 120_000, stdio: ["ignore", "pipe", "pipe"] }).trim();
 async function runDocker(...args) {
   const result = await runProcess("docker", args, { cwd: root, timeoutMs: 8 * 60_000 });
@@ -211,6 +228,7 @@ export async function validateBuildDeployment(buildDirectory, runtime) {
     await runDocker("run", "-d", "--name", id, "--label", "magictools.validation=" + id, "-p", "127.0.0.1::5000", registryImage);
     const address = docker("port", id, "5000/tcp"); assert.match(address, /^127\.0\.0\.1:\d+$/);
     assert.equal(await waitForStableLoopbackRegistry(address), true, "测试registry未稳定");
+    assert.equal(await waitForDockerRegistryPush(address), true, "测试registry未通过Docker真实推送探针");
     const result = await publishImages({ buildManifest: join(buildDirectory, "build.json"), runtimeManifest: join(root, ".qa/runtime", runtime.runId, "runtime.json"), registry: loopbackRegistryHost(address) + "/validation", validation: true });
     const report = await validateDeployment(result.directory, result.directory);
     if (!report.success) throw new Error("部署验证失败");
