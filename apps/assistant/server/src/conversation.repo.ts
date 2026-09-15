@@ -5,6 +5,16 @@ export interface Citation {
   title: string;
   source: string;
   score: number;
+  revisionId?: string;
+  versionId?: string;
+  productVersion?: string;
+  chunkId?: string;
+  chunkNo?: number;
+  evidence?: string;
+  charStart?: number;
+  charEnd?: number;
+  candidateNo?: number;
+  requirementLinks?: Array<{ requirementId: string; requirementUrl: string; source: string }>;
 }
 
 export interface ConversationRow {

@@ -100,7 +100,8 @@
 | Sc12 | 前台书目检索（卡片）+ 馆藏目录（书卷）+ 图谱 | ✅ 已实现 | SearchPage/EntryList/GraphPage 三页深度主题 | scholar.spec.ts 页面渲染 |
 | Sc13 | 后台条目五项字段编辑（D3） | ✅ 已实现 | admin/entries 页面 Modal（title/summary/content/category/tags） | EntryList.test.tsx |
 | Sc14 | 前台 EntryList 书签式圈定 | ✅ 已实现 | EntryList.tsx 圈定按钮 + 视觉书签样式 | EntryList.test.tsx |
-| Sc15 | 开发/产品知识空间、不可变修订与版本发布 | ✅ 已实现：公共 API 固定 product/public/published/current version，发布绑定来源修订与部署标识；发布后编辑不改变线上快照；成员可读授权空间，撤权/下架/删除清理授权、发布、图谱与向量 | server/knowledge-space.* + server/admin-auth.ts + server/entry.repo.ts + migrations/003_knowledge_spaces.sql + server/search.repo.ts | knowledge-space.e2e.test.ts 4 tests |
+| Sc15 | 开发/产品知识空间、不可变修订与版本发布 | ✅ 已实现：公共 API 固定 product/public/published/current version，发布绑定来源修订与部署标识；发布后编辑不改变线上快照；成员可读授权空间，撤权/下架/删除清理授权、发布、图谱与向量 | server/knowledge-space.* + server/admin-auth.ts + server/entry.repo.ts + migrations/003_knowledge_spaces.sql + server/search.repo.ts | knowledge-space.e2e.test.ts 8 tests |
+| Sc16 | 不可变证据分块与公共混合检索 | ✅ 已实现：修订级分块保存字符区间与向量；FTS+vector 混合去重排序，向量-only 门槛过滤无关近邻，公共检索只读发布修订 | migrations/004_entry_chunks.sql + entry-chunks.ts + entry.repo.ts + search.repo.ts + knowledge-space.service.ts | public-search.e2e.test.ts 4 tests |
 
 ## Assistant
 
@@ -121,6 +122,7 @@
 | As13 | 纠错回填到训练语料 | ✅ 已实现 | intent-log PATCH /intent-logs/:id 覆盖路由 | intent-log.e2e.test.ts |
 | As14 | 独立问答评测集与版本比较 | ✅ 已实现 | server/evaluation-suite.* + server/evaluation-scoring.ts + migrations/006_assistant_evaluation_suite.sql + web/pages/IntentLogPage.tsx | evaluation-scoring.test.ts + evaluation-suite.e2e.test.ts + IntentLogPage.evaluation.test.tsx |
 | As15 | badcase 到需求再到回归闭环 | ✅ 已实现 | server/badcase.* + server/trace.repo.ts + migrations/007_assistant_badcases.sql + web/pages/BadcasePage.tsx + manager migrations/012_assistant_badcase_source.sql | badcase.e2e.test.ts + clarify.e2e.test.ts + requirement-foundation.e2e.test.ts + BadcasePage.test.tsx |
+| As16 | 统一 Scholar 检索 API 与证据引用对齐 | ✅ 已实现：Assistant 经 Gateway 调公共混合检索，不再直连 Scholar DB；引用携带 revision/version/chunk/evidence，虚构候选编号不能生成引用 | server/scholar.client.ts + server/knowledge.service.ts + server/conversation.repo.ts | scholar.client.test.ts + knowledge.service.test.ts + chat.e2e.test.ts |
 
 ## Designer
 

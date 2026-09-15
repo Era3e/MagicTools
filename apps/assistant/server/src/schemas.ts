@@ -60,6 +60,7 @@ export const badcaseCloseSchema = z.object({
 
 export const answerSchema = z.object({
   answer: z.string(),
+  citations: z.array(z.coerce.number().int().positive()).default([]),
 });
 
 export const queryParamsSchema = z.object({

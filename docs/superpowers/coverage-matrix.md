@@ -101,7 +101,8 @@
 | Sc12 | 前台书目检索（卡片）+ 馆藏目录（书卷）+ 图谱 | PR #30/#31 | SearchPage/EntryList/GraphPage 三页深度主题 | ✅ 已实现 | scholar.spec.ts 页面渲染 |
 | Sc13 | 后台条目五项字段编辑（D3） | state.md fix-d1-d3 | admin/entries 页面 Modal（title/summary/content/category/tags） | ✅ 已实现 | EntryList.test.tsx |
 | Sc14 | 前台 EntryList 书签式圈定 | PR #31 | EntryList.tsx 圈定按钮 + 视觉书签样式 | ✅ 已实现 | EntryList.test.tsx |
-| Sc15 | 开发/产品知识空间、不可变修订与版本发布 | P18 | server/knowledge-space.* + server/admin-auth.ts + server/entry.repo.ts + migrations/003_knowledge_spaces.sql + server/search.repo.ts | ✅ 已实现：公共 API 固定 product/public/published/current version，发布绑定来源修订与部署标识；发布后编辑不改变线上快照；成员可读授权空间，撤权/下架/删除清理授权、发布、图谱与向量 | knowledge-space.e2e.test.ts 4 tests |
+| Sc15 | 开发/产品知识空间、不可变修订与版本发布 | P18 | server/knowledge-space.* + server/admin-auth.ts + server/entry.repo.ts + migrations/003_knowledge_spaces.sql + server/search.repo.ts | ✅ 已实现：公共 API 固定 product/public/published/current version，发布绑定来源修订与部署标识；发布后编辑不改变线上快照；成员可读授权空间，撤权/下架/删除清理授权、发布、图谱与向量 | knowledge-space.e2e.test.ts 8 tests |
+| Sc16 | 不可变证据分块与公共混合检索 | P19 | migrations/004_entry_chunks.sql + entry-chunks.ts + entry.repo.ts + search.repo.ts + knowledge-space.service.ts | ✅ 已实现：修订级分块保存字符区间与向量；FTS+vector 混合去重排序，向量-only 门槛过滤无关近邻，公共检索只读发布修订 | public-search.e2e.test.ts 4 tests |
 
 ## 7. Assistant（助手 · 知识主线闭环 · 6 意图）
 
@@ -122,6 +123,7 @@
 | As13 | 纠错回填到训练语料 | spec 3.7 | intent-log PATCH /intent-logs/:id 覆盖路由 | ✅ 已实现 | intent-log.e2e.test.ts |
 | As14 | 独立问答评测集与版本比较 | P16 | server/evaluation-suite.* + server/evaluation-scoring.ts + migrations/006_assistant_evaluation_suite.sql + web/pages/IntentLogPage.tsx | ✅ 已实现 | evaluation-scoring.test.ts + evaluation-suite.e2e.test.ts + IntentLogPage.evaluation.test.tsx |
 | As15 | badcase 到需求再到回归闭环 | P17 | server/badcase.* + server/trace.repo.ts + migrations/007_assistant_badcases.sql + web/pages/BadcasePage.tsx + manager migrations/012_assistant_badcase_source.sql | ✅ 已实现 | badcase.e2e.test.ts + clarify.e2e.test.ts + requirement-foundation.e2e.test.ts + BadcasePage.test.tsx |
+| As16 | 统一 Scholar 检索 API 与证据引用对齐 | P19 | server/scholar.client.ts + server/knowledge.service.ts + server/conversation.repo.ts | ✅ 已实现：Assistant 经 Gateway 调公共混合检索，不再直连 Scholar DB；引用携带 revision/version/chunk/evidence，虚构候选编号不能生成引用 | scholar.client.test.ts + knowledge.service.test.ts + chat.e2e.test.ts |
 
 ## 8. Designer（设计 · 降级版组件生成器）
 

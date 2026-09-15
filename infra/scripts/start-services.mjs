@@ -76,7 +76,6 @@ function serverEnvironment(app) {
     if (app === "assessor") env.INVESTIGATOR_DATABASE_URL = `${SOURCE_SMOKE_DATABASE_URL}/investigator_e2e`;
     if (app === "manager") env.ASSESSOR_DATABASE_URL = `${SOURCE_SMOKE_DATABASE_URL}/assessor_e2e`;
     if (app === "scholar") env.GATHERER_DATABASE_URL = `${SOURCE_SMOKE_DATABASE_URL}/gatherer_e2e`;
-    if (app === "assistant") env.SCHOLAR_DATABASE_URL = `${SOURCE_SMOKE_DATABASE_URL}/scholar_e2e`;
   }
   return env;
 }

@@ -7,7 +7,7 @@
 
 | 状态 | 数量 |
 |---|---:|
-| ✅ | 120 |
+| ✅ | 122 |
 | 🚫 | 1 |
 
 ## 模块
@@ -19,8 +19,8 @@
 | Assessor | 9 | 9 | 0 | 0 | 0 |
 | Manager | 14 | 14 | 0 | 0 | 0 |
 | Gatherer | 10 | 10 | 0 | 0 | 0 |
-| Scholar | 15 | 15 | 0 | 0 | 0 |
-| Assistant | 15 | 15 | 0 | 0 | 0 |
+| Scholar | 16 | 16 | 0 | 0 | 0 |
+| Assistant | 16 | 16 | 0 | 0 | 0 |
 | Designer | 9 | 9 | 0 | 0 | 0 |
 | 公共能力 & 工程化 | 13 | 12 | 0 | 1 | 0 |
 | 2026-09 增量 | 15 | 15 | 0 | 0 | 0 |
@@ -37,4 +37,4 @@
 | [gatherer](interface-index.md#gatherer) | 8 | 12 |
 | [investigator](interface-index.md#investigator) | 7 | 13 |
 | [manager](interface-index.md#manager) | 9 | 24 |
-| [scholar](interface-index.md#scholar) | 9 | 33 |
+| [scholar](interface-index.md#scholar) | 9 | 34 |

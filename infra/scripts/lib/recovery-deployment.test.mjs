@@ -90,7 +90,7 @@ test("旧制品的已知默认连接迁移到私有env引用，原始制品字�
   const rendered = renderReleaseCompose(legacy, release, catalog, selected);
   const values = Object.fromEntries(selected.database.databases.map((database) => [database.toUpperCase() + "_DATABASE_URL", "postgres://postgres:private-test-secret@postgres:5432/" + database]));
   const bound = bindRecoveryConnections(rendered, catalog, values, selected.database);
-  assert.equal(bound.connections.length, 12); assert.equal(JSON.stringify(legacy), before);
+  assert.equal(bound.connections.length, recoveryConnectionFields(catalog).length); assert.equal(JSON.stringify(legacy), before);
   for (const item of recoveryConnectionFields(catalog)) assert.equal(rendered.services[item.service].environment[item.field], "${" + item.variable + ":?" + item.variable + " is required}");
   assert.ok(!JSON.stringify(rendered).includes("private-test-secret"));
 });

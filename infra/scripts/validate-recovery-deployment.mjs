@@ -207,8 +207,9 @@ export async function validateRecoveryDeployment(previousDirectory, currentDirec
       const config = read(targetA); binding = config.database; write(targetB, { ...config, gatewayPort: await freePort([sourceConfig.gatewayPort, targetBase.gatewayPort]) });
       initialRuns = Number(sql(restored.container, "gatherer", "SELECT count(*) FROM runs WHERE source_id='" + feed.id + "';"));
     });
-    await checked("a-seventeen-ready-twelve-real-connections-and-manager-isolation", async () => {
-      const first = await deployTarget(previous.directory); assert.equal(first.ready.length, 17); assert.equal(first.databaseConnections.length, 12);
+    const expectedDatabaseConnections = recoveryConnectionFields(catalog).length;
+    await checked(`a-seventeen-ready-${expectedDatabaseConnections}-real-connections-and-manager-isolation`, async () => {
+      const first = await deployTarget(previous.directory); assert.equal(first.ready.length, 17); assert.equal(first.databaseConnections.length, expectedDatabaseConnections);
       await assertTarget("source snapshot " + id); report.platformRestoreMilliseconds = Math.round(performance.now() - restorationStarted);
       const changed = await request(activeConfig.gatewayPort, "/api/manager/requirements/" + requirement.id, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ expectedRevision: requirement.revision, description: "restored change " + id }) }); assert.equal(changed.status, 200);
       const original = await request(sourceConfig.gatewayPort, "/api/manager/requirements/" + requirement.id); assert.equal(original.status, 200); assert.equal((await original.json()).description, "source snapshot " + id);

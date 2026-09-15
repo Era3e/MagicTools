@@ -32,6 +32,14 @@
 - 成员撤权按 Gateway 透传身份即时生效；下架/删除会移除发布记录、图谱关联并清空当前向量。
 - 旧条目、图谱、Obsidian、收件箱与空间管理接口默认要求 Gateway 管理员；空间成员可读取被授权空间的条目，产品版本详情仅管理员可见。
 
+## P19 公共混合检索
+
+- `entry_chunks` 以 `(revision_id, chunk_no)` 唯一，保存证据文本、`char_start/char_end` 和 1024 维向量；新修订创建时同步分块。
+- 迁移前存量修订只回填文本与字符区间，分块向量为 NULL，避免复制文档级向量导致所有分块相似度相同；这些内容仍可通过 FTS 命中，后续编辑/重发布会生成真实分块向量。
+- `POST /api/scholar/public/search` 服务端固定当前 public product 发布版本，不能由调用方指定空间或版本。
+- FTS 与向量分块按 `(revision_id, chunk_no)` 合并，再按 entry 保留最高分证据；双通道命中加权，向量-only 低于 0.15 被拒绝。
+- 返回候选编号、命中通道、entry/revision/version/deploymentRef、需求链接、chunk 字符区间与证据文本；发布后编辑不影响该快照。
+
 ## 前端路由
 
 ```

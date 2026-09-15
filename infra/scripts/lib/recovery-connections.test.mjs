@@ -10,22 +10,28 @@ const catalog = runtimeCatalog(parse(readFileSync(new URL("../../ports.yaml", im
 const databases = catalog.filter((entry) => entry.kind === "node" && entry.app !== "gateway").map((entry) => entry.app).sort();
 const sourceEnvironment = () => Object.fromEntries(databases.map((database) => [database.toUpperCase() + "_DATABASE_URL", "postgres://app%20user:p%40ss%24word@postgres:5432/" + database]));
 
-test("八主库和四上游连接全部绑定恢复实例，口令仅留在进程环境且输入未改动", () => {
+test("八主库和三上游连接全部绑定恢复实例，口令仅留在进程环境且输入未改动", () => {
   const source = compose(); const environment = sourceEnvironment();
   const before = JSON.stringify({ source, environment });
   const result = bindRecoveryConnections(source, catalog, environment, { container: { name: "recovered-test" }, databases });
-  assert.equal(result.connections.length, 12); assert.equal(Object.keys(result.environment).length, 8);
+  assert.equal(result.connections.length, 11); assert.equal(Object.keys(result.environment).length, 8);
   for (const database of databases) {
     const value = new URL(result.environment[database.toUpperCase() + "_DATABASE_URL"]);
     assert.equal(value.hostname, "recovered-test"); assert.equal(value.port, "5432"); assert.equal(value.pathname, "/" + database);
     assert.equal(decodeURIComponent(value.username), "app user"); assert.equal(decodeURIComponent(value.password), "p@ss$word");
   }
   for (const [service, field, database] of [["assessor-server", "INVESTIGATOR_DATABASE_URL", "investigator"], ["manager-server", "ASSESSOR_DATABASE_URL", "assessor"],
-    ["scholar-server", "GATHERER_DATABASE_URL", "gatherer"], ["assistant-server", "SCHOLAR_DATABASE_URL", "scholar"]]) {
+    ["scholar-server", "GATHERER_DATABASE_URL", "gatherer"]]) {
     assert.ok(result.connections.some((entry) => entry.service === service && entry.field === field && entry.database === database && entry.host === "recovered-test"));
   }
   assert.equal(JSON.stringify({ source, environment }), before);
   assert.ok(!JSON.stringify(result.connections).includes("postgres://") && !JSON.stringify(result.connections).includes("p%40ss"));
+});
+
+test("恢复部署验收连接数跟随服务边界契约，不允许回写硬编码", () => {
+  const source = readFileSync(new URL("../validate-recovery-deployment.mjs", import.meta.url), "utf8");
+  assert.ok(!/databaseConnections\.length,\s*12/u.test(source));
+  assert.match(source, /recoveryConnectionFields\(catalog\)\.length/);
 });
 
 test("缺失跨库连接、错误库名或外部目标必须在部署前拒绝，错误不包含口令", () => {

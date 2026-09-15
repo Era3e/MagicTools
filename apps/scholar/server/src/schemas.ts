@@ -63,6 +63,11 @@ export const searchQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).default(10),
 });
 
+export const publicSearchInputSchema = z.object({
+  q: z.string().trim().min(1).max(500),
+  limit: z.coerce.number().int().min(1).max(20).default(5),
+});
+
 export const settingsInputSchema = z.object({
   vaultPath: z.string().default(""),
 });

@@ -17,11 +17,12 @@ import { HealthController } from "./health.controller";
 import { IntentLogController } from "./intent-log.controller";
 import { IntentService } from "./intent.service";
 import { KnowledgeService } from "./knowledge.service";
+import { ScholarClient } from "./scholar.client";
 import { MetaController } from "./meta.controller";
 import { TroubleService } from "./trouble.service";
 
 @Module({
   controllers: [HealthController, ChatController, MetaController, FeedbackController, IntentLogController, EvaluationSuiteController, BadcaseController],
-  providers: [ChatService, IntentService, KnowledgeService, CybercloudService, DirectQueryService, ActionService, TroubleService, FeedbackService, EvaluationService, EvaluationSuiteService, FinetuneService, ManagerClient, BadcaseService],
+  providers: [ChatService, IntentService, KnowledgeService, ScholarClient, CybercloudService, DirectQueryService, ActionService, TroubleService, FeedbackService, EvaluationService, EvaluationSuiteService, FinetuneService, ManagerClient, BadcaseService],
 })
 export class AppModule {}

@@ -1,38 +1,51 @@
 // @database-integration: required by test:db
-import { join } from "node:path";
 import { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
-import { runMigrations } from "@mt/db";
 import request from "supertest";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { AppModule } from "./app.module";
-import { ensureDatabase, migrate, pool, scholarPool } from "./db";
-import { pseudoVector } from "./llm";
-
-const SCHOLAR_TEST_URL = process.env.SCHOLAR_DATABASE_URL;
-if (!SCHOLAR_TEST_URL) throw new Error("请通过 pnpm test:db 分配 Scholar 上游测试库");
+import { ensureDatabase, migrate, pool } from "./db";
+import { ScholarClient, type ScholarSearchCandidate } from "./scholar.client";
 
 let app: INestApplication;
 let available = false;
+let scholarHits: ScholarSearchCandidate[] = [];
 
-async function seedEntry(title: string, content: string, scoped: boolean) {
-  const vec = pseudoVector(title + "\n" + content);
-  await scholarPool().query(
-    "INSERT INTO entries (source, source_ref, title, content, assistant_scope, embedding, space_id) VALUES ('manual', NULL, $1, $2, $3, $4::vector, (SELECT id FROM knowledge_spaces WHERE key='development'))",
-    [title, content, scoped, "[" + vec.join(",") + "]"]
-  );
+function candidate(title: string, content: string): ScholarSearchCandidate {
+  return {
+    entryId: "00000000-0000-0000-0000-000000000001",
+    source: "manual",
+    title,
+    category: "product",
+    revisionId: "00000000-0000-0000-0000-000000000011",
+    revisionNo: 1,
+    sourceRevision: "test-commit",
+    sourceUrl: "https://example.com/commit",
+    productVersionId: "00000000-0000-0000-0000-000000000021",
+    productVersion: "1.0.0",
+    deploymentRef: "registry@sha256:test",
+    chunkId: "00000000-0000-0000-0000-000000000031",
+    chunkNo: 1,
+    content,
+    charStart: 0,
+    charEnd: content.length,
+    score: 0.98,
+    candidateNo: 1,
+    channels: ["fts", "vector"],
+    requirementLinks: [],
+  };
 }
 
 beforeAll(async () => {
   try {
     process.env.MT_LLM_STUB = "1";
-    process.env.SCHOLAR_DATABASE_URL = SCHOLAR_TEST_URL;
     await ensureDatabase();
     await migrate();
-    await ensureDatabase(SCHOLAR_TEST_URL);
-    await runMigrations(scholarPool(), join(__dirname, "..", "..", "..", "scholar", "server", "migrations"));
     available = true;
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(ScholarClient)
+      .useValue({ search: async () => scholarHits })
+      .compile();
     app = moduleRef.createNestApplication();
     app.setGlobalPrefix("api/assistant");
     await app.init();
@@ -49,7 +62,7 @@ afterAll(async () => {
 beforeEach(async () => {
   if (!available) return;
   await pool.query("TRUNCATE conversations, messages");
-  await scholarPool().query("TRUNCATE entries CASCADE");
+  scholarHits = [];
 });
 
 describe("chat", () => {
@@ -66,16 +79,14 @@ describe("chat", () => {
 
   it("product_inquiry 只检索圈定条目并带引用", async (ctx) => {
     if (!available) { ctx.skip(); return; }
-    await seedEntry("苹果公司发布新手机", "苹果秋季发布会内容", true);
-    await seedEntry("苹果供应链分析", "苹果供应链相关分析", false);
+    scholarHits = [candidate("苹果公司发布新手机", "苹果秋季发布会内容")];
     const res = await request(app.getHttpServer()).post("/api/assistant/chat").send({ message: "苹果公司有什么新动态" });
     expect(res.status).toBe(201);
     expect(res.body.intent).toBe("product_inquiry");
     expect(res.body.reply.length).toBeGreaterThan(0);
     expect(res.body.citations.length).toBeGreaterThanOrEqual(1);
-    const titles = res.body.citations.map((c: { title: string }) => c.title);
-    expect(titles.some((t: string) => t.includes("苹果公司发布新手机"))).toBe(true);
-    expect(titles.some((t: string) => t.includes("苹果供应链分析"))).toBe(false);
+    expect(res.body.citations.map((c: { title: string }) => c.title)).toEqual(["苹果公司发布新手机"]);
+    expect(res.body.citations[0].evidence).toBe("苹果秋季发布会内容");
   });
 
   it("product_inquiry 无圈定内容时诚实回答未找到", async (ctx) => {

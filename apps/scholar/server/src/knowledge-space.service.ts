@@ -23,10 +23,17 @@ import {
   knowledgeSpaceInputSchema,
   productVersionInputSchema,
   productVersionPublishSchema,
+  publicSearchInputSchema,
   requirementLinkInputSchema,
   searchQuerySchema,
 } from "./schemas";
-import { publicFtsSearch, publicVectorSearch } from "./search.repo";
+import {
+  publicChunkFtsSearch,
+  publicChunkVectorSearch,
+  publicFtsSearch,
+  publicVectorSearch,
+  type PublicChunkSearchRow,
+} from "./search.repo";
 import { listEntries, updateEntry } from "./entry.repo";
 
 export interface HttpRequest {
@@ -50,6 +57,15 @@ function assertAdmin(req: HttpRequest): void {
   if (process.env.SCHOLAR_ADMIN_AUTH === "disabled") return;
   if (req.headers["x-gateway-role"] === "admin") return;
   throw new ForbiddenException("需要管理员权限");
+}
+
+const MIN_VECTOR_SCORE = 0.15;
+const HYBRID_BOTH_CHANNELS_BONUS = 0.08;
+
+export interface PublicSearchCandidate extends PublicChunkSearchRow {
+  candidateNo: number;
+  channels: Array<"fts" | "vector">;
+  score: number;
 }
 
 @Injectable()
@@ -164,6 +180,67 @@ export class KnowledgeSpaceService {
       return publicVectorSearch(vec, parsed.data.limit, version.id);
     }
     return publicFtsSearch(parsed.data.q, parsed.data.limit, version.id);
+  }
+
+  async publicSearchUnified(input: unknown): Promise<{
+    query: string;
+    versionId: string;
+    version: string;
+    deploymentRef: string;
+    candidates: PublicSearchCandidate[];
+    thresholds: { minimumVectorScore: number; bothChannelsBonus: number };
+  }> {
+    const parsed = publicSearchInputSchema.safeParse(input);
+    if (!parsed.success) throw new BadRequestException("公共检索参数非法");
+    const version = await this.currentVersion();
+    const [vector] = await embed([parsed.data.q]);
+    const fetchLimit = Math.min(parsed.data.limit * 3, 60);
+    const [ftsRows, vectorRows] = await Promise.all([
+      publicChunkFtsSearch(parsed.data.q, fetchLimit, version.id),
+      publicChunkVectorSearch(vector, fetchLimit, version.id),
+    ]);
+
+    const chunks = new Map<string, PublicSearchCandidate>();
+    for (const row of ftsRows) {
+      chunks.set(row.revisionId + ":" + row.chunkNo, {
+        ...row,
+        candidateNo: 0,
+        channels: ["fts"],
+        score: row.score,
+      });
+    }
+    for (const row of vectorRows) {
+      const key = row.revisionId + ":" + row.chunkNo;
+      if (row.score < MIN_VECTOR_SCORE) continue;
+      const existing = chunks.get(key);
+      if (existing) {
+        existing.channels.push("vector");
+        existing.score = Math.min(1, Math.max(existing.score, row.score) + HYBRID_BOTH_CHANNELS_BONUS);
+      } else {
+        chunks.set(key, { ...row, candidateNo: 0, channels: ["vector"], score: row.score });
+      }
+    }
+
+    // Chunk hits are aggregated to one best evidence slice per entry. This keeps
+    // citations readable while still allowing a hit from the second half of a
+    // long document to outrank the document title or first chunk.
+    const byEntry = new Map<string, PublicSearchCandidate>();
+    for (const chunk of chunks.values()) {
+      const existing = byEntry.get(chunk.entryId);
+      if (!existing || chunk.score > existing.score) byEntry.set(chunk.entryId, chunk);
+    }
+    const candidates = [...byEntry.values()]
+      .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title) || a.chunkNo - b.chunkNo)
+      .slice(0, parsed.data.limit)
+      .map((row, index) => ({ ...row, candidateNo: index + 1, score: Math.min(1, row.score) }));
+    return {
+      query: parsed.data.q,
+      versionId: version.id,
+      version: version.version,
+      deploymentRef: version.deploymentRef,
+      candidates,
+      thresholds: { minimumVectorScore: MIN_VECTOR_SCORE, bothChannelsBonus: HYBRID_BOTH_CHANNELS_BONUS },
+    };
   }
 
   async linkRequirement(req: HttpRequest, entryId: string, input: unknown) {

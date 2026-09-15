@@ -1,36 +1,48 @@
 // @database-integration: required by test:db
-import { join } from "node:path";
 import { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
-import { runMigrations } from "@mt/db";
 import request from "supertest";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { AppModule } from "./app.module";
-import { ensureDatabase, migrate, pool, scholarPool } from "./db";
-import { pseudoVector } from "./llm";
-
-const SCHOLAR_TEST_URL = process.env.SCHOLAR_DATABASE_URL;
-if (!SCHOLAR_TEST_URL) throw new Error("请通过 pnpm test:db 分配 Scholar 上游测试库");
+import { ensureDatabase, migrate, pool } from "./db";
+import { ScholarClient, type ScholarSearchCandidate } from "./scholar.client";
 
 let app: INestApplication;
 
-async function seedKnowledge(message: string) {
-  const vec = pseudoVector(message + "\n" + message);
-  await scholarPool().query(
-    "INSERT INTO entries (source, source_ref, title, content, assistant_scope, embedding, space_id) VALUES ('manual', NULL, $1, $2, true, $3::vector, (SELECT id FROM knowledge_spaces WHERE key='development'))",
-    [message, message, "[" + vec.join(",") + "]"]
-  );
+function candidate(message: string): ScholarSearchCandidate {
+  return {
+    entryId: "00000000-0000-0000-0000-000000000001",
+    source: "manual",
+    title: message,
+    category: "product",
+    revisionId: "00000000-0000-0000-0000-000000000011",
+    revisionNo: 1,
+    sourceRevision: "test-commit",
+    sourceUrl: "https://example.com/commit",
+    productVersionId: "00000000-0000-0000-0000-000000000021",
+    productVersion: "1.0.0",
+    deploymentRef: "registry@sha256:test",
+    chunkId: "00000000-0000-0000-0000-000000000031",
+    chunkNo: 1,
+    content: message,
+    charStart: 0,
+    charEnd: message.length,
+    score: 0.98,
+    candidateNo: 1,
+    channels: ["fts", "vector"],
+    requirementLinks: [],
+  };
 }
 
 beforeAll(async () => {
   process.env.MT_LLM_STUB = "1";
   process.env.ASSISTANT_ADMIN_AUTH = "disabled";
-  process.env.SCHOLAR_DATABASE_URL = SCHOLAR_TEST_URL;
   await ensureDatabase();
   await migrate();
-  await ensureDatabase(SCHOLAR_TEST_URL);
-  await runMigrations(scholarPool(), join(__dirname, "..", "..", "..", "scholar", "server", "migrations"));
-  const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
+  const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+    .overrideProvider(ScholarClient)
+    .useValue({ search: async (question: string) => [candidate(question)] })
+    .compile();
   app = moduleRef.createNestApplication();
   app.setGlobalPrefix("api/assistant");
   await app.init();
@@ -42,7 +54,6 @@ afterAll(async () => {
 
 beforeEach(async () => {
   await pool.query("TRUNCATE evaluation_run_items, evaluation_runs, conversations, messages, intent_logs, feedback");
-  await scholarPool().query("TRUNCATE entries CASCADE");
 });
 
 describe("P16 独立评测套件", () => {
@@ -89,8 +100,6 @@ describe("P16 独立评测套件", () => {
   });
 
   it("dev run 持久化 24 条明细且配置快照不含密钥", async () => {
-    const knowledgeCases = await pool.query("SELECT message FROM evaluation_cases WHERE case_type = 'knowledge' AND split = 'dev'");
-    for (const row of knowledgeCases.rows) await seedKnowledge(row.message);
     process.env.DEEPSEEK_API_KEY = "secret-deepseek";
     process.env.ZHIPU_API_KEY = "secret-zhipu";
     const res = await request(app.getHttpServer())

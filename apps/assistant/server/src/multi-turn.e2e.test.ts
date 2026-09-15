@@ -1,38 +1,56 @@
 // @database-integration: required by test:db
-import { join } from "node:path";
 import { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
-import { runMigrations } from "@mt/db";
 import request from "supertest";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { AppModule } from "./app.module";
-import { ensureDatabase, migrate, pool, scholarPool } from "./db";
-import { pseudoVector } from "./llm";
-
-const SCHOLAR_TEST_URL = process.env.SCHOLAR_DATABASE_URL;
-if (!SCHOLAR_TEST_URL) throw new Error("请通过 pnpm test:db 分配 Scholar 上游测试库");
+import { ensureDatabase, migrate, pool } from "./db";
+import { ScholarClient, type ScholarSearchCandidate } from "./scholar.client";
 
 let app: INestApplication;
 let available = false;
 
-async function seedEntry(title: string, content: string, scoped: boolean) {
-  const vec = pseudoVector(title + "\n" + content);
-  await scholarPool().query(
-    "INSERT INTO entries (source, source_ref, title, content, assistant_scope, embedding, space_id) VALUES ('manual', NULL, $1, $2, $3, $4::vector, (SELECT id FROM knowledge_spaces WHERE key='development'))",
-    [title, content, scoped, "[" + vec.join(",") + "]"]
-  );
+function candidate(no: number, title: string, content: string): ScholarSearchCandidate {
+  return {
+    entryId: "00000000-0000-0000-0000-00000000000" + no,
+    source: "manual",
+    title,
+    category: "product",
+    revisionId: "00000000-0000-0000-0000-00000000010" + no,
+    revisionNo: 1,
+    sourceRevision: "test-commit",
+    sourceUrl: "https://example.com/commit",
+    productVersionId: "00000000-0000-0000-0000-000000000021",
+    productVersion: "1.0.0",
+    deploymentRef: "registry@sha256:test",
+    chunkId: "00000000-0000-0000-0000-00000000020" + no,
+    chunkNo: 1,
+    content,
+    charStart: 0,
+    charEnd: content.length,
+    score: 0.98,
+    candidateNo: no,
+    channels: ["fts", "vector"],
+    requirementLinks: [],
+  };
 }
 
 beforeAll(async () => {
   try {
     process.env.MT_LLM_STUB = "1";
-    process.env.SCHOLAR_DATABASE_URL = SCHOLAR_TEST_URL;
     await ensureDatabase();
     await migrate();
-    await ensureDatabase(SCHOLAR_TEST_URL);
-    await runMigrations(scholarPool(), join(__dirname, "..", "..", "..", "scholar", "server", "migrations"));
     available = true;
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(ScholarClient)
+      .useValue({
+        search: async (question: string) => {
+          if (question.includes("供应链")) return [candidate(2, "苹果供应链分析", "苹果供应链相关分析")];
+          if (question.includes("苹果公司")) return [candidate(1, "苹果公司发布新手机", "苹果秋季发布会内容")];
+          return [];
+        },
+      })
+      .compile();
     app = moduleRef.createNestApplication();
     app.setGlobalPrefix("api/assistant");
     await app.init();
@@ -49,7 +67,6 @@ afterAll(async () => {
 beforeEach(async () => {
   if (!available) return;
   await pool.query("TRUNCATE conversations, messages");
-  await scholarPool().query("TRUNCATE entries CASCADE");
 });
 
 describe("multi-turn", () => {
@@ -80,9 +97,6 @@ describe("multi-turn", () => {
 
   it("指代消解：第二问结合历史定位圈定条目", async (ctx) => {
     if (!available) { ctx.skip(); return; }
-    await seedEntry("苹果公司发布新手机", "苹果秋季发布会内容", true);
-    await seedEntry("苹果供应链分析", "苹果供应链相关分析", true);
-    await seedEntry("香蕉是水果", "香蕉介绍", false);
     const first = await request(app.getHttpServer()).post("/api/assistant/chat").send({ message: "苹果公司有什么新动态" });
     expect(first.body.citations.some((c: { title: string }) => c.title.includes("苹果公司发布新手机"))).toBe(true);
     const second = await request(app.getHttpServer()).post("/api/assistant/chat").send({ sessionId: first.body.sessionId, message: "那它的供应链情况呢" });
@@ -95,12 +109,22 @@ describe("multi-turn", () => {
 
   it("指代消解依赖历史注入检索词（回归）", async (ctx) => {
     if (!available) { ctx.skip(); return; }
-    await seedEntry("苹果公司发布新手机", "苹果秋季发布会内容", true);
     const first = await request(app.getHttpServer()).post("/api/assistant/chat").send({ message: "苹果公司有什么新动态" });
     const second = await request(app.getHttpServer()).post("/api/assistant/chat").send({ sessionId: first.body.sessionId, message: "那它有什么动作呢" });
     expect(second.status).toBe(201);
     const titles = second.body.citations.map((c: { title: string }) => c.title);
     expect(titles.some((t: string) => t.includes("苹果公司发布新手机"))).toBe(true);
+  });
+
+  it("长历史不会超过公共检索500字符上限", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    const longHistory = "历史背景。".repeat(120) + "关键词是苹果供应链";
+    const first = await request(app.getHttpServer()).post("/api/assistant/chat").send({ message: longHistory });
+    const second = await request(app.getHttpServer())
+      .post("/api/assistant/chat")
+      .send({ sessionId: first.body.sessionId, message: "那它的供应链情况呢" });
+    expect(second.status).toBe(201);
+    expect(second.body.citations.map((c: { title: string }) => c.title)).toContain("苹果供应链分析");
   });
 
   it("data_query 意图随历史延续", async (ctx) => {

@@ -43,8 +43,10 @@ manager
 gatherer.outbox
     ↓ (GATHERER_DATABASE_URL)
 scholar.entry + scholar.search
-    ↓ (SCHOLAR_DATABASE_URL)
+
 assistant.knowledge
+    ↓ HTTP via Gateway
+scholar.public-search
 ```
 
 ### 15.3 外部系统集成矩阵
