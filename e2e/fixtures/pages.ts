@@ -36,8 +36,8 @@ export const PAGES: VisualPage[] = [
   {
     name: "front-scholar-entry-list",
     path: "/scholar/entries",
-    anchor: /知识书院|馆 藏 目 录/,
-    waitFor: "[data-testid=entry-rows]",
+    anchor: /MagicTools 用户帮助|当前发布/,
+    waitFor: "[data-testid=help-entry-rows]",
     coreText: "MagicTools 用户帮助：发布与验证流程",
   },
   {

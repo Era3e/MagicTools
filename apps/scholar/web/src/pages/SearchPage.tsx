@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Button, Input, Radio, Skeleton } from "antd";
+import { Button, Input, Skeleton, Space, Tag } from "antd";
 import { MtStatusTag, MtEmptyState, tokens, useTheme } from "@mt/ui";
-import { api, type SearchHit } from "../api";
+import { api, type PublicSearchCandidate } from "../api";
 
 const SOURCE_LABEL: Record<string, string> = { gatherer: "采集入藏", manual: "手稿", obsidian: "黑曜石笔记" };
 
@@ -17,8 +17,8 @@ export default function SearchPage() {
     body: theme.bodyFont,
   };
   const [q, setQ] = useState("");
-  const [mode, setMode] = useState<"fts" | "vector">("fts");
-  const [hits, setHits] = useState<SearchHit[]>([]);
+  const [hits, setHits] = useState<PublicSearchCandidate[]>([]);
+  const [version, setVersion] = useState("");
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
 
@@ -26,7 +26,9 @@ export default function SearchPage() {
     if (!q.trim()) return;
     setLoading(true);
     try {
-      setHits(await api.search(q.trim(), mode));
+      const result = await api.publicSearch(q.trim());
+      setHits(result.candidates);
+      setVersion(result.candidates[0]?.productVersion ?? "");
       setSearched(true);
     } finally {
       setLoading(false);
@@ -36,7 +38,7 @@ export default function SearchPage() {
   return (
     <div style={{ fontFamily: CATALOG.body, color: CATALOG.ink }}>
       <div style={{ textAlign: "center", marginBottom: 8, letterSpacing: 8, color: CATALOG.green, fontSize: 12 }}>
-        CATALOGUE · 书 目 检 索
+        HELP · 用 户 帮 助 检 索
       </div>
 
       <div
@@ -49,7 +51,7 @@ export default function SearchPage() {
         }}
       >
         <Input
-          placeholder="输入关键词"
+          placeholder="输入任务或问题，例如：如何核对引用"
           size="large"
           variant="borderless"
           value={q}
@@ -74,37 +76,29 @@ export default function SearchPage() {
         </Button>
       </div>
 
-      <Radio.Group
-        value={mode}
-        onChange={(e) => setMode(e.target.value as "fts" | "vector")}
-        style={{ margin: "10px 0 4px", fontFamily: CATALOG.body }}
-        optionType="button"
-        buttonStyle="solid"
-        options={[
-          { value: "fts", label: "全文检索" },
-          { value: "vector", label: "语义向量" },
-        ]}
-      />
+      <div style={{ margin: "10px 0 4px", color: CATALOG.muted, fontSize: 12 }}>
+        服务端执行全文与语义混合检索；结果只来自当前发布版本 {version ? `· ${version}` : ""}
+      </div>
 
       <div style={{ marginTop: 16 }}>
         {loading ? (
           <Skeleton active paragraph={{ rows: 6 }} />
         ) : hits.length === 0 ? (
           searched ? (
-            <MtEmptyState title="馆内未检出此条目" description="换个说法试试" />
+            <MtEmptyState title="当前帮助版本未检出" description="换个任务描述试试；未命中时 Assistant 也会明确说明未找到" />
           ) : (
             <p style={{ textAlign: "center", color: CATALOG.muted, fontStyle: "italic", marginTop: 48 }}>
-              输入关键词，在馆藏中寻书
+              输入任务或问题，在当前发布帮助中查找证据
             </p>
           )
         ) : (
           <>
             <div style={{ color: CATALOG.muted, fontSize: 12, marginBottom: 10 }}>
-              检得 <b style={{ color: CATALOG.green }}>{hits.length}</b> 条馆藏 · 按相关度陈列
+              检得 <b style={{ color: CATALOG.green }}>{hits.length}</b> 条帮助证据 · 按相关度陈列
             </div>
             {hits.map((h, i) => (
               <article
-                key={h.id}
+                key={h.entryId}
                 style={{
                   display: "grid",
                   gridTemplateColumns: "56px 1fr",
@@ -128,7 +122,7 @@ export default function SearchPage() {
                 </div>
                 <div>
                   <h3 style={{ fontFamily: CATALOG.display, fontSize: 18, margin: "0 0 6px", color: CATALOG.ink }}>
-                    {h.title}
+                    <a href={h.sourceUrl || undefined} target="_blank" rel="noreferrer">{h.title}</a>
                   </h3>
                   <div style={{ marginBottom: 6, display: "flex", gap: 8, alignItems: "center" }}>
                     <MtStatusTag tone="success" mono>
@@ -137,10 +131,22 @@ export default function SearchPage() {
                     {h.category ? (
                       <span style={{ color: CATALOG.muted, fontSize: 12 }}>〔{h.category}〕</span>
                     ) : null}
-                    <span style={{ color: CATALOG.muted, fontSize: 12 }}>· 相似度 {h.score.toFixed(2)}</span>
+                    <span style={{ color: CATALOG.muted, fontSize: 12 }}>· 相关度 {h.score.toFixed(2)}</span>
+                    <Tag style={{ borderRadius: 0 }}>{h.channels.join("+")}</Tag>
+                    <Tag style={{ borderRadius: 0 }}>chunk {h.chunkNo} · {h.charStart}-{h.charEnd}</Tag>
                   </div>
                   <p style={{ margin: 0, color: CATALOG.muted, lineHeight: 1.9, textAlign: "justify" }}>
-                    {h.content.slice(0, 220) || h.summary || "（此条目暂无摘录）"}
+                    {h.content.slice(0, 360) || "（此证据暂无摘录）"}
+                  </p>
+                  <Space wrap size={6}>
+                    {h.requirementLinks.map((link) => (
+                      <a key={link.requirementId} href={link.requirementUrl || undefined} target="_blank" rel="noreferrer">
+                        需求 {link.requirementId}
+                      </a>
+                    ))}
+                  </Space>
+                  <p style={{ margin: "8px 0 0", color: CATALOG.muted, fontSize: 12 }}>
+                    版本 {h.productVersion} · 修订 {h.sourceRevision}
                   </p>
                 </div>
               </article>

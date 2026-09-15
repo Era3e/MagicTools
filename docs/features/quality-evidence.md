@@ -23,7 +23,7 @@ pnpm.cmd qa:gate
 | 命令 | 用途 |
 |---|---|
 | `pnpm test` / `pnpm test:affected` | 普通单元测试与受影响范围；数据库连接/查询在普通单测中被阻断，依赖应使用 mock |
-| `pnpm test:db` | 强制运行全部 9 个项目的 30 个关键文件；先构建公共依赖，再使用真实测试数据库 |
+| `pnpm test:db` | 强制运行全部 9 个项目的 39 个关键文件；先构建公共依赖，再使用真实测试数据库 |
 | `pnpm test:db --project assistant` | 只运行指定项目的关键数据库文件，仍要求无失败、无跳过 |
 | `pnpm test:manager:integration` | 保留 Manager 单项目入口，覆盖当前清单中的全部 Manager 数据库文件 |
 | `pnpm qa:gate` | 完整合入门禁，包含上述数据库验证；自动合并必须查看对应候选的 CI 结果和证据 |

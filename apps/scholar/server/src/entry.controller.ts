@@ -12,13 +12,23 @@ export class EntryController {
   ) {}
 
   @Get("entries/search")
-  search(@Query("q") q?: string, @Query("mode") mode?: string, @Query("limit") limit?: string) {
-    return this.searchService.search({ q, mode, limit });
+  search(
+    @Query("q") q?: string,
+    @Query("mode") mode?: string,
+    @Query("limit") limit?: string,
+    @Query("spaceKey") spaceKey?: string
+  ) {
+    return this.searchService.search({ q, mode, limit, spaceKey });
   }
 
   @Get("entries")
-  list(@Query("source") source?: string, @Query("category") category?: string, @Query("tag") tag?: string) {
-    return this.service.list({ source, category, tag });
+  list(
+    @Query("source") source?: string,
+    @Query("category") category?: string,
+    @Query("tag") tag?: string,
+    @Query("spaceKey") spaceKey?: string
+  ) {
+    return this.service.list({ source, category, tag, spaceKey });
   }
 
   @Get("entries/:id")

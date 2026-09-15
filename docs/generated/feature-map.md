@@ -102,6 +102,7 @@
 | Sc14 | 前台 EntryList 书签式圈定 | ✅ 已实现 | EntryList.tsx 圈定按钮 + 视觉书签样式 | EntryList.test.tsx |
 | Sc15 | 开发/产品知识空间、不可变修订与版本发布 | ✅ 已实现：公共 API 固定 product/public/published/current version，发布绑定来源修订与部署标识；发布后编辑不改变线上快照；成员可读授权空间，撤权/下架/删除清理授权、发布、图谱与向量 | server/knowledge-space.* + server/admin-auth.ts + server/entry.repo.ts + migrations/003_knowledge_spaces.sql + server/search.repo.ts | knowledge-space.e2e.test.ts 8 tests |
 | Sc16 | 不可变证据分块与公共混合检索 | ✅ 已实现：修订级分块保存字符区间与向量；FTS+vector 混合去重排序，向量-only 门槛过滤无关近邻，公共检索只读发布修订 | migrations/004_entry_chunks.sql + entry-chunks.ts + entry.repo.ts + search.repo.ts + knowledge-space.service.ts | public-search.e2e.test.ts 4 tests |
+| Sc17 | 用户帮助与项目代码检索入口 | ✅ 已实现：40 条版本化内容幂等导入，product 显式发布，前台只读当前公共版本，后台 development 检索绑定来源/需求证据 | docs/knowledge/initial-bundle.json + knowledge-sync.mjs + HelpPage.tsx + SearchPage.tsx + CodeIndexPage.tsx | knowledge-bundle.e2e.test.ts + knowledge-entrypoints.spec.ts |
 
 ## Assistant
 

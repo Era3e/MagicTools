@@ -11,22 +11,26 @@ const ENTRY_FROM = `FROM entries e
 
 export const PUBLIC_COLUMNS = `e.id,e.source,e.source_ref,er.title,er.content,er.summary,er.category,er.tags,
   e.assistant_scope,e.space_id,ks.key AS space_key,ks.kind AS space_kind,e.status,
-  er.id AS current_revision_id,er.revision_no,er.source_revision,e.created_at,e.updated_at`;
+  er.id AS current_revision_id,er.revision_no,er.source_revision,er.source_url,er.requirement_id,er.requirement_url,
+  e.created_at,e.updated_at`;
 
-export async function ftsSearch(q: string, limit: number): Promise<SearchRow[]> {
+export async function ftsSearch(q: string, limit: number, spaceKey?: string): Promise<SearchRow[]> {
+  const filter = spaceKey ? { clause: "ks.key = $3", value: spaceKey } : null;
   const rows = await pool.query(
     "SELECT " + COLUMNS + ", (CASE WHEN e.title ILIKE '%' || $1 || '%' OR e.content ILIKE '%' || $1 || '%' THEN 1.0 ELSE greatest(similarity(e.title, $1), similarity(e.content, $1)) END) AS score " +
-    ENTRY_FROM + " WHERE e.title ILIKE '%' || $1 || '%' OR e.content ILIKE '%' || $1 || '%' OR similarity(e.title, $1) > 0.2 OR similarity(e.content, $1) > 0.2 ORDER BY score DESC, e.created_at DESC LIMIT $2",
-    [q, limit]
+    ENTRY_FROM + " WHERE (e.title ILIKE '%' || $1 || '%' OR e.content ILIKE '%' || $1 || '%' OR similarity(e.title, $1) > 0.2 OR similarity(e.content, $1) > 0.2)" +
+    (filter ? " AND " + filter.clause : "") + " ORDER BY score DESC, e.created_at DESC LIMIT $2",
+    filter ? [q, limit, filter.value] : [q, limit]
   );
   return rows.rows.map((r) => ({ ...mapRow(r), score: Number(r.score) }));
 }
 
-export async function vectorSearch(vec: number[], limit: number): Promise<SearchRow[]> {
+export async function vectorSearch(vec: number[], limit: number, spaceKey?: string): Promise<SearchRow[]> {
+  const filter = spaceKey ? { clause: "ks.key = $3", value: spaceKey } : null;
   const rows = await pool.query(
     "SELECT " + COLUMNS + ", (1 - (e.embedding <=> $1::vector)) AS score " + ENTRY_FROM +
-    " WHERE e.embedding IS NOT NULL ORDER BY e.embedding <=> $1::vector LIMIT $2",
-    ["[" + vec.join(",") + "]", limit]
+    " WHERE e.embedding IS NOT NULL" + (filter ? " AND " + filter.clause : "") + " ORDER BY e.embedding <=> $1::vector LIMIT $2",
+    filter ? ["[" + vec.join(",") + "]", limit, filter.value] : ["[" + vec.join(",") + "]", limit]
   );
   return rows.rows.map((r) => ({ ...mapRow(r), score: Number(r.score) }));
 }

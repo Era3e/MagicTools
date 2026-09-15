@@ -344,6 +344,7 @@
 | `/admin/*` |
 | `/admin` |
 | `/admin/settings` |
+| `/admin/code-index` |
 | `/admin/entries` |
 
 ### 服务 API

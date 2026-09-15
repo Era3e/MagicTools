@@ -827,6 +827,29 @@
         "htmlSrc": "pages/designer-components.html",
         "interactions": []
       }
+    },
+    {
+      "id": "page-scholar-code-index-admin",
+      "title": "代码检索 · 书库后台",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1789457839220,
+      "canvasData": {
+        "x": 2400,
+        "y": 1002,
+        "group": 2,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1020,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-p20-code-index",
+          "measuredAt": 1789457839220
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/scholar-code-index-admin.html",
+        "interactions": []
+      }
     }
   ],
   "config": {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>馆藏条目 · 学者书库</title>
+    <title>用户帮助 · 学者书库</title>
     <style id="theme-vars">
 /* MagicTools UI 设计图 — 墨蓝石墨·工房感（令牌来源 .design_library/magictools/colors_and_type.css v2.2，补齐语义别名与八应用 accent 派生） */
 @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Noto+Sans+SC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
@@ -496,7 +496,7 @@
 </style>
 
 <style id="critical-layout">
-  /* ===== scholar-front 私有样式（pg-*）· 馆藏条目列表构图：编辑部页头 + 筛选工具行 + 书脊目录行 + sticky 速览侧栏 ===== */
+  /* ===== scholar-front 私有样式（pg-*）· 用户帮助列表构图：编辑部页头 + 筛选工具行 + 书脊目录行 + sticky 速览侧栏 ===== */
   /* 静态渲染保险：不依赖 Tailwind 运行时即成立的基础底色 */
   body { background: var(--background); color: var(--text-body); font-family: var(--font-body); }
   .pg-page { display: flex; flex-direction: column; gap: var(--space-5); }
@@ -547,7 +547,7 @@
   .pg-head-stats b { color: var(--app-scholar-ink); font-weight: 600; }
   .pg-head-stats .pg-stat-sep { color: var(--text-faint); padding: 0 2px; }
 
-  /* —— 快捷检索条：入口捷径，提交后交由书目检索页承接 —— */
+  /* —— 快捷检索条：入口捷径，提交后交由帮助检索页承接 —— */
   .pg-quick-search {
     display: flex;
     align-items: stretch;
@@ -1147,11 +1147,11 @@
   <div class="us-masthead-inner">
     <div class="us-brand">
       <div class="us-eyebrow">SCHOLAR · ENTRIES</div>
-      <div class="us-appname">馆藏条目</div>
+      <div class="us-appname">用户帮助</div>
     </div>
     <nav class="us-nav" aria-label="主导航">
-      <a data-nav-key="entries" data-active="true" href="./scholar-front.html">馆藏条目</a>
-      <a data-nav-key="search" data-active="false" href="./scholar-search.html">书目检索</a>
+      <a data-nav-key="entries" data-active="true" href="./scholar-front.html">用户帮助</a>
+      <a data-nav-key="search" data-active="false" href="./scholar-search.html">帮助检索</a>
       <a data-nav-key="graph" data-active="false" href="./scholar-graph.html">知识图谱</a>
     </nav>
     <div class="us-actions">
@@ -1171,19 +1171,19 @@
     <section class="pg-head" aria-labelledby="pg-head-heading">
       <div class="pg-head-top">
         <div class="pg-head-info">
-          <h1 class="pg-head-title" id="pg-head-heading">馆藏条目</h1>
-          <p class="pg-head-sub">全库馆藏条目总目：书籍、论文与网页剪存按入库次序编列，可按类型与来源圈定，逐条查阅、收藏与整理。</p>
+          <h1 class="pg-head-title" id="pg-head-heading">用户帮助</h1>
+          <p class="pg-head-sub">当前发布版本中的 20 个核心用户任务：每个任务按目标与入口、结果校验和异常口径组织，只展示已发布产品内容。</p>
         </div>
-        <p class="pg-head-stats">在册 <b>3,284</b><span class="pg-stat-sep">/</span>本月入库 <b>47</b><span class="pg-stat-sep">/</span>未读 <b>12</b></p>
+        <p class="pg-head-stats">已发布任务 <b>20</b><span class="pg-stat-sep">/</span>需求证据 <b>20</b><span class="pg-stat-sep">/</span>当前筛选 <b>20</b></p>
       </div>
-      <!-- 快捷检索仅为入口捷径：表单以 GET 提交（携带 q 参数）跳转 ./scholar-search.html，完整检索能力由「书目检索」页承接 -->
+      <!-- 快捷检索仅为入口捷径：表单以 GET 提交（携带 q 参数）跳转 ./scholar-search.html，完整检索能力由「帮助检索」页承接 -->
       <form class="pg-quick-search" action="./scholar-search.html" method="get" role="search" aria-label="快捷检索">
         <div class="pg-quick-field">
           <i data-lucide="search" aria-hidden="true"></i>
-          <input class="pg-quick-input" type="search" name="q" placeholder="快捷检索书名、作者、关键词，回车前往书目检索…" aria-label="快捷检索条目" />
+          <input class="pg-quick-input" type="search" name="q" placeholder="搜索任务，例如：简历、需求、引用…" aria-label="快捷检索任务" />
         </div>
         <button type="submit" class="pg-quick-btn">检 索</button>
-        <a class="pg-quick-link" href="./scholar-search.html">去书目检索<i data-lucide="arrow-right" aria-hidden="true"></i></a>
+        <a class="pg-quick-link" href="./scholar-search.html">去帮助检索<i data-lucide="arrow-right" aria-hidden="true"></i></a>
       </form>
     </section>
 
@@ -1216,145 +1216,145 @@
 
     <div class="pg-layout">
 
-      <section aria-label="馆藏条目列表">
+      <section aria-label="用户帮助列表">
         <ol class="pg-entries">
           <li class="pg-entry">
             <div class="pg-spine pg-spine--gather" aria-hidden="true"></div>
             <div class="pg-entry-main">
-              <h2 class="pg-entry-title"><a href="#" title="《深度学习》">《深度学习》</a></h2>
+              <h2 class="pg-entry-title"><a href="#" title="登记岗位并解析 JD">登记岗位并解析 JD</a></h2>
               <p class="pg-entry-sub"><span class="pg-entry-subtext">Goodfellow 等 · 2017 · 书籍</span><span class="pg-src-badge pg-src-badge--gather">采集</span></p>
             </div>
             <div class="pg-entry-meta">
               <span class="pg-entry-date">2026-09-10</span>
               <span class="pg-read pg-read--unread"><span class="pg-read-dot" aria-hidden="true"></span>未读</span>
             </div>
-            <button type="button" class="pg-star" aria-pressed="true" aria-label="已收藏《深度学习》，点击取消收藏">
+            <button type="button" class="pg-star" aria-pressed="true" aria-label="已收藏登记岗位并解析 JD，点击取消收藏">
               <i data-lucide="star" aria-hidden="true"></i>
             </button>
           </li>
           <li class="pg-entry">
             <div class="pg-spine pg-spine--api" aria-hidden="true"></div>
             <div class="pg-entry-main">
-              <h2 class="pg-entry-title"><a href="#" title="《注意力机制综述》">《注意力机制综述》</a></h2>
+              <h2 class="pg-entry-title"><a href="#" title="用截图识别岗位信息">用截图识别岗位信息</a></h2>
               <p class="pg-entry-sub"><span class="pg-entry-subtext">技术参考组 · 2025 · 论文</span><span class="pg-src-badge pg-src-badge--api">API</span></p>
             </div>
             <div class="pg-entry-meta">
               <span class="pg-entry-date">2026-09-09</span>
               <span class="pg-read pg-read--read"><i data-lucide="check" aria-hidden="true"></i>已读</span>
             </div>
-            <button type="button" class="pg-star" aria-pressed="false" aria-label="收藏《注意力机制综述》">
+            <button type="button" class="pg-star" aria-pressed="false" aria-label="收藏用截图识别岗位信息">
               <i data-lucide="star" aria-hidden="true"></i>
             </button>
           </li>
           <li class="pg-entry">
             <div class="pg-spine pg-spine--manual" aria-hidden="true"></div>
             <div class="pg-entry-main">
-              <h2 class="pg-entry-title"><a href="#" title="《CSS 揭秘》">《CSS 揭秘》</a></h2>
+              <h2 class="pg-entry-title"><a href="#" title="管理投递日历与面试">管理投递日历与面试</a></h2>
               <p class="pg-entry-sub"><span class="pg-entry-subtext">Lea Verou · 2016 · 书籍</span><span class="pg-src-badge pg-src-badge--manual">录入</span></p>
             </div>
             <div class="pg-entry-meta">
               <span class="pg-entry-date">2026-09-08</span>
               <span class="pg-read pg-read--read"><i data-lucide="check" aria-hidden="true"></i>已读</span>
             </div>
-            <button type="button" class="pg-star" aria-pressed="true" aria-label="已收藏《CSS 揭秘》，点击取消收藏">
+            <button type="button" class="pg-star" aria-pressed="true" aria-label="已收藏管理投递日历与面试，点击取消收藏">
               <i data-lucide="star" aria-hidden="true"></i>
             </button>
           </li>
           <li class="pg-entry">
             <div class="pg-spine pg-spine--gather" aria-hidden="true"></div>
             <div class="pg-entry-main">
-              <h2 class="pg-entry-title"><a href="#" title="《渲染管线札记》">《渲染管线札记》</a></h2>
+              <h2 class="pg-entry-title"><a href="#" title="分析、改写和匹配简历">分析、改写和匹配简历</a></h2>
               <p class="pg-entry-sub"><span class="pg-entry-subtext">林远航 · 2024 · 网页</span><span class="pg-src-badge pg-src-badge--gather">采集</span></p>
             </div>
             <div class="pg-entry-meta">
               <span class="pg-entry-date">2026-09-06</span>
               <span class="pg-read pg-read--unread"><span class="pg-read-dot" aria-hidden="true"></span>未读</span>
             </div>
-            <button type="button" class="pg-star" aria-pressed="false" aria-label="收藏《渲染管线札记》">
+            <button type="button" class="pg-star" aria-pressed="false" aria-label="收藏分析、改写和匹配简历">
               <i data-lucide="star" aria-hidden="true"></i>
             </button>
           </li>
           <li class="pg-entry">
             <div class="pg-spine pg-spine--manual" aria-hidden="true"></div>
             <div class="pg-entry-main">
-              <h2 class="pg-entry-title"><a href="#" title="《用户故事地图》">《用户故事地图》</a></h2>
+              <h2 class="pg-entry-title"><a href="#" title="配置飞书调研源">配置飞书调研源</a></h2>
               <p class="pg-entry-sub"><span class="pg-entry-subtext">Jeff Patton · 2016 · 书籍</span><span class="pg-src-badge pg-src-badge--manual">录入</span></p>
             </div>
             <div class="pg-entry-meta">
               <span class="pg-entry-date">2026-09-04</span>
               <span class="pg-read pg-read--read"><i data-lucide="check" aria-hidden="true"></i>已读</span>
             </div>
-            <button type="button" class="pg-star" aria-pressed="false" aria-label="收藏《用户故事地图》">
+            <button type="button" class="pg-star" aria-pressed="false" aria-label="收藏配置飞书调研源">
               <i data-lucide="star" aria-hidden="true"></i>
             </button>
           </li>
           <li class="pg-entry">
             <div class="pg-spine pg-spine--gather" aria-hidden="true"></div>
             <div class="pg-entry-main">
-              <h2 class="pg-entry-title"><a href="#" title="《统计学习导论》">《统计学习导论》</a></h2>
+              <h2 class="pg-entry-title"><a href="#" title="拉取并结构化调研反馈">拉取并结构化调研反馈</a></h2>
               <p class="pg-entry-sub"><span class="pg-entry-subtext">Gareth James 等 · 2023 · 书籍</span><span class="pg-src-badge pg-src-badge--gather">采集</span></p>
             </div>
             <div class="pg-entry-meta">
               <span class="pg-entry-date">2026-09-02</span>
               <span class="pg-read pg-read--unread"><span class="pg-read-dot" aria-hidden="true"></span>未读</span>
             </div>
-            <button type="button" class="pg-star" aria-pressed="true" aria-label="已收藏《统计学习导论》，点击取消收藏">
+            <button type="button" class="pg-star" aria-pressed="true" aria-label="已收藏拉取并结构化调研反馈，点击取消收藏">
               <i data-lucide="star" aria-hidden="true"></i>
             </button>
           </li>
           <li class="pg-entry">
             <div class="pg-spine pg-spine--api" aria-hidden="true"></div>
             <div class="pg-entry-main">
-              <h2 class="pg-entry-title"><a href="#" title="《特征工程手册》">《特征工程手册》</a></h2>
+              <h2 class="pg-entry-title"><a href="#" title="推送调研结果进入评审">推送调研结果进入评审</a></h2>
               <p class="pg-entry-sub"><span class="pg-entry-subtext">Alice Zheng · 2019 · 书籍</span><span class="pg-src-badge pg-src-badge--api">API</span></p>
             </div>
             <div class="pg-entry-meta">
               <span class="pg-entry-date">2026-08-30</span>
               <span class="pg-read pg-read--read"><i data-lucide="check" aria-hidden="true"></i>已读</span>
             </div>
-            <button type="button" class="pg-star" aria-pressed="false" aria-label="收藏《特征工程手册》">
+            <button type="button" class="pg-star" aria-pressed="false" aria-label="收藏推送调研结果进入评审">
               <i data-lucide="star" aria-hidden="true"></i>
             </button>
           </li>
           <li class="pg-entry">
             <div class="pg-spine pg-spine--manual" aria-hidden="true"></div>
             <div class="pg-entry-main">
-              <h2 class="pg-entry-title"><a href="#" title="《行业研究的方法》">《行业研究的方法》</a></h2>
+              <h2 class="pg-entry-title"><a href="#" title="查看仓库证据和需求评审">查看仓库证据和需求评审</a></h2>
               <p class="pg-entry-sub"><span class="pg-entry-subtext">顾衡 · 2024 · 网页</span><span class="pg-src-badge pg-src-badge--manual">录入</span></p>
             </div>
             <div class="pg-entry-meta">
               <span class="pg-entry-date">2026-08-28</span>
               <span class="pg-read pg-read--unread"><span class="pg-read-dot" aria-hidden="true"></span>未读</span>
             </div>
-            <button type="button" class="pg-star" aria-pressed="false" aria-label="收藏《行业研究的方法》">
+            <button type="button" class="pg-star" aria-pressed="false" aria-label="收藏查看仓库证据和需求评审">
               <i data-lucide="star" aria-hidden="true"></i>
             </button>
           </li>
           <li class="pg-entry">
             <div class="pg-spine pg-spine--gather" aria-hidden="true"></div>
             <div class="pg-entry-main">
-              <h2 class="pg-entry-title"><a href="#" title="《图数据库内核剖析》">《图数据库内核剖析》</a></h2>
+              <h2 class="pg-entry-title"><a href="#" title="审核需求并推送 Manager">审核需求并推送 Manager</a></h2>
               <p class="pg-entry-sub"><span class="pg-entry-subtext">郑砚青 · 2025 · 论文</span><span class="pg-src-badge pg-src-badge--gather">采集</span></p>
             </div>
             <div class="pg-entry-meta">
               <span class="pg-entry-date">2026-08-25</span>
               <span class="pg-read pg-read--read"><i data-lucide="check" aria-hidden="true"></i>已读</span>
             </div>
-            <button type="button" class="pg-star" aria-pressed="false" aria-label="收藏《图数据库内核剖析》">
+            <button type="button" class="pg-star" aria-pressed="false" aria-label="收藏审核需求并推送 Manager">
               <i data-lucide="star" aria-hidden="true"></i>
             </button>
           </li>
           <li class="pg-entry">
             <div class="pg-spine pg-spine--manual" aria-hidden="true"></div>
             <div class="pg-entry-main">
-              <h2 class="pg-entry-title"><a href="#" title="《字体排印入门》">《字体排印入门》</a></h2>
+              <h2 class="pg-entry-title"><a href="#" title="查看需求看板与详情">查看需求看板与详情</a></h2>
               <p class="pg-entry-sub"><span class="pg-entry-subtext">周博 · 2018 · 书籍</span><span class="pg-src-badge pg-src-badge--manual">录入</span></p>
             </div>
             <div class="pg-entry-meta">
               <span class="pg-entry-date">2026-08-22</span>
               <span class="pg-read pg-read--unread"><span class="pg-read-dot" aria-hidden="true"></span>未读</span>
             </div>
-            <button type="button" class="pg-star" aria-pressed="false" aria-label="收藏《字体排印入门》">
+            <button type="button" class="pg-star" aria-pressed="false" aria-label="收藏查看需求看板与详情">
               <i data-lucide="star" aria-hidden="true"></i>
             </button>
           </li>
@@ -1379,11 +1379,11 @@
             <h2 class="pg-side-title">最近入库</h2>
           </div>
           <ul class="pg-recent">
-            <li><a href="#" title="《深度学习》"><span class="pg-recent-title">《深度学习》</span><span class="pg-recent-date">09-10</span></a></li>
-            <li><a href="#" title="《注意力机制综述》"><span class="pg-recent-title">《注意力机制综述》</span><span class="pg-recent-date">09-09</span></a></li>
-            <li><a href="#" title="《CSS 揭秘》"><span class="pg-recent-title">《CSS 揭秘》</span><span class="pg-recent-date">09-08</span></a></li>
-            <li><a href="#" title="《渲染管线札记》"><span class="pg-recent-title">《渲染管线札记》</span><span class="pg-recent-date">09-06</span></a></li>
-            <li><a href="#" title="《用户故事地图》"><span class="pg-recent-title">《用户故事地图》</span><span class="pg-recent-date">09-04</span></a></li>
+            <li><a href="#" title="登记岗位并解析 JD"><span class="pg-recent-title">登记岗位并解析 JD</span><span class="pg-recent-date">09-10</span></a></li>
+            <li><a href="#" title="用截图识别岗位信息"><span class="pg-recent-title">用截图识别岗位信息</span><span class="pg-recent-date">09-09</span></a></li>
+            <li><a href="#" title="管理投递日历与面试"><span class="pg-recent-title">管理投递日历与面试</span><span class="pg-recent-date">09-08</span></a></li>
+            <li><a href="#" title="分析、改写和匹配简历"><span class="pg-recent-title">分析、改写和匹配简历</span><span class="pg-recent-date">09-06</span></a></li>
+            <li><a href="#" title="配置飞书调研源"><span class="pg-recent-title">配置飞书调研源</span><span class="pg-recent-date">09-04</span></a></li>
           </ul>
         </div>
         <div class="pg-side-card pg-graph-card">
@@ -1401,9 +1401,9 @@
             <h2 class="pg-side-title">未读清单</h2>
           </div>
           <ul class="pg-unread">
-            <li><a href="#" title="《深度学习》"><span class="pg-unread-dot" aria-hidden="true"></span><span class="pg-recent-title">《深度学习》</span></a></li>
-            <li><a href="#" title="《渲染管线札记》"><span class="pg-unread-dot" aria-hidden="true"></span><span class="pg-recent-title">《渲染管线札记》</span></a></li>
-            <li><a href="#" title="《统计学习导论》"><span class="pg-unread-dot" aria-hidden="true"></span><span class="pg-recent-title">《统计学习导论》</span></a></li>
+            <li><a href="#" title="登记岗位并解析 JD"><span class="pg-unread-dot" aria-hidden="true"></span><span class="pg-recent-title">登记岗位并解析 JD</span></a></li>
+            <li><a href="#" title="分析、改写和匹配简历"><span class="pg-unread-dot" aria-hidden="true"></span><span class="pg-recent-title">分析、改写和匹配简历</span></a></li>
+            <li><a href="#" title="拉取并结构化调研反馈"><span class="pg-unread-dot" aria-hidden="true"></span><span class="pg-recent-title">拉取并结构化调研反馈</span></a></li>
           </ul>
         </div>
       </aside>
@@ -1415,7 +1415,7 @@
 
 <footer class="us-footer">
   <div class="us-footer-inner">
-    <div class="us-footer-note">书库 · 馆藏条目</div>
+    <div class="us-footer-note">书库 · 用户帮助</div>
     <div class="us-footer-meta">
       <a class="us-footer-admin" href="./scholar-admin.html">管理后台<i data-lucide="arrow-right" aria-hidden="true"></i></a>
       <div class="us-footer-copy">© 2026 MagicTools · 墨蓝石墨工房</div>

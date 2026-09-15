@@ -19,13 +19,17 @@ export interface EntryRow {
   currentRevisionId: string | null;
   revisionNo: number | null;
   sourceRevision: string;
+  sourceUrl: string;
+  requirementId: string;
+  requirementUrl: string;
   createdAt: string;
   updatedAt: string;
 }
 
 export const COLUMNS = `e.id, e.source, e.source_ref, e.title, e.content, e.summary, e.category, e.tags,
   e.assistant_scope, e.space_id, ks.key AS space_key, ks.kind AS space_kind, e.status,
-  e.current_revision_id, er.revision_no, er.source_revision, e.created_at, e.updated_at`;
+  e.current_revision_id, er.revision_no, er.source_revision, er.source_url, er.requirement_id, er.requirement_url,
+  e.created_at, e.updated_at`;
 
 const ENTRY_FROM = `FROM entries e
   JOIN knowledge_spaces ks ON ks.id = e.space_id
@@ -49,6 +53,9 @@ export function mapRow(r: Record<string, unknown>): EntryRow {
     currentRevisionId: (r.current_revision_id as string | null) ?? null,
     revisionNo: r.revision_no === null || r.revision_no === undefined ? null : Number(r.revision_no),
     sourceRevision: (r.source_revision as string) ?? "",
+    sourceUrl: (r.source_url as string) ?? "",
+    requirementId: (r.requirement_id as string) ?? "",
+    requirementUrl: (r.requirement_url as string) ?? "",
     createdAt: new Date(r.created_at as string).toISOString(),
     updatedAt: new Date(r.updated_at as string).toISOString(),
   };

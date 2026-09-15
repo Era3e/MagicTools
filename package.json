@@ -39,6 +39,7 @@
     "qa:gate": "node infra/scripts/quality-gate.mjs",
     "new:app": "node infra/scripts/new-app.mjs",
     "docs:lint": "markdownlint-cli2 \"docs/**/*.md\"",
+    "knowledge:sync": "node infra/scripts/knowledge-sync.mjs",
     "docs:facts": "node infra/scripts/lib/docs-facts.mjs",
     "changeset": "changeset",
     "release": "changeset version",

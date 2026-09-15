@@ -1,6 +1,8 @@
 import { Navigate, Route, BrowserRouter, Routes, useLocation, useNavigate } from "react-router-dom";
 import { AdminShell, UserShell, appAccent } from "@mt/ui";
 import EntryList from "./pages/EntryList";
+import CodeIndexPage from "./pages/CodeIndexPage";
+import HelpPage from "./pages/HelpPage";
 import SearchPage from "./pages/SearchPage";
 import GraphPage from "./pages/GraphPage";
 import SettingsPage from "./pages/SettingsPage";
@@ -30,21 +32,22 @@ const LIBRARY_THEME = {
 };
 
 const USER_NAV = [
-  { key: "/entries", label: "馆藏条目" },
-  { key: "/search", label: "书目检索" },
+  { key: "/entries", label: "用户帮助" },
+  { key: "/search", label: "帮助检索" },
   { key: "/graph", label: "知识图谱" },
 ];
 
 const ADMIN_NAV = [
   { key: "/admin/settings", label: "知识库设置" },
   { key: "/admin/entries", label: "条目编目" },
+  { key: "/admin/code-index", label: "代码检索" },
 ];
 
 function UserRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/entries" replace />} />
-      <Route path="/entries" element={<EntryList />} />
+      <Route path="/entries" element={<HelpPage />} />
       <Route path="/search" element={<SearchPage />} />
       <Route path="/graph" element={<GraphPage />} />
       <Route path="/settings" element={<Navigate to="/admin/settings" replace />} />
@@ -58,6 +61,7 @@ function AdminRoutes() {
     <Routes>
       <Route path="/admin" element={<Navigate to="/admin/settings" replace />} />
       <Route path="/admin/settings" element={<SettingsPage />} />
+      <Route path="/admin/code-index" element={<CodeIndexPage />} />
       <Route path="/admin/entries" element={<EntryList admin />} />
     </Routes>
   );

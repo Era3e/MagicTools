@@ -27,7 +27,8 @@ const APPS = [
     '/resumes': 'applicant-resume.html', '/admin/positions': 'applicant-admin.html' } },
   { name: 'scholar', web: 'apps/scholar/web/src/App.tsx', routes: {
     '/entries': 'scholar-front.html', '/search': 'scholar-search.html', '/graph': 'scholar-graph.html',
-    '/admin/settings': 'scholar-settings-admin.html', '/admin/entries': 'scholar-admin.html' } },
+    '/admin/settings': 'scholar-settings-admin.html', '/admin/entries': 'scholar-admin.html',
+    '/admin/code-index': 'scholar-code-index-admin.html' } },
   { name: 'assistant', web: 'apps/assistant/web/src/App.tsx', routes: {
     '/chat': 'assistant-front.html', '/feedback': 'assistant-feedback.html',
     '/admin/feedback': 'assistant-feedback-admin.html', '/admin/intent-logs': 'assistant-admin.html' } },
@@ -52,7 +53,7 @@ const FRONT_PAGES = ['applicant-front.html', 'scholar-front.html', 'assistant-fr
   'manager-front.html', 'manager-requirement-detail.html', 'designer-front.html', 'designer-generate.html',
   'designer-studio.html', 'designer-components.html', 'applicant-calendar.html', 'applicant-resume.html',
   'applicant-position-detail.html', 'applicant-interview.html', 'scholar-search.html', 'scholar-graph.html'];
-const ADMIN_PAGES = ['applicant-admin.html', 'scholar-admin.html', 'scholar-settings-admin.html',
+const ADMIN_PAGES = ['applicant-admin.html', 'scholar-admin.html', 'scholar-settings-admin.html', 'scholar-code-index-admin.html',
   'assistant-admin.html', 'assistant-feedback-admin.html', 'manager-admin.html', 'manager-iteration-admin.html',
   'designer-admin.html', 'designer-history-admin.html', 'gatherer-admin.html', 'gatherer-source-detail.html',
   'investigator-admin.html', 'investigator-survey-detail.html', 'assessor-admin.html', 'assessor-request-detail.html',

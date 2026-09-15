@@ -40,17 +40,25 @@
 - FTS 与向量分块按 `(revision_id, chunk_no)` 合并，再按 entry 保留最高分证据；双通道命中加权，向量-only 低于 0.15 被拒绝。
 - 返回候选编号、命中通道、entry/revision/version/deploymentRef、需求链接、chunk 字符区间与证据文本；发布后编辑不影响该快照。
 
+## P20 用户帮助与代码检索
+
+- `docs/knowledge/initial-bundle.json` 固定 20 条 product 用户任务和 20 条 development 开发问题；每条绑定 stableId、来源修订、GitHub 证据、P20 需求和验收口径，历史动机不可靠时显式记录“历史原因：未知”。
+- `pnpm knowledge:sync` 通过 Scholar API 幂等导入或更新内容；重复执行不重建未变化条目。`--publish-product` 必须同时提供版本与部署标识，并先确认 20 条 product 内容齐全；生产访问令牌通过 `--token` 以 `x-access-token` 透传，脚本不能伪造 `x-gateway-role`。
+- 管理列表与 FTS/向量检索支持 `spaceKey=development|product`，结果携带来源修订、来源 URL 和需求证据；未授权管理检索返回 403。
+- 前台 `/entries` 是只读用户帮助目录，`/search` 调公共混合检索并展示证据分块、版本、来源和需求链接；后台 `/admin/code-index` 检索 development 问题，不进入任何 public API。
+
 ## 前端路由
 
 ```
 前台（UserShell /scholar）：
-  /search          SearchPage   书目检索（图书馆目录卡片 + 双通道切换）
-  /entries         EntryList    馆藏目录（书卷列表 + 书签式圈定）
+  /search          SearchPage   帮助检索（当前发布版本的公共混合检索证据）
+  /entries         HelpPage     用户帮助目录（当前发布任务）
   /graph           GraphPage    知识图谱（类目卡片墙 + 图书馆配色）
-  /settings        SettingsPage Obsidian Vault 路径 / 分类标签管理
 
 后台（AdminShell /scholar/admin）：
   /admin/entries   EntryList    后台条目管理（含「编辑」五项字段 Modal）
+  /admin/settings  SettingsPage 知识库设置
+  /admin/code-index CodeIndexPage 项目代码检索（development 空间）
 ```
 
 ---
