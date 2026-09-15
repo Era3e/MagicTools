@@ -9,7 +9,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { syncBuiltinESMExports } from "node:module";
 import { parse } from "yaml";
 import { deployRelease } from "../deploy-release.mjs";
-import { loopbackRegistryHost } from "../validate-deployment.mjs";
+import { loopbackRegistryHost, waitForStableLoopbackRegistry } from "../validate-deployment.mjs";
 import { digestBytes } from "./release-artifacts.mjs";
 import { runtimeCatalog } from "./runtime-artifacts.mjs";
 import { deploymentSucceeded, validateDeploymentState } from "./deployment-state.mjs";
@@ -84,6 +84,16 @@ test("独立验收：本机验证registry地址保持IPv4回环，避免Windows�
   for (const address of ["localhost:62379", "[::1]:62379", "0.0.0.0:62379", "127.0.0.1"]) {
     assert.throws(() => loopbackRegistryHost(address), /IPv4回环/);
   }
+});
+
+test("独立验收：本机验证registry需要连续就绪，过滤端口代理瞬态抖动", async () => {
+  const results = [false, true, false, ...Array(12).fill(true)].map((ok) => ({ ok }));
+  const request = async () => results.shift() ?? { ok: true };
+  assert.equal(await waitForStableLoopbackRegistry("127.0.0.1:55999", request, 1), true);
+  let failures = 0;
+  const unstable = async () => { failures += 1; throw new Error("port proxy not ready"); };
+  assert.equal(await waitForStableLoopbackRegistry("127.0.0.1:55999", unstable, 1), false);
+  assert.equal(failures, 50);
 });
 
 test("独立验收：就绪验证未完成时没有成功状态，同目录并发部署被锁拒绝", async () => {

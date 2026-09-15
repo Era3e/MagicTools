@@ -20,6 +20,20 @@ export function loopbackRegistryHost(address) {
   assert.match(address, /^127\.0\.0\.1:[0-9]+$/, "测试registry必须绑定IPv4回环地址");
   return "127.0.0.1:" + address.split(":")[1];
 }
+export async function waitForStableLoopbackRegistry(address, request = fetch, waitMs = 200) {
+  let stableChecks = 0;
+  for (let attempt = 0; attempt < 50; attempt += 1) {
+    try {
+      const response = await request("http://" + address + "/v2/", { signal: AbortSignal.timeout(500) });
+      stableChecks = response.ok ? stableChecks + 1 : 0;
+    } catch {
+      stableChecks = 0;
+    }
+    if (stableChecks >= 10) return true;
+    await delay(waitMs);
+  }
+  return false;
+}
 const docker = (...args) => execFileSync("docker", args, { encoding: "utf8", windowsHide: true, timeout: 120_000, stdio: ["ignore", "pipe", "pipe"] }).trim();
 async function runDocker(...args) {
   const result = await runProcess("docker", args, { cwd: root, timeoutMs: 8 * 60_000 });
@@ -196,12 +210,7 @@ export async function validateBuildDeployment(buildDirectory, runtime) {
     await runDocker("pull", registryImage);
     await runDocker("run", "-d", "--name", id, "--label", "magictools.validation=" + id, "-p", "127.0.0.1::5000", registryImage);
     const address = docker("port", id, "5000/tcp"); assert.match(address, /^127\.0\.0\.1:\d+$/);
-    let ready = false;
-    for (let attempt = 0; attempt < 30; attempt++) {
-      try { if ((await fetch("http://" + address + "/v2/", { signal: AbortSignal.timeout(1000) })).ok) { ready = true; break; } } catch { /* 容器启动后HTTP监听可能稍晚。 */ }
-      await delay(200);
-    }
-    assert.equal(ready, true, "测试registry未就绪");
+    assert.equal(await waitForStableLoopbackRegistry(address), true, "测试registry未稳定");
     const result = await publishImages({ buildManifest: join(buildDirectory, "build.json"), runtimeManifest: join(root, ".qa/runtime", runtime.runId, "runtime.json"), registry: loopbackRegistryHost(address) + "/validation", validation: true });
     const report = await validateDeployment(result.directory, result.directory);
     if (!report.success) throw new Error("部署验证失败");
