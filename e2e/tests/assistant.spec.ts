@@ -2,13 +2,32 @@ import { test, expect } from "@playwright/test";
 
 test("assistant 三意图全流程（圈定→检索→引用→闲聊→数据桩）", async ({ request }) => {
   // 圈定一条 scholar 条目
+  const currentVersion = await request.get("/api/scholar/public/version/current");
+  const publicEntries = currentVersion.ok() ? await (await request.get("/api/scholar/public/entries")).json() : [];
   const created = await request.post("/api/scholar/entries", {
-    data: { title: "苹果公司发布新手机", content: "苹果秋季发布会内容" },
+    data: {
+      title: "苹果公司发布新手机",
+      content: "苹果秋季发布会内容",
+      spaceKey: "product",
+      sourceRevision: "assistant-e2e-product",
+    },
   });
   expect(created.ok()).toBeTruthy();
   const entry = await created.json();
   const scoped = await request.patch("/api/scholar/entries/" + entry.id, { data: { assistantScope: true } });
   expect(scoped.ok()).toBeTruthy();
+  const version = await request.post("/api/scholar/spaces/product/versions", {
+    data: { version: "assistant-e2e-" + Date.now(), sourceRevision: "assistant-e2e-product" },
+  });
+  expect(version.ok()).toBeTruthy();
+  const published = await request.post("/api/scholar/versions/" + (await version.json()).id + "/publish", {
+    data: {
+      entryIds: [...new Set([...publicEntries.map((item: { id: string }) => item.id), entry.id])],
+      deploymentRef: "assistant-e2e-product",
+      publishedBy: "e2e-assistant",
+    },
+  });
+  expect(published.ok()).toBeTruthy();
 
   // product_inquiry：检索圈定条目并带引用
   const product = await request.post("/api/assistant/chat", { data: { message: "苹果公司有什么新动态" } });
