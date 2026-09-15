@@ -20,6 +20,10 @@ export function loopbackRegistryHost(address) {
   assert.match(address, /^127\.0\.0\.1:[0-9]+$/, "测试registry必须绑定IPv4回环地址");
   return "127.0.0.1:" + address.split(":")[1];
 }
+export function explicitLoopbackRegistryBinding(port) {
+  assert.ok(Number.isInteger(port) && port >= 1 && port <= 65535, "测试registry端口非法");
+  return "127.0.0.1:" + port + ":5000";
+}
 export async function waitForStableLoopbackRegistry(address, request = fetch, waitMs = 200) {
   let stableChecks = 0;
   for (let attempt = 0; attempt < 100; attempt += 1) {
@@ -225,8 +229,9 @@ export async function validateBuildDeployment(buildDirectory, runtime) {
   const id = "mt-deployment-registry-" + randomBytes(8).toString("hex");
   try {
     await runDocker("pull", registryImage);
-    await runDocker("run", "-d", "--name", id, "--label", "magictools.validation=" + id, "-p", "127.0.0.1::5000", registryImage);
-    const address = docker("port", id, "5000/tcp"); assert.match(address, /^127\.0\.0\.1:\d+$/);
+    const registryPort = await freePort();
+    await runDocker("run", "-d", "--name", id, "--label", "magictools.validation=" + id, "-p", explicitLoopbackRegistryBinding(registryPort), registryImage);
+    const address = "127.0.0.1:" + registryPort; assert.match(address, /^127\.0\.0\.1:\d+$/);
     assert.equal(await waitForStableLoopbackRegistry(address), true, "测试registry未稳定");
     assert.equal(await waitForDockerRegistryPush(address), true, "测试registry未通过Docker真实推送探针");
     const result = await publishImages({ buildManifest: join(buildDirectory, "build.json"), runtimeManifest: join(root, ".qa/runtime", runtime.runId, "runtime.json"), registry: loopbackRegistryHost(address) + "/validation", validation: true });

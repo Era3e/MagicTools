@@ -9,7 +9,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { syncBuiltinESMExports } from "node:module";
 import { parse } from "yaml";
 import { deployRelease } from "../deploy-release.mjs";
-import { loopbackRegistryHost, waitForDockerRegistryPush, waitForStableLoopbackRegistry } from "../validate-deployment.mjs";
+import { explicitLoopbackRegistryBinding, loopbackRegistryHost, waitForDockerRegistryPush, waitForStableLoopbackRegistry } from "../validate-deployment.mjs";
 import { digestBytes } from "./release-artifacts.mjs";
 import { runtimeCatalog } from "./runtime-artifacts.mjs";
 import { deploymentSucceeded, validateDeploymentState } from "./deployment-state.mjs";
@@ -84,6 +84,12 @@ test("独立验收：本机验证registry地址保持IPv4回环，避免Windows�
   for (const address of ["localhost:62379", "[::1]:62379", "0.0.0.0:62379", "127.0.0.1"]) {
     assert.throws(() => loopbackRegistryHost(address), /IPv4回环/);
   }
+});
+
+test("独立验收：测试registry使用显式回环端口绑定，不依赖Docker随机HostPort", () => {
+  assert.equal(explicitLoopbackRegistryBinding(53872), "127.0.0.1:53872:5000");
+  assert.equal(explicitLoopbackRegistryBinding(53872).includes("::"), false);
+  for (const port of [undefined, 0, 65536, 53872.5, "53872"]) assert.throws(() => explicitLoopbackRegistryBinding(port), /端口非法/);
 });
 
 test("独立验收：本机验证registry需要连续就绪，过滤端口代理瞬态抖动", async () => {
