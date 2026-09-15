@@ -7,7 +7,7 @@
 
 | 状态 | 数量 |
 |---|---:|
-| ✅ | 124 |
+| ✅ | 125 |
 | 🚫 | 1 |
 
 ## 模块
@@ -17,7 +17,7 @@
 | Applicant | 14 | 14 | 0 | 0 | 0 |
 | Investigator | 7 | 7 | 0 | 0 | 0 |
 | Assessor | 9 | 9 | 0 | 0 | 0 |
-| Manager | 14 | 14 | 0 | 0 | 0 |
+| Manager | 15 | 15 | 0 | 0 | 0 |
 | Gatherer | 10 | 10 | 0 | 0 | 0 |
 | Scholar | 17 | 17 | 0 | 0 | 0 |
 | Assistant | 16 | 16 | 0 | 0 | 0 |
@@ -36,5 +36,5 @@
 | [designer](interface-index.md#designer) | 9 | 12 |
 | [gatherer](interface-index.md#gatherer) | 8 | 12 |
 | [investigator](interface-index.md#investigator) | 7 | 13 |
-| [manager](interface-index.md#manager) | 9 | 24 |
+| [manager](interface-index.md#manager) | 9 | 34 |
 | [scholar](interface-index.md#scholar) | 10 | 34 |
