@@ -9,9 +9,11 @@ import { CapabilityController, ImportController } from "./import.controller";
 import { ImportService } from "./import.service";
 import { RequirementApprovalController } from "./requirement-approval.controller";
 import { RequirementApprovalService } from "./requirement-approval.service";
+import { ExecutionJobsController } from "./execution-jobs.controller";
+import { ExecutionJobsService } from "./execution-jobs.service";
 
 @Module({
-  controllers: [HealthController, RequirementController, IterationController, WebhookController, ImportController, CapabilityController, RequirementApprovalController],
-  providers: [RequirementService, IterationService, ImportService, RequirementApprovalService],
+  controllers: [HealthController, RequirementController, IterationController, WebhookController, ImportController, CapabilityController, RequirementApprovalController, ExecutionJobsController],
+  providers: [RequirementService, IterationService, ImportService, RequirementApprovalService, ExecutionJobsService],
 })
 export class AppModule {}

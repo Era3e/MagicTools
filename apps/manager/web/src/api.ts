@@ -32,7 +32,7 @@ export interface Requirement {
   evidenceRefs?: Array<{ url: string; path: string; line: number }>;
   dependencyRefs?: string[];
   executionContract?: ExecutionContract | null;
-  automationPolicy?: "manual";
+  automationPolicy?: "manual" | "owner-token";
   title: string;
   description: string;
   source: string;
@@ -81,7 +81,7 @@ export interface ExecutionEligibility {
   contractReady: boolean;
   dependenciesReady: boolean;
   dependencies: Array<{ ref: string; state: string; requirementId: string | null; capabilityId: string | null }>;
-  automationPolicy: "manual";
+  automationPolicy: "manual" | "owner-token";
   blockers: string[];
 }
 

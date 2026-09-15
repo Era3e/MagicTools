@@ -1,6 +1,6 @@
 # 需求内容修订与审批
 
-P08 在既有需求详情页提供内容编辑、版本对比、审批记录和执行契约。它解决“批准了哪一版需求、允许执行到什么边界”的追溯问题，为后续开发任务提供明确输入。当前 `automationPolicy` 仍为 `manual`，批准不会启动开发、合并代码或部署，也不代表产品验收完成。
+P08 在既有需求详情页提供内容编辑、版本对比、审批记录和执行契约。它解决“批准了哪一版需求、允许执行到什么边界”的追溯问题，为后续开发任务提供明确输入。批准本身仍不会启动开发、合并代码或部署，也不代表产品验收完成；P22 之后只有 owner 显式排队才把 `automationPolicy` 置为 `owner-token`，队列契约见 [自动执行任务租约](manager-execution-jobs.md)。
 
 ## 使用入口与前提
 
@@ -91,7 +91,7 @@ P08 在既有需求详情页提供内容编辑、版本对比、审批记录和�
 | PATCH | `/requirements/:id` | 内容白名单字段加 `expectedRevision`；冲突返回 409 |
 | GET | `/requirements/:id/revisions` | `limit` 默认 20、最大 100；`before` 为正整数内容版本；返回 total、items、nextBefore |
 | GET | `/requirements/:id/approvals` | 同样分页；`before` 为事件的 requirementRevision |
-| GET | `/requirements/:id/execution-eligibility` | 返回 eligible、contractReady、dependenciesReady、依赖定位与 blockers；当前 automationPolicy 固定为 manual |
+| GET | `/requirements/:id/execution-eligibility` | 返回 eligible、contractReady、dependenciesReady、依赖定位与 blockers；默认 automationPolicy 为 manual，owner 排队后为 owner-token |
 | GET | `/meta/approval-policy` | 只公开 configured、actorId、authMethod 和自动执行关闭标志，不返回凭证 |
 | POST | `/requirements/:id/approve-revision` | 请求头 `x-manager-approval-token`；JSON 为 expectedRevision、expectedContentRevision、可选 reason |
 | POST | `/requirements/:id/revoke-approval` | 同上；重复请求幂等，撤销后重放旧批准不能重新激活 |

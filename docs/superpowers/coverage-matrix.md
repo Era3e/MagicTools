@@ -67,6 +67,7 @@
 | M12 | 内容修订与版本比较 | docs/features/manager-content-approval.md | apps/manager/server/src/requirement-revisions.repo.ts + apps/manager/web/src/pages/RequirementHistory.tsx | ✅ 已实现：触发器快照、迁移回填标记、分页与完整内容对比 | apps/manager/server/src/requirement-revisions.e2e.test.ts + apps/manager/web/src/pages/RequirementApproval.test.tsx |
 | M13 | 固定版本审批与撤销 | docs/features/manager-content-approval.md | apps/manager/server/src/requirement-approval.service.ts + apps/manager/web/src/pages/RequirementContentPanel.tsx | ✅ 已实现：双版本冲突、凭证校验、内容变更失效、追加审计；不启用自动执行 | apps/manager/server/src/requirement-revisions.e2e.test.ts + e2e/tests/manager-approval.spec.ts |
 | M14 | 执行契约与自动执行门禁 | docs/features/manager-content-approval.md | apps/manager/server/src/requirement.service.ts + apps/manager/server/migrations/008_requirement_execution_contract.sql + apps/manager/web/src/pages/RequirementContentEditor.tsx | ✅ 已实现：仓库/路径/命令/时长/尝试/预算进入内容修订；未批准、状态不对、依赖未就绪或未启用自动执行均阻塞 | apps/manager/server/src/requirement-execution.e2e.test.ts + apps/manager/web/src/pages/RequirementApproval.review.test.tsx |
+| M15 | 自动执行任务领取、租约与恢复 | P22 | apps/manager/server/src/execution-jobs.service.ts + apps/manager/server/src/execution-jobs.repo.ts + apps/manager/server/migrations/013_execution_jobs.sql | ✅ 已实现：owner 排队绑定批准修订，executor 一次性 run token 领取，心跳/成功/失败受租约保护，过期恢复按上限 retry/failed | apps/manager/server/src/execution-jobs.e2e.test.ts |
 
 ## 5. Gatherer（采集 · 知识主线第一环）
 
