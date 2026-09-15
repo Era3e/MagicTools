@@ -64,7 +64,7 @@ const SERVER_ENV = {
   // e2e/冒烟走独立空库从零迁移，与 CI 口径一致（ci.yml e2e job 即用 manager 测试库）。
   manager:      { GITHUB_STUB: "1", DATABASE_URL: "postgres://postgres:postgres@127.0.0.1:5432/manager_e2e", MANAGER_E2E_ISOLATION: "1" },
   designer:     { ...MT_LLM_STUB },
-  scholar:      { ...MT_LLM_STUB },
+  scholar:      { ...MT_LLM_STUB, SCHOLAR_ADMIN_AUTH: "disabled" },
   assistant:    { CYBERCLOUD_STUB: "1", ACTION_STUB: "1", CLARIFY_STUB_CONFIDENCE: "0.9", ASSISTANT_ADMIN_AUTH: "disabled", ...MT_LLM_STUB },
   applicant:    { ...MT_LLM_STUB },
 };

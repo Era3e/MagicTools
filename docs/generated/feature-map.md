@@ -100,6 +100,7 @@
 | Sc12 | 前台书目检索（卡片）+ 馆藏目录（书卷）+ 图谱 | ✅ 已实现 | SearchPage/EntryList/GraphPage 三页深度主题 | scholar.spec.ts 页面渲染 |
 | Sc13 | 后台条目五项字段编辑（D3） | ✅ 已实现 | admin/entries 页面 Modal（title/summary/content/category/tags） | EntryList.test.tsx |
 | Sc14 | 前台 EntryList 书签式圈定 | ✅ 已实现 | EntryList.tsx 圈定按钮 + 视觉书签样式 | EntryList.test.tsx |
+| Sc15 | 开发/产品知识空间、不可变修订与版本发布 | ✅ 已实现：公共 API 固定 product/public/published/current version，发布绑定来源修订与部署标识；发布后编辑不改变线上快照；成员可读授权空间，撤权/下架/删除清理授权、发布、图谱与向量 | server/knowledge-space.* + server/admin-auth.ts + server/entry.repo.ts + migrations/003_knowledge_spaces.sql + server/search.repo.ts | knowledge-space.e2e.test.ts 4 tests |
 
 ## Assistant
 

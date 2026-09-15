@@ -1,8 +1,10 @@
-import { Body, Controller, Get, Inject, Param, Patch, Post, Query } from "@nestjs/common";
+import { Body, Controller, Get, Inject, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
+import { AdminGuard } from "./admin-auth";
 import { EntryService } from "./entry.service";
 import { SearchService } from "./search.service";
 
 @Controller()
+@UseGuards(AdminGuard)
 export class EntryController {
   constructor(
     @Inject(EntryService) private readonly service: EntryService,
