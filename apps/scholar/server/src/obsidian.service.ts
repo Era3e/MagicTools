@@ -90,11 +90,7 @@ export class ObsidianService {
       if (existing) {
         // 已存在 → 检测冲突
         if (existing.content !== content) {
-          // 内容变更：标记 conflicted 状态
-          await updateEntry(existing.id, {
-            summary: existing.summary, // 保留原 summary
-          });
-          // 直接用 SQL 更新 sync_status 和 pending 内容
+          // 内容变更：仅标记 conflicted 状态并保存待处理内容，不生成无业务含义的修订。
           conflicts.push({
             entryId: existing.id,
             sourceRef: f.relative,

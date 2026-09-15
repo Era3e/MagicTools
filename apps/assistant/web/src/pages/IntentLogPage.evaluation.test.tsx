@@ -82,9 +82,9 @@ describe("IntentLogPage 独立评测卡", () => {
   it("展示种子分布并支持发起 dev run", async () => {
     render(<IntentLogPage />);
     expect(await screen.findByTestId("evaluation-suite-card")).toBeTruthy();
-    expect(screen.getByText(/dev 24/)).toBeTruthy();
-    expect(screen.getByText(/regression 16/)).toBeTruthy();
-    expect(screen.getByText(/holdout 8/)).toBeTruthy();
+    expect(await screen.findByText(/dev 24/)).toBeTruthy();
+    expect(await screen.findByText(/regression 16/)).toBeTruthy();
+    expect(await screen.findByText(/holdout 8/)).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: /运行评测/ }));
     await waitFor(() => expect(api.createEvaluationRun).toHaveBeenCalledWith("dev", "manual"));

@@ -28,6 +28,11 @@ export class EntryService {
       category: parsed.data.category,
       tags: parsed.data.tags,
       embedding: vec,
+      spaceKey: parsed.data.spaceKey,
+      sourceRevision: parsed.data.sourceRevision,
+      sourceUrl: parsed.data.sourceUrl,
+      requirementId: parsed.data.requirementId,
+      requirementUrl: parsed.data.requirementUrl,
     });
     if (!row) throw new BadRequestException("条目创建失败");
     return row;
@@ -42,6 +47,7 @@ export class EntryService {
     if (parsed.data.title !== undefined || parsed.data.content !== undefined) {
       const [vec] = await embed([((parsed.data.title ?? current.title) + "\\n" + (parsed.data.content ?? current.content)).slice(0, 3000)]);
       patch.embedding = vec;
+      patch.spaceKey = undefined;
     }
     const row = await updateEntry(id, patch);
     if (!row) throw new NotFoundException("条目不存在");

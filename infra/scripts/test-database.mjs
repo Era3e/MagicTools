@@ -77,6 +77,7 @@ export async function runDatabaseValidation({ project, baseUrl, outputDirectory,
         await prepareDatabases(plan);
         const env = { ...process.env, ...plan.env, MT_DATABASE_TEST_MODE: "required", MT_LLM_STUB: "1", FT_STUB: "1",
           MT_DATABASE_TEST_FILES: JSON.stringify([file.path]) };
+        if (item.id === "scholar") env.SCHOLAR_ADMIN_AUTH = "disabled";
         for (const key of ["DEEPSEEK_API_KEY", "ZHIPU_API_KEY", "OPENAI_API_KEY", "GITHUB_TOKEN", "FEISHU_APP_SECRET", "CLAWCV_API_KEY", "CYBERCLOUD_API_KEY"]) delete env[key];
         const outcome = await runPnpm(["exec", "vitest", "run", "--config", join(root, "infra/testing/vitest.database.config.mjs"),
           "--reporter=default", "--reporter=json", "--outputFile=" + reportFile], { cwd: join(root, item.directory), env });

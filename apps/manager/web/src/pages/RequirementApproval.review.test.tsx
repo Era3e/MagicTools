@@ -26,7 +26,7 @@ const requirement: Requirement = {
 };
 const policy = { configured: true, actorId: "owner-review", authMethod: "owner-token", automatedExecutionEnabled: false as const };
 const credential = "test-review-only-credential-not-for-production";
-const disabled = (name: string) => (screen.getByRole("button", { name }) as HTMLButtonElement).disabled;
+const disabled = (name: string) => (screen.getByRole("button", { name: new RegExp(name) }) as HTMLButtonElement).disabled;
 const secret = () => screen.getByLabelText("审批凭证") as HTMLInputElement;
 function deferred<T>() {
   let resolve!: (value: T) => void;

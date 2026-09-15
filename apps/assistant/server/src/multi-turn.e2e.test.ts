@@ -18,7 +18,7 @@ let available = false;
 async function seedEntry(title: string, content: string, scoped: boolean) {
   const vec = pseudoVector(title + "\n" + content);
   await scholarPool().query(
-    "INSERT INTO entries (source, source_ref, title, content, assistant_scope, embedding) VALUES ('manual', NULL, $1, $2, $3, $4::vector)",
+    "INSERT INTO entries (source, source_ref, title, content, assistant_scope, embedding, space_id) VALUES ('manual', NULL, $1, $2, $3, $4::vector, (SELECT id FROM knowledge_spaces WHERE key='development'))",
     [title, content, scoped, "[" + vec.join(",") + "]"]
   );
 }
