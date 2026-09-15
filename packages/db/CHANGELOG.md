@@ -1,5 +1,16 @@
 # @mt/db
 
+## 0.1.0
+
+### Minor Changes
+
+- dc40e84: P21：模型调用支持超时/取消、重试逐次记录、真实 usage/unknown 语义、业务 trace/task 上下文与 7 服务 model_calls 持久化。
+
+### Patch Changes
+
+- 1e22065: feat(db): 增加 outbox 租约与批处理确认
+- c8d05bd: fix(db): 加固事件尝试计数与业务幂等键
+
 ## 0.0.2
 
 ### Patch Changes
