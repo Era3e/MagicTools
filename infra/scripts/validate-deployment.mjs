@@ -22,14 +22,14 @@ export function loopbackRegistryHost(address) {
 }
 export async function waitForStableLoopbackRegistry(address, request = fetch, waitMs = 200) {
   let stableChecks = 0;
-  for (let attempt = 0; attempt < 50; attempt += 1) {
+  for (let attempt = 0; attempt < 100; attempt += 1) {
     try {
       const response = await request("http://" + address + "/v2/", { signal: AbortSignal.timeout(500) });
       stableChecks = response.ok ? stableChecks + 1 : 0;
     } catch {
       stableChecks = 0;
     }
-    if (stableChecks >= 10) return true;
+    if (stableChecks >= 25) return true;
     await delay(waitMs);
   }
   return false;

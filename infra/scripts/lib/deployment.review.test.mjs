@@ -93,7 +93,7 @@ test("独立验收：本机验证registry需要连续就绪，过滤端口代理
   let failures = 0;
   const unstable = async () => { failures += 1; throw new Error("port proxy not ready"); };
   assert.equal(await waitForStableLoopbackRegistry("127.0.0.1:55999", unstable, 1), false);
-  assert.equal(failures, 50);
+  assert.equal(failures, 100);
 });
 
 test("独立验收：就绪验证未完成时没有成功状态，同目录并发部署被锁拒绝", async () => {
