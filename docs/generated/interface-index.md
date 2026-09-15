@@ -313,6 +313,9 @@
 | POST | `/api/manager/execution-jobs/:id/complete` |
 | POST | `/api/manager/execution-jobs/:id/fail` |
 | POST | `/api/manager/execution-jobs/:id/cancel` |
+| POST | `/api/manager/requirements/:id/deployment-status` |
+| GET | `/api/manager/execution-notifications` |
+| POST | `/api/manager/execution-notifications/dispatch` |
 | GET | `/api/manager/health` |
 | GET | `/api/manager/health/ready` |
 | POST | `/api/manager/import-batches/preview` |

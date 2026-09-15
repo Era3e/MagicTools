@@ -69,6 +69,7 @@
 | M14 | 执行契约与自动执行门禁 | docs/features/manager-content-approval.md | apps/manager/server/src/requirement.service.ts + apps/manager/server/migrations/008_requirement_execution_contract.sql + apps/manager/web/src/pages/RequirementContentEditor.tsx | ✅ 已实现：仓库/路径/命令/时长/尝试/预算进入内容修订；未批准、状态不对、依赖未就绪或未启用自动执行均阻塞 | apps/manager/server/src/requirement-execution.e2e.test.ts + apps/manager/web/src/pages/RequirementApproval.review.test.tsx |
 | M15 | 自动执行任务领取、租约与恢复 | P22 | apps/manager/server/src/execution-jobs.service.ts + apps/manager/server/src/execution-jobs.repo.ts + apps/manager/server/migrations/013_execution_jobs.sql | ✅ 已实现：owner 排队绑定批准修订，executor 一次性 run token 领取，心跳/成功/失败受租约保护，过期恢复按上限 retry/failed | apps/manager/server/src/execution-jobs.e2e.test.ts |
 | M16 | 隔离编码执行器与独立验收 | P23 | infra/scripts/executor.mjs + infra/scripts/lib/executor-{process,workspace,manager,github,run}.mjs | ✅ 已实现：编码/验收子进程环境白名单，独立 HOME 与 Git 配置，候选 SHA 独立克隆验收，超时杀进程树，受约束证据包与 PR 发布 | infra/scripts/lib/executor-{config,process,workspace,run}.test.mjs |
+| M17 | 执行进度、待验收及通知 | P24 | apps/manager/server/src/execution-{jobs,notifications}.service.ts + apps/manager/server/migrations/014_execution_progress.sql + apps/manager/web/src/pages/RequirementExecutionPanel.tsx | ✅ 已实现：成功回写推进待验收并展示 run/PR/部署证据，终态通知事务写入稳定 outbox ID，webhook 租约投递去重，部署成功前置 PR merged | apps/manager/server/src/execution-progress.e2e.test.ts + apps/manager/web/src/pages/RequirementExecutionPanel.test.tsx |
 
 ## 5. Gatherer（采集 · 知识主线第一环）
 

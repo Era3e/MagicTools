@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { MtStatusTag, tokens, useTheme } from "@mt/ui";
 import { api, type Requirement, type RequirementStatus } from "../api";
 import RequirementContentPanel from "./RequirementContentPanel";
+import RequirementExecutionPanel from "./RequirementExecutionPanel";
 
 const STATUS_OPTIONS: Array<{ value: RequirementStatus; label: string }> = [
   { value: "waiting", label: "待分析" },
@@ -193,6 +194,8 @@ function RequirementDetailBody({ id }: { id: string | undefined }) {
       </section> : null}
 
       {typeof item.contentRevision === "number" ? <RequirementContentPanel key={item.id} item={item} onUpdated={() => refresh()} /> : null}
+
+      <RequirementExecutionPanel item={item} />
 
       {item.sourcePayload ? (
         <details style={{ border: "1px dashed " + DECK.border, padding: "8px 12px", marginBottom: 12 }}>

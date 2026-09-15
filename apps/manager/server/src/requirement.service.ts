@@ -162,6 +162,10 @@ export class RequirementService {
     const match = current.prUrl.match(/github\.com\/([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+)\/pull\/(\d+)/);
     if (!match) throw new BadRequestException("PR 链接格式不正确");
     const pr = await new GitHubClient().getPr(match[1], Number(match[2]));
+    await pool.query(
+      "UPDATE requirements SET pr_state=$2,pr_checked_at=now(),updated_at=now() WHERE id=$1",
+      [id, pr.merged ? "merged" : pr.state]
+    );
     const map: Record<string, RequirementStatus> = { open: "developing", merged: "accepting", closed: "todo" };
     const targetStatus: RequirementStatus = pr.merged ? "accepting" : map[pr.state] ?? current.status;
     // 不可回退 accepting/done

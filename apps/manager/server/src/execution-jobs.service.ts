@@ -26,8 +26,30 @@ const heartbeatInputSchema = z.object({
   extensionMilliseconds: z.number().int().min(5_000).max(3_600_000).default(60_000),
 }).strict();
 
+const executionResultSchema = z.object({
+  status: z.literal("succeeded"),
+  jobId: z.string().uuid(),
+  runId: z.string().uuid(),
+  baseSha: z.string().regex(/^[0-9a-f]{40}(?:[0-9a-f]{24})?$/),
+  candidateSha: z.string().regex(/^[0-9a-f]{40}(?:[0-9a-f]{24})?$/),
+  changedPaths: z.array(z.string().min(1).max(500)).max(500),
+  acceptance: z.array(z.object({
+    status: z.literal("success"),
+    exitCode: z.literal(0),
+    durationMs: z.number().int().nonnegative(),
+  }).passthrough()).min(1),
+  prNumber: z.number().int().positive(),
+  prUrl: z.string().regex(/^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/pull\/\d+$/),
+  branch: z.string().regex(/^[\w./-]{1,200}$/),
+  evidence: z.object({
+    schema: z.string().min(1).max(200),
+    path: z.string().min(1).max(1000),
+    sha256: z.string().regex(/^[0-9a-f]{64}$/),
+  }).passthrough(),
+}).passthrough();
+
 const completeInputSchema = z.object({
-  result: z.record(z.unknown()),
+  result: executionResultSchema,
 }).strict();
 
 const failInputSchema = z.object({
@@ -172,6 +194,7 @@ export class ExecutionJobsService {
     const serialized = JSON.stringify(parsed.data.result);
     if (serialized.length > 20_000) throw new BadRequestException("执行结果超过 20KB 限制");
     if (!runToken) throw new ForbiddenException("执行回写凭证无效");
+    if (parsed.data.result.jobId !== id) throw new BadRequestException("执行结果任务身份不匹配");
     const job = await completeExecutionRun(id, runToken, parsed.data.result);
     if (!job) throw new ConflictException("执行租约已过期或回写凭证无效");
     return job;
@@ -199,5 +222,41 @@ export class ExecutionJobsService {
   async recover(token?: string) {
     this.authorizeExecutor(token);
     return recoverExpiredExecutionRuns();
+  }
+
+  async updateDeployment(id: string, input: unknown, token?: string) {
+    this.authorizeOwner(token);
+    const parsed = z.object({
+      state: z.enum(["not-started", "pending", "deploying", "succeeded", "failed", "rolled-back"]),
+      releaseId: z.string().trim().max(200).default(""),
+      url: z.string().regex(/^https:\/\/[^\s]+$/).or(z.literal("")).default(""),
+      expectedRevision: z.number().int().positive(),
+    }).strict().safeParse(input);
+    if (!parsed.success) throw new BadRequestException("部署状态参数非法");
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+      const found = await client.query("SELECT revision,pr_state FROM requirements WHERE id=$1 FOR UPDATE", [id]);
+      if (!found.rowCount) throw new NotFoundException("需求不存在");
+      const current = found.rows[0] as { revision: number; pr_state: string };
+      if (parsed.data.expectedRevision !== current.revision) {
+        throw new ConflictException({ message: "需求已被其他操作更新，请刷新后重试", currentRevision: current.revision });
+      }
+      if (parsed.data.state === "succeeded" && current.pr_state !== "merged") {
+        throw new BadRequestException("PR 合并前不能记录成功部署");
+      }
+      const rows = await client.query(
+        `UPDATE requirements SET deployment_state=$2,deployment_ref=$3,deployment_url=$4,deployment_checked_at=now(),updated_at=now()
+         WHERE id=$1 RETURNING *`,
+        [id, parsed.data.state, parsed.data.releaseId, parsed.data.url]
+      );
+      await client.query("COMMIT");
+      return mapRow(rows.rows[0]);
+    } catch (error) {
+      await client.query("ROLLBACK").catch(() => undefined);
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 }

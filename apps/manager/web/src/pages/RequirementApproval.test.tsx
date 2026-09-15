@@ -9,8 +9,10 @@ vi.mock("../api", () => ({ api: {
   getRequirement: vi.fn(), patchRequirement: vi.fn(), refreshPr: vi.fn(),
   getApprovalPolicy: vi.fn(), approveRevision: vi.fn(), revokeApproval: vi.fn(),
   getRequirementRevisions: vi.fn(), getApprovalHistory: vi.fn(), getExecutionEligibility: vi.fn(),
+  listExecutionJobs: vi.fn(),
 } }));
 beforeEach(() => {
+  vi.mocked(api.listExecutionJobs).mockResolvedValue([]);
   vi.mocked(api.getExecutionEligibility).mockResolvedValue({
     requirementId: "req-approval", eligible: false, contractReady: false, dependenciesReady: true,
     dependencies: [], automationPolicy: "manual", blockers: ["自动执行未启用"],

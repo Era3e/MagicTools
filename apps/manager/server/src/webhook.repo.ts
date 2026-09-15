@@ -85,14 +85,21 @@ export async function applyGithubPrState(input: ApplyGithubPrStateInput): Promis
       await client.query("COMMIT");
       return { outcome: "out_of_order", currentEventAt: current.github_last_event_at };
     }
+    const prState = input.targetStatus === "accepting" ? "merged" : input.targetStatus === "developing" ? "open" : "closed";
     const allowed = canTransition(current.status, input.targetStatus, "github");
     if (!allowed) {
-      await client.query("UPDATE requirements SET github_last_event_at=$2,updated_at=now() WHERE id=$1", [current.id, input.eventAt]);
+      await client.query(
+        `UPDATE requirements SET github_last_event_at=$2,pr_state=$3,pr_checked_at=now(),updated_at=now() WHERE id=$1`,
+        [current.id, input.eventAt, prState],
+      );
       await client.query("COMMIT");
       return { outcome: "transition_not_allowed", id: current.id, from: current.status, to: input.targetStatus };
     }
     if (current.status === input.targetStatus) {
-      await client.query("UPDATE requirements SET github_last_event_at=$2,updated_at=now() WHERE id=$1", [current.id, input.eventAt]);
+      await client.query(
+        `UPDATE requirements SET github_last_event_at=$2,pr_state=$3,pr_checked_at=now(),updated_at=now() WHERE id=$1`,
+        [current.id, input.eventAt, prState],
+      );
       await client.query("COMMIT");
       return { outcome: "same_status", id: current.id };
     }
@@ -100,8 +107,9 @@ export async function applyGithubPrState(input: ApplyGithubPrStateInput): Promis
       at: new Date().toISOString(), from: current.status, to: input.targetStatus, note: input.note,
     }];
     const updated = await client.query(
-      "UPDATE requirements SET status=$2,timeline=$3,github_last_event_at=$4,revision=revision+1,updated_at=now() WHERE id=$1 RETURNING id,status",
-      [current.id, input.targetStatus, JSON.stringify(timeline), input.eventAt],
+      `UPDATE requirements SET status=$2,timeline=$3,github_last_event_at=$4,pr_state=$5,pr_checked_at=now(),revision=revision+1,updated_at=now()
+       WHERE id=$1 RETURNING id,status`,
+      [current.id, input.targetStatus, JSON.stringify(timeline), input.eventAt, prState],
     );
     await client.query("COMMIT");
     return {
