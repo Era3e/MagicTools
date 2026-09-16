@@ -13,9 +13,11 @@ import { ExecutionJobsController } from "./execution-jobs.controller";
 import { ExecutionJobsService } from "./execution-jobs.service";
 import { ExecutionNotificationsController } from "./execution-notifications.controller";
 import { ExecutionNotificationsService } from "./execution-notifications.service";
+import { ResourcesController } from "./resources.controller";
+import { ResourcesService } from "./resources.service";
 
 @Module({
-  controllers: [HealthController, RequirementController, IterationController, WebhookController, ImportController, CapabilityController, RequirementApprovalController, ExecutionJobsController, ExecutionNotificationsController],
-  providers: [RequirementService, IterationService, ImportService, RequirementApprovalService, ExecutionJobsService, ExecutionNotificationsService],
+  controllers: [HealthController, RequirementController, IterationController, WebhookController, ImportController, CapabilityController, RequirementApprovalController, ExecutionJobsController, ExecutionNotificationsController, ResourcesController],
+  providers: [RequirementService, IterationService, ImportService, RequirementApprovalService, ExecutionJobsService, ExecutionNotificationsService, ResourcesService],
 })
 export class AppModule {}

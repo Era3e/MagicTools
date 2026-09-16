@@ -310,6 +310,10 @@ function statusDashboard(): string {
   .badge.ok { background: rgba(0, 180, 42, .15); color: #00b42a; }
   .badge.fail { background: rgba(245, 63, 63, .15); color: #f53f3f; }
   .full-width { grid-column: 1 / -1; }
+  .run-links { display: flex; flex-wrap: wrap; gap: 12px; }
+  .run-link { color: #8bb5ff; font-size: 13px; font-weight: 600; text-decoration: none; }
+  .run-link:hover { text-decoration: underline; }
+  .run-note { margin-top: 10px; font-size: 12px; color: #86909c; line-height: 1.6; }
   #history-chart { height: 240px; }
   .footer { max-width: 1080px; margin: 24px auto 0; font-size: 12px; color: #4e5969; }
 </style>
@@ -334,6 +338,14 @@ function statusDashboard(): string {
     <div class="card">
       <h2>延迟分布 (ms)</h2>
       <canvas id="latency-chart"></canvas>
+    </div>
+    <div class="card full-width">
+      <h2>资源与运行入口</h2>
+      <div class="run-links">
+        <a class="run-link" href="/manager/admin/resources">资源与密钥引用面板</a>
+        <a class="run-link" href="/manager/admin/requirements">需求与自动执行面板</a>
+      </div>
+      <p class="run-note">资源面板记录归属、月预算、备份定位、密钥引用和真实检查结果；blocked 与 waiting 分开计数，告警可直接打开对应处理手册。</p>
     </div>
     <div class="card full-width">
       <h2>可用性趋势 (最近 60 秒)</h2>

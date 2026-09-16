@@ -23,6 +23,7 @@
 5. **`GET /health`**：返回 `{ status:"up", service:"gateway" }`
 6. **`GET /login` / `POST /login` / `POST /logout`**（auth.ts）：登录表单页（纯 HTML 无外部依赖）与登出；表单 body 由中间件内部解析（16KB 上限）
 7. **`GET /` 首页**：生成卡片式应用导航页（APP_META 提供 8 应用标题+简介），替代纯反代的 Cannot GET /
+8. **`GET /status` 状态页**：前端轮询 `/api/health` 展示服务健康与延迟；P26 起提供 Manager 资源面板与自动执行面板入口，资源事实仍以 Manager 数据库为准
 
 #### `buildRoutes(ports, host)` → ProxyRoute[]
 

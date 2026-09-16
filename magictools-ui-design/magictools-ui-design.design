@@ -850,6 +850,29 @@
         "htmlSrc": "pages/scholar-code-index-admin.html",
         "interactions": []
       }
+    },
+    {
+      "id": "page-manager-resource-admin",
+      "title": "资源面板 · 交付后台",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1789087524420,
+      "canvasData": {
+        "x": 1920,
+        "y": 2047,
+        "group": 4,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 1003,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-41e0cc6a",
+          "measuredAt": 1789094260601
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/manager-resource-admin.html",
+        "interactions": []
+      }
     }
   ],
   "config": {

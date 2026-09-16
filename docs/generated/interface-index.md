@@ -298,6 +298,7 @@
 | `/admin/requirements` |
 | `/admin/requirements/:id` |
 | `/admin/iterations` |
+| `/admin/resources` |
 
 ### 服务 API
 
@@ -341,6 +342,9 @@
 | PATCH | `/api/manager/requirements/:id` |
 | POST | `/api/manager/requirements/:id/refresh-pr` |
 | POST | `/api/manager/sync/github` |
+| GET | `/api/manager/resources` |
+| POST | `/api/manager/resources` |
+| POST | `/api/manager/resources/:id/checks` |
 | POST | `/api/manager/webhook/github` |
 
 ## scholar

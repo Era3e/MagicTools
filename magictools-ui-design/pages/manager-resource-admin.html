@@ -230,7 +230,7 @@
         background-color: currentColor;
       }
     </style>
-    <title>交付后台 · 需求驾驶舱</title>
+    <title>交付后台 · 资源面板</title>
 </head>
 <body class="min-h-screen font-sans antialiased">
 <style>
@@ -903,13 +903,13 @@
         <i data-lucide="scroll-text"></i><span>访问日志</span>
       </a>
       <div class="as-nav-group">业务</div>
-      <a class="as-nav-item" data-nav-key="requirements" data-active="true" href="./manager-admin.html">
+      <a class="as-nav-item" data-nav-key="requirements" href="./manager-admin.html">
         <i data-lucide="clipboard-list"></i><span>需求管理</span>
       </a>
       <a class="as-nav-item" data-nav-key="iterations" href="./manager-iteration-admin.html">
         <i data-lucide="calendar-days"></i><span>迭代管理</span>
       </a>
-      <a class="as-nav-item" data-nav-key="resources" href="./manager-resource-admin.html">
+      <a class="as-nav-item" data-nav-key="resources" data-active="true" href="./manager-resource-admin.html">
         <i data-lucide="server-cog"></i><span>资源面板</span>
       </a>
     </nav>
@@ -927,7 +927,7 @@
       <div class="as-crumbs">
         <span class="as-crumb-root">交付后台</span>
         <span class="as-crumb-sep">/</span>
-        <span class="as-crumb-current">需求管理</span>
+        <span class="as-crumb-current">资源面板</span>
       </div>
       <div class="as-topbar-right">
         <span class="as-version">V2.2</span>
@@ -938,257 +938,45 @@
       <div class="as-pagehead">
         <div class="as-pagehead-row">
           <div class="as-pagehead-main">
-            <div class="as-page-eyebrow">ADMIN · REQUIREMENTS</div>
-            <h1 class="as-page-title">需求驾驶舱</h1>
+            <div class="as-page-eyebrow">ADMIN · RESOURCES</div>
+            <h1 class="as-page-title">资源与运行面板</h1>
             <div class="as-page-badges">
               <span class="as-badge" data-tone="success"><i data-lucide="check-circle-2" style="width:12px;height:12px;"></i>服务正常</span>
               <span class="as-badge"><i data-lucide="hash" style="width:12px;height:12px;"></i>IT-014</span>
             </div>
-            <p class="as-page-desc">管理需求生命周期，从评审通过到交付验收。</p>
+            <p class="as-page-desc">登记服务器、数据库、镜像库、域名与外部 API 的归属、预算、备份、密钥引用和真实检查结果。</p>
           </div>
           <div class="as-page-actions">
             <button type="button" class="as-btn as-btn-ghost"><i data-lucide="download"></i><span>导出</span></button>
-            <button type="button" class="as-btn as-btn-primary"><i data-lucide="plus"></i><span>新建需求</span></button>
+            <button type="button" class="as-btn as-btn-primary"><i data-lucide="plus"></i><span>登记资源</span></button>
           </div>
         </div>
         <div class="as-kpirow">
-          <div class="as-kpi"><span class="as-kpi-label">活跃需求</span><span class="as-kpi-value">24</span></div>
-          <div class="as-kpi"><span class="as-kpi-label">今日交付</span><span class="as-kpi-value">8</span></div>
-          <div class="as-kpi"><span class="as-kpi-label">阻塞项</span><span class="as-kpi-value">3</span></div>
-          <div class="as-kpi"><span class="as-kpi-label">完成率</span><span class="as-kpi-value">67%</span></div>
+          <div class="as-kpi"><span class="as-kpi-label">资源</span><span class="as-kpi-value">12</span></div>
+          <div class="as-kpi"><span class="as-kpi-label">月预算</span><span class="as-kpi-value">2.4k</span></div>
+          <div class="as-kpi"><span class="as-kpi-label">阻塞检查</span><span class="as-kpi-value">2</span></div>
+          <div class="as-kpi"><span class="as-kpi-label">等待检查</span><span class="as-kpi-value">3</span></div>
         </div>
       </div>
-      <div class="as-content-body">
-        <!-- 筛选工具栏 -->
-        <div class="as-toolbar" aria-label="需求筛选">
-          <div class="as-search">
-            <i data-lucide="search"></i>
-            <input type="text" placeholder="搜索需求编号或标题…" />
-          </div>
+            <div class="as-content-body">
+        <div class="as-toolbar" aria-label="资源筛选">
+          <div class="as-search"><i data-lucide="search"></i><input type="text" placeholder="搜索资源或归属…" /></div>
+          <span class="as-toolbar-label">环境</span>
+          <div class="as-select"><select><option>全部</option><option>生产</option><option>预发</option><option>开发</option></select><i data-lucide="chevron-down"></i></div>
           <span class="as-toolbar-label">状态</span>
-          <div class="as-select">
-            <select>
-              <option>全部</option>
-              <option>待启动</option>
-              <option>进行中</option>
-              <option>已交付</option>
-              <option>已验收</option>
-            </select>
-            <i data-lucide="chevron-down"></i>
-          </div>
-          <span class="as-toolbar-label">优先级</span>
-          <div class="as-select">
-            <select>
-              <option>全部</option>
-              <option>高</option>
-              <option>中</option>
-              <option>低</option>
-            </select>
-            <i data-lucide="chevron-down"></i>
-          </div>
-          <span class="as-toolbar-label">排序</span>
-          <div class="as-select">
-            <select>
-              <option>最近更新</option>
-              <option>优先级</option>
-              <option>工时</option>
-            </select>
-            <i data-lucide="chevron-down"></i>
-          </div>
+          <div class="as-select"><select><option>全部</option><option>运行中</option><option>阻塞</option><option>等待</option><option>未检查</option></select><i data-lucide="chevron-down"></i></div>
           <div class="as-toolbar-gap"></div>
           <button type="button" class="as-btn as-btn-ghost"><i data-lucide="rotate-ccw"></i><span>重置</span></button>
         </div>
-
-        <!-- 需求表格 -->
         <div class="as-table-wrap">
           <table class="as-table">
-            <thead>
-              <tr>
-                <th>需求编号</th>
-                <th>标题</th>
-                <th>负责人</th>
-                <th>优先级</th>
-                <th>状态</th>
-                <th>工时</th>
-                <th>进度</th>
-                <th>操作</th>
-              </tr>
-            </thead>
+            <thead><tr><th>资源</th><th>环境</th><th>归属</th><th>月预算</th><th>备份</th><th>状态</th><th>检查</th><th>密钥引用</th><th>手册</th></tr></thead>
             <tbody>
-              <tr>
-                <td class="col-id">IT-014</td>
-                <td class="col-title">简历解析引擎升级</td>
-                <td>陈思远</td>
-                <td><span class="as-badge" data-tone="error">高</span></td>
-                <td><span class="as-badge" data-tone="info">进行中</span></td>
-                <td class="col-hours">32h</td>
-                <td>
-                  <div class="as-progress">
-                    <div class="as-progress-track"><div class="as-progress-fill" style="width:65%;"></div></div>
-                    <span class="as-progress-val">65%</span>
-                  </div>
-                </td>
-                <td>
-                  <div class="as-row-actions">
-                    <a class="as-link-btn" href="#"><i data-lucide="pencil"></i>编辑</a>
-                    <a class="as-link-btn" href="#"><i data-lucide="eye"></i>详情</a>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td class="col-id">IT-013</td>
-                <td class="col-title">书库全文检索迁移</td>
-                <td>林书雅</td>
-                <td><span class="as-badge" data-tone="warning">中</span></td>
-                <td><span class="as-badge" data-tone="success">已交付</span></td>
-                <td class="col-hours">48h</td>
-                <td>
-                  <div class="as-progress">
-                    <div class="as-progress-track"><div class="as-progress-fill" style="width:100%;"></div></div>
-                    <span class="as-progress-val">100%</span>
-                  </div>
-                </td>
-                <td>
-                  <div class="as-row-actions">
-                    <a class="as-link-btn" href="#"><i data-lucide="pencil"></i>编辑</a>
-                    <a class="as-link-btn" href="#"><i data-lucide="eye"></i>详情</a>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td class="col-id">IT-012</td>
-                <td class="col-title">助手多轮对话优化</td>
-                <td>周明哲</td>
-                <td><span class="as-badge" data-tone="error">高</span></td>
-                <td><span class="as-badge" data-tone="info">进行中</span></td>
-                <td class="col-hours">24h</td>
-                <td>
-                  <div class="as-progress">
-                    <div class="as-progress-track"><div class="as-progress-fill" style="width:42%;"></div></div>
-                    <span class="as-progress-val">42%</span>
-                  </div>
-                </td>
-                <td>
-                  <div class="as-row-actions">
-                    <a class="as-link-btn" href="#"><i data-lucide="pencil"></i>编辑</a>
-                    <a class="as-link-btn" href="#"><i data-lucide="eye"></i>详情</a>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td class="col-id">IT-011</td>
-                <td class="col-title">交付看板拖拽重构</td>
-                <td>赵雨晴</td>
-                <td><span class="as-badge" data-tone="warning">中</span></td>
-                <td><span class="as-badge">待启动</span></td>
-                <td class="col-hours">16h</td>
-                <td>
-                  <div class="as-progress">
-                    <div class="as-progress-track"><div class="as-progress-fill" style="width:0%;"></div></div>
-                    <span class="as-progress-val">0%</span>
-                  </div>
-                </td>
-                <td>
-                  <div class="as-row-actions">
-                    <a class="as-link-btn" href="#"><i data-lucide="pencil"></i>编辑</a>
-                    <a class="as-link-btn" href="#"><i data-lucide="eye"></i>详情</a>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td class="col-id">IT-010</td>
-                <td class="col-title">采集去重策略调整</td>
-                <td>孙浩然</td>
-                <td><span class="as-badge" data-tone="info">低</span></td>
-                <td><span class="as-badge" data-tone="success">已验收</span></td>
-                <td class="col-hours">12h</td>
-                <td>
-                  <div class="as-progress">
-                    <div class="as-progress-track"><div class="as-progress-fill" style="width:100%;"></div></div>
-                    <span class="as-progress-val">100%</span>
-                  </div>
-                </td>
-                <td>
-                  <div class="as-row-actions">
-                    <a class="as-link-btn" href="#"><i data-lucide="pencil"></i>编辑</a>
-                    <a class="as-link-btn" href="#"><i data-lucide="eye"></i>详情</a>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td class="col-id">IT-009</td>
-                <td class="col-title">评审流审批节点</td>
-                <td>吴佩玲</td>
-                <td><span class="as-badge" data-tone="error">高</span></td>
-                <td><span class="as-badge" data-tone="error">阻塞</span></td>
-                <td class="col-hours">28h</td>
-                <td>
-                  <div class="as-progress">
-                    <div class="as-progress-track"><div class="as-progress-fill" style="width:35%;"></div></div>
-                    <span class="as-progress-val">35%</span>
-                  </div>
-                </td>
-                <td>
-                  <div class="as-row-actions">
-                    <a class="as-link-btn" href="#"><i data-lucide="pencil"></i>编辑</a>
-                    <a class="as-link-btn" href="#"><i data-lucide="eye"></i>详情</a>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td class="col-id">IT-008</td>
-                <td class="col-title">组件版本灰度发布</td>
-                <td>郑天佑</td>
-                <td><span class="as-badge" data-tone="warning">中</span></td>
-                <td><span class="as-badge" data-tone="info">进行中</span></td>
-                <td class="col-hours">20h</td>
-                <td>
-                  <div class="as-progress">
-                    <div class="as-progress-track"><div class="as-progress-fill" style="width:58%;"></div></div>
-                    <span class="as-progress-val">58%</span>
-                  </div>
-                </td>
-                <td>
-                  <div class="as-row-actions">
-                    <a class="as-link-btn" href="#"><i data-lucide="pencil"></i>编辑</a>
-                    <a class="as-link-btn" href="#"><i data-lucide="eye"></i>详情</a>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td class="col-id">IT-007</td>
-                <td class="col-title">网关限流策略</td>
-                <td>王梓涵</td>
-                <td><span class="as-badge" data-tone="info">低</span></td>
-                <td><span class="as-badge" data-tone="success">已交付</span></td>
-                <td class="col-hours">8h</td>
-                <td>
-                  <div class="as-progress">
-                    <div class="as-progress-track"><div class="as-progress-fill" style="width:100%;"></div></div>
-                    <span class="as-progress-val">100%</span>
-                  </div>
-                </td>
-                <td>
-                  <div class="as-row-actions">
-                    <a class="as-link-btn" href="#"><i data-lucide="pencil"></i>编辑</a>
-                    <a class="as-link-btn" href="#"><i data-lucide="eye"></i>详情</a>
-                  </div>
-                </td>
-              </tr>
+              <tr><td class="col-title">production-postgres</td><td>生产</td><td>platform-ops</td><td>1280 CNY</td><td>backup-store://current</td><td><span class="as-badge" data-tone="error">阻塞</span></td><td>通过2 · 阻塞1 · 等待2</td><td><span class="as-badge">BACKUP_KEY</span></td><td><a class="as-link-btn" href="#"><i data-lucide="book-open"></i>打开</a></td></tr>
+              <tr><td class="col-title">registry.example.com</td><td>生产</td><td>platform-ops</td><td>420 CNY</td><td>版本清单 SHA</td><td><span class="as-badge" data-tone="warning">等待</span></td><td>通过4 · 等待1</td><td><span class="as-badge">REGISTRY_TOKEN</span></td><td><a class="as-link-btn" href="#"><i data-lucide="book-open"></i>打开</a></td></tr>
+              <tr><td class="col-title">magictools-gateway</td><td>生产</td><td>web-ops</td><td>260 CNY</td><td>镜像 digest</td><td><span class="as-badge" data-tone="success">运行中</span></td><td>通过6</td><td><span class="as-badge">GATEWAY_TOKEN</span></td><td><a class="as-link-btn" href="#"><i data-lucide="book-open"></i>打开</a></td></tr>
             </tbody>
           </table>
-        </div>
-
-        <!-- 分页条 -->
-        <div class="as-pagination">
-          <span class="as-page-info">共 24 条 · 第 1 / 3 页</span>
-          <div class="as-page-list">
-            <button class="as-page-btn" disabled><i data-lucide="chevron-left" style="width:14px;height:14px;"></i></button>
-            <button class="as-page-btn is-active">1</button>
-            <button class="as-page-btn">2</button>
-            <button class="as-page-btn">3</button>
-            <button class="as-page-btn"><i data-lucide="chevron-right" style="width:14px;height:14px;"></i></button>
-          </div>
         </div>
       </div>
     </main>
