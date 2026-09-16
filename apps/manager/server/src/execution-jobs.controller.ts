@@ -20,9 +20,22 @@ export class ExecutionJobsController {
     return this.service.list(query);
   }
 
+  @Get("execution-jobs/merge-candidates")
+  mergeCandidates(@Headers("x-manager-merge-token") token?: string) {
+    return this.service.mergeCandidates(token);
+  }
+
   @Get("execution-jobs/:id")
   get(@Param("id", ParseUUIDPipe) id: string) {
     return this.service.get(id);
+  }
+
+  @Get("execution-jobs/:id/merge-authorization")
+  mergeAuthorization(
+    @Param("id", ParseUUIDPipe) id: string,
+    @Headers("x-manager-merge-token") token?: string,
+  ) {
+    return this.service.mergeAuthorization(id, token);
   }
 
   @Post("execution-jobs/claim")

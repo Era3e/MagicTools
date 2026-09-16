@@ -69,6 +69,7 @@
 | M15 | 自动执行任务领取、租约与恢复 | ✅ 已实现：owner 排队绑定批准修订，executor 一次性 run token 领取，心跳/成功/失败受租约保护，过期恢复按上限 retry/failed | apps/manager/server/src/execution-jobs.service.ts + apps/manager/server/src/execution-jobs.repo.ts + apps/manager/server/migrations/013_execution_jobs.sql | apps/manager/server/src/execution-jobs.e2e.test.ts |
 | M16 | 隔离编码执行器与独立验收 | ✅ 已实现：编码/验收子进程环境白名单，独立 HOME 与 Git 配置，候选 SHA 独立克隆验收，超时杀进程树，受约束证据包与 PR 发布 | infra/scripts/executor.mjs + infra/scripts/lib/executor-{process,workspace,manager,github,run}.mjs | infra/scripts/lib/executor-{config,process,workspace,run}.test.mjs |
 | M17 | 执行进度、待验收及通知 | ✅ 已实现：成功回写推进待验收并展示 run/PR/部署证据，终态通知事务写入稳定 outbox ID，webhook 租约投递去重，部署成功前置 PR merged | apps/manager/server/src/execution-{jobs,notifications}.service.ts + apps/manager/server/migrations/014_execution_progress.sql + apps/manager/web/src/pages/RequirementExecutionPanel.tsx | apps/manager/server/src/execution-progress.e2e.test.ts + apps/manager/web/src/pages/RequirementExecutionPanel.test.tsx |
+| M18 | 低风险需求条件自动合并 | ✅ 已实现：独立 merge token 只读候选授权；CLI 核对精确 head/base、最新基线、同仓 PR、文件边界、GitHub Actions required checks、分支保护和风险路径，普通 merge API 不绕过保护 | infra/scripts/conditional-merge.mjs + infra/scripts/lib/conditional-merge.mjs + apps/manager/server/src/execution-jobs.{service,controller}.ts | infra/scripts/lib/conditional-merge.test.mjs + apps/manager/server/src/execution-progress.e2e.test.ts |
 
 ## Gatherer
 

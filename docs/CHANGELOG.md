@@ -4,7 +4,9 @@
 - 本文件记录平台级迭代摘要（阶段、里程碑、关键决策），在每次合入 main 时追加一条（含补记，需注明）；
 - 条目格式：日期、变更摘要、涉及子项目、关联 PR。
 
-## 2026-09-16（P23 隔离编码执行器）
+## 2026-09-16（P25 低风险条件自动合并）
+
+- **独立条件合并服务**：Manager 使用独立 merge token 只读返回成功候选的当前批准修订、candidate/base SHA、PR 身份与允许路径；独立 CLI 再从 GitHub 核对同仓 open PR、精确 head/base、最新基线、实际文件集合、GitHub Actions required checks、分支保护和风险路径，最后用普通 merge API 合并并回读 merged 事实。工作流、迁移、infra、Gateway、数据库、Assistant 核心问答与身份权限类改动一律转人工；编码执行器仍拿不到合并凭证。生产 GitHub 合并未运行，保持 not-run。
 
 ## 2026-09-16（P24 执行进度与通知）
 

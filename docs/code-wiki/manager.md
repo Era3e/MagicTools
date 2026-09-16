@@ -18,6 +18,7 @@
 | 内容修订与审批 | RequirementController / RequirementApprovalController | RequirementApprovalService | requirement_revisions / requirement_approvals | 数据库触发器保存内容快照；行锁与双版本审批；单用户凭证身份；追加批准/撤销记录 |
 | 自动执行任务 | ExecutionJobsController | ExecutionJobsService | execution_jobs / execution_runs | owner 排队绑定批准修订；executor 领取、心跳、回写、取消与过期恢复 |
 | 执行通知 | ExecutionNotificationsController | ExecutionNotificationsService | outbox / requirements | 执行终态事务通知、webhook 租约投递与去重状态 |
+| 条件合并授权 | ExecutionJobsController | ExecutionJobsService | execution_jobs / execution_runs / requirements | 独立 merge token 读取成功候选、当前批准修订、PR 身份与允许路径 |
 
 **消费事件**：`requirement.created`（ASSESSOR_DATABASE_URL processOutboxBatch，业务入库后确认 done）
 **外部集成**：`github/client.ts` — Phantom GitHub Issues 同步（GITHUB_STUB=1）
@@ -50,5 +51,7 @@ P08 通过迁移 006/007/008 增加 `contentRevision`、快照、审批事件和
 P22 通过迁移 013 增加 `execution_jobs` 与 `execution_runs`。同需求同内容修订唯一，owner 用审批凭证显式排队并把 `automation_policy` 置为 `owner-token`；执行器用 `MANAGER_EXECUTOR_TOKEN` 领取，领取响应一次性下发 run token 和只读需求上下文，数据库只保存 token 哈希。心跳、成功、失败同时校验 run token、状态和租约；过期 run 显式转 expired，未达契约上限的 job 回 retry，达到上限转 failed。排队后内容修订、批准状态或需求状态变化会在领取前把旧 job 隔离为 failed。P23 的独立 CLI 负责隔离编码、候选提交、独立验收、证据包与 PR；通知和自动合并不在该层，可靠性规则见 [自动执行任务租约](features/manager-execution-jobs.md)。
 
 P24 通过迁移 014 为需求增加 `pr_state/pr_checked_at` 与 `deployment_state/deployment_ref/deployment_url/deployment_checked_at`。执行成功回写必须携带全部成功的结构化验收、candidate SHA、PR 和证据摘要，并与实际 job/run/租约一致；同一事务把需求推进到待验收、写入 PR open、部署 not-started 和稳定 ID 的 outbox 通知。终态失败与取消同样事务写通知，中间 retry 不打扰。通知服务配置 HTTPS webhook 后每 30 秒按事件名过滤领取 outbox，2xx 才确认 done；未配置时明确 not-configured。详情页展示 run 心跳、错误、证据、PR 和部署状态，人工验收和部署事实互不冒充。操作说明见 [执行进度、待验收与通知](features/manager-execution-progress.md)。
+
+P25 的 Manager 侧只暴露 `merge-candidates` 与 `merge-authorization` 读取接口，使用独立 `MANAGER_MERGE_TOKEN`。授权要求 job 成功、内容修订仍为当前批准修订、需求为低风险待验收、PR open 且执行结果身份完整；真正 GitHub 事实核对、required checks、分支保护、风险路径和普通 merge API 调用在独立 `pnpm merge:conditional` CLI 中完成。编码执行器仍拿不到合并 token，见 [低风险需求条件自动合并](features/conditional-merge.md)。
 
 ---

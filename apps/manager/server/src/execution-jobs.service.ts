@@ -16,6 +16,7 @@ import {
   listExecutionJobs,
   recoverExpiredExecutionRuns,
 } from "./execution-jobs.repo";
+import type { ExecutionContract } from "./requirement-content";
 
 const claimInputSchema = z.object({
   executorId: z.string().regex(/^[A-Za-z0-9._-]{1,100}$/),
@@ -60,16 +61,38 @@ const cancelInputSchema = z.object({
   reason: z.string().trim().min(1).max(2000).default("owner cancelled"),
 }).strict();
 
+export interface MergeAuthorization {
+  eligible: boolean;
+  blockers: string[];
+  candidate: {
+    jobId: string;
+    runId: string;
+    requirementId: string;
+    contentRevision: number;
+    repository: string;
+    allowedPaths: string[];
+    baseSha: string;
+    candidateSha: string;
+    changedPaths: string[];
+    prNumber: number;
+    prUrl: string;
+    branch: string;
+  } | null;
+}
+
 @Injectable()
 export class ExecutionJobsService {
   policy() {
     const ownerConfigured = /^[\x21-\x7e]{32,1024}$/.test(process.env.MANAGER_APPROVAL_TOKEN ?? "");
     const executorConfigured = /^[\x21-\x7e]{32,1024}$/.test(process.env.MANAGER_EXECUTOR_TOKEN ?? "");
+    const mergeConfigured = /^[\x21-\x7e]{32,1024}$/.test(process.env.MANAGER_MERGE_TOKEN ?? "");
     return {
       ownerConfigured,
       executorConfigured,
+      mergeConfigured,
       ownerAuthMethod: "owner-token",
       executorAuthMethod: "executor-token",
+      mergeAuthMethod: "merge-token",
       runCredential: "one-time-run-token",
     };
   }
@@ -82,6 +105,11 @@ export class ExecutionJobsService {
   private authorizeExecutor(token?: string) {
     if (!this.policy().executorConfigured) throw new ServiceUnavailableException("尚未配置有效执行器凭证，需至少 32 个字符");
     this.assertToken(token, process.env.MANAGER_EXECUTOR_TOKEN!);
+  }
+
+  private authorizeMerge(token?: string) {
+    if (!this.policy().mergeConfigured) throw new ServiceUnavailableException("尚未配置有效条件合并凭证，需至少 32 个字符");
+    this.assertToken(token, process.env.MANAGER_MERGE_TOKEN!);
   }
 
   private assertToken(token: string | undefined, expected: string) {
@@ -222,6 +250,108 @@ export class ExecutionJobsService {
   async recover(token?: string) {
     this.authorizeExecutor(token);
     return recoverExpiredExecutionRuns();
+  }
+
+  async mergeCandidates(token?: string): Promise<MergeAuthorization[]> {
+    this.authorizeMerge(token);
+    const rows = await pool.query(
+      `SELECT j.id
+       FROM execution_jobs j
+       JOIN requirements r ON r.id=j.requirement_id
+       WHERE j.status='succeeded' AND r.risk='low' AND r.status='accepting' AND r.pr_state='open'
+       ORDER BY j.finished_at DESC
+       LIMIT 50`
+    );
+    const results: MergeAuthorization[] = [];
+    for (const row of rows.rows as Array<{ id: string }>) {
+      const authorization = await this.mergeAuthorization(row.id, undefined, true);
+      if (authorization.eligible) results.push(authorization);
+    }
+    return results;
+  }
+
+  async mergeAuthorization(id: string, token?: string, alreadyAuthorized = false): Promise<MergeAuthorization> {
+    if (!alreadyAuthorized) this.authorizeMerge(token);
+    const found = await pool.query(
+      `SELECT j.id,j.status,j.content_revision,j.contract,
+              r.id AS requirement_id,r.content_revision AS current_content_revision,
+              r.approved_content_revision,r.risk,r.status AS requirement_status,
+              r.pr_state,r.pr_url,
+              (SELECT run.id FROM execution_runs run WHERE run.job_id=j.id AND run.status='succeeded'
+               ORDER BY run.attempt DESC LIMIT 1) AS run_id,
+              (SELECT run.result FROM execution_runs run WHERE run.job_id=j.id AND run.status='succeeded'
+               ORDER BY run.attempt DESC LIMIT 1) AS result
+       FROM execution_jobs j
+       JOIN requirements r ON r.id=j.requirement_id
+       WHERE j.id=$1`,
+      [id]
+    );
+    if (!found.rowCount) throw new NotFoundException("执行任务不存在");
+    const row = found.rows[0] as {
+      id: string;
+      status: string;
+      content_revision: number;
+      contract: ExecutionContract;
+      requirement_id: string;
+      current_content_revision: number;
+      approved_content_revision: number | null;
+      risk: string;
+      requirement_status: string;
+      pr_state: string;
+      pr_url: string;
+      run_id: string | null;
+      result: {
+        runId?: string;
+        baseSha?: string;
+        candidateSha?: string;
+        changedPaths?: string[];
+        prNumber?: number;
+        prUrl?: string;
+        branch?: string;
+      } | null;
+    };
+
+    const blockers: string[] = [];
+    if (row.status !== "succeeded") blockers.push("执行任务未成功");
+    if (!row.run_id || !row.result) blockers.push("缺少成功执行结果");
+    if (row.result?.runId && row.result.runId !== row.run_id) blockers.push("执行结果 run 身份不匹配");
+    if (Number(row.current_content_revision) !== Number(row.content_revision)) blockers.push("执行契约对应内容修订已变化");
+    if (Number(row.approved_content_revision ?? -1) !== Number(row.content_revision)) blockers.push("执行契约对应内容修订未获当前批准");
+    if (row.risk !== "low") blockers.push("需求不是低风险");
+    if (row.requirement_status !== "accepting") blockers.push("需求不在待验收状态");
+    if (row.pr_state !== "open") blockers.push("Manager 记录的 PR 状态不是 open");
+    if (row.result?.prUrl && row.pr_url !== row.result.prUrl) blockers.push("Manager 需求与执行结果的 PR 不一致");
+    if (!/^[0-9a-f]{40}$/.test(String(row.result?.baseSha ?? ""))) blockers.push("执行结果 base SHA 无效");
+    if (!/^[0-9a-f]{40}$/.test(String(row.result?.candidateSha ?? ""))) blockers.push("执行结果 candidate SHA 无效");
+    if (!Array.isArray(row.result?.changedPaths) || !row.result.changedPaths.length) blockers.push("执行结果改动路径无效");
+    if (!Number.isInteger(row.result?.prNumber) || Number(row.result?.prNumber) <= 0) blockers.push("执行结果 PR 编号无效");
+    for (const key of ["baseSha", "candidateSha", "changedPaths", "prNumber", "prUrl", "branch"] as const) {
+      if (!row.result?.[key] || (key === "changedPaths" && !row.result.changedPaths?.length)) {
+        blockers.push("执行结果缺少合并身份：" + key);
+        break;
+      }
+    }
+    if (blockers.length || !row.result) {
+      return { eligible: false, blockers, candidate: null };
+    }
+    return {
+      eligible: true,
+      blockers: [],
+      candidate: {
+        jobId: row.id,
+        runId: row.run_id!,
+        requirementId: row.requirement_id,
+        contentRevision: Number(row.content_revision),
+        repository: row.contract.repository,
+        allowedPaths: row.contract.allowedPaths,
+        baseSha: String(row.result.baseSha),
+        candidateSha: String(row.result.candidateSha),
+        changedPaths: row.result.changedPaths!,
+        prNumber: Number(row.result.prNumber),
+        prUrl: String(row.result.prUrl),
+        branch: String(row.result.branch),
+      },
+    };
   }
 
   async updateDeployment(id: string, input: unknown, token?: string) {
