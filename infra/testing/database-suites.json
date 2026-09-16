@@ -86,6 +86,10 @@
           "minimumTests": 4
         },
         {
+          "path": "src/resources.e2e.test.ts",
+          "minimumTests": 3
+        },
+        {
           "path": "src/requirement-revisions.e2e.test.ts",
           "minimumTests": 11
         },

@@ -71,6 +71,7 @@
 | M16 | 隔离编码执行器与独立验收 | P23 | infra/scripts/executor.mjs + infra/scripts/lib/executor-{process,workspace,manager,github,run}.mjs | ✅ 已实现：编码/验收子进程环境白名单，独立 HOME 与 Git 配置，候选 SHA 独立克隆验收，超时杀进程树，受约束证据包与 PR 发布 | infra/scripts/lib/executor-{config,process,workspace,run}.test.mjs |
 | M17 | 执行进度、待验收及通知 | P24 | apps/manager/server/src/execution-{jobs,notifications}.service.ts + apps/manager/server/migrations/014_execution_progress.sql + apps/manager/web/src/pages/RequirementExecutionPanel.tsx | ✅ 已实现：成功回写推进待验收并展示 run/PR/部署证据，终态通知事务写入稳定 outbox ID，webhook 租约投递去重，部署成功前置 PR merged | apps/manager/server/src/execution-progress.e2e.test.ts + apps/manager/web/src/pages/RequirementExecutionPanel.test.tsx |
 | M18 | 低风险需求条件自动合并 | P25 | infra/scripts/conditional-merge.mjs + infra/scripts/lib/conditional-merge.mjs + apps/manager/server/src/execution-jobs.{service,controller}.ts | ✅ 已实现：独立 merge token 只读候选授权；CLI 核对精确 head/base、最新基线、同仓 PR、文件边界、GitHub Actions required checks、分支保护和风险路径，普通 merge API 不绕过保护 | infra/scripts/lib/conditional-merge.test.mjs + apps/manager/server/src/execution-progress.e2e.test.ts |
+| M19 | 资源、密钥引用与运行面板 | P26 | apps/manager/server/src/resources.* + apps/manager/server/migrations/015_resources.sql + apps/manager/web/src/pages/ResourceList.tsx + apps/gateway/src/app.ts | ✅ 已实现：资源记录归属/预算/备份/HTTPS手册，密钥仅保存来源一致的引用；检查结果 passed/failed/blocked/waiting 独立计数，写入递增资源修订，Gateway 状态页提供运行入口 | apps/manager/server/src/resources.e2e.test.ts + apps/manager/web/src/pages/ResourceList.test.tsx + apps/gateway/src/app.test.ts |
 
 ## 5. Gatherer（采集 · 知识主线第一环）
 

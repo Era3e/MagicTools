@@ -19,6 +19,7 @@
 | 自动执行任务 | ExecutionJobsController | ExecutionJobsService | execution_jobs / execution_runs | owner 排队绑定批准修订；executor 领取、心跳、回写、取消与过期恢复 |
 | 执行通知 | ExecutionNotificationsController | ExecutionNotificationsService | outbox / requirements | 执行终态事务通知、webhook 租约投递与去重状态 |
 | 条件合并授权 | ExecutionJobsController | ExecutionJobsService | execution_jobs / execution_runs / requirements | 独立 merge token 读取成功候选、当前批准修订、PR 身份与允许路径 |
+| 资源面板 | ResourcesController | ResourcesService | operations_resources / operations_secret_refs / operations_resource_checks | 资源归属、预算、备份与手册；密钥只存来源一致的引用，检查结果四态分计 |
 
 **消费事件**：`requirement.created`（ASSESSOR_DATABASE_URL processOutboxBatch，业务入库后确认 done）
 **外部集成**：`github/client.ts` — Phantom GitHub Issues 同步（GITHUB_STUB=1）
@@ -40,6 +41,7 @@
 后台（AdminShell /manager/admin）：
   /admin/requirements  RequirementList  需求管理表格 + 候选导入 + 能力基线视图
   /admin/iterations    IterationList    迭代管理
+  /admin/resources     ResourceList     资源、密钥引用与运行面板
 ```
 
 2026-09-11 起，手工状态迁移由 `requirement-policy.ts` 约束；字段与状态在行锁事务中合并，新客户端提交 expectedRevision，过期返回 409。PR 同状态不增加修订，不能回退 accepting/done。详情的关联草稿与服务器基准分离，冲突后不会自动使用新版本覆盖旧内容。
@@ -53,5 +55,7 @@ P22 通过迁移 013 增加 `execution_jobs` 与 `execution_runs`。同需求同
 P24 通过迁移 014 为需求增加 `pr_state/pr_checked_at` 与 `deployment_state/deployment_ref/deployment_url/deployment_checked_at`。执行成功回写必须携带全部成功的结构化验收、candidate SHA、PR 和证据摘要，并与实际 job/run/租约一致；同一事务把需求推进到待验收、写入 PR open、部署 not-started 和稳定 ID 的 outbox 通知。终态失败与取消同样事务写通知，中间 retry 不打扰。通知服务配置 HTTPS webhook 后每 30 秒按事件名过滤领取 outbox，2xx 才确认 done；未配置时明确 not-configured。详情页展示 run 心跳、错误、证据、PR 和部署状态，人工验收和部署事实互不冒充。操作说明见 [执行进度、待验收与通知](features/manager-execution-progress.md)。
 
 P25 的 Manager 侧只暴露 `merge-candidates` 与 `merge-authorization` 读取接口，使用独立 `MANAGER_MERGE_TOKEN`。授权要求 job 成功、内容修订仍为当前批准修订、需求为低风险待验收、PR open 且执行结果身份完整；真正 GitHub 事实核对、required checks、分支保护、风险路径和普通 merge API 调用在独立 `pnpm merge:conditional` CLI 中完成。编码执行器仍拿不到合并 token，见 [低风险需求条件自动合并](features/conditional-merge.md)。
+
+P26 通过迁移 015 增加资源、密钥引用与真实检查三张表。资源必须记录归属、月预算、备份定位和 HTTPS 处理手册；密钥只允许 `env:`/`file:`/`external:` 引用，前缀必须与来源字段一致，schema 拒绝任何 value 字段。检查结果按 passed/failed/blocked/waiting 独立计数，每个检查名取最新记录并递增资源修订，blocked 表示真实检查无法执行，waiting 表示外部资源或人工动作未就绪。后台资源面板展示汇总与明细，Gateway `/status` 只提供入口，不复制状态，见 [资源、密钥引用与运行面板](features/resources.md)。
 
 ---
