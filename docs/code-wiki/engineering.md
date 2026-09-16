@@ -20,7 +20,7 @@
 | `pnpm executor [--check-config] [--once]` | `node infra/scripts/executor.mjs` | 隔离编码执行器：领取 P22 任务、白名单环境运行编码 CLI、候选 SHA 独立验收并创建 PR |
 | `pnpm images:smoke` | images-smoke.mjs | 17镜像构建与独立容器全流程回归 |
 | `pnpm images:build` / `images:publish` / `images:release` | 制品构建及仓库digest核验 | 干净提交发布，验证工作树须明确标记 |
-| `pnpm qa:gate` | quality-gate.mjs：lint + build/unit + coverage + infra + docs + design + test:db | ✅ 本地与 CI 共用；生成候选/checkout/run 绑定的阶段证据 |
+| `pnpm qa:gate` | quality-gate.mjs：lint + build/unit + coverage + infra(含 graph:check)/docs + design + test:db | ✅ 本地与 CI 共用；生成候选/checkout/run 绑定的阶段证据 |
 | `pnpm test:db` | test-database.mjs：按声明清单初始化隔离库并直接运行关键 Vitest 文件 | ✅ 真实 PostgreSQL/pgvector、skip=0、无缓存；成功清理本次库，失败保留诊断 |
 | `pnpm new:app <name>` | `node infra/scripts/new-app.mjs` | 复制模板 + 分配端口 + 写 ports.yaml |
 | `pnpm ws:create <项目> <任务ID>` / `ws:cleanup` | `workspace.mjs` | Git worktree 管理 |
@@ -39,7 +39,7 @@
 ```
 
 - ^build = 先构建上游 workspace 依赖包（config/types/db/ui/model-client/utils）
-- CI 用 actions/cache 缓存 `.turbo` 目录中的构建和普通单测结果。数据库测试从普通配置移出并直接强制运行，不复用缓存；桩模式开关进入普通单测环境/hash。配置、文件标记、清单、失败策略和候选证据见 [质量门禁说明](features/quality-evidence.md)。
+- CI 用 actions/cache 缓存 `.turbo` 目录中的构建和普通单测结果。数据库测试从普通配置移出并直接强制运行，不复用缓存；桩模式开关进入普通单测环境/hash。配置、文件标记、清单、失败策略和候选证据见 [质量门禁说明](../features/quality-evidence.md)。
 
 ### 11.3 四层测试体系
 
@@ -48,7 +48,7 @@
 | 1 单元 | Vitest | 公共包核心逻辑 + Service 单测 | `pnpm test` | quality |
 | 2 冒烟 | Docker Compose + HTTP/SQL | 17镜像冷启动、数据库恢复、业务与持久化 | `pnpm images:smoke`（本地源码探活仍可用 `pnpm smoke`） | smoke |
 | 3 回归 | Turbo --affected | 仅构建变更影响的包 + 跑对应测试 | `pnpm test:affected` | 本地（CI 全量） |
-| 4 E2E | Playwright chromium | 17 个 spec 全流程真实交互；视觉基线 20 张，样板页带核心业务断言 | `@mt/e2e playwright test` | e2e |
+| 4 E2E | Playwright chromium | 18 个 spec 全流程真实交互；视觉基线 20 张，样板页带核心业务断言 | `@mt/e2e playwright test` | e2e |
 
 ### 11.4 CI流水线（.github/workflows/ci.yml）
 
@@ -67,7 +67,7 @@ flowchart LR
 
 #### quality
 
-使用真实pgvector测试服务，执行 `pnpm qa:gate`，包含lint、构建/单测、覆盖率、infra、文档、设计映射和关键数据库验证。成功与失败均保存候选提交/checkout/run绑定的quality-evidence。
+使用真实pgvector测试服务与Node 22执行 `pnpm qa:gate`，包含lint、构建/单测、覆盖率、infra、TS依赖图、文档、设计映射和关键数据库验证。成功与失败均保存候选提交/checkout/run绑定的quality-evidence。
 
 #### smoke
 
@@ -83,9 +83,9 @@ flowchart LR
 
 ### 11.5 运行镜像与发布边界
 
-应用镜像的Node运行时为固定digest的Node 22，开发/quality仍覆盖Node 20。生产目录通过pnpm deploy装配，Node服务以UID1000运行；业务镜像包含迁移，Gateway/Assistant带ports.yaml，Designer带动态预览依赖。
+P27 起根工作区与 quality 依赖图工具使用 Node 22/24/26+（与 dependency-cruiser 支持范围一致），CI 固定 Node 22，应用镜像运行时保持固定 digest 的 Node 22。生产目录通过pnpm deploy装配，Node服务以UID1000运行；业务镜像包含迁移，Gateway/Assistant带ports.yaml，Designer带动态预览依赖。
 
-业务health为存活，health/ready检查数据库与迁移；Gateway的/ready聚合八个后端和八个Web。迁移成功后才监听，运行中断连返回503并可恢复。制品与回执入口见 [运行镜像说明](features/runtime-images.md)，本地独立验证见 [P03验收](validation/2026-09-12-runtime-images.md)。P05部署入口为deploy-release.mjs/deploy-ssh.mjs，核验固定制品、公开配置与就绪，成功回执先于状态提交并全程持锁；原env不覆盖，快照用于失败恢复与正常回退。详见 [部署说明](features/deployment-receipts.md)，cc03f42→5355139两版实际升级、故障恢复与回退已通过，独立验收确认八库数据、env及PG实例保持；该验收绑定上述两份源码，后续收尾候选另由CI验证。
+业务health为存活，health/ready检查数据库与迁移；Gateway的/ready聚合八个后端和八个Web。迁移成功后才监听，运行中断连返回503并可恢复。制品与回执入口见 [运行镜像说明](../features/runtime-images.md)，本地独立验证见 [P03验收](../validation/2026-09-12-runtime-images.md)。P05部署入口为deploy-release.mjs/deploy-ssh.mjs，核验固定制品、公开配置与就绪，成功回执先于状态提交并全程持锁；原env不覆盖，快照用于失败恢复与正常回退。详见 [部署说明](../features/deployment-receipts.md)，cc03f42→5355139两版实际升级、故障恢复与回退已通过，独立验收确认八库数据、env及PG实例保持；该验收绑定上述两份源码，后续收尾候选另由CI验证。
 
 ---
 
@@ -155,7 +155,7 @@ chore: 升级 turbo 至 2.1
 
 | 变量 | 用途 | 子项目 |
 |---|---|---|
-| GATEWAY_TOKEN | 网关 X-Access-Token 鉴权（留空不鉴权） | gateway |
+| GATEWAY_TOKEN | 网关 X-Access-Token 服务/脚本兼容通道；另有 GATEWAY_SERVICE_TOKENS 与用户会话通道 | gateway |
 | DEEPSEEK_API_KEY | DeepSeek LLM 密钥 | 全部 LLM 服务 |
 | ZHIPU_API_KEY | 智谱 LLM 密钥（过期→桩模式） | 全部 LLM 服务 |
 | DATABASE_URL | 单项目本地默认库 | 各子项目 server 启动时覆盖 |
@@ -186,7 +186,7 @@ INVESTIGATOR_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/investigat
 
 | 依赖 | 版本 | 验证命令 |
 |---|---|---|
-| Node.js | >= 20（LTS） | `node -v` |
+| Node.js | 22 / 24 / 26+ | `node -v` |
 | pnpm | 9.12.0（packageManager 指定） | `pnpm -v` |
 | Docker Desktop | 任意支持 compose 的版本 | `docker --version` + `docker compose version` |
 | PostgreSQL 客户端 | （可选，调试用） | `psql --version` |

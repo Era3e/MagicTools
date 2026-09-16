@@ -1,11 +1,12 @@
 import { pool } from "./db";
 import { BadRequestException, ConflictException } from "@nestjs/common";
 import { canTransition } from "./requirement-policy";
+import type { RequirementStatus } from "./requirement-types";
 import type { PoolClient } from "pg";
 import { getApprovalReadiness, type ExecutionContract, type RequirementRisk } from "./requirement-content";
 
-export const REQUIREMENT_STATUSES = ["waiting", "designing", "todo", "developing", "testing", "accepting", "done"] as const;
-export type RequirementStatus = (typeof REQUIREMENT_STATUSES)[number];
+export { REQUIREMENT_STATUSES } from "./requirement-types";
+export type { RequirementStatus } from "./requirement-types";
 export const REQUIREMENT_SOURCES = ["assessor", "manual", "github", "cybercloud", "audit_proposal", "assistant_badcase"] as const;
 
 export interface RequirementRow {

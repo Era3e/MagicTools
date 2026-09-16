@@ -49,7 +49,7 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
       - name: 缓存 turbo 构建
         uses: actions/cache@v4
@@ -89,7 +89,7 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: 构建17镜像并验证独立Compose冷启动
@@ -172,7 +172,7 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
       # D-18 前置：安装 CJK 字体。注意：字体只保证 linux 渲染与 win32 一致，
       # 基线文件仍需专门 workflow 生成入库；当前 CI 视觉用例由 _visual.spec.ts 守卫显式 skip。
@@ -251,7 +251,7 @@ jobs:
       - if: env.REGISTRY_HOST != ''
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
       - if: env.REGISTRY_HOST != ''
         uses: docker/login-action@v3

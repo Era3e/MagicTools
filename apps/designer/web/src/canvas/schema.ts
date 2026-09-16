@@ -1,6 +1,7 @@
 import { REGISTRY_MAP, metaByComponent } from "./registry";
+import type { PropValue } from "./types";
 
-export type PropValue = string | number | boolean;
+export type { PropValue } from "./types";
 
 export interface CanvasNode {
   id: string;

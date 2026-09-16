@@ -51,7 +51,7 @@
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                       Gateway (端口 3000)                        │
-│  · 路径路由  · X-Access-Token 鉴权  · 健康检查聚合  · 首页导航   │
+│  · 路径路由 · 三通道鉴权 · 健康检查聚合 · 首页导航 │
 │  · /<name>/ → Web (Vite preview / Nginx)                        │
 │  · /api/<name>/ → Server (NestJS)                                │
 └──────┬──────────────┬──────────────┬──────────────┬─────────────┘
@@ -167,7 +167,8 @@ graph TB
 
     %% 跨库 outbox 事件流（知识主线）
     GDB == outbox knowledge.item.collected ==> SS
-    SDB == REST / 直连 圈定检索 ==> CS
+    GW == Gateway public/search ==> SS
+    CS == Gateway 转发公共检索 ==> GW
 
     %% Server 消费公共包
     AS & GS & IS & ES & MS & DS & SS & CS --> CFG
@@ -271,13 +272,13 @@ MagicTools/
 │  ├─ integrations/                          # 外部集成手册（feishu/clawcv/cybercloud）
 │  ├─ memory/state.md                        # ✅ AI 即时记忆（当前状态 + 决策 + 进行中 + 已知问题）
 │  └─ superpowers/
-│     ├─ specs/                              # 设计文档（11 份：平台 + 各子项目 + 意图/路由）
-│     └─ plans/                              # 实施计划（10 份，与 specs 对应）
+│     ├─ specs/                              # 设计文档（含当前/历史基线标记）
+│     └─ plans/                              # 实施计划（与 specs 目录共同演进）
 │
 ├─ infra/                                    # 基础设施
 │  ├─ ports.yaml                             # ✅ 端口唯一注册表（9 服务 web+server）
 │  ├─ docker-compose.dev.yml                 # 本地 PostgreSQL + pgvector 容器
-│  ├─ compose.prod.yml                       # 生产环境编排（待补全）
+│  ├─ compose.prod.yml                       # 生产环境编排（P03/P05 运行与部署链路使用）
 │  ├─ postgres-init.sql                      # 多库自举初始化脚本
 │  ├─ deploy.ps1                             # ECS 部署脚本（PowerShell）
 │  ├─ backup.ps1                             # Node备份CLI薄包装，保留参数与退出码

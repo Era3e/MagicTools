@@ -43,6 +43,7 @@
 - pnpm deploy:release / deploy:ssh（公开配置与已有env分离，固定制品部署、回执和回退，详见 docs/features/deployment-receipts.md）
 - pnpm qa:gate（本地门禁）
 - pnpm docs:facts（功能映射与接口索引生成；test:infra 会校验生成物未漂移）
+- pnpm graph:check / graph:json（TS import 图门禁 / 生成模块级依赖索引；qa:gate 已含 check）
 - pnpm test:manager:integration（Manager 关键数据库契约，需配置 MANAGER_TEST_DATABASE_URL 为 mt_*test 专用库；不可用即失败）
 - pnpm design:check（设计图 ↔ 前端一致性核对，qa:gate 已含；单独跑秒级出结果）
 - pnpm ws:create <项目> <任务ID> / pnpm ws:cleanup <项目> <任务ID>（worktree）

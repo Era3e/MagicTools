@@ -41,3 +41,4 @@
 - [功能索引](generated/feature-map.md)
 - [覆盖视图](generated/coverage-view.md)
 - [接口索引](generated/interface-index.md)
+- [依赖图索引](generated/dependency-index.md)

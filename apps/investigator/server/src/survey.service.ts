@@ -8,7 +8,7 @@ import { llmChat } from "./llm";
 import { responseStructuredSchema } from "./schemas";
 import { finishSyncRun, listResponses, markPushed, startSyncRun, touchSurveySyncedAt, upsertResponse } from "./response.repo";
 import { createSurvey, getSurvey, listSurveys, setSurveySummary, updateSurvey } from "./survey.repo";
-import { isValidCron } from "./scheduler";
+import { isValidCron } from "./cron";
 
 const STRUCTURE_PROMPT =
   "你是需求调研分析助手。将受访者的回答结构化为 JSON：requirements（需求点数组）、painPoints（痛点数组）、expectations（期望数组）、sentiment（positive/neutral/negative）、priority（P0/P1/P2）、summary（一句话摘要）。只输出 JSON。回答：";

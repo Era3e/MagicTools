@@ -194,13 +194,15 @@ UsageLog = { provider, model, inputTokens, outputTokens, ms }
 
 | 类别 | 键 | 值 |
 |---|---|---|
-| 主色/成功/警告/错误 | primary / success / warning / error | #2f54eb / #52c41a / #faad14 / #ff4d4f |
-| 文本 | text / textSecondary | #1f1f1f / #666666 |
-| 背景 | bgLayout / bgContainer / bgNeutral / bgActive / bgUser | #f5f6f8 / #fff / #f6f6f6 / #f0f5ff / #e6f4ff |
-| 边框/强调 | border / purple / cyan | #f0f0f0 / #722ed1 / #13c2c2 |
+| 主色/成功/警告/错误/信息 | primary / success / warning / error / info | #2c4a6e / #3a7049 / #9a6a25 / #943d35 / #3a5f84 |
+| 文本 | text / textSecondary | #1c2530 / #5f6c7c |
+| 背景 | bgLayout / bgContainer / bgNeutral / bgActive / bgUser | #f4f6f8 / #ffffff / #eceef1 / #e3eaf2 / #eef1f5 |
+| 边框/兼容扩展 | border / purple / cyan | #d9dde3 / #3a5f84 / #4a8a5d |
 | 间距 | xs/sm/md/lg/xl | 4/8/16/24/32 |
 | 字号 | sm/md/lg/xl | 12/14/16/20 |
 | 圆角 | radius | 6 |
+
+除上表兼容键外，v2.1+ 扩展 `scale`、`dark`、`admin`、`shadow`、`craft`、`motion`、`size` 与 `font`；扩展块仍以 tokens.ts 为唯一事实源，本节不复制全量色阶。
 
 #### 4.6.2 主题提供者
 
