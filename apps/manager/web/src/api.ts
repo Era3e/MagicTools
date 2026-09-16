@@ -182,6 +182,73 @@ export interface Capability {
   deploymentState: string;
 }
 
+export type ResourceKind = "host" | "database" | "registry" | "domain" | "external-api" | "deployment";
+export type ResourceEnvironment = "development" | "staging" | "production";
+export type SecretRefSource = "env" | "file" | "external";
+export type ResourceCheckOutcome = "passed" | "failed" | "blocked" | "waiting";
+export type ResourceStatus = "operational" | "failed" | "blocked" | "waiting" | "unknown";
+
+export interface ResourceSecretRef {
+  id: string;
+  name: string;
+  source: SecretRefSource;
+  reference: string;
+  required: boolean;
+}
+
+export interface ResourceCheck {
+  id: string;
+  name: string;
+  outcome: ResourceCheckOutcome;
+  detail: string;
+  evidenceUrl: string;
+  checkedAt: string;
+}
+
+export interface OperationsResource {
+  id: string;
+  name: string;
+  kind: ResourceKind;
+  environment: ResourceEnvironment;
+  owner: string;
+  provider: string;
+  region: string;
+  budgetCurrency: "CNY";
+  monthlyBudgetCents: number;
+  backupReference: string;
+  runbookUrl: string;
+  notes: string;
+  revision: number;
+  status: ResourceStatus;
+  checkCounts: Record<ResourceCheckOutcome, number>;
+  secretRefs: ResourceSecretRef[];
+  latestChecks: ResourceCheck[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ResourceSummary {
+  total: number;
+  monthlyBudgetCents: number;
+  statusCounts: Record<ResourceStatus, number>;
+  checkCounts: Record<ResourceCheckOutcome, number>;
+  secretRefCount: number;
+}
+
+export interface ResourceCreateInput {
+  name: string;
+  kind: ResourceKind;
+  environment: ResourceEnvironment;
+  owner: string;
+  provider: string;
+  region: string;
+  monthlyBudgetCents: number;
+  backupReference: string;
+  runbookUrl: string;
+  notes: string;
+  secretRefs: Array<{ name: string; source: SecretRefSource; reference: string; required: boolean }>;
+}
+
 export const api = {
   getApprovalPolicy: () => request<ApprovalPolicy>("/meta/approval-policy"),
   approveRevision: (id: string, input: ApprovalInput, token: string) => request<Requirement>("/requirements/" + id + "/approve-revision", {
@@ -219,4 +286,10 @@ export const api = {
   listIterations: () => request<Iteration[]>("/iterations"),
   createIteration: (input: { name: string; startDate?: string | null; endDate?: string | null }) =>
     request<Iteration>("/iterations", { method: "POST", body: JSON.stringify(input) }),
+  listResources: () => request<{ items: OperationsResource[]; summary: ResourceSummary }>("/resources"),
+  createResource: (input: ResourceCreateInput, token: string) => request<OperationsResource>("/resources", {
+    method: "POST",
+    headers: { "x-manager-approval-token": token },
+    body: JSON.stringify(input),
+  }),
 };

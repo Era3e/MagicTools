@@ -4,6 +4,10 @@
 - 本文件记录平台级迭代摘要（阶段、里程碑、关键决策），在每次合入 main 时追加一条（含补记，需注明）；
 - 条目格式：日期、变更摘要、涉及子项目、关联 PR。
 
+## 2026-09-16（P26 资源、密钥引用与运行面板）
+
+- **轻量资源台账**：Manager 新增资源、密钥引用与真实检查模型，记录归属、月预算、备份定位和 HTTPS 处理手册；密钥只允许 env/file/external 引用，前缀必须与来源一致，不保存明文。检查结果 passed/failed/blocked/waiting 独立计数并按检查名取最新事实，写入检查递增资源修订；后台资源面板展示汇总与明细，Gateway 状态页提供运行入口。本批不读取云账单、Kubernetes 或秘密管理系统，生产资源同步保持 not-run。
+
 ## 2026-09-16（P25 低风险条件自动合并）
 
 - **独立条件合并服务**：Manager 使用独立 merge token 只读返回成功候选的当前批准修订、candidate/base SHA、PR 身份与允许路径；独立 CLI 再从 GitHub 核对同仓 open PR、精确 head/base、最新基线、实际文件集合、GitHub Actions required checks、分支保护和风险路径，最后用普通 merge API 合并并回读 merged 事实。工作流、迁移、infra、Gateway、数据库、Assistant 核心问答与身份权限类改动一律转人工；编码执行器仍拿不到合并凭证。生产 GitHub 合并未运行，保持 not-run。

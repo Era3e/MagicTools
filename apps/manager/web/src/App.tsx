@@ -4,6 +4,7 @@ import RequirementList from "./pages/RequirementList";
 import RequirementBoard from "./pages/RequirementBoard";
 import RequirementDetail from "./pages/RequirementDetail";
 import IterationList from "./pages/IterationList";
+import ResourceList from "./pages/ResourceList";
 
 const ACCENT = appAccent("manager");
 
@@ -32,6 +33,7 @@ const USER_NAV = [{ key: "/requirements", label: "需求台" }];
 const ADMIN_NAV = [
   { key: "/admin/requirements", label: "需求管理" },
   { key: "/admin/iterations", label: "迭代管理" },
+  { key: "/admin/resources", label: "资源面板" },
 ];
 
 function UserRoutes() {
@@ -53,6 +55,7 @@ function AdminRoutes() {
       <Route path="/admin/requirements" element={<RequirementList />} />
       <Route path="/admin/requirements/:id" element={<RequirementDetail />} />
       <Route path="/admin/iterations" element={<IterationList />} />
+      <Route path="/admin/resources" element={<ResourceList />} />
     </Routes>
   );
 }

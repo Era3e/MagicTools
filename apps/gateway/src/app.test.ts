@@ -92,6 +92,9 @@ describe("gateway app", () => {
     expect(res.headers["content-type"]).toContain("text/html");
     expect(res.text).toContain("系统监控");
     expect(res.text).toContain("chart.js");
+    expect(res.text).toContain("资源与密钥引用面板");
+    expect(res.text).toContain('href="/manager/admin/resources"');
+    expect(res.text).toContain("blocked 与 waiting 分开计数");
   });
 
   it("drift guard：内联 accent 色板与 @mt/ui APP_ACCENT_TOKENS 逐应用一致", async () => {

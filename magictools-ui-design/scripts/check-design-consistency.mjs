@@ -34,7 +34,8 @@ const APPS = [
     '/admin/feedback': 'assistant-feedback-admin.html', '/admin/intent-logs': 'assistant-admin.html' } },
   { name: 'manager', web: 'apps/manager/web/src/App.tsx', routes: {
     '/requirements': 'manager-front.html', '/requirements/:id': 'manager-requirement-detail.html',
-    '/admin/requirements': 'manager-admin.html', '/admin/iterations': 'manager-iteration-admin.html' } },
+    '/admin/requirements': 'manager-admin.html', '/admin/iterations': 'manager-iteration-admin.html',
+    '/admin/resources': 'manager-resource-admin.html' } },
   { name: 'designer', web: 'apps/designer/web/src/App.tsx', routes: {
     '/generate': 'designer-generate.html', '/studio': 'designer-studio.html',
     '/components': 'designer-components.html', '/admin/components': 'designer-admin.html',
@@ -54,7 +55,7 @@ const FRONT_PAGES = ['applicant-front.html', 'scholar-front.html', 'assistant-fr
   'designer-studio.html', 'designer-components.html', 'applicant-calendar.html', 'applicant-resume.html',
   'applicant-position-detail.html', 'applicant-interview.html', 'scholar-search.html', 'scholar-graph.html'];
 const ADMIN_PAGES = ['applicant-admin.html', 'scholar-admin.html', 'scholar-settings-admin.html', 'scholar-code-index-admin.html',
-  'assistant-admin.html', 'assistant-feedback-admin.html', 'manager-admin.html', 'manager-iteration-admin.html',
+  'assistant-admin.html', 'assistant-feedback-admin.html', 'manager-admin.html', 'manager-iteration-admin.html', 'manager-resource-admin.html',
   'designer-admin.html', 'designer-history-admin.html', 'gatherer-admin.html', 'gatherer-source-detail.html',
   'investigator-admin.html', 'investigator-survey-detail.html', 'assessor-admin.html', 'assessor-request-detail.html',
   'assessor-repository-evidence.html'];
