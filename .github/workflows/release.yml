@@ -21,8 +21,8 @@ jobs:
       - name: 检查待消费 changesets
         id: changesets
         run: |
-          count="$(find .changeset -maxdepth 1 -type f -name '*.md' ! -name 'README.md' | wc -l)"
-          if [ "$count" -gt 0 ]; then
+          # Private 包的 changeset 会被 Changesets 忽略；只有实际计划 bump 的包才需要 Version PR。
+          if pnpm exec changeset status --verbose | grep -q -- '- @mt/'; then
             echo "has=true" >> "$GITHUB_OUTPUT"
           else
             echo "has=false" >> "$GITHUB_OUTPUT"
