@@ -18,7 +18,17 @@ jobs:
           node-version: 20
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: 检查待消费 changesets
+        id: changesets
+        run: |
+          count="$(find .changeset -maxdepth 1 -type f -name '*.md' ! -name 'README.md' | wc -l)"
+          if [ "$count" -gt 0 ]; then
+            echo "has=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has=false" >> "$GITHUB_OUTPUT"
+          fi
       - uses: changesets/action@v1
+        if: steps.changesets.outputs.has == 'true'
         with:
           version: pnpm release
           # publish 是 changesets/action 的分叉开关：无待消费 changeset 时不再尝试
@@ -29,3 +39,9 @@ jobs:
           title: "chore(release): 迭代日志与版本更新"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: 推送版本 tag
+        if: steps.changesets.outputs.has == 'false'
+        run: |
+          git fetch origin --tags --force
+          pnpm release:tag
+          git push origin --tags
