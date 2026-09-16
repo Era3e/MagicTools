@@ -1,12 +1,13 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { Link, MemoryRouter, Route, Routes } from "react-router-dom";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import RequirementDetail from "./RequirementDetail";
 import { api } from "../api";
 import type { Requirement } from "../api";
 
-vi.mock("../api", () => ({ api: { getRequirement: vi.fn(), patchRequirement: vi.fn(), refreshPr: vi.fn() } }));
+vi.mock("../api", () => ({ api: { getRequirement: vi.fn(), patchRequirement: vi.fn(), refreshPr: vi.fn(), listExecutionJobs: vi.fn() } }));
 afterEach(() => { cleanup(); vi.resetAllMocks(); });
+beforeEach(() => { vi.mocked(api.listExecutionJobs).mockResolvedValue([]); });
 
 describe("需求详情并发恢复", () => {
   it("切换需求后迟到的旧页面请求不能覆盖当前档案", async () => {

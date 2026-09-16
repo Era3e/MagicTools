@@ -34,6 +34,12 @@ export interface RequirementRow {
   iterationId: string | null;
   branch: string;
   prUrl: string;
+  prState: "unknown" | "open" | "merged" | "closed";
+  prCheckedAt: string | null;
+  deploymentState: "not-started" | "pending" | "deploying" | "succeeded" | "failed" | "rolled-back";
+  deploymentRef: string;
+  deploymentUrl: string;
+  deploymentCheckedAt: string | null;
   timeline: Array<{ at: string; from: string; to: string; note?: string }>;
   createdAt: string;
   updatedAt: string;
@@ -68,6 +74,12 @@ export function mapRow(r: Record<string, unknown>): RequirementRow {
     iterationId: (r.iteration_id as string) ?? null,
     branch: r.branch as string,
     prUrl: r.pr_url as string,
+    prState: (r.pr_state as RequirementRow["prState"] | undefined) ?? "unknown",
+    prCheckedAt: r.pr_checked_at == null ? null : new Date(r.pr_checked_at as Date).toISOString(),
+    deploymentState: (r.deployment_state as RequirementRow["deploymentState"] | undefined) ?? "not-started",
+    deploymentRef: (r.deployment_ref as string | undefined) ?? "",
+    deploymentUrl: (r.deployment_url as string | undefined) ?? "",
+    deploymentCheckedAt: r.deployment_checked_at == null ? null : new Date(r.deployment_checked_at as Date).toISOString(),
     labels: (r.labels as string[]) ?? [],
     timeline: (r.timeline as Array<{ at: string; from: string; to: string; note?: string }>) ?? [],
     createdAt: new Date(r.created_at as string).toISOString(),

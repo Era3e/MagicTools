@@ -80,4 +80,14 @@ export class ExecutionJobsController {
   ) {
     return this.service.cancel(id, body, token);
   }
+
+  @Post("requirements/:id/deployment-status")
+  @HttpCode(200)
+  deploymentStatus(
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+    @Headers("x-manager-approval-token") token?: string,
+  ) {
+    return this.service.updateDeployment(id, body, token);
+  }
 }

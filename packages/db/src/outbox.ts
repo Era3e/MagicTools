@@ -14,6 +14,7 @@ export interface ProcessOutboxOptions {
   maxAttempts?: number;
   consumerId?: string;
   leaseMilliseconds?: number;
+  events?: string[];
 }
 
 interface OutboxRow {
@@ -37,30 +38,38 @@ function toEvent(row: OutboxRow): DataEnvelope<unknown> {
 
 async function claimOutbox(
   pool: Pool,
-  options: Required<Pick<ProcessOutboxOptions, "batchSize" | "maxAttempts" | "consumerId" | "leaseMilliseconds">>
+  options: Required<Pick<ProcessOutboxOptions, "batchSize" | "maxAttempts" | "consumerId" | "leaseMilliseconds">> &
+    Pick<ProcessOutboxOptions, "events">
 ) {
+  if (options.events && !options.events.length) return [];
+  const deadValues: unknown[] = [options.maxAttempts];
+  const deadEventFilter = options.events?.length ? `AND event = ANY($2::text[])` : "";
+  if (options.events?.length) deadValues.push(options.events);
   await pool.query(
     `UPDATE outbox
      SET status='dead', locked_by=NULL, lease_expires_at=NULL,
-         last_error=COALESCE(last_error, 'lease expired after max attempts')
+        last_error=COALESCE(last_error, 'lease expired after max attempts')
      WHERE status='processing' AND attempts >= $1
-       AND (lease_expires_at IS NULL OR lease_expires_at < now())`,
-    [options.maxAttempts]
+       AND (lease_expires_at IS NULL OR lease_expires_at < now()) ${deadEventFilter}`,
+    deadValues
   );
+  const eventFilter = options.events?.length ? `AND event = ANY($${[options.consumerId, options.leaseMilliseconds, options.maxAttempts, options.batchSize, options.events].length}::text[])` : "";
   const rows = await pool.query(
     `UPDATE outbox AS target
      SET status = 'processing', attempts = target.attempts + 1,
          locked_by = $1, lease_expires_at = now() + ($2 * interval '1 millisecond')
      WHERE target.id IN (
        SELECT id FROM outbox
-       WHERE (status IN ('pending', 'retry') AND attempts < $3)
-          OR (status = 'processing' AND (lease_expires_at IS NULL OR lease_expires_at < now()))
+       WHERE ((status IN ('pending', 'retry') AND attempts < $3)
+          OR (status = 'processing' AND (lease_expires_at IS NULL OR lease_expires_at < now()))) ${eventFilter}
        ORDER BY occurred_at
        LIMIT $4
        FOR UPDATE SKIP LOCKED
      )
      RETURNING *`,
-    [options.consumerId, options.leaseMilliseconds, options.maxAttempts, options.batchSize]
+    eventFilter
+      ? [options.consumerId, options.leaseMilliseconds, options.maxAttempts, options.batchSize, options.events]
+      : [options.consumerId, options.leaseMilliseconds, options.maxAttempts, options.batchSize]
   );
   return (rows.rows as OutboxRow[]).sort((a, b) =>
     new Date(a.occurred_at).getTime() - new Date(b.occurred_at).getTime()
@@ -72,11 +81,13 @@ export async function processOutbox(
   handler: (event: DataEnvelope<unknown>) => Promise<void>,
   options: ProcessOutboxOptions = {}
 ): Promise<number> {
-  const claimOptions = {
+  const claimOptions: Required<Pick<ProcessOutboxOptions, "batchSize" | "maxAttempts" | "consumerId" | "leaseMilliseconds">> &
+    Pick<ProcessOutboxOptions, "events"> = {
     batchSize: options.batchSize ?? 10,
     maxAttempts: options.maxAttempts ?? 5,
     consumerId: options.consumerId ?? randomUUID(),
     leaseMilliseconds: options.leaseMilliseconds ?? 60_000,
+    events: options.events,
   };
   const rows = await claimOutbox(pool, claimOptions);
   let handled = 0;
@@ -107,11 +118,13 @@ export async function processOutboxBatch(
   handler: (events: DataEnvelope<unknown>[]) => Promise<void>,
   options: ProcessOutboxOptions = {}
 ): Promise<number> {
-  const claimOptions = {
+  const claimOptions: Required<Pick<ProcessOutboxOptions, "batchSize" | "maxAttempts" | "consumerId" | "leaseMilliseconds">> &
+    Pick<ProcessOutboxOptions, "events"> = {
     batchSize: options.batchSize ?? 10,
     maxAttempts: options.maxAttempts ?? 5,
     consumerId: options.consumerId ?? randomUUID(),
     leaseMilliseconds: options.leaseMilliseconds ?? 60_000,
+    events: options.events,
   };
   const rows = await claimOutbox(pool, claimOptions);
   if (!rows.length) return 0;

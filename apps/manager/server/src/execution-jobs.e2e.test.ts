@@ -72,6 +72,22 @@ async function claim(executorId = "executor-a") {
     .send({ executorId, leaseMilliseconds: 30000 }).expect(200);
 }
 
+function successfulResult(jobId: string, runId: string, evidence: string) {
+  return {
+    status: "succeeded" as const,
+    jobId,
+    runId,
+    baseSha: "a".repeat(40),
+    candidateSha: "b".repeat(40),
+    changedPaths: ["apps/manager/server/src/execution-jobs.repo.ts"],
+    acceptance: [{ status: "success" as const, exitCode: 0, durationMs: 100 }],
+    prNumber: 96,
+    prUrl: "https://github.com/Era3e/MagicTools/pull/96",
+    branch: "auto/req-test/r1",
+    evidence: { schema: "magictools-executor-evidence/1", path: "evidence/evidence.json", sha256: "c".repeat(64), marker: evidence },
+  };
+}
+
 describe("自动执行任务租约", () => {
   it("未批准需求不能排队，合格需求排队后策略生效", async () => {
     const created = await request(app.getHttpServer()).post("/api/manager/requirements").send({
@@ -98,7 +114,7 @@ describe("自动执行任务租约", () => {
     await request(app.getHttpServer()).post(`/api/manager/execution-jobs/${claimed.jobId}/complete`)
       .set("x-manager-executor-token", executorToken)
       .set("x-manager-run-token", claimed.runToken)
-      .send({ result: { evidence: "first-job-closed" } }).expect(200);
+      .send({ result: successfulResult(claimed.jobId, claimed.runId, "first-job-closed") }).expect(200);
   });
 
   it("同修订只能排队一次且并发领取只创建一个活动run", async () => {
@@ -130,7 +146,7 @@ describe("自动执行任务租约", () => {
     await request(app.getHttpServer()).post(`/api/manager/execution-jobs/${first.body.id}/complete`)
       .set("x-manager-executor-token", executorToken)
       .set("x-manager-run-token", claimedBody.runToken)
-      .send({ result: { evidence: "stub-not-run", acceptance: "pending" } }).expect(200);
+      .send({ result: successfulResult(claimedBody.jobId, claimedBody.runId, "stub-not-run") }).expect(200);
   });
 
   it("过期租约不能心跳或成功回写，恢复后按上限重试并终结", async () => {
@@ -146,7 +162,7 @@ describe("自动执行任务租约", () => {
     await request(app.getHttpServer()).post(`/api/manager/execution-jobs/${job.body.id}/complete`)
       .set("x-manager-executor-token", executorToken)
       .set("x-manager-run-token", claimed.runToken)
-      .send({ result: { forged: true } }).expect(409);
+      .send({ result: { forged: true } }).expect(400);
 
     const recovered = await request(app.getHttpServer()).post("/api/manager/execution-jobs/recover")
       .set("x-manager-executor-token", executorToken).expect(200);

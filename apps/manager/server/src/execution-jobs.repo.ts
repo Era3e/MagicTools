@@ -133,7 +133,11 @@ export async function findExecutionJobByRevision(requirementId: string, contentR
 }
 
 export async function getExecutionJob(id: string): Promise<ExecutionJobView | null> {
-  const rows = await pool.query(
+  return selectExecutionJob(pool, id);
+}
+
+async function selectExecutionJob(database: Pick<PoolClient, "query">, id: string): Promise<ExecutionJobView | null> {
+  const rows = await database.query(
     `SELECT j.*, COALESCE((SELECT jsonb_agg(r ORDER BY r.attempt DESC) FROM execution_runs r WHERE r.job_id=j.id),'[]'::jsonb) AS runs
      FROM execution_jobs j WHERE j.id=$1`,
     [id]
@@ -268,11 +272,24 @@ export async function completeExecutionRun(jobId: string, runToken: string, resu
       await client.query("COMMIT");
       return null;
     }
+    const identified = await client.query(
+      `SELECT id FROM execution_runs
+       WHERE job_id=$1 AND run_token_hash=$2 AND status='running' AND lease_expires_at>now() LIMIT 1`,
+      [jobId, tokenHash]
+    );
+    if (!identified.rowCount) {
+      await client.query("COMMIT");
+      return null;
+    }
+    if (result.runId !== identified.rows[0].id) {
+      await client.query("COMMIT");
+      return null;
+    }
     const run = await client.query(
       `UPDATE execution_runs SET status='succeeded',result=$3,finished_at=now(),updated_at=now(),
         lease_expires_at=now()
        WHERE job_id=$1 AND run_token_hash=$2 AND status='running' AND lease_expires_at>now()
-       RETURNING *`,
+       RETURNING id`,
       [jobId, tokenHash, JSON.stringify(result)]
     );
     if (!run.rowCount) {
@@ -283,8 +300,43 @@ export async function completeExecutionRun(jobId: string, runToken: string, resu
       `UPDATE execution_jobs SET status='succeeded',finished_at=now(),updated_at=now() WHERE id=$1`,
       [jobId]
     );
+    const requirement = await client.query(
+      `SELECT id,title,status,content_revision,approved_content_revision,timeline FROM requirements WHERE id=$1 FOR UPDATE`,
+      [job.rows[0].requirement_id]
+    );
+    if (!requirement.rowCount) throw new Error("执行任务关联的需求不存在");
+    const currentRequirement = requirement.rows[0] as {
+      id: string; title: string; status: "waiting" | "designing" | "todo" | "developing" | "testing" | "accepting" | "done";
+      content_revision: number; approved_content_revision: number | null;
+      timeline: Array<{ at: string; from: string; to: string; note?: string }>;
+    };
+    if (Number(currentRequirement.content_revision) !== Number(job.rows[0].content_revision) ||
+        Number(currentRequirement.approved_content_revision ?? -1) !== Number(job.rows[0].content_revision) ||
+        !["todo", "developing", "accepting"].includes(currentRequirement.status)) {
+      throw new Error("requirement state changed before completion");
+    }
+    const branch = String(result.branch ?? "");
+    const prUrl = String(result.prUrl ?? "");
+    const nextStatus = currentRequirement.status === "todo" ? "accepting" : currentRequirement.status;
+    const timeline = currentRequirement.status === nextStatus ? currentRequirement.timeline : [
+      ...currentRequirement.timeline,
+      { at: new Date().toISOString(), from: currentRequirement.status, to: nextStatus, note: "自动执行完成，等待人工验收" },
+    ];
+    await client.query(
+      `UPDATE requirements SET status=$2,timeline=$3,branch=$4,pr_url=$5,pr_state='open',pr_checked_at=now(),
+        deployment_state='not-started',deployment_ref='',deployment_url='',deployment_checked_at=NULL,
+        revision=revision+1,updated_at=now() WHERE id=$1`,
+      [currentRequirement.id, nextStatus, JSON.stringify(timeline), branch, prUrl]
+    );
+    await insertExecutionNotification(client, {
+      runId: run.rows[0].id as string,
+      kind: "succeeded",
+      job,
+      requirementTitle: currentRequirement.title,
+      result,
+    });
     await client.query("COMMIT");
-    return getExecutionJob(jobId);
+    return selectExecutionJob(client, jobId);
   } catch (error) {
     await client.query("ROLLBACK").catch(() => undefined);
     throw error;
@@ -306,7 +358,7 @@ export async function failExecutionRun(jobId: string, runToken: string, error: s
     const run = await client.query(
       `UPDATE execution_runs SET status='failed',error=$3,finished_at=now(),updated_at=now(),lease_expires_at=now()
        WHERE job_id=$1 AND run_token_hash=$2 AND status='running' AND lease_expires_at>now()
-       RETURNING attempt`,
+       RETURNING id,attempt`,
       [jobId, tokenHash, error]
     );
     if (!run.rowCount) {
@@ -320,8 +372,18 @@ export async function failExecutionRun(jobId: string, runToken: string, error: s
        WHERE id=$1`,
       [jobId, attempt < maxAttempts ? "retry" : "failed"]
     );
+    if (attempt >= maxAttempts) {
+      await insertExecutionNotification(client, {
+        runId: run.rows[0].id as string,
+        kind: "failed",
+        job,
+        attempt,
+        requirementTitle: await requirementTitle(client, job.rows[0].requirement_id as string),
+        error,
+      });
+    }
     await client.query("COMMIT");
-    return getExecutionJob(jobId);
+    return selectExecutionJob(client, jobId);
   } catch (error) {
     await client.query("ROLLBACK").catch(() => undefined);
     throw error;
@@ -343,17 +405,27 @@ export async function cancelExecutionJob(jobId: string, reason: string): Promise
       await client.query("COMMIT");
       return getExecutionJob(jobId);
     }
-    await client.query(
+    const run = await client.query(
       `UPDATE execution_runs SET status='cancelled',finished_at=now(),updated_at=now(),lease_expires_at=now()
-       WHERE job_id=$1 AND status='running'`,
+       WHERE job_id=$1 AND status='running' RETURNING id`,
       [jobId]
     );
     await client.query(
       `UPDATE execution_jobs SET status='cancelled',cancellation_reason=$2,finished_at=now(),updated_at=now() WHERE id=$1`,
       [jobId, reason]
     );
+    if (run.rowCount) {
+      const activeJob = job.rows[0] as { requirement_id: string };
+      await insertExecutionNotification(client, {
+        runId: run.rows[0].id as string,
+        kind: "cancelled",
+        job,
+        requirementTitle: await requirementTitle(client, activeJob.requirement_id),
+        error: reason,
+      });
+    }
     await client.query("COMMIT");
-    return getExecutionJob(jobId);
+    return selectExecutionJob(client, jobId);
   } catch (error) {
     await client.query("ROLLBACK").catch(() => undefined);
     throw error;
@@ -376,9 +448,9 @@ export async function recoverExpiredExecutionRuns(): Promise<Array<{ jobId: stri
     );
     const results: Array<{ jobId: string; runId: string; outcome: "retry" | "failed" }> = [];
     for (const row of expired.rows as Array<{ run_id: string; job_id: string; attempt: number; max_attempts: number }>) {
-      await client.query(
+      const expiredRun = await client.query(
         `UPDATE execution_runs SET status='expired',error='lease expired',finished_at=now(),updated_at=now(),lease_expires_at=now()
-         WHERE id=$1 AND status='running'`,
+         WHERE id=$1 AND status='running' RETURNING id`,
         [row.run_id]
       );
       const outcome = row.attempt < row.max_attempts ? "retry" : "failed";
@@ -387,6 +459,16 @@ export async function recoverExpiredExecutionRuns(): Promise<Array<{ jobId: stri
          WHERE id=$1`,
         [row.job_id, outcome]
       );
+      if (outcome === "failed" && expiredRun.rowCount) {
+        const job = await client.query("SELECT * FROM execution_jobs WHERE id=$1", [row.job_id]);
+        await insertExecutionNotification(client, {
+          runId: row.run_id,
+          kind: "failed",
+          job,
+          requirementTitle: await requirementTitle(client, (job.rows[0] as { requirement_id: string }).requirement_id),
+          error: "lease expired",
+        });
+      }
       results.push({ jobId: row.job_id, runId: row.run_id, outcome });
     }
     await client.query("COMMIT");
@@ -397,4 +479,46 @@ export async function recoverExpiredExecutionRuns(): Promise<Array<{ jobId: stri
   } finally {
     client.release();
   }
+}
+
+async function requirementTitle(database: Pick<PoolClient, "query">, requirementId: string): Promise<string> {
+  const rows = await database.query("SELECT title FROM requirements WHERE id=$1", [requirementId]);
+  return rows.rowCount ? rows.rows[0].title as string : "";
+}
+
+async function insertExecutionNotification(
+  database: Pick<PoolClient, "query">,
+  input: {
+    runId: string;
+    kind: "succeeded" | "failed" | "cancelled";
+    job: { rows: Array<Record<string, unknown>> };
+    attempt?: number;
+    requirementTitle: string;
+    result?: Record<string, unknown>;
+    error?: string;
+  }
+): Promise<void> {
+  const job = input.job.rows[0] as Record<string, unknown>;
+  const id = `execution:${input.runId}:${input.kind}`;
+  const payload = {
+    kind: input.kind,
+    jobId: job.id,
+    runId: input.runId,
+    requirementId: job.requirement_id,
+    requirementTitle: input.requirementTitle,
+    contentRevision: Number(job.content_revision),
+    attempt: input.attempt ?? Number(job.attempts),
+    maxAttempts: Number(job.max_attempts),
+    ...(input.result?.candidateSha ? { candidateSha: input.result.candidateSha } : {}),
+    ...(input.result?.prUrl ? { prUrl: input.result.prUrl } : {}),
+    ...(input.result?.branch ? { branch: input.result.branch } : {}),
+    ...(input.result?.acceptance ? { acceptance: input.result.acceptance } : {}),
+    ...(input.result?.evidence ? { evidence: input.result.evidence } : {}),
+    ...(input.error ? { error: input.error } : {}),
+  };
+  await database.query(
+    `INSERT INTO outbox (id,event,source,payload,occurred_at,status)
+     VALUES ($1,'execution.notification','manager',$2,now(),'pending') ON CONFLICT (id) DO NOTHING`,
+    [id, JSON.stringify(payload)]
+  );
 }

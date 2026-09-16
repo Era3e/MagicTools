@@ -43,6 +43,12 @@ export interface Requirement {
   iterationId: string | null;
   branch: string;
   prUrl: string;
+  prState?: "unknown" | "open" | "merged" | "closed";
+  prCheckedAt?: string | null;
+  deploymentState?: "not-started" | "pending" | "deploying" | "succeeded" | "failed" | "rolled-back";
+  deploymentRef?: string;
+  deploymentUrl?: string;
+  deploymentCheckedAt?: string | null;
   labels: string[];
   timeline: Array<{ at: string; from: string; to: string; note?: string }>;
   updatedAt: string;
@@ -83,6 +89,46 @@ export interface ExecutionEligibility {
   dependencies: Array<{ ref: string; state: string; requirementId: string | null; capabilityId: string | null }>;
   automationPolicy: "manual" | "owner-token";
   blockers: string[];
+}
+
+export interface ExecutionRun {
+  id: string;
+  attempt: number;
+  status: "running" | "succeeded" | "failed" | "expired" | "cancelled";
+  executorId: string;
+  heartbeatAt: string;
+  leaseExpiresAt: string;
+  hardDeadlineAt: string;
+  result: {
+    candidateSha?: string;
+    baseSha?: string;
+    changedPaths?: string[];
+    prUrl?: string;
+    branch?: string;
+    acceptance?: Array<{ status: string; exitCode: number; durationMs: number }>;
+    evidence?: { schema?: string; path?: string; sha256?: string };
+  } | null;
+  error: string;
+  createdAt: string;
+  updatedAt: string;
+  finishedAt: string | null;
+}
+
+export interface ExecutionJob {
+  id: string;
+  requirementId: string;
+  requirementRevision: number;
+  contentRevision: number;
+  contract: ExecutionContract;
+  status: "queued" | "running" | "retry" | "succeeded" | "failed" | "cancelled";
+  attempts: number;
+  maxAttempts: number;
+  cancellationReason: string;
+  createdAt: string;
+  updatedAt: string;
+  startedAt: string | null;
+  finishedAt: string | null;
+  runs: ExecutionRun[];
 }
 
 export interface Iteration {
@@ -146,6 +192,7 @@ export const api = {
   }),
   getRequirementRevisions: (id: string, before?: number) => request<RevisionPage>("/requirements/" + id + "/revisions" + (before ? "?before=" + before : "")),
   getExecutionEligibility: (id: string) => request<ExecutionEligibility>("/requirements/" + id + "/execution-eligibility"),
+  listExecutionJobs: (requirementId: string) => request<ExecutionJob[]>("/requirements/" + requirementId + "/execution-jobs"),
   getApprovalHistory: (id: string, before?: number) => request<{ items: ApprovalEvent[]; nextBefore: number | null }>("/requirements/" + id + "/approvals" + (before ? "?before=" + before : "")),
   previewCandidates: (input: unknown) => request<ImportPreview>("/import-batches/preview", { method: "POST", body: JSON.stringify(input) }),
   getImportBatch: (id: string) => request<ImportPreview>("/import-batches/" + id),

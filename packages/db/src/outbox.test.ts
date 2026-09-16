@@ -171,6 +171,34 @@ describe("outbox", () => {
     expect(rows.rows[0].count).toBe(1);
   });
 
+  it("按事件名过滤消费时不会领取或误确认其他事件", async (ctx) => {
+    if (!available) { ctx.skip(); return; }
+    const ids = ["t-filter-target", "t-filter-other"];
+    await pool.query("DELETE FROM outbox WHERE id = ANY($1::text[])", [ids]);
+    await appendOutbox(pool, {
+      id: ids[0], event: "execution.notification", source: "manager", payload: {}, occurredAt: new Date().toISOString(),
+    });
+    await appendOutbox(pool, {
+      id: ids[1], event: "other.event", source: "manager", payload: {}, occurredAt: new Date().toISOString(),
+    });
+    await pool.query(
+      `UPDATE outbox SET status='processing',attempts=2,locked_by='other-consumer',lease_expires_at=now()-interval '1 second'
+       WHERE id=$1`,
+      [ids[1]]
+    );
+    const handled: string[] = [];
+    const count = await processOutbox(pool, async (event) => { handled.push(event.id); }, {
+      events: ["execution.notification"], maxAttempts: 2,
+    });
+    expect(count).toBe(1);
+    expect(handled).toEqual([ids[0]]);
+    const rows = await pool.query("SELECT id,status FROM outbox WHERE id = ANY($1::text[]) ORDER BY id", [ids]);
+    expect(rows.rows).toEqual([
+      { id: ids[1], status: "processing" },
+      { id: ids[0], status: "done" },
+    ]);
+  });
+
   it("过期租约可被新消费者恢复", async (ctx) => {
     if (!available) {
       ctx.skip();

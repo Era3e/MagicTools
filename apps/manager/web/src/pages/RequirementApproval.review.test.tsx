@@ -13,6 +13,7 @@ vi.mock("../api", () => ({ api: {
   getRequirement: vi.fn(), patchRequirement: vi.fn(), refreshPr: vi.fn(),
   getApprovalPolicy: vi.fn(), approveRevision: vi.fn(), revokeApproval: vi.fn(),
   getRequirementRevisions: vi.fn(), getApprovalHistory: vi.fn(), getExecutionEligibility: vi.fn(),
+  listExecutionJobs: vi.fn(),
 } }));
 
 const PermissiveRequest = class extends Request {
@@ -55,6 +56,7 @@ beforeEach(() => {
     requirementId: requirement.id, eligible: false, contractReady: false, dependenciesReady: true,
     dependencies: [], automationPolicy: "manual", blockers: ["自动执行未启用"],
   });
+  vi.mocked(api.listExecutionJobs).mockResolvedValue([]);
   vi.spyOn(message, "success").mockImplementation(() => (() => {}) as ReturnType<typeof message.success>);
   vi.spyOn(message, "warning").mockImplementation(() => (() => {}) as ReturnType<typeof message.warning>);
 });

@@ -7,7 +7,7 @@
       "files": [
         {
           "path": "src/outbox.test.ts",
-          "minimumTests": 9
+          "minimumTests": 10
         }
       ]
     },
@@ -80,6 +80,10 @@
         {
           "path": "src/execution-jobs.e2e.test.ts",
           "minimumTests": 6
+        },
+        {
+          "path": "src/execution-progress.e2e.test.ts",
+          "minimumTests": 4
         },
         {
           "path": "src/requirement-revisions.e2e.test.ts",
