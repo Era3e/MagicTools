@@ -4,9 +4,9 @@
 
 ## 当前基线
 
-- 远端 main 快照：`774d227`（P23 已通过 PR #96 合并）。PR CI 三段成功，Release `35031525272` 与合并后 main CI `35031525200` 均成功；P24 以该 main 为开发基线。
+- 远端 main 快照：`e997e20`（P24 已通过 PR #97 合并）。PR CI quality/smoke/e2e 成功，PR quality artifact 绑定 candidate `f93bab0`、tree `3e75397` 且数据库 42 文件 204/204 零跳过；Release `35038620842` 成功；合并后 main CI `35038620831` 以最终回执为准。P25 以该 main 为开发基线。
 - 质量口径：目标测试、完整 `qa:gate`、17 服务 smoke、独立 0 bug loop、PR quality/smoke/e2e、合并后 Release 与 main CI 四段。
-- 当前执行：P24 执行进度、待验收与通知开发；P01-P23 已完整闭环。
+- 当前执行：P25 低风险条件自动合并已完成实现与本地完整验证；P01-P24 已合并。
 
 ## 当前事实源
 
@@ -18,7 +18,7 @@
 
 ## 待办与边界
 
-- **P24 执行进度与通知（2026-09-16，开发中）**：成功回写结构化校验、待验收推进、PR/部署分离、稳定 outbox 通知、webhook 租约投递和详情页证据面板已实现；Manager DB 55/55、db outbox 10/10、Manager Web 32/32 和全仓构建通过。待完整 qa、独立 0 bug loop、PR quality/smoke/e2e 与合并后 Release/main CI。
+- **P25 条件自动合并（2026-09-16，待 PR/CI）**：Manager 独立 merge token 授权接口与独立条件合并 CLI 已实现；本地完整 qa `70c4ef9bd4748f9483babb60` 通过，7/7 阶段、基础设施 385/385、数据库 42 文件 205/205 零跳过。待 PR quality/smoke/e2e、quality artifact 独立核验、合并后 Release/main CI。
 - 接口/路由变更必须重复运行 `pnpm docs:facts` 并确认无 diff。
-- P24 后继续 P25 条件自动合并与 P26 资源面板。
-- 生产独立备份机、真实外部模型效果、生产 HTTPS/用户清单和自动执行合并仍需真实外部配置；不得以桩模式或开发验收冒充生产已启用。
+- P25 后继续 P26 资源面板。
+- 生产独立备份机、真实外部模型效果、生产 HTTPS/用户清单和生产条件合并凭证仍需真实外部配置；不得以桩模式或开发验收冒充生产已启用。P25 live GitHub 合并保持 not-run。

@@ -32,6 +32,7 @@
     "recovery:validate": "node infra/scripts/validate-recovery-deployment.mjs",
     "smoke": "node infra/scripts/smoke.mjs",
     "executor": "node infra/scripts/executor.mjs",
+    "merge:conditional": "node infra/scripts/conditional-merge.mjs",
     "e2e": "pnpm --filter @mt/e2e exec playwright test",
     "e2e:update": "pnpm --filter @mt/e2e exec playwright test --update-snapshots",
     "e2e:visual": "pnpm --filter @mt/e2e exec playwright test _visual.spec.ts",

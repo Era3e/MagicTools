@@ -306,7 +306,9 @@
 | POST | `/api/manager/requirements/:id/execution-jobs` |
 | GET | `/api/manager/requirements/:id/execution-jobs` |
 | GET | `/api/manager/execution-jobs` |
+| GET | `/api/manager/execution-jobs/merge-candidates` |
 | GET | `/api/manager/execution-jobs/:id` |
+| GET | `/api/manager/execution-jobs/:id/merge-authorization` |
 | POST | `/api/manager/execution-jobs/claim` |
 | POST | `/api/manager/execution-jobs/recover` |
 | POST | `/api/manager/execution-jobs/:id/heartbeat` |

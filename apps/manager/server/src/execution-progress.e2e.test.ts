@@ -11,12 +11,15 @@ import { migrate, pool } from "./db";
 let app: INestApplication;
 const ownerToken = randomBytes(32).toString("hex");
 const executorToken = randomBytes(32).toString("hex");
+const mergeToken = randomBytes(32).toString("hex");
 const previousOwnerToken = process.env.MANAGER_APPROVAL_TOKEN;
 const previousExecutorToken = process.env.MANAGER_EXECUTOR_TOKEN;
+const previousMergeToken = process.env.MANAGER_MERGE_TOKEN;
 
 beforeAll(async () => {
   process.env.MANAGER_APPROVAL_TOKEN = ownerToken;
   process.env.MANAGER_EXECUTOR_TOKEN = executorToken;
+  process.env.MANAGER_MERGE_TOKEN = mergeToken;
   await migrate();
   await pool.query("TRUNCATE execution_runs, execution_jobs");
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
@@ -30,6 +33,7 @@ afterAll(async () => {
   await pool.end();
   if (previousOwnerToken === undefined) delete process.env.MANAGER_APPROVAL_TOKEN; else process.env.MANAGER_APPROVAL_TOKEN = previousOwnerToken;
   if (previousExecutorToken === undefined) delete process.env.MANAGER_EXECUTOR_TOKEN; else process.env.MANAGER_EXECUTOR_TOKEN = previousExecutorToken;
+  if (previousMergeToken === undefined) delete process.env.MANAGER_MERGE_TOKEN; else process.env.MANAGER_MERGE_TOKEN = previousMergeToken;
 });
 
 function contract(maxAttempts = 1) {
@@ -191,5 +195,48 @@ describe("执行进度、待验收与通知", () => {
       .set("x-manager-approval-token", ownerToken)
       .send({ state: "succeeded", releaseId: "release-1", url: "https://example.com/run/1", expectedRevision: current.body.revision }).expect(200);
     expect(updated.body).toMatchObject({ deploymentState: "succeeded", status: "accepting", deploymentRef: "release-1" });
+  });
+
+  it("条件合并只授权当前批准修订下的成功候选", async () => {
+    const requirementId = await createReadyRequirement("条件合并授权");
+    const job = await queue(requirementId);
+    const claimed = await claim("executor-merge-auth");
+    await request(app.getHttpServer()).post(`/api/manager/execution-jobs/${job.id}/complete`)
+      .set("x-manager-executor-token", executorToken)
+      .set("x-manager-run-token", claimed.runToken)
+      .send({ result: successResult(job.id, claimed.runId) }).expect(200);
+
+    await request(app.getHttpServer()).get(`/api/manager/execution-jobs/${job.id}/merge-authorization`)
+      .set("x-manager-merge-token", "wrong-token").expect(403);
+
+    const authorization = await request(app.getHttpServer()).get(`/api/manager/execution-jobs/${job.id}/merge-authorization`)
+      .set("x-manager-merge-token", mergeToken).expect(200);
+    expect(authorization.body).toMatchObject({
+      eligible: true,
+      blockers: [],
+      candidate: {
+        jobId: job.id,
+        requirementId,
+        contentRevision: 1,
+        repository: "https://github.com/era3e/magictools",
+        allowedPaths: ["apps/manager/server/src"],
+        candidateSha: "b".repeat(40),
+        baseSha: "a".repeat(40),
+        changedPaths: ["apps/manager/server/src/execution-jobs.repo.ts"],
+        prNumber: 97,
+      },
+    });
+
+    const candidates = await request(app.getHttpServer()).get("/api/manager/execution-jobs/merge-candidates")
+      .set("x-manager-merge-token", mergeToken).expect(200);
+    expect(candidates.body.some((item: { candidate?: { jobId?: string } }) => item.candidate?.jobId === job.id)).toBe(true);
+
+    const current = await request(app.getHttpServer()).get(`/api/manager/requirements/${requirementId}`).expect(200);
+    await request(app.getHttpServer()).patch(`/api/manager/requirements/${requirementId}`)
+      .send({ scope: "条件合并后内容变化", expectedRevision: current.body.revision }).expect(200);
+    const stale = await request(app.getHttpServer()).get(`/api/manager/execution-jobs/${job.id}/merge-authorization`)
+      .set("x-manager-merge-token", mergeToken).expect(200);
+    expect(stale.body).toMatchObject({ eligible: false });
+    expect(stale.body.blockers).toEqual(expect.arrayContaining(["执行契约对应内容修订已变化"]));
   });
 });
