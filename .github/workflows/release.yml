@@ -43,5 +43,14 @@ jobs:
         if: steps.changesets.outputs.has == 'false'
         run: |
           git fetch origin --tags --force
+          before="${RUNNER_TEMP:-/tmp}/magictools-tags-before"
+          after="${RUNNER_TEMP:-/tmp}/magictools-tags-after"
+          git tag --list | sort > "$before"
           pnpm release:tag
-          git push origin --tags
+          git tag --list | sort > "$after"
+          new_tags="$(comm -13 "$before" "$after")"
+          if [ -n "$new_tags" ]; then
+            printf '%s\n' "$new_tags" | xargs git push origin
+          else
+            echo "No new version tags to push"
+          fi
