@@ -1,4 +1,4 @@
-import type { RequirementStatus } from "./requirement.repo";
+import type { RequirementStatus } from "./requirement-types";
 
 export const MANUAL_TRANSITIONS: Record<RequirementStatus, readonly RequirementStatus[]> = {
   waiting: ["designing", "todo"],

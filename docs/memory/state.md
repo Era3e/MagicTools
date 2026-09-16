@@ -4,9 +4,9 @@
 
 ## 当前基线
 
-- 远端 main 快照：`38ce001`（P25 已通过 PR #98 合并）。PR CI quality/smoke/e2e 成功，PR quality artifact 绑定 candidate `cc5dcc4`、tree `adf7673` 且数据库 42 文件 205/205 零跳过；Release `35042984789` 成功；合并后 main CI `35042984731` 以最终回执为准。P26 以该 main 内容为开发基线。
+- 远端 main 快照：`d4ac35e`。P26 已合入，P27 以该内容为开发基线；PR/CI 合并回执以最终核验为准。
 - 质量口径：目标测试、完整 `qa:gate`、17 服务 smoke、独立 0 bug loop、PR quality/smoke/e2e、合并后 Release 与 main CI 四段。
-- 当前执行：P26 资源、密钥引用与运行面板开发中；P01-P25 已合并。
+- 当前执行：P27 Code Wiki 与依赖图加固开发中；P01-P26 已合并。
 
 ## 当前事实源
 
@@ -18,7 +18,7 @@
 
 ## 待办与边界
 
-- **P26 资源面板（2026-09-16，开发中）**：Manager 资源/密钥引用/检查模型、后台资源页和 Gateway 运行入口已实现；密钥引用前缀与来源强一致，写入检查递增资源修订。待目标测试复跑、真实数据库验证、完整 qa、PR quality/smoke/e2e、quality artifact 独立核验、合并后 Release/main CI。
+- **P27 Code Wiki 与依赖图加固（2026-09-16，本地验收通过）**：已修复 16 个 Code Wiki 坏链接和已确认陈旧事实；docs-guard 支持 Markdown 相对链接、代码块、reference、HTML 与完整 destination 语法；dependency-cruiser 覆盖 apps/packages、拆除 4 个循环依赖，生成防漂移依赖索引，`graph:check` 并入 test:infra/qa:gate。目标测试、独立 0 bug loop（最终 PASS）与完整 qa 全绿，quality evidence 为 `.qa/quality/1aecb33164c39b9e5efd6a28/quality.json`。待 PR quality/smoke/e2e、quality artifact 独立核验、合并后 Release/main CI。
 - 接口/路由变更必须重复运行 `pnpm docs:facts` 并确认无 diff。
 - P25 合并后 main CI 四段与 main quality artifact 仍需最终核验。
 - 生产独立备份机、真实外部模型效果、生产 HTTPS/用户清单、生产条件合并凭证和云/秘密管理系统只读同步仍需真实外部配置；不得以桩模式或开发验收冒充生产已启用。P25 live GitHub 合并与 P26 生产资源同步保持 not-run；P26 资源面板不保存任何秘密明文。

@@ -1,4 +1,4 @@
-import type { PropValue } from "./schema";
+import type { PropValue } from "./types";
 
 export type PropFieldType = "text" | "number" | "boolean" | "select";
 

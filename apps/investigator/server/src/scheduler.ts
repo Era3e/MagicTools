@@ -1,17 +1,11 @@
 import cron from "node-cron";
 import { SurveyService } from "./survey.service";
 import { listSurveys, type SurveyRow } from "./survey.repo";
+import { isValidCron } from "./cron";
+
+export { isValidCron } from "./cron";
 
 const registry = new Map<string, cron.ScheduledTask>();
-
-export function isValidCron(expr: string): boolean {
-  if (!expr) return false;
-  try {
-    return cron.validate(expr);
-  } catch {
-    return false;
-  }
-}
 
 export function buildSchedulerStatus(tasks: Array<{ id: string; name: string; cron: string }>): {
   tasks: Array<{ surveyId: string; name: string; cron: string }>;

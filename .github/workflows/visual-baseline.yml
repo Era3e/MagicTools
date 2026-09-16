@@ -41,7 +41,7 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
       # CJK 字体：保证 linux 渲染与 win32 基线口径一致（中文不落豆腐块）
       - name: 安装 CJK 字体

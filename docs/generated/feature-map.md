@@ -162,6 +162,7 @@
 | C12 | 候选提交与运行绑定的质量证据 | ✅ 已实现：候选/checkout/base/run/mode绑定、工作树漂移拒绝、完整数据库明细重算与失败artifact；quality-evidence.review.test.mjs 独立验收 | infra/scripts/quality-gate.mjs + infra/scripts/lib/quality-evidence.mjs | — |
 | C13 | 功能映射与接口事实索引 | ✅ 已实现：coverage-matrix 解析、Gateway 字面/动态/认证入口与业务服务接口扫描、生成物漂移守卫与历史设计标识守卫 | infra/scripts/lib/docs-facts.mjs + infra/scripts/lib/docs-facts.test.mjs + docs/generated/feature-map.md + docs/generated/coverage-view.md + docs/generated/interface-index.md | — |
 | C14 | 模型调用超时、取消、用量与追踪 | ✅ 已实现：组合 signal/timeout、重试逐次记录、流式真实 usage/unknown、调用 ID 幂等持久化与 Assistant trace/task 上下文；验证为 model-client 26 用例 + db 11 用例 + model-calls.e2e.test.ts 2 用例 | packages/model-client/src/client.ts + packages/db/src/model-calls.ts + 7 个业务服务 migrations/*_model_calls.sql + 7 个业务服务 llm.ts | — |
+| C15 | Code Wiki 链接守卫与 TS 依赖图门禁 | ✅ 已实现：Markdown 相对链接存在性校验；dependency-cruiser 强制无循环、公共包不反向依赖应用、应用间不直接源码引用、生产代码不引用测试，并生成与源码图同口径且防漂移的依赖索引 | infra/scripts/lib/docs-guard.mjs + infra/scripts/lib/docs-guard.test.mjs + .dependency-cruiser.cjs + infra/scripts/lib/code-graph.mjs + infra/scripts/lib/code-graph.test.mjs + docs/generated/dependency-index.md | — |
 
 ## 2026-09 增量
 

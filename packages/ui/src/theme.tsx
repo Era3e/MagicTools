@@ -2,7 +2,7 @@ import { ConfigProvider, theme as antdTheme } from "antd";
 import { createContext, useContext } from "react";
 import type { ReactNode } from "react";
 import { tokens } from "./tokens";
-import { MAGAZINE_THEME, type UserShellTheme } from "./UserShell";
+import { MAGAZINE_THEME, type UserShellTheme } from "./theme-types";
 
 /**
  * 前台应用主题上下文：由 UserShell 注入当前应用自定义主题。

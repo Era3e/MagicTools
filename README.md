@@ -18,7 +18,7 @@
 ## 技术栈
 
 - **前端**：React 18 + TypeScript + Vite + Ant Design 5
-- **后端**：Node.js 20（开发/quality）与22（固定digest运行镜像）+ NestJS 10 + TypeScript
+- **后端**：Node.js 22/24/26+（工作区/quality；固定 digest 运行镜像为 22）+ NestJS 10 + TypeScript
 - **数据库**：PostgreSQL 16 + pgvector + 全文检索 FTS
 - **仓库**：pnpm workspace + Turborepo
 - **LLM**：`@mt/model-client` 统一抽象（DeepSeek + 智谱，OpenAI 兼容协议）

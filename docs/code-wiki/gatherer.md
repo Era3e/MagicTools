@@ -28,7 +28,7 @@
 后台（AdminShell /gatherer/admin）：
   /admin/sources         SourceList  信息源列表（含「编辑」列 Modal、自动推送开关、调度实况与死信追踪）
   /admin/sources/:id     SourceDetail  条目查看 + 推送 Scholar（D1 提示收件箱）
-  /admin/items           ItemList    采集条目列表
+  /sources/:sourceId/items ItemList 采集条目列表
 ```
 
 ---

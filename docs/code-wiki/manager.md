@@ -46,16 +46,16 @@
 
 2026-09-11 起，手工状态迁移由 `requirement-policy.ts` 约束；字段与状态在行锁事务中合并，新客户端提交 expectedRevision，过期返回 409。PR 同状态不增加修订，不能回退 accepting/done。详情的关联草稿与服务器基准分离，冲突后不会自动使用新版本覆盖旧内容。
 
-候选导入支持 `magictools-requirement-candidates/0.1`：baseline 保存为 capabilities，planned 保存为 waiting/manual 需求；源码观察不等于已验收或已部署。接口、来源与大小上限见 [Manager 候选导入说明](features/manager-candidate-import.md)。关键数据库验证使用 `pnpm test:manager:integration`，并由本地与 CI 共用的 qa:gate 强制执行。
+候选导入支持 `magictools-requirement-candidates/0.1`：baseline 保存为 capabilities，planned 保存为 waiting/manual 需求；源码观察不等于已验收或已部署。接口、来源与大小上限见 [Manager 候选导入说明](../features/manager-candidate-import.md)。关键数据库验证使用 `pnpm test:manager:integration`，并由本地与 CI 共用的 qa:gate 强制执行。
 
-P08 通过迁移 006/007/008 增加 `contentRevision`、快照、审批事件和执行契约。内容字段或执行契约改变时递增内容版本，操作信息变更只影响并发版本；批准绑定指定内容，变更后显示 outdated。详情页支持内容编辑、冲突草稿恢复、任意已加载版本对比、审批与撤销、分页审计及执行门禁展示。执行契约包含仓库、允许路径、结构化验收命令、时长、尝试次数和分单位预算；依赖按同仓库导入链接解析，只有规划需求 `done` 视为就绪。审批身份由 `MANAGER_APPROVAL_ACTOR` 配置，`MANAGER_APPROVAL_TOKEN` 未配置时拒绝审批；客户端不能伪造身份。默认仍为 manual，批准本身不触发执行、合并、验收或部署。迁移只回填升级时快照，不编造此前历史。操作、配置、API 和验证说明见 [需求内容修订与审批](features/manager-content-approval.md)。
+P08 通过迁移 006/007/008 增加 `contentRevision`、快照、审批事件和执行契约。内容字段或执行契约改变时递增内容版本，操作信息变更只影响并发版本；批准绑定指定内容，变更后显示 outdated。详情页支持内容编辑、冲突草稿恢复、任意已加载版本对比、审批与撤销、分页审计及执行门禁展示。执行契约包含仓库、允许路径、结构化验收命令、时长、尝试次数和分单位预算；依赖按同仓库导入链接解析，只有规划需求 `done` 视为就绪。审批身份由 `MANAGER_APPROVAL_ACTOR` 配置，`MANAGER_APPROVAL_TOKEN` 未配置时拒绝审批；客户端不能伪造身份。默认仍为 manual，批准本身不触发执行、合并、验收或部署。迁移只回填升级时快照，不编造此前历史。操作、配置、API 和验证说明见 [需求内容修订与审批](../features/manager-content-approval.md)。
 
-P22 通过迁移 013 增加 `execution_jobs` 与 `execution_runs`。同需求同内容修订唯一，owner 用审批凭证显式排队并把 `automation_policy` 置为 `owner-token`；执行器用 `MANAGER_EXECUTOR_TOKEN` 领取，领取响应一次性下发 run token 和只读需求上下文，数据库只保存 token 哈希。心跳、成功、失败同时校验 run token、状态和租约；过期 run 显式转 expired，未达契约上限的 job 回 retry，达到上限转 failed。排队后内容修订、批准状态或需求状态变化会在领取前把旧 job 隔离为 failed。P23 的独立 CLI 负责隔离编码、候选提交、独立验收、证据包与 PR；通知和自动合并不在该层，可靠性规则见 [自动执行任务租约](features/manager-execution-jobs.md)。
+P22 通过迁移 013 增加 `execution_jobs` 与 `execution_runs`。同需求同内容修订唯一，owner 用审批凭证显式排队并把 `automation_policy` 置为 `owner-token`；执行器用 `MANAGER_EXECUTOR_TOKEN` 领取，领取响应一次性下发 run token 和只读需求上下文，数据库只保存 token 哈希。心跳、成功、失败同时校验 run token、状态和租约；过期 run 显式转 expired，未达契约上限的 job 回 retry，达到上限转 failed。排队后内容修订、批准状态或需求状态变化会在领取前把旧 job 隔离为 failed。P23 的独立 CLI 负责隔离编码、候选提交、独立验收、证据包与 PR；通知和自动合并不在该层，可靠性规则见 [自动执行任务租约](../features/manager-execution-jobs.md)。
 
-P24 通过迁移 014 为需求增加 `pr_state/pr_checked_at` 与 `deployment_state/deployment_ref/deployment_url/deployment_checked_at`。执行成功回写必须携带全部成功的结构化验收、candidate SHA、PR 和证据摘要，并与实际 job/run/租约一致；同一事务把需求推进到待验收、写入 PR open、部署 not-started 和稳定 ID 的 outbox 通知。终态失败与取消同样事务写通知，中间 retry 不打扰。通知服务配置 HTTPS webhook 后每 30 秒按事件名过滤领取 outbox，2xx 才确认 done；未配置时明确 not-configured。详情页展示 run 心跳、错误、证据、PR 和部署状态，人工验收和部署事实互不冒充。操作说明见 [执行进度、待验收与通知](features/manager-execution-progress.md)。
+P24 通过迁移 014 为需求增加 `pr_state/pr_checked_at` 与 `deployment_state/deployment_ref/deployment_url/deployment_checked_at`。执行成功回写必须携带全部成功的结构化验收、candidate SHA、PR 和证据摘要，并与实际 job/run/租约一致；同一事务把需求推进到待验收、写入 PR open、部署 not-started 和稳定 ID 的 outbox 通知。终态失败与取消同样事务写通知，中间 retry 不打扰。通知服务配置 HTTPS webhook 后每 30 秒按事件名过滤领取 outbox，2xx 才确认 done；未配置时明确 not-configured。详情页展示 run 心跳、错误、证据、PR 和部署状态，人工验收和部署事实互不冒充。操作说明见 [执行进度、待验收与通知](../features/manager-execution-progress.md)。
 
-P25 的 Manager 侧只暴露 `merge-candidates` 与 `merge-authorization` 读取接口，使用独立 `MANAGER_MERGE_TOKEN`。授权要求 job 成功、内容修订仍为当前批准修订、需求为低风险待验收、PR open 且执行结果身份完整；真正 GitHub 事实核对、required checks、分支保护、风险路径和普通 merge API 调用在独立 `pnpm merge:conditional` CLI 中完成。编码执行器仍拿不到合并 token，见 [低风险需求条件自动合并](features/conditional-merge.md)。
+P25 的 Manager 侧只暴露 `merge-candidates` 与 `merge-authorization` 读取接口，使用独立 `MANAGER_MERGE_TOKEN`。授权要求 job 成功、内容修订仍为当前批准修订、需求为低风险待验收、PR open 且执行结果身份完整；真正 GitHub 事实核对、required checks、分支保护、风险路径和普通 merge API 调用在独立 `pnpm merge:conditional` CLI 中完成。编码执行器仍拿不到合并 token，见 [低风险需求条件自动合并](../features/conditional-merge.md)。
 
-P26 通过迁移 015 增加资源、密钥引用与真实检查三张表。资源必须记录归属、月预算、备份定位和 HTTPS 处理手册；密钥只允许 `env:`/`file:`/`external:` 引用，前缀必须与来源字段一致，schema 拒绝任何 value 字段。检查结果按 passed/failed/blocked/waiting 独立计数，每个检查名取最新记录并递增资源修订，blocked 表示真实检查无法执行，waiting 表示外部资源或人工动作未就绪。后台资源面板展示汇总与明细，Gateway `/status` 只提供入口，不复制状态，见 [资源、密钥引用与运行面板](features/resources.md)。
+P26 通过迁移 015 增加资源、密钥引用与真实检查三张表。资源必须记录归属、月预算、备份定位和 HTTPS 处理手册；密钥只允许 `env:`/`file:`/`external:` 引用，前缀必须与来源字段一致，schema 拒绝任何 value 字段。检查结果按 passed/failed/blocked/waiting 独立计数，每个检查名取最新记录并递增资源修订，blocked 表示真实检查无法执行，waiting 表示外部资源或人工动作未就绪。后台资源面板展示汇总与明细，Gateway `/status` 只提供入口，不复制状态，见 [资源、密钥引用与运行面板](../features/resources.md)。
 
 ---

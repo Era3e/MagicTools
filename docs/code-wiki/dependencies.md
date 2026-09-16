@@ -4,6 +4,10 @@
 
 ## 15. 依赖关系全景图
 
+### 15.0 机器校验的 TS/TSX import 图
+
+`pnpm graph:check` 使用 dependency-cruiser 扫描 `apps/` 与 `packages/`，强制执行循环依赖、公共包反向依赖应用、应用间直接源码引用和生产代码引用测试四类规则；该检查已并入 `test:infra` 与 `qa:gate`。`pnpm graph:json` 会把完整图写入 `.qa/code-graph/dependency-graph.json`，并在 `docs/generated/dependency-index.md` 沉淀模块级摘要。
+
 ### 15.1 Workspace 包依赖 DAG
 
 ```
